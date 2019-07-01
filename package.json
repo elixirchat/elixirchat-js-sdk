@@ -1,0 +1,15 @@
+{
+  "name": "elixirchat",
+  "version": "0.9.1",
+  "description": "JavaScript SDK for https://elixir.chat",
+  "main": "src/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/elixirchat/elixirchat-widget.git"
+  },
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/elixirchat/elixirchat-widget/issues"
+  },
+  "homepage": "https://github.com/elixirchat/elixirchat-widget#readme"
+}
