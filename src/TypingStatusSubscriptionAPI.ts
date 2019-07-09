@@ -14,7 +14,6 @@ export function getWebSocketPhoenixClient(){
 }
 
 
-
 const noop = () => {}; // TODO: refactor
 const handleAPIError = (data) => {
   console.error('handleAPIError', data); // TODO: improve

@@ -1,3 +1,12 @@
+import * as withAbsintheSocket from '@absinthe/socket';
+import {Socket as PhoenixSocket} from 'phoenix';
+
+const absintheSocket = withAbsintheSocket.create(
+  new PhoenixSocket('ws://localhost:4000/socket')
+);
+
+
+
 type CompanyId = string;
 
 type Room = {
@@ -7,6 +16,7 @@ type Room = {
 
 type User = {
   id: string,
+
   firstName?: string,
   lastName?: string,
 };
@@ -39,10 +49,10 @@ type SentMessage = {
 export class ElixirChat {
 
   public companyId: CompanyId = '';
-  public room: Room = {
+  public room?: Room = {
     id: '',
   };
-  public client: User = {
+  public client?: User = {
     id: '',
   };
   protected debug: boolean;
@@ -56,7 +66,7 @@ export class ElixirChat {
     this.companyId = config.companyId;
     this.room = config.room;
     this.client = config.client;
-    this.debug = config.debug;
+    this.debug = config.debug || false;
     this.initialize();
   }
 
@@ -69,11 +79,41 @@ export class ElixirChat {
   }
 
   protected connectToRoom(){
+    console.log('___ connect to room', this);
 
+    const query = `
+      mutation ($companyId: ID!, $roomId: ID!, $roomTitle: String!) {
+        joinRoom(companyId: $companyId, room: {id: $roomId, title: $roomTitle) {
+          token
+          room {
+            id
+            title
+            foreignId
+            members {
+              id
+              client {
+               cid 
+              }
+            }
+          }
+        }
+      }
+    `;
+
+    const notifier = withAbsintheSocket.send(absintheSocket, {
+      operation: query,
+      variables: {
+        companyId: this.companyId,
+        roomId: this.room.id,
+        roomTitle: this.room.title,
+      }
+    });
+
+    window.__notifier = notifier;
   }
 
-  public sendMessage({ text, attachments, replyByMessageId }: SentMessage): Promise {
-    return new Promise(() => {});
+  public sendMessage({ text, attachments, replyByMessageId }: SentMessage): Promise<void> {
+    return new Promise((resolve, reject) => {});
   }
 
   public onMessage(callback: (message: ReceivedMessage) => void): void {
@@ -84,13 +124,11 @@ export class ElixirChat {
     this.onTypingCallbacks.push(callback);
   }
 
-  public makeScreenshot(): Promise {
-    return new Promise((resolve, reject) => {
-      resolve('...screenshot...');
-    });
+  public makeScreenshot(): Promise<void> {
+    return new Promise((resolve, reject) => {});
   }
 
-  public reconnect({ room, client } = { room: Room | undefined, client: User | undefined }): Promise {
+  public reconnect({ room, client }: { room?: Room, client?: User }): Promise<void> {
     return new Promise(() => {});
   }
 

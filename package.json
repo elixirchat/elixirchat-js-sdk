@@ -2,7 +2,11 @@
   "name": "elixirchat",
   "version": "0.9.1",
   "description": "JavaScript SDK for https://elixir.chat",
-  "main": "src/index.js",
+  "scripts": {
+    "dev": "parcel demo.html --port 8000",
+    "production": "parcel build demo.html"
+  },
+  "main": "src/index.ts",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/elixirchat/elixirchat-widget.git"
@@ -11,5 +15,17 @@
   "bugs": {
     "url": "https://github.com/elixirchat/elixirchat-widget/issues"
   },
-  "homepage": "https://github.com/elixirchat/elixirchat-widget#readme"
+  "homepage": "https://github.com/elixirchat/elixirchat-widget#readme",
+  "dependencies": {
+    "@absinthe/socket": "^0.2.1",
+    "phoenix": "^1.4.9"
+  },
+  "devDependencies": {
+    "babel-core": "^6.26.3",
+    "babel-plugin-transform-class-properties": "^6.24.1",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "parcel-bundler": "^1.12.3",
+    "typescript": "^3.5.3"
+  }
 }
