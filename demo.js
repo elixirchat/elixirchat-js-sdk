@@ -24,6 +24,8 @@ messagesElement.innerHTML = messages.map(message => {
 typingLabelElement.innerHTML = 'Nobody is currently typing';
 
 const elixirChat = new ElixirChat({
+  apiUrl: 'http://localhost:4000',
+  socketUrl: 'ws://localhost:4000/socket',
   companyId: '6ac8ce92-3a31-440b-b439-831d292a9730', // huntflow
   room: {
     id: 'test1',
@@ -33,7 +35,8 @@ const elixirChat = new ElixirChat({
     id: 'client1',
     firstName: 'Egor',
     lastName: 'Vinogradov'
-  }
+  },
+  debug: true,
 });
 
 
@@ -42,4 +45,8 @@ window.__sendMessage = (message = 'test message') => {
     text: message,
   }).then(data => console.log('sendMessage', data));
 };
+
+window.__elixirChat = elixirChat;
+
+
 

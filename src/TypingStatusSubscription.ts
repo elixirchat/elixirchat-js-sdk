@@ -1,3 +1,4 @@
+import { handleAPIError } from './utils';
 import * as Phoenix from 'phoenix';
 
 const TOKEN = ''; // TODO: add token
@@ -15,9 +16,7 @@ export function getWebSocketPhoenixClient(){
 
 
 const noop = () => {}; // TODO: refactor
-const handleAPIError = (data) => {
-  console.error('handleAPIError', data); // TODO: improve
-};
+
 
 
 export class TypingStatusSubscription {
@@ -78,12 +77,12 @@ export class TypingStatusSubscription {
         callback();
       })
       .receive('error', e => {
-        handleAPIError({e, methodArguments: [roomId], isGraphQL: false});
+        handleAPIError({e, variables: [roomId], isGraphQL: false});
         onSubscribeError(e);
       })
       .receive('timeout', () => {
         const message = 'Networking issue: could not join room via WebSocketPhoenixClient';
-        handleAPIError({e: { message }, methodArguments: [roomId], isGraphQL: false});
+        handleAPIError({e: { message }, variables: [roomId], isGraphQL: false});
         onSubscribeError();
       });
   };

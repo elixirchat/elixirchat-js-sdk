@@ -18,7 +18,9 @@
   "homepage": "https://github.com/elixirchat/elixirchat-widget#readme",
   "dependencies": {
     "@absinthe/socket": "^0.2.1",
-    "phoenix": "^1.4.9"
+    "nanoid": "^2.0.3",
+    "phoenix": "^1.4.9",
+    "unique-names-generator": "^3.0.0"
   },
   "devDependencies": {
     "babel-core": "^6.26.3",
