@@ -82,7 +82,7 @@ document.querySelector('#send-message-button').addEventListener('click', () => {
   elixirChat.sendMessage({
     text: document.querySelector('textarea').value, // message from a customer
     attachments: document.querySelector('input[type=file]').files, // files attached by your customer
-    replyByMessageId: '225a5c-6cf5e0', // the ID of a message your customer replies to (if any)
+    responseToMessageId: '225a5c-6cf5e0', // the ID of a message your customer replies to (if any)
   })
   .then(status => console.log(status));
 });
@@ -202,13 +202,13 @@ Class `ElixirChatWidget` extends `ElixirChat` therefore they both share some met
 <br/>
 <a id="sendMessage"></a>
 
-#### `sendMessage ({ text: string, attachments[]: File, replyByMessageId: string })`
+#### `sendMessage ({ text: string, attachments[]: File, responseToMessageId: string })`
 Send customer's message to your customer support agent.
 
 __Parameters:__
 - `text` - message text
 - `attachments` - list of attachments in a [JS File() format](https://developer.mozilla.org/en-US/docs/Web/API/File)
-- `replyByMessageId` - the ID of a message your customer replies to (if any)
+- `responseToMessageId` - the ID of a message your customer replies to (if any)
 
 __Returns: `new Promise()`__
 
@@ -217,7 +217,7 @@ __Returns: `new Promise()`__
 elixirChat.sendMessage({
   text: 'my message text',
   attachments: document.querySelector('#inputFile').files,
-  replyByMessageId: '6a4t24-y43th3',
+  responseToMessageId: '6a4t24-y43th3',
 })
 .then(status => console.log(status));
 ```

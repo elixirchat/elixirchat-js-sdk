@@ -1,20 +1,17 @@
 import * as AbsintheSocket from '@absinthe/socket'
 import * as Phoenix from 'phoenix'
-import { GraphQLClient } from './index';
+import { GraphQLClient, TElixirChatReceivedMessage } from './index';
 import { handleAPIError } from './utils';
 
-type NewMessage = {
-  id: string,
-  text: string,
-};
+type TNewMessage = TElixirChatReceivedMessage;
 
-type MessagesSubscriptionConfig = {
+type TMessagesSubscriptionConfig = {
   apiUrl: string,
   socketUrl: string,
   token: string,
   onSubscribeSuccess?: (data: any) => void;
   onSubscribeError?: (data: any) => void;
-  onMessage: (message: NewMessage) => void;
+  onMessage: (message: TNewMessage) => void;
 };
 
 export class MessagesSubscription {
@@ -24,7 +21,7 @@ export class MessagesSubscription {
   public token: string;
   public onSubscribeSuccess?: (data: any) => void;
   public onSubscribeError?: (data: any) => void;
-  public onMessage: (message: NewMessage) => void;
+  public onMessage: (message: TNewMessage) => void;
 
   protected isBeforeUnload: boolean = false;
 
@@ -56,12 +53,27 @@ export class MessagesSubscription {
   `;
 
   protected sendMessageQuery: string = `
-    mutation ($text: String!) {
-      sendMessage(text: $text) {
+    mutation ($text: String!, $responseToMessageId: ID) {
+      sendMessage(text: $text, responseToMessageId: $responseToMessageId) {
         id
         text
+        system
+        timestamp
+        data {
+          ... on NotSystemMessageData {
+            responseToMessage {
+              id
+              text
+              sender {
+                ... on Client { id firstName lastName }
+                ... on Employee { id firstName lastName }
+              }
+            }
+          }
+        }
         sender {
           ... on Client { id firstName lastName }
+          ... on Employee { id firstName lastName }
         }
       }
     }
@@ -71,7 +83,7 @@ export class MessagesSubscription {
   protected absintheSocket: any;
   protected graphQLClient: any;
 
-  constructor(config: MessagesSubscriptionConfig) {
+  constructor(config: TMessagesSubscriptionConfig) {
     this.apiUrl = config.apiUrl;
     this.socketUrl = config.socketUrl;
     this.token = config.token;
@@ -81,7 +93,7 @@ export class MessagesSubscription {
     this.initialize();
   }
 
-  protected initialize(){
+  protected initialize(): void {
     this.absintheSocket = AbsintheSocket.create(
       new Phoenix.Socket(this.socketUrl, {params: {
         token: this.token
@@ -91,25 +103,25 @@ export class MessagesSubscription {
       url: this.apiUrl,
       token: this.token,
     });
+    window.addEventListener('beforeunload', this.onBeforeUnload);
     this.subscribe();
-
-    window.addEventListener('unload', (e) => {
-      this.isBeforeUnload = true;
-      console.error('___ isBeforeUnload', e);
-    });
   }
 
-  protected subscribe() {
+  protected onBeforeUnload = (): boolean => {
+    this.isBeforeUnload = true;
+    return false;
+  };
+
+  protected subscribe(): void {
     const notifier = AbsintheSocket.send(this.absintheSocket, {
       operation: this.subscriptionQuery,
     });
     AbsintheSocket.observe(this.absintheSocket, notifier, {
       onAbort: e => this.onSubscribeFail(e, 'onAbort'),
       onError:  e => {
-        console.warn('___ onError', this.isBeforeUnload);
-        // if (e.message !== 'connection: close') {
-        // }
-        this.onSubscribeFail(e, 'onError');
+        if (!this.isBeforeUnload) {
+          this.onSubscribeFail(e, 'onError');
+        }
       },
       onStart: notifier => {
         this.notifier = notifier;
@@ -123,7 +135,7 @@ export class MessagesSubscription {
     })
   }
 
-  protected onSubscribeFail(error: any, methodName: string){
+  protected onSubscribeFail(error: any, methodName: string): void {
     handleAPIError({
       error,
       variables: { methodName },
@@ -132,18 +144,17 @@ export class MessagesSubscription {
     this.onSubscribeError(error);
   }
 
-  public unsubscribe() {
+  public unsubscribe = (): void => {
+    window.removeEventListener('beforeunload', this.onBeforeUnload);
     this.absintheSocket = AbsintheSocket.cancel(this.absintheSocket, this.notifier)
-  }
+  };
 
-  public sendMessage(text: string = ''){
-
-    // TODO: reply by id
-
+  public sendMessage = (text: string = '', responseToMessageIdRaw: string): Promise<void> => {
+    const responseToMessageId = typeof responseToMessageIdRaw === 'string' ? responseToMessageIdRaw : null;
     return new Promise((resolve, reject) => {
       if (text.trim()) {
         this.graphQLClient
-          .query(this.sendMessageQuery, { text })
+          .query(this.sendMessageQuery, { text, responseToMessageId })
           .then(data => {
             if (data && data.sendMessage) {
               resolve(data.sendMessage);
@@ -151,7 +162,7 @@ export class MessagesSubscription {
             else {
               handleAPIError({
                 error: data,
-                variables: { text },
+                variables: { text, responseToMessageId },
                 graphQlQuery: this.subscriptionQuery
               });
               reject(data);
@@ -160,7 +171,7 @@ export class MessagesSubscription {
           .catch(error => {
             handleAPIError({
               error,
-              variables: { text },
+              variables: { text, responseToMessageId },
               graphQlQuery: this.subscriptionQuery
             });
             reject(error);

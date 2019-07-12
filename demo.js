@@ -45,10 +45,11 @@ elixirChat.onMessage(message => {
 });
 
 
-window.__sendMessage = (message = 'test message') => {
+window.__sendMessage = (text = 'test message', responseToMessageId = 'TWVzc2FnZTowNGU4NGRlYi04NjA0LTQ4MjAtOGRmNC1jNWNmMjE0YzZiMjQ=') => {
   elixirChat.sendMessage({
-    text: message,
-  }).then(data => console.log('sendMessage', data));
+    text,
+    responseToMessageId,
+  }).then(data => console.log('sent message', data));
 };
 
 window.__elixirChat = elixirChat;
