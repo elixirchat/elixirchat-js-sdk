@@ -3,8 +3,10 @@ import { uniqueNamesGenerator } from 'unique-names-generator';
 import { handleAPIError, logEvent, capitalize } from './utils';
 import { MessagesSubscription } from './MessagesSubscription';
 
-window.__nanoid = nanoid;
-window.__uniqueNamesGenerator = uniqueNamesGenerator;
+
+// TODO: remove
+(<any>Window).__nanoid = nanoid;
+(<any>Window).__uniqueNamesGenerator = uniqueNamesGenerator;
 
 
 type GraphQLClientParams = {
@@ -87,7 +89,7 @@ type ReceivedMessage = {
   text: string,
   timestamp: string,
   sender: ElixirChatUser,
-  replyByMessageId: {
+  responseToMessage: {
     id: string,
     text: string,
     sender: ElixirChatUser,
@@ -140,7 +142,8 @@ export class ElixirChat {
   `;
 
   protected onMessageCallbacks: Array<(message: ReceivedMessage) => void> = [];
-  protected onConnectCallbacks: Array<() => void> = [];
+  protected onConnectSuccessCallbacks: Array<(data?: any) => void> = [];
+  protected onConnectErrorCallbacks: Array<(e: any) => void> = [];
   protected onTypingCallbacks: Array<(user: ElixirChatUser) => void> = [];
 
   constructor(config: ElixirChatConfig) {
@@ -155,10 +158,23 @@ export class ElixirChat {
 
   protected initialize(): void {
     if (!this.companyId) {
-      console.error(`Required parameter companyId is not provided:\nSee more: ${API_REFERENCE_URL}#config-companyid`);
+      logEvent(
+        this.debug,
+        `Required parameter companyId is not provided: \nSee more: ${API_REFERENCE_URL}#config-companyid`,
+        null,
+        'error'
+      );
       return;
     }
-    this.setDefaultVariableValues();
+    logEvent(this.debug, 'Initializing ElixirChat', {
+      apiUrl: this.apiUrl,
+      socketUrl: this.socketUrl,
+      companyId: this.companyId,
+      room: this.room,
+      client: this.client,
+      debug: this.debug,
+    });
+    this.setDefaultConfigValues();
     this.connectToRoom().then(() => {
       this.subscribeToNewMessages();
     });
@@ -176,7 +192,7 @@ export class ElixirChat {
     }
   }
 
-  protected setDefaultVariableValues(): void {
+  protected setDefaultConfigValues(): void {
     const client : any = this.client || {};
     const room : any = this.room || {};
     const defaultClientData = this.getDefaultClientData();
@@ -224,10 +240,12 @@ export class ElixirChat {
           }
           else {
             logEvent(this.debug, 'Failed to join room', data, 'error');
+            this.onConnectErrorCallbacks.forEach(callback => callback(data));
             reject(data);
           }
         }).catch((response: any) => {
           logEvent(this.debug, 'Failed to join room', response, 'error');
+          this.onConnectErrorCallbacks.forEach(callback => callback(response));
           reject(response);
         });
     });
@@ -238,9 +256,29 @@ export class ElixirChat {
       socketUrl: this.socketUrl,
       apiUrl: this.apiUrl,
       token: this.authToken,
-      onSubscribeSuccess: (data) => { console.log('%c onSubscribeSuccess', 'color: green;', data); },
-      onSubscribeError: (data) => { console.log('%c onSubscribeError', 'color: green;', data); },
-      onMessage: (data) => { console.log('%c onMessage', 'color: green;', data); }
+      onSubscribeSuccess: () => {
+        const roomData = {
+          room: this.room,
+          client: this.client,
+        };
+        logEvent(this.debug, 'Successfully subscribed to messages', roomData);
+        this.onConnectSuccessCallbacks.forEach(callback => callback(roomData));
+      },
+      onSubscribeError: (data) => {
+        logEvent(this.debug, 'Failed to subscribe to messages', data, 'error');
+        this.onConnectErrorCallbacks.forEach(callback => callback(data));
+      },
+      onMessage: (response: any) => {
+        const message : ReceivedMessage = {
+          id: response.id,
+          text: response.text,
+          sender: response.sender,
+          timestamp: response.timestamp,
+          responseToMessage: response.data.responseToMessage,
+        };
+        logEvent(this.debug, 'Received new message', message);
+        this.onMessageCallbacks.forEach(callback => callback(message));
+      }
     });
   }
 
@@ -261,10 +299,25 @@ export class ElixirChat {
   }
 
   public reconnect({ room, client }: { room?: ElixirChatRoom, client?: ElixirChatUser }): Promise<void> {
-    return new Promise(() => {});
+    logEvent(this.debug, 'Attempting to reconnect to another room', { room, client });
+    if (room) {
+      this.room = room;
+    }
+    if (client) {
+      this.client = client;
+    }
+    this.setDefaultConfigValues();
+    this.messagesSubscription.unsubscribe();
+    return this.connectToRoom().then(() => {
+      this.subscribeToNewMessages();
+    });
   }
 
-  public onConnect(callback: () => void): void {
-    this.onConnectCallbacks.push(callback);
+  public onConnectSuccess(callback: () => void): void {
+    this.onConnectSuccessCallbacks.push(callback);
+  }
+
+  public onConnectError(callback: () => void): void {
+    this.onConnectErrorCallbacks.push(callback);
   }
 }

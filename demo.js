@@ -40,6 +40,11 @@ const elixirChat = new ElixirChat({
 });
 
 
+elixirChat.onMessage(message => {
+  console.warn('___ on new message', message);
+});
+
+
 window.__sendMessage = (message = 'test message') => {
   elixirChat.sendMessage({
     text: message,
@@ -47,6 +52,3 @@ window.__sendMessage = (message = 'test message') => {
 };
 
 window.__elixirChat = elixirChat;
-
-
-

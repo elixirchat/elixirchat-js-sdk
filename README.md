@@ -90,7 +90,7 @@ document.querySelector('#send-message-button').addEventListener('click', () => {
 
 // Subscribe to new messages from your customer support agent
 elixirChat.onMessage((message) => {
-  console.log(message.text, message.replyByMessageId); // a new reply from your customer support agent
+  console.log(message.text, message.responseToMessage); // a new reply from your customer support agent
   console.log(message.sender.firstName, message.sender.lastName);  // your customer support agent's name
 });
 
@@ -236,18 +236,18 @@ __Callback parameters:__
     - `sender.id` - ID
     - `sender.firstName` - first name
     - `sender.lastName` - last name
-- `message.replyByMessageId` - contains info if this message was a reply to another message
-    - `replyByMessageId.id` - original message ID
-    - `replyByMessageId.text` - original message text
-    - `replyByMessageId.sender {id, firstName, lastName}` - original message sender
+- `message.responseToMessage` - contains info if this message was a reply to another message
+    - `responseToMessage.id` - original message ID
+    - `responseToMessage.text` - original message text
+    - `responseToMessage.sender {id, firstName, lastName}` - original message sender
 
 ```js
 elixirChat.onMessage((message) => {
   console.log('New message from customer support agent:', message.text);
   console.log('Sent by agent:', message.sender.firstName, message.sender.lastName);
   console.log(
-    'This is a reply to this message:', message.replyByMessageId.text, '\n',
-    'which was sent by', message.replyByMessageId.sender.firstName
+    'This is a reply to this message:', message.responseToMessage.text, '\n',
+    'which was sent by', message.responseToMessage.sender.firstName
   );
 });
 ```
@@ -339,16 +339,28 @@ elixirChat.reconnect({
 ```
 
 <br/>
-<a id="onConnect"></a>
+<a id="onConnectSuccess"></a>
 
-#### `onConnect (() => { ... })`
-A callback that fires after establishing connection to a room. This happens either after initial SDK inititalization, or after invoking [`reconnect()`](#reconnect) method.
+#### `onConnectSuccess (() => { ... })`
+A callback that fires after establishing a successful connection to a room. This happens either after initial SDK initialization, or after invoking [`reconnect()`](#reconnect) method.
 
 ```js
-elixirChat.onConnect(() => {
+elixirChat.onConnectSuccess(() => {
   console.log(elixirChat.companyId);
   console.log(elixirChat.room);
   console.log(elixirChat.client);
+});
+```
+
+<br/>
+<a id="onConnectError"></a>
+
+#### `onConnectError (() => { ... })`
+A callback that fires if connection to the room failed. This happens either after initial SDK initialization, or after invoking [`reconnect()`](#reconnect) method.
+
+```js
+elixirChat.onConnectError((e) => {
+  console.log('Could not connect to a room', e);
 });
 ```
 

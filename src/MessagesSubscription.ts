@@ -26,6 +26,8 @@ export class MessagesSubscription {
   public onSubscribeError?: (data: any) => void;
   public onMessage: (message: NewMessage) => void;
 
+  protected isBeforeUnload: boolean = false;
+
   protected subscriptionQuery: string = `
     subscription {
       newMessage {
@@ -90,6 +92,11 @@ export class MessagesSubscription {
       token: this.token,
     });
     this.subscribe();
+
+    window.addEventListener('unload', (e) => {
+      this.isBeforeUnload = true;
+      console.error('___ isBeforeUnload', e);
+    });
   }
 
   protected subscribe() {
@@ -98,7 +105,12 @@ export class MessagesSubscription {
     });
     AbsintheSocket.observe(this.absintheSocket, notifier, {
       onAbort: e => this.onSubscribeFail(e, 'onAbort'),
-      onError:  e => this.onSubscribeFail(e, 'onError'),
+      onError:  e => {
+        console.warn('___ onError', this.isBeforeUnload);
+        // if (e.message !== 'connection: close') {
+        // }
+        this.onSubscribeFail(e, 'onError');
+      },
       onStart: notifier => {
         this.notifier = notifier;
         this.onSubscribeSuccess(notifier);
@@ -111,9 +123,13 @@ export class MessagesSubscription {
     })
   }
 
-  protected onSubscribeFail(e: any, methodName: string){
-    handleAPIError({e, variables: [methodName, this.subscriptionQuery], isGraphQL: true});
-    this.onSubscribeError(e);
+  protected onSubscribeFail(error: any, methodName: string){
+    handleAPIError({
+      error,
+      variables: { methodName },
+      graphQlQuery: this.subscriptionQuery
+    });
+    this.onSubscribeError(error);
   }
 
   public unsubscribe() {
@@ -133,13 +149,21 @@ export class MessagesSubscription {
               resolve(data.sendMessage);
             }
             else {
-              handleAPIError({e: data, variables: [this.sendMessageQuery], isGraphQL: true});
+              handleAPIError({
+                error: data,
+                variables: { text },
+                graphQlQuery: this.subscriptionQuery
+              });
               reject(data);
             }
           })
-          .catch(e => {
-            handleAPIError({e, variables: [this.sendMessageQuery], isGraphQL: true});
-            reject(e);
+          .catch(error => {
+            handleAPIError({
+              error,
+              variables: { text },
+              graphQlQuery: this.subscriptionQuery
+            });
+            reject(error);
           });
       }
     });
