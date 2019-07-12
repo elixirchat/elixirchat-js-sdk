@@ -97,7 +97,7 @@ export class ElixirChat {
       client: this.client,
       debug: this.debug,
     });
-    this.screenshotTaker = new ScreenshotTaker({ debug: this.debug });
+    this.screenshotTaker = new ScreenshotTaker();
     this.setDefaultConfigValues();
     this.connectToRoom().then(() => {
       this.subscribeToNewMessages();
@@ -258,21 +258,13 @@ export class ElixirChat {
   };
 
   public takeScreenshot = (): Promise<void> => {
-    // TODO: fix
-
-    this.screenshotTaker.takeScreenshot()
+    return this.screenshotTaker.takeScreenshot()
       .then(screenshot => {
-        (<any>Window).__screenshot = screenshot;
-        console.log('___ screenshot', screenshot);
+        logEvent(this.debug, 'Captured screenshot', screenshot);
       })
       .catch(e => {
-        console.error('___ screenshot error', e);
+        logEvent(this.debug, 'Could not capture screenshot', e, 'error');
       });
-
-
-    return new Promise((resolve) => {
-      resolve();
-    });
   };
 
   public fetchMessageHistory = (from: number, limit: number): Promise<[IElixirChatReceivedMessage]> => {

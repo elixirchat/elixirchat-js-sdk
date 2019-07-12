@@ -1,9 +1,10 @@
-import { logEvent } from './utils';
-
+export interface IScreenshot {
+  dataUrl: string,
+  file: File,
+}
 
 export class ScreenshotTaker {
 
-  public debug: boolean = false;
   public mediaOptions: any = {};
   public width: number = 0;
   public height: number = 0;
@@ -12,50 +13,27 @@ export class ScreenshotTaker {
   protected canvas: HTMLCanvasElement;
   protected video: HTMLVideoElement;
 
-  constructor({ debug = false }: { debug: boolean }) {
-    this.debug = debug;
+  constructor() {
     this.initialize();
   }
 
-  initialize(){
-
+  initialize(): void {
     this.width = screen.width;
-    // this.canvas = <HTMLCanvasElement>document.getElementById('canvas');
-    // this.video = <HTMLVideoElement>document.getElementById('video');
-
     this.canvas = document.createElement('canvas');
     this.video = document.createElement('video');
-
-    // this.video.addEventListener('canplay', this.onVideoCanPlay);
   }
-
-  // protected onVideoCanPlay = (e: any) => {
-  //   const { video, canvas, width } = this;
-  //   this.height = video.videoHeight / (video.videoWidth / width);
-  //   video.width = width;
-  //   video.height = this.height;
-  //   canvas.width = width;
-  //   canvas.height = this.height;
-  //
-  //   setTimeout(() => {
-  //     this.captureVideoFrame();
-  //   }, 1000);
-  // };
 
   protected setVideoCanvasSize(): void {
     const { video, canvas, width } = this;
     this.height = video.videoHeight / (video.videoWidth / width);
-
-    console.log('___ width, height', width, this.height);
-
     video.width = width;
     video.height = this.height;
     canvas.width = width;
     canvas.height = this.height;
   }
 
-  protected captureVideoFrame(): { dataUrl: string, file: Blob } {
-    const { canvas, width, height, video, stream } = this;
+  protected captureVideoFrame(): IScreenshot {
+    const { canvas, width, height, video } = this;
     const context = canvas.getContext('2d');
     context.drawImage(video, 0, 0, width, height);
 
@@ -64,45 +42,46 @@ export class ScreenshotTaker {
     return { dataUrl, file };
   };
 
-  public takeScreenshot = () => {
+  protected stopMediaStream(): void {
+    this.stream.getTracks()[0].stop();
+  }
+
+  protected getMediaStream(): Promise<MediaStream> {
     return new Promise((resolve, reject) => {
       try {
         const mediaDevices: any = navigator.mediaDevices;
         mediaDevices.getDisplayMedia(this.mediaOptions)
-          .then(captureStream => {
-            this.stream = captureStream;
-            this.video.srcObject = this.stream;
-            this.video.play();
-
-            this.video.addEventListener('canplay', () => {
-              this.setVideoCanvasSize();
-              setTimeout(() => {
-                const screenshot = this.captureVideoFrame();
-                this.stream.getTracks()[0].stop();
-                logEvent(this.debug, 'Captured screenshot', screenshot);
-                resolve(screenshot);
-                this.TEMP_openScreenshotInNewTab(screenshot.dataUrl); // TODO: remove once server screenshot upload ready
-              }, 600);
-            });
-          })
-          .catch(e => {
-            // log
-            reject(e);
-          })
+          .then(resolve)
+          .catch(reject);
       }
       catch (e) {
-        // log
-        reject(e);
+        reject({
+          message: 'MediaDevices.getDisplayMedia is not supported in this browser'
+        });
       }
+    });
+  }
+
+  public takeScreenshot = (): Promise<IScreenshot> => {
+    return new Promise((resolve, reject) => {
+      this.getMediaStream().then(stream => {
+        this.stream = stream;
+        this.video.srcObject = this.stream;
+        this.video.oncanplay = () => {
+          this.setVideoCanvasSize();
+          setTimeout(() => {
+            const screenshot: IScreenshot = this.captureVideoFrame();
+            this.stopMediaStream();
+            this.openScreenshotInNewTab(screenshot.dataUrl);
+            resolve(screenshot);
+          }, 500);
+        };
+        this.video.play();
+      }).catch(reject);
     });
   };
 
-  public destroy = (): void => {
-    this.video.remove();
-    this.canvas.remove();
-  };
-
-  public base64ToFile(dataUrl){
+  public base64ToFile(dataUrl: string): File {
     const blobBin = atob(dataUrl.split(',')[1]);
     const blobArray = [];
     for (let i = 0; i < blobBin.length; i++) {
@@ -115,16 +94,26 @@ export class ScreenshotTaker {
     return new File([blob], fileName);
   }
 
+  public destroy = (): void => {
+    this.video.remove();
+    this.canvas.remove();
+  };
+
   // TODO: remove once server screenshot upload ready
-  protected TEMP_openScreenshotInNewTab(dataUrl){
-    const image = new Image();
-    image.src = dataUrl;
-    const newWindow = window.open('');
-    if (newWindow) {
-      newWindow.document.write(image.outerHTML);
-    }
-    else {
-      logEvent(this.debug, 'You must allow popups to see the screenshot', { dataUrl }, 'error')
-    }
+  protected openScreenshotInNewTab(dataUrl: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const image = new Image();
+      image.src = dataUrl;
+      const newTab = window.open('');
+      if (newTab) {
+        newTab.document.body.appendChild(image);
+        resolve();
+      }
+      else {
+        reject({
+          message: 'You must allow popups to see the screenshot'
+        });
+      }
+    });
   }
 }

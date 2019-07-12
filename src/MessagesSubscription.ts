@@ -77,32 +77,48 @@ export class MessagesSubscription {
     }
   `;
 
-  protected sendMessageQuery: string = `
-    mutation ($text: String!, $responseToMessageId: ID) {
-      sendMessage(text: $text, responseToMessageId: $responseToMessageId) {
-        id
-        text
-        system
-        timestamp
-        data {
-          ... on NotSystemMessageData {
-            responseToMessage {
-              id
-              text
-              sender {
-                ... on Client { id firstName lastName }
-                ... on Employee { id firstName lastName }
+  protected getSendMessageQuery(variables: ISentMessage): string {
+
+    const variableTypeDict = {
+      text: 'String',
+      responseToMessageId: 'ID',
+    };
+    const queryTypes = [];
+    const queryArguments = [];
+
+    Object.keys(variables).forEach(key => {
+      if (variables[key]) {
+        queryTypes.push(`$${key}: ${variableTypeDict[key]}!`);
+        queryArguments.push(`${key}: $${key}`);
+      }
+    });
+    return `
+      mutation (${queryTypes.join(', ')}) {
+        sendMessage(${queryArguments.join(', ')}) {
+          id
+          text
+          system
+          timestamp
+          data {
+            ... on NotSystemMessageData {
+              responseToMessage {
+                id
+                text
+                sender {
+                  ... on Client { id firstName lastName }
+                  ... on Employee { id firstName lastName }
+                }
               }
             }
           }
-        }
-        sender {
-          ... on Client { id firstName lastName }
-          ... on Employee { id firstName lastName }
+          sender {
+            ... on Client { id firstName lastName }
+            ... on Employee { id firstName lastName }
+          }
         }
       }
-    }
-  `;
+    `;
+  }
 
   protected notifier: any;
   protected absintheSocket: any;
@@ -183,10 +199,11 @@ export class MessagesSubscription {
         ? newMessage.responseToMessageId
         : null,
     };
+    const query = this.getSendMessageQuery(variables);
     return new Promise((resolve, reject) => {
       if (variables.text) {
         this.graphQLClient
-          .query(this.sendMessageQuery, variables)
+          .query(query, variables)
           .then(data => {
             if (data && data.sendMessage) {
               resolve(data.sendMessage);
@@ -195,7 +212,7 @@ export class MessagesSubscription {
               handleAPIError({
                 error: data,
                 variables,
-                graphQlQuery: this.subscriptionQuery
+                graphQlQuery: query
               });
               reject(data);
             }
@@ -204,7 +221,7 @@ export class MessagesSubscription {
             handleAPIError({
               error,
               variables,
-              graphQlQuery: this.subscriptionQuery
+              graphQlQuery: query
             });
             reject(error);
           });
