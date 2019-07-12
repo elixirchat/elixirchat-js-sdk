@@ -49,7 +49,7 @@ export class TypingStatusSubscription {
     // TODO: implement lodash once
     const onConnectErrorOnce = (e) => {
       const message = 'Could not open connection via WebSocketPhoenixClient';
-      handleAPIError({e: { message }, isGraphQL: false});
+      handleAPIError({ error: { message }});
       this.onConnectError(e);
     };
     this.client.onError(e => {
@@ -76,13 +76,13 @@ export class TypingStatusSubscription {
         onSubscribeSuccess(data);
         callback();
       })
-      .receive('error', e => {
-        handleAPIError({e, variables: [roomId], isGraphQL: false});
-        onSubscribeError(e);
+      .receive('error', error => {
+        handleAPIError({ error, variables: { roomId }});
+        onSubscribeError(error);
       })
       .receive('timeout', () => {
         const message = 'Networking issue: could not join room via WebSocketPhoenixClient';
-        handleAPIError({e: { message }, variables: [roomId], isGraphQL: false});
+        handleAPIError({ error: { message }, variables: { roomId }});
         onSubscribeError();
       });
   };

@@ -3,12 +3,12 @@ export interface IHandleAPIError {
     params: {
       error: any;
       variables?: any;
-      graphQlQuery: string;
+      graphQlQuery?: string;
     }
   ) : void;
 }
 
-export const handleAPIError: IHandleAPIError = ({ error = {}, graphQlQuery = '', variables = [] }) => {
+export const handleAPIError: IHandleAPIError = ({ error, variables, graphQlQuery }) => {
   const errorData = [
     ['Error', error],
     ['Variables', variables],
@@ -62,7 +62,7 @@ export const logEvent: ILogEvent = (isDebug = false, message, data, type = 'info
 };
 
 
-interface ICapitalize {
+export interface ICapitalize {
   (str: string) : string;
 }
 

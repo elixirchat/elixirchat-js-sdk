@@ -107,7 +107,7 @@ elixirChat.onTyping((peopleWhoAreTyping) => {
 
 document.querySelector('#screenshot-button').addEventListener('click', () => {
   // Make screenshot of your customer's screen (will ask for user's permission)
-  elixirChat.makeScreenshot().then(screenshotFile => {
+  elixirChat.takeScreenshot().then(screenshotFile => {
     elixirchat.sendMessage({
       attachments: [ screenshotFile ] // screenshotFile is a `new File()` instance
     });
@@ -276,16 +276,16 @@ elixirChat.onTyping((peopleWhoAreTyping) => {
 ```
 
 <br/>
-<a id="makeScreenshot"></a>
+<a id="takeScreenshot"></a>
 
-#### `makeScreenshot ()`
+#### `takeScreenshot ()`
 Make a screenshot of the customer's screen (while also asking customer's [permission to share their screen](https://developer.mozilla.org/en-US/docs/Web/API/Screen_Capture_API/Using_Screen_Capture#Capturing_screen_contents)).
 
 __Returns: `new Promise()`__
 
 ```js
 // Example:
-elixirChat.makeScreenshot().then(screenshotFile => {
+elixirChat.takeScreenshot().then(screenshotFile => {
   // screenshotFile is a `new File()` instance
   // you can send to ElixirChat admin it via elixirchat.sendMessage({ attachments: [ screenshotFile ] });
 });

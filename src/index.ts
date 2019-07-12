@@ -2,6 +2,7 @@ import { uniqueNamesGenerator } from 'unique-names-generator';
 import { logEvent, capitalize } from './utils';
 import { MessagesSubscription, INewMessage, ISentMessage } from './MessagesSubscription';
 import { GraphQLClient } from './GraphQLClient';
+import { ScreenshotTaker } from './ScreenshotTaker';
 
 export const API_REFERENCE_URL = 'https://github.com/elixirchat/elixirchat-widget/tree/sdk';
 
@@ -40,6 +41,7 @@ export class ElixirChat {
 
   protected graphQLClient: any;
   protected messagesSubscription: any;
+  protected screenshotTaker: any;
 
   protected joinRoomQuery: string = `
     mutation ($companyId: ID!, $room: ForeignRoom!, $client: ForeignClient!) {
@@ -95,6 +97,7 @@ export class ElixirChat {
       client: this.client,
       debug: this.debug,
     });
+    this.screenshotTaker = new ScreenshotTaker({ debug: this.debug });
     this.setDefaultConfigValues();
     this.connectToRoom().then(() => {
       this.subscribeToNewMessages();
@@ -254,8 +257,19 @@ export class ElixirChat {
     this.onConnectErrorCallbacks.push(callback);
   };
 
-  public makeScreenshot = (): Promise<void> => {
+  public takeScreenshot = (): Promise<void> => {
     // TODO: fix
+
+    this.screenshotTaker.takeScreenshot()
+      .then(screenshot => {
+        (<any>Window).__screenshot = screenshot;
+        console.log('___ screenshot', screenshot);
+      })
+      .catch(e => {
+        console.error('___ screenshot error', e);
+      });
+
+
     return new Promise((resolve) => {
       resolve();
     });
