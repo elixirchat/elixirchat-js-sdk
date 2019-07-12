@@ -1,105 +1,39 @@
 import { uniqueNamesGenerator } from 'unique-names-generator';
 import { logEvent, capitalize } from './utils';
-import { MessagesSubscription } from './MessagesSubscription';
-import {reject} from 'q';
+import { MessagesSubscription, INewMessage, ISentMessage } from './MessagesSubscription';
+import { GraphQLClient } from './GraphQLClient';
 
+export const API_REFERENCE_URL = 'https://github.com/elixirchat/elixirchat-widget/tree/sdk';
 
-// TODO: remove
-(<any>Window).__uniqueNamesGenerator = uniqueNamesGenerator;
-
-
-export type TGraphQLClientConfig = {
-  url: string;
-  token?: string;
-};
-
-export class GraphQLClient {
-
-  public url: string;
-  public token?: string;
-
-  protected headers: any = {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-  };
-
-  constructor({url, token}: TGraphQLClientConfig){
-    this.url = url;
-    this.token = token;
-    if (this.token) {
-      this.headers.Authorization = `Bearer ${this.token}`;
-    }
-  }
-
-  public query(query: string, variables?: object){
-    return new Promise((resolve, reject) => {
-      fetch(this.url, {
-        method: 'POST',
-        headers: this.headers,
-        body: JSON.stringify({ query, variables })
-      })
-        .then(response => response.json())
-        .then(response => {
-          if (response.errors) {
-            reject(response);
-          }
-          else {
-            resolve(response.data);
-          }
-        })
-        .catch(response => reject(response));
-    });
-  }
-}
-
-
-
-const API_REFERENCE_URL = 'https://github.com/elixirchat/elixirchat-widget/tree/sdk';
-
-export type TElixirChatRoom = {
+export interface IElixirChatRoom {
   id: string;
   title?: string;
-};
+}
 
-export type TElixirChatUser = {
+export interface IElixirChatUser {
   id: string;
   firstName?: string;
   lastName?: string;
-};
+}
 
-export type TElixirChatConfig = {
+export interface IElixirChatConfig {
   apiUrl: string;
   socketUrl: string;
   companyId: string;
-  room?: TElixirChatRoom;
-  client?: TElixirChatUser;
+  room?: IElixirChatRoom;
+  client?: IElixirChatUser;
   debug?: boolean,
 }
 
-export type TElixirChatReceivedMessage = {
-  id: string;
-  text: string;
-  timestamp: string;
-  sender: TElixirChatUser;
-  responseToMessage: {
-    id: string;
-    text: string;
-    sender: TElixirChatUser;
-  } | null;
-}
-
-export type TElixirChatSentMessage = {
-  text?: string,
-  attachments?: Array<File>,
-  responseToMessageId?: string,
-};
+export interface IElixirChatReceivedMessage extends INewMessage {}
+export interface IElixirChatSentMessage extends ISentMessage {}
 
 export class ElixirChat {
   public apiUrl: string;
   public socketUrl: string;
   public companyId: string;
-  public room?: TElixirChatRoom;
-  public client?: TElixirChatUser;
+  public room?: IElixirChatRoom;
+  public client?: IElixirChatUser;
 
   public debug: boolean;
   protected authToken: string;
@@ -128,12 +62,12 @@ export class ElixirChat {
     }
   `;
 
-  protected onMessageCallbacks: Array<(message: TElixirChatReceivedMessage) => void> = [];
+  protected onMessageCallbacks: Array<(message: IElixirChatReceivedMessage) => void> = [];
   protected onConnectSuccessCallbacks: Array<(data?: any) => void> = [];
   protected onConnectErrorCallbacks: Array<(e: any) => void> = [];
-  protected onTypingCallbacks: Array<(user: TElixirChatUser) => void> = [];
+  protected onTypingCallbacks: Array<(user: IElixirChatUser) => void> = [];
 
-  constructor(config: TElixirChatConfig) {
+  constructor(config: IElixirChatConfig) {
     this.apiUrl = config.apiUrl;
     this.socketUrl = config.socketUrl;
     this.companyId = config.companyId;
@@ -167,7 +101,7 @@ export class ElixirChat {
     });
   }
 
-  protected getDefaultClientData(): TElixirChatUser {
+  protected getDefaultClientData(): IElixirChatUser {
     const baseTitleArr = uniqueNamesGenerator({ length: 2, separator: ' ' }).split(' ');
     const displayTitle = baseTitleArr.map(capitalize);
     const fourDigitPostfix = (Array(4).join('0') + Math.random()).slice(-4);
@@ -256,7 +190,7 @@ export class ElixirChat {
         this.onConnectErrorCallbacks.forEach(callback => callback(data));
       },
       onMessage: (response: any) => {
-        const message : TElixirChatReceivedMessage = {
+        const message : IElixirChatReceivedMessage = {
           id: response.id,
           text: response.text,
           sender: response.sender,
@@ -269,7 +203,7 @@ export class ElixirChat {
     });
   }
 
-  public sendMessage(params: TElixirChatSentMessage): Promise<void> {
+  public sendMessage(params: IElixirChatSentMessage): Promise<void> {
     const {
       text,
       attachments,
@@ -278,7 +212,7 @@ export class ElixirChat {
 
     if (text.trim() || (attachments && attachments.length)) {
       logEvent(this.debug, 'Sending a message', params);
-      return this.messagesSubscription.sendMessage(text, responseToMessageId);
+      return this.messagesSubscription.sendMessage(params);
     }
     else {
       const errorMessage = 'Either "text" or "attachment" property must not be empty';
@@ -289,15 +223,15 @@ export class ElixirChat {
     }
   }
 
-  public onMessage = (callback: (message: TElixirChatReceivedMessage) => void): void => {
+  public onMessage = (callback: (message: IElixirChatReceivedMessage) => void): void => {
     this.onMessageCallbacks.push(callback);
   };
 
-  public onTyping = (callback: (peopleWhoAreTyping: TElixirChatUser) => void): void => {
+  public onTyping = (callback: (peopleWhoAreTyping: IElixirChatUser) => void): void => {
     this.onTypingCallbacks.push(callback);
   };
 
-  public reconnect = ({ room, client }: { room?: TElixirChatRoom, client?: TElixirChatUser }): Promise<void> => {
+  public reconnect = ({ room, client }: { room?: IElixirChatRoom, client?: IElixirChatUser }): Promise<void> => {
     logEvent(this.debug, 'Attempting to reconnect to another room', { room, client });
     if (room) {
       this.room = room;
@@ -322,16 +256,26 @@ export class ElixirChat {
 
   public makeScreenshot = (): Promise<void> => {
     // TODO: fix
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       resolve();
     });
   };
 
-  public fetchMessageHistory = (): Promise<[TElixirChatReceivedMessage]> => {
-    return new Promise((resolve, reject) => {
-      resolve([{
-        a: 5
-      }]);
+  public fetchMessageHistory = (from: number, limit: number): Promise<[IElixirChatReceivedMessage]> => {
+    return new Promise((resolve) => {
+      logEvent(this.debug, 'Fetched message history', { from, limit });
+      const sample = {
+        id: 'zz',
+        text: 'zz',
+        timestamp: 'zz',
+        sender: {
+          id: 'zz',
+          firstName: 'zz',
+          lastName: 'zz',
+        },
+        responseToMessage: null,
+      };
+      resolve([sample, sample]);
     });
   };
 }

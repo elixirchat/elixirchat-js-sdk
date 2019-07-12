@@ -1,18 +1,43 @@
 import * as AbsintheSocket from '@absinthe/socket'
 import * as Phoenix from 'phoenix'
-import { GraphQLClient, TElixirChatReceivedMessage } from './index';
+import { GraphQLClient } from './GraphQLClient';
 import { handleAPIError } from './utils';
 
-type TNewMessage = TElixirChatReceivedMessage;
 
-type TMessagesSubscriptionConfig = {
+export interface INewMessage {
+  id: string;
+  text: string;
+  timestamp: string;
+  sender: {
+    id: string;
+    firstName?: string;
+    lastName?: string;
+  };
+  responseToMessage: {
+    id: string;
+    text: string;
+    sender: {
+      id: string;
+      firstName?: string;
+      lastName?: string;
+    };
+  } | null;
+}
+
+export interface ISentMessage {
+  text?: string,
+  attachments?: Array<File>,
+  responseToMessageId?: string,
+}
+
+export interface IMessagesSubscriptionConfig {
   apiUrl: string,
   socketUrl: string,
   token: string,
   onSubscribeSuccess?: (data: any) => void;
   onSubscribeError?: (data: any) => void;
-  onMessage: (message: TNewMessage) => void;
-};
+  onMessage: (message: INewMessage) => void;
+}
 
 export class MessagesSubscription {
 
@@ -21,7 +46,7 @@ export class MessagesSubscription {
   public token: string;
   public onSubscribeSuccess?: (data: any) => void;
   public onSubscribeError?: (data: any) => void;
-  public onMessage: (message: TNewMessage) => void;
+  public onMessage: (message: INewMessage) => void;
 
   protected isBeforeUnload: boolean = false;
 
@@ -83,7 +108,7 @@ export class MessagesSubscription {
   protected absintheSocket: any;
   protected graphQLClient: any;
 
-  constructor(config: TMessagesSubscriptionConfig) {
+  constructor(config: IMessagesSubscriptionConfig) {
     this.apiUrl = config.apiUrl;
     this.socketUrl = config.socketUrl;
     this.token = config.token;
@@ -149,12 +174,19 @@ export class MessagesSubscription {
     this.absintheSocket = AbsintheSocket.cancel(this.absintheSocket, this.notifier)
   };
 
-  public sendMessage = (text: string = '', responseToMessageIdRaw: string): Promise<void> => {
-    const responseToMessageId = typeof responseToMessageIdRaw === 'string' ? responseToMessageIdRaw : null;
+  public sendMessage = (newMessage: ISentMessage): Promise<void> => {
+    // TODO: send attachments
+
+    const variables = {
+      text: newMessage.text,
+      responseToMessageId: typeof newMessage.responseToMessageId === 'string'
+        ? newMessage.responseToMessageId
+        : null,
+    };
     return new Promise((resolve, reject) => {
-      if (text.trim()) {
+      if (variables.text) {
         this.graphQLClient
-          .query(this.sendMessageQuery, { text, responseToMessageId })
+          .query(this.sendMessageQuery, variables)
           .then(data => {
             if (data && data.sendMessage) {
               resolve(data.sendMessage);
@@ -162,7 +194,7 @@ export class MessagesSubscription {
             else {
               handleAPIError({
                 error: data,
-                variables: { text, responseToMessageId },
+                variables,
                 graphQlQuery: this.subscriptionQuery
               });
               reject(data);
@@ -171,7 +203,7 @@ export class MessagesSubscription {
           .catch(error => {
             handleAPIError({
               error,
-              variables: { text, responseToMessageId },
+              variables,
               graphQlQuery: this.subscriptionQuery
             });
             reject(error);

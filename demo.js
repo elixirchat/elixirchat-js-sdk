@@ -52,4 +52,10 @@ window.__sendMessage = (text = 'test message', responseToMessageId = 'TWVzc2FnZT
   }).then(data => console.log('sent message', data));
 };
 
+window.__fetchMessageHistory = (from = 0, limit = 3) => {
+  elixirChat.fetchMessageHistory(from, limit).then(history => {
+    console.warn('___ get messages history', history);
+  });
+};
+
 window.__elixirChat = elixirChat;
