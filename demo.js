@@ -1,4 +1,4 @@
-import { ElixirChat } from './src/SDK'
+import ElixirChat from './src'
 
 window.messages = [];
 window.responseToMessageId = null;

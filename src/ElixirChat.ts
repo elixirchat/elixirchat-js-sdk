@@ -1,13 +1,13 @@
 import { uniqueNamesGenerator } from 'unique-names-generator';
-import { logEvent, capitalize } from './utils';
+import { logEvent, capitalize } from '../utils';
 import { MessagesSubscription, INewMessage, ISentMessage } from './MessagesSubscription';
 import { TypingStatusSubscription } from './TypingStatusSubscription';
+import { ScreenshotTaker, IScreenshot } from './ScreenshotTaker';
 import {
   GraphQLClient,
   prepareGraphQLQuery,
   simplifyGraphQLJSON,
 } from './GraphQLClient';
-import { ScreenshotTaker } from './ScreenshotTaker';
 
 export const API_REFERENCE_URL = 'https://github.com/elixirchat/elixirchat-widget/tree/sdk';
 
@@ -33,6 +33,7 @@ export interface IElixirChatConfig {
 
 export interface IElixirChatReceivedMessage extends INewMessage {}
 export interface IElixirChatSentMessage extends ISentMessage {}
+export interface IElixirChatScreenshot extends IScreenshot {}
 
 export class ElixirChat {
   public apiUrl: string;
@@ -83,19 +84,13 @@ export class ElixirChat {
     this.room = config.room;
     this.client = config.client;
 
-    console.log('___ no client 0', this.client);
-
     const localValues = this.getRoomClientFromLocalStorage();
     if (!this.room || !this.room.id) {
       this.room = localValues.room;
     }
-    console.log('___ no client 1', this.client);
     if (!this.client || !this.client.id) {
       this.client = localValues.client;
-      console.log('___ no client 2', this.client);
     }
-    console.log('___ no client 3', this.client);
-
     this.initialize();
   }
 
@@ -360,10 +355,11 @@ export class ElixirChat {
     this.onConnectErrorCallbacks.push(callback);
   };
 
-  public takeScreenshot = (): Promise<void> => {
+  public takeScreenshot = (): Promise<IElixirChatScreenshot> => {
     return this.screenshotTaker.takeScreenshot()
       .then(screenshot => {
         logEvent(this.debug, 'Captured screenshot', screenshot);
+        return screenshot;
       })
       .catch(e => {
         logEvent(this.debug, 'Could not capture screenshot', e, 'error');

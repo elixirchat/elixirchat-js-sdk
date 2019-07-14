@@ -4,6 +4,7 @@
   "description": "JavaScript SDK for https://elixir.chat",
   "scripts": {
     "dev": "parcel demo.html --port 8000",
+    "demo-widget": "parcel demo-widget.html --port 8001",
     "production": "parcel build demo.html"
   },
   "main": "src/index.ts",
@@ -19,13 +20,19 @@
   "dependencies": {
     "@absinthe/socket": "^0.2.1",
     "phoenix": "^1.4.9",
+    "preact": "^8.4.2",
+    "preact-compat": "^3.19.0",
     "unique-names-generator": "^3.0.0"
   },
   "devDependencies": {
-    "babel-core": "^6.26.3",
-    "babel-plugin-transform-class-properties": "^6.24.1",
-    "babel-plugin-transform-object-rest-spread": "^6.26.0",
-    "babel-preset-env": "^1.7.0",
+    "@babel/core": "^7.5.4",
+    "@babel/plugin-proposal-class-properties": "^7.5.0",
+    "@babel/plugin-proposal-object-rest-spread": "^7.5.4",
+    "@babel/plugin-transform-react-jsx": "^7.3.0",
+    "@babel/preset-env": "^7.5.4",
+    "@babel/preset-react": "^7.0.0",
+    "@babel/preset-typescript": "^7.3.3",
+    "babel-plugin-module-resolver": "^3.2.0",
     "parcel-bundler": "^1.12.3",
     "typescript": "^3.5.3"
   }
