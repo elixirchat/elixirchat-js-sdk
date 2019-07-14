@@ -1,4 +1,4 @@
-import { template, logEvent } from './utils';
+import { logEvent } from './utils';
 
 export interface IGraphQLClientConfig {
   url: string;
@@ -50,7 +50,8 @@ export class GraphQLClient {
   }
 }
 
-interface IPrepareGraphQLQuery {
+
+export interface IPrepareGraphQLQuery {
   (queryType: 'query' | 'mutation', query: string, variables: any, optionalTypes?: any) : string
 }
 
@@ -78,7 +79,11 @@ export const prepareGraphQLQuery: IPrepareGraphQLQuery = (queryType, query, vari
         variableType = 'Int';
       }
       else {
-        logEvent(true, `'Unable to detect GraphQL variable type: ${key}: ${variableValue}'`, { query, variables }, 'error');
+        logEvent(true, `'Unable to detect GraphQL variable type: ${key}: ${variableValue}'`, {
+          query,
+          variables,
+          optionalTypes,
+        }, 'error');
         return '';
       }
       queryTypes.push(`$${key}: ${variableType}!`);
@@ -93,10 +98,13 @@ export const prepareGraphQLQuery: IPrepareGraphQLQuery = (queryType, query, vari
 };
 
 
+export interface ISimplifyGraphQLJSON {
+  (graphQLJSON: { edges: Array<any> }): object
+}
 
-export function simplifyGraphQLJSON(graphQLJSON) {
+export const simplifyGraphQLJSON: ISimplifyGraphQLJSON = (graphQLJSON) => {
   return graphQLJSON.edges.map(data => ({
     ...data.node,
     cursor: data.cursor,
   }));
-}
+};

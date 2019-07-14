@@ -69,8 +69,3 @@ export interface ICapitalize {
 export const capitalize: ICapitalize = (str) => {
   return str.substr(0, 1).toUpperCase() + str.substr(1);
 };
-
-
-export interface ITemplate {
-  (template: string, data: object) : string;
-}

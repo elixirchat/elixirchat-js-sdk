@@ -1,135 +1,168 @@
-import { handleAPIError } from './utils';
 import * as Phoenix from 'phoenix';
 
-const TOKEN = ''; // TODO: add token
-const WEBSOCKET_URL = 'ws://localhost:4000/socket';
-
-
-export function getWebSocketPhoenixClient(){
-  const authToken = TOKEN;
-  return new Phoenix.Socket(WEBSOCKET_URL, {
-    params: {
-      token: authToken
-    }
-  });
+export interface ITypingUser {
+  id: string;
+  firstName: string;
+  lastName: string;
 }
 
-
-const noop = () => {}; // TODO: refactor
-
-
+export interface ITypingStatusSubscriptionConfig {
+  socketUrl: string;
+  token: string;
+  roomId: string;
+  clientId: string;
+  onSubscribeSuccess?: (data: any) => void;
+  onSubscribeError?: (data: any) => void;
+  onChange: (currentlyTypingUsers: Array<ITypingUser>) => void;
+}
 
 export class TypingStatusSubscription {
 
-  public client = null;
-  public channel = null;
-  public roomId = null;
-  public onConnectSuccess = null;
-  public onConnectError = null;
-  public onSubscribeSuccess = null;
-  public onSubscribeError = null;
-  public onStatusChange = null;
+  public socketUrl: string;
+  public token: string;
+  public roomId: string;
+  public clientId: string;
+  public onSubscribeSuccess: (data: any) => void;
+  public onSubscribeError: (data: any) => void;
+  public onChange: (currentlyTypingUsers: Array<ITypingUser>) => void;
 
-  constructor(params){
+  protected phoenixSocket: any;
+  protected channel: any;
+  protected hasConnectErrorOccurred: boolean = false;
+  protected currentlyTypingUsers: Array<ITypingUser> = [];
+  protected typingTimeouts: any = {};
+  protected typedText: string = '';
+
+  constructor(params: ITypingStatusSubscriptionConfig) {
+    this.socketUrl = params.socketUrl;
+    this.token = params.token;
     this.roomId = params.roomId;
-    this.onConnectSuccess = params.onConnectSuccess || noop;
-    this.onConnectError = params.onConnectError || noop;
-    this.onSubscribeSuccess = params.onSubscribeSuccess || noop;
-    this.onSubscribeError = params.onSubscribeError || noop;
-    this.onStatusChange = params.onStatusChange || noop;
+    this.clientId = params.clientId;
+    this.onSubscribeSuccess = params.onSubscribeSuccess || function () {};
+    this.onSubscribeError = params.onSubscribeError || function () {};
+    this.onChange = params.onChange;
 
     this.connect(() => {
       this.joinChannel(this.subscribeStatusChange);
     });
   }
 
-  public connect(callback = noop) {
-    this.client = getWebSocketPhoenixClient();
-
-    // TODO: implement lodash once
-    const onConnectErrorOnce = (e) => {
-      const message = 'Could not open connection via WebSocketPhoenixClient';
-      handleAPIError({ error: { message }});
-      this.onConnectError(e);
-    };
-    this.client.onError(e => {
-      onConnectErrorOnce(e);
+  protected connect(callback: () => void = function () {}): void {
+    this.phoenixSocket = new Phoenix.Socket(this.socketUrl, {
+      params: {
+        token: this.token
+      }
     });
-    this.client.onOpen(() => {
-      this.onConnectSuccess();
-      callback();
+    this.phoenixSocket.onError(error => {
+      if (!this.hasConnectErrorOccurred) {
+        const message = 'Could not open connection via WebSocketPhoenixClient';
+        this.onSubscribeError({ error, message });
+        this.hasConnectErrorOccurred = true;
+      }
     });
-    this.client.connect();
+    this.phoenixSocket.onOpen(callback);
+    this.phoenixSocket.connect();
   };
 
-  public joinChannel(callback = noop) {
+  protected joinChannel(callback: () => void = function () {}): void {
     const {
-      client,
+      phoenixSocket,
       roomId,
       onSubscribeError,
       onSubscribeSuccess,
     } = this;
-    this.channel = client.channel('admin:room:' + roomId, {});
 
+    this.channel = phoenixSocket.channel('public:room:' + roomId, {});
     this.channel.join()
       .receive('ok', (data) => {
         onSubscribeSuccess(data);
         callback();
       })
       .receive('error', error => {
-        handleAPIError({ error, variables: { roomId }});
-        onSubscribeError(error);
+        onSubscribeError({ error, roomId });
       })
       .receive('timeout', () => {
         const message = 'Networking issue: could not join room via WebSocketPhoenixClient';
-        handleAPIError({ error: { message }, variables: { roomId }});
-        onSubscribeError();
+        onSubscribeError({ error: { message }, roomId });
       });
   };
 
-  public subscribeStatusChange() {
-    const eventHandler = state => {
-      try {
-        const userId = Object.keys(state)[0];
-        const status = Object.values(state)[0].metas[0];
-        this.onStatusChange({
-          isTyping: status.typing,
-          text: status.text,
-          firstName: status.first_name,
-          lastName: status.last_name,
-          userId,
+  public subscribeStatusChange = (): void => {
+    this.channel.on('presence_diff', diff => this.onStatusChange(diff.joins));
+  };
+
+  protected onStatusChange(state: any): void {
+    const userId = Object.keys(state)[0];
+    if (userId === this.clientId) {
+      return;
+    }
+
+    const statusChange = Object.values(state)[0].metas[0];
+    const userData: ITypingUser = {
+      id: userId,
+      firstName: statusChange.first_name,
+      lastName: statusChange.last_name,
+    };
+    const currentlyTypingUserIds = this.currentlyTypingUsers.map(user => user.id);
+
+    if (statusChange.typing) {
+      this.debouncedRemoveFromCurrentlyTypingUsers(userId);
+    }
+
+    if (statusChange.typing && !currentlyTypingUserIds.includes(userId)) {
+      this.currentlyTypingUsers.push(userData);
+      this.onChange(this.currentlyTypingUsers);
+    }
+    else if (!statusChange && currentlyTypingUserIds.includes(userId)) {
+      this.currentlyTypingUsers = this.currentlyTypingUsers.filter(user => user.id !== userId);
+      this.onChange(this.currentlyTypingUsers);
+    }
+  }
+
+  protected debouncedRemoveFromCurrentlyTypingUsers(userId: string): void {
+    if (this.typingTimeouts[userId]) {
+      clearTimeout(this.typingTimeouts[userId]);
+    }
+    this.typingTimeouts[userId] = setTimeout(() => {
+      this.currentlyTypingUsers = this.currentlyTypingUsers.filter(user => user.id !== userId);
+      this.onChange(this.currentlyTypingUsers);
+    }, 2000);
+  }
+
+  public dispatchTypedText = (typedText: string): void => {
+    if (this.channel) {
+      if (this.typedText !== typedText.trim()) {
+        this.channel.push('typing', {
+          typing: true,
+          text: typedText.trim(),
         });
       }
-      catch (e) {}
-    };
-    this.channel.on('presence_state', state => eventHandler(state));
-    this.channel.on('presence_diff', diff => eventHandler(diff.joins));
-  };
-
-  public setStatus(isTyping, typedText) {
-    if (this.channel) {
-      this.channel.push('typing', {
-        typing: isTyping,
-        text: typedText,
-      });
     }
   };
 
-  public resubscribeToAnotherRoom(roomId, callback = noop) {
-    this.unsubscribeFromThisRoom(() => {
-      this.roomId = roomId;
-      this.joinChannel(() => {
-        this.subscribeStatusChange();
-        callback();
-      });
+  public resubscribeToAnotherRoom = (roomId: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      this.unsubscribeFromThisRoom()
+        .then(() => {
+          this.roomId = roomId;
+          this.joinChannel(() => {
+            this.subscribeStatusChange();
+            resolve();
+          });
+        })
+        .catch(reject);
     });
   };
 
-  public unsubscribeFromThisRoom(callback = noop) {
-    this.channel.leave().receive('ok', () => {
-      this.roomId = null;
-      this.channel = null;
-      callback();
+  public unsubscribeFromThisRoom = (): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      this.channel.leave()
+        .receive('ok', () => {
+          this.roomId = null;
+          this.channel = null;
+          resolve();
+        })
+        .receive('error', reject);
     });
   }
 }

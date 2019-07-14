@@ -1,13 +1,13 @@
 import { uniqueNamesGenerator } from 'unique-names-generator';
 import { logEvent, capitalize } from './utils';
 import { MessagesSubscription, INewMessage, ISentMessage } from './MessagesSubscription';
+import { TypingStatusSubscription } from './TypingStatusSubscription';
 import {
   GraphQLClient,
   prepareGraphQLQuery,
   simplifyGraphQLJSON,
 } from './GraphQLClient';
 import { ScreenshotTaker } from './ScreenshotTaker';
-import {reject} from 'q';
 
 export const API_REFERENCE_URL = 'https://github.com/elixirchat/elixirchat-widget/tree/sdk';
 
@@ -40,12 +40,15 @@ export class ElixirChat {
   public companyId: string;
   public room?: IElixirChatRoom;
   public client?: IElixirChatUser;
-
   public debug: boolean;
-  protected authToken: string;
+
+  public elixirRoomId: string;
+  public elixirClientId: string;
+  public authToken: string;
 
   protected graphQLClient: any;
   protected messagesSubscription: any;
+  protected typingStatusSubscription: any;
   protected screenshotTaker: any;
 
   protected joinRoomQuery: string = `
@@ -58,9 +61,9 @@ export class ElixirChat {
         members {
           client {
             id
+            foreignId
             firstName
             lastName
-            foreignId
           }
         }
       }
@@ -105,7 +108,7 @@ export class ElixirChat {
   protected onMessageCallbacks: Array<(message: IElixirChatReceivedMessage) => void> = [];
   protected onConnectSuccessCallbacks: Array<(data?: any) => void> = [];
   protected onConnectErrorCallbacks: Array<(e: any) => void> = [];
-  protected onTypingCallbacks: Array<(user: IElixirChatUser) => void> = [];
+  protected onTypingCallbacks: Array<(typingUsers: Array<IElixirChatUser>) => void> = [];
 
   constructor(config: IElixirChatConfig) {
     this.apiUrl = config.apiUrl;
@@ -139,6 +142,7 @@ export class ElixirChat {
     this.setDefaultConfigValues();
     this.connectToRoom().then(() => {
       this.subscribeToNewMessages();
+      this.subscribeToTypingStatusChange();
     });
   }
 
@@ -199,22 +203,57 @@ export class ElixirChat {
     });
     return new Promise((resolve, reject) => {
       this.graphQLClient.query(query, variables)
-        .then((data: any) => {
-          if (data && data.joinRoom) {
-            logEvent(this.debug, 'Joined room', data.joinRoom);
-            this.authToken = data.joinRoom.token;
-            resolve(data.joinRoom);
+        .then(({ joinRoom }: any) => {
+          if (joinRoom) {
+            logEvent(this.debug, 'Joined room', joinRoom);
+            const client = this.getClientByRoomMembers(joinRoom.room.members);
+            this.elixirRoomId = joinRoom.room.id;
+            this.elixirClientId = client.id; // TODO: remove after 'client' is added to 'RoomWithToken' on backend (after un-authed joinRoom)
+            this.authToken = joinRoom.token;
+            resolve(joinRoom);
           }
           else {
-            logEvent(this.debug, 'Failed to join room', { data, query, variables }, 'error');
-            this.onConnectErrorCallbacks.forEach(callback => callback(data));
-            reject(data);
+            logEvent(this.debug, 'Failed to join room', { joinRoom, query, variables }, 'error');
+            this.onConnectErrorCallbacks.forEach(callback => callback(joinRoom));
+            reject(joinRoom);
           }
         }).catch((response: any) => {
           logEvent(this.debug, 'Failed to join room', { response, query, variables }, 'error');
           this.onConnectErrorCallbacks.forEach(callback => callback(response));
           reject(response);
         });
+    });
+  }
+
+  // TODO: remove after 'client' is added to 'RoomWithToken' on backend (after un-authed joinRoom)
+  protected getClientByRoomMembers(members: [any] = [{}]): any {
+    try {
+      const client = members.filter(member => member.client.foreignId === this.client.id)[0].client;
+      logEvent(this.debug, 'Got client info by room members list', { client });
+      return client;
+    }
+    catch (e) {
+      logEvent(this.debug, 'Failed to get client info from room members list', { members }, 'error');
+      return {};
+    }
+  }
+
+  protected subscribeToTypingStatusChange(): void {
+    this.typingStatusSubscription = new TypingStatusSubscription({
+      socketUrl: this.socketUrl,
+      token: this.authToken,
+      roomId: this.elixirRoomId,
+      clientId: this.elixirClientId,
+      onSubscribeSuccess: () => {
+        logEvent(this.debug, 'Successfully subscribed to typing status change', { roomId: this.elixirRoomId })
+      },
+      onSubscribeError: (data) => {
+        logEvent(this.debug, 'Failed to subscribe to typing status change', data, 'error');
+      },
+      onChange: (peopleWhoAreTyping: Array<IElixirChatUser>) => {
+        logEvent(this.debug, 'Some users started/stopped typing', { peopleWhoAreTyping });
+        this.onTypingCallbacks.forEach(callback => callback(peopleWhoAreTyping));
+      }
     });
   }
 
@@ -270,11 +309,15 @@ export class ElixirChat {
     }
   }
 
+  public dispatchTypedText = (typedText: string): void => {
+    this.typingStatusSubscription.dispatchTypedText(typedText);
+  };
+
   public onMessage = (callback: (message: IElixirChatReceivedMessage) => void): void => {
     this.onMessageCallbacks.push(callback);
   };
 
-  public onTyping = (callback: (peopleWhoAreTyping: IElixirChatUser) => void): void => {
+  public onTyping = (callback: (peopleWhoAreTyping: Array<IElixirChatUser>) => void): void => {
     this.onTypingCallbacks.push(callback);
   };
 
@@ -290,6 +333,7 @@ export class ElixirChat {
     this.messagesSubscription.unsubscribe();
     return this.connectToRoom().then(() => {
       this.subscribeToNewMessages();
+      this.typingStatusSubscription.resubscribeToAnotherRoom(this.room.id);
     });
   };
 
@@ -319,11 +363,11 @@ export class ElixirChat {
     };
     const query = prepareGraphQLQuery('query', this.roomMessagesQuery, variables, { before: 'ID' });
 
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       this.graphQLClient.query(query, variables, this.authToken)
         .then(response => {
           if (response.messages) {
-            const messages = simplifyGraphQLJSON(response.messages);
+            const messages = <[IElixirChatReceivedMessage]>simplifyGraphQLJSON(response.messages);
             logEvent(this.debug, 'Fetched message history', { limit, beforeCursor, messages });
             resolve(messages);
           }

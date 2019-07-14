@@ -1,7 +1,4 @@
-import { ElixirChat } from './src/index'
-
-const typingLabelElement = document.querySelector('#typing');
-typingLabelElement.innerHTML = 'Nobody is currently typing';
+import { ElixirChat } from './src/SDK'
 
 window.messages = [];
 window.replyId = null;
@@ -51,6 +48,12 @@ elixirChat.onMessage(message => {
   renderMessages(messages);
 });
 
+elixirChat.onTyping(users => {
+  document.querySelector('#typing').innerText = users.length
+    ? `${users.length} people are typing...`
+    : 'Nobody is typing'
+});
+
 document.getElementById('screenshot').addEventListener('click', () => {
   elixirChat.takeScreenshot();
 });
@@ -61,4 +64,8 @@ document.getElementById('submit').addEventListener('click', () => {
     responseToMessageId: window.replyId || undefined,
   });
   replyToMessage(null);
+});
+
+document.getElementById('text').addEventListener('keyup', (e) => {
+  elixirChat.dispatchTypedText(e.target.value);
 });
