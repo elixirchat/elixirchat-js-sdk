@@ -1,8 +1,6 @@
 import * as AbsintheSocket from '@absinthe/socket'
 import * as Phoenix from 'phoenix'
-import { GraphQLClient } from './GraphQLClient';
-import { handleAPIError } from './utils';
-
+import { GraphQLClient, prepareGraphQLQuery } from './GraphQLClient';
 
 export interface INewMessage {
   id: string;
@@ -77,48 +75,30 @@ export class MessagesSubscription {
     }
   `;
 
-  protected getSendMessageQuery(variables: ISentMessage): string {
-
-    const variableTypeDict = {
-      text: 'String',
-      responseToMessageId: 'ID',
-    };
-    const queryTypes = [];
-    const queryArguments = [];
-
-    Object.keys(variables).forEach(key => {
-      if (variables[key]) {
-        queryTypes.push(`$${key}: ${variableTypeDict[key]}!`);
-        queryArguments.push(`${key}: $${key}`);
-      }
-    });
-    return `
-      mutation (${queryTypes.join(', ')}) {
-        sendMessage(${queryArguments.join(', ')}) {
-          id
-          text
-          system
-          timestamp
-          data {
-            ... on NotSystemMessageData {
-              responseToMessage {
-                id
-                text
-                sender {
-                  ... on Client { id firstName lastName }
-                  ... on Employee { id firstName lastName }
-                }
-              }
+  protected sendMessageQuery: string = `
+    sendMessage {
+      id
+      text
+      system
+      timestamp
+      data {
+        ... on NotSystemMessageData {
+          responseToMessage {
+            id
+            text
+            sender {
+              ... on Client { id firstName lastName }
+              ... on Employee { id firstName lastName }
             }
-          }
-          sender {
-            ... on Client { id firstName lastName }
-            ... on Employee { id firstName lastName }
           }
         }
       }
-    `;
-  }
+      sender {
+        ... on Client { id firstName lastName }
+        ... on Employee { id firstName lastName }
+      }
+    }
+  `;
 
   protected notifier: any;
   protected absintheSocket: any;
@@ -177,12 +157,11 @@ export class MessagesSubscription {
   }
 
   protected onSubscribeFail(error: any, methodName: string): void {
-    handleAPIError({
+    this.onSubscribeError({
       error,
       variables: { methodName },
-      graphQlQuery: this.subscriptionQuery
+      graphQLQuery: this.subscriptionQuery
     });
-    this.onSubscribeError(error);
   }
 
   public unsubscribe = (): void => {
@@ -190,16 +169,14 @@ export class MessagesSubscription {
     this.absintheSocket = AbsintheSocket.cancel(this.absintheSocket, this.notifier)
   };
 
-  public sendMessage = (newMessage: ISentMessage): Promise<void> => {
+  public sendMessage = ({ text, responseToMessageId }: ISentMessage): Promise<void> => {
     // TODO: send attachments
-
-    const variables = {
-      text: newMessage.text,
-      responseToMessageId: typeof newMessage.responseToMessageId === 'string'
-        ? newMessage.responseToMessageId
-        : null,
+    const variables: ISentMessage = {
+      text: text,
+      responseToMessageId: typeof responseToMessageId === 'string' ? responseToMessageId : null,
     };
-    const query = this.getSendMessageQuery(variables);
+    const query = prepareGraphQLQuery('mutation', this.sendMessageQuery, variables);
+
     return new Promise((resolve, reject) => {
       if (variables.text) {
         this.graphQLClient
@@ -209,21 +186,11 @@ export class MessagesSubscription {
               resolve(data.sendMessage);
             }
             else {
-              handleAPIError({
-                error: data,
-                variables,
-                graphQlQuery: query
-              });
-              reject(data);
+              reject({ error: data, variables, graphQLQuery: query });
             }
           })
           .catch(error => {
-            handleAPIError({
-              error,
-              variables,
-              graphQlQuery: query
-            });
-            reject(error);
+            reject({ error, variables, graphQLQuery: query });
           });
       }
     });

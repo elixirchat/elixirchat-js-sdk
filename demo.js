@@ -40,7 +40,7 @@ window.elixirChat = new ElixirChat({
 });
 
 elixirChat.onConnectSuccess(() => {
-  elixirChat.fetchMessageHistory(0, 10).then(history => {
+  elixirChat.fetchMessageHistory(5, 'YXJyYXljb25uZWN0aW9uOjY=').then(history => {
     window.messages = history;
     renderMessages(messages);
   });
@@ -48,6 +48,7 @@ elixirChat.onConnectSuccess(() => {
 
 elixirChat.onMessage(message => {
   messages.push(message);
+  renderMessages(messages);
 });
 
 document.getElementById('screenshot').addEventListener('click', () => {

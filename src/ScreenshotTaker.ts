@@ -94,11 +94,6 @@ export class ScreenshotTaker {
     return new File([blob], fileName);
   }
 
-  public destroy = (): void => {
-    this.video.remove();
-    this.canvas.remove();
-  };
-
   // TODO: remove once server screenshot upload ready
   protected openScreenshotInNewTab(dataUrl: string): Promise<void> {
     return new Promise((resolve, reject) => {

@@ -1,8 +1,13 @@
 import { uniqueNamesGenerator } from 'unique-names-generator';
 import { logEvent, capitalize } from './utils';
 import { MessagesSubscription, INewMessage, ISentMessage } from './MessagesSubscription';
-import { GraphQLClient } from './GraphQLClient';
+import {
+  GraphQLClient,
+  prepareGraphQLQuery,
+  simplifyGraphQLJSON,
+} from './GraphQLClient';
 import { ScreenshotTaker } from './ScreenshotTaker';
+import {reject} from 'q';
 
 export const API_REFERENCE_URL = 'https://github.com/elixirchat/elixirchat-widget/tree/sdk';
 
@@ -44,20 +49,53 @@ export class ElixirChat {
   protected screenshotTaker: any;
 
   protected joinRoomQuery: string = `
-    mutation ($companyId: ID!, $room: ForeignRoom!, $client: ForeignClient!) {
-      joinRoom(companyId: $companyId, room: $room, client: $client) {
-        token
-        room {
+    joinRoom {
+      token
+      room {
+        id
+        title
+        foreignId
+        members {
+          client {
+            id
+            firstName
+            lastName
+            foreignId
+          }
+        }
+      }
+    }
+  `;
+
+  protected roomMessagesQuery: string = `
+    messages {
+      edges {
+        cursor
+        node {
           id
-          title
-          foreignId
-          members {
-            client {
-              id
-              firstName
-              lastName
-              foreignId
+          text
+          system
+          timestamp
+          data {
+            ... on SystemMessageData {
+              format
+              type
+              author { id firstName lastName }
             }
+            ... on NotSystemMessageData {
+              responseToMessage {
+                id
+                text
+                sender {
+                  ... on Client { id firstName lastName }
+                  ... on Employee { id firstName lastName }
+                }
+              }
+            }
+          }
+          sender {
+            ... on Client { id firstName lastName }
+            ... on Employee { id firstName lastName }
           }
         }
       }
@@ -149,13 +187,18 @@ export class ElixirChat {
 
   protected connectToRoom(): Promise<void> {
     this.graphQLClient = new GraphQLClient({ url: this.apiUrl });
-
+    const variables = {
+      companyId: this.companyId,
+      room: this.room,
+      client: this.client,
+    };
+    const query = prepareGraphQLQuery('mutation', this.joinRoomQuery, variables, {
+      companyId: 'ID',
+      room: 'ForeignRoom',
+      client: 'ForeignClient',
+    });
     return new Promise((resolve, reject) => {
-      this.graphQLClient.query(this.joinRoomQuery, {
-        companyId: this.companyId,
-        room: this.room,
-        client: this.client,
-      })
+      this.graphQLClient.query(query, variables)
         .then((data: any) => {
           if (data && data.joinRoom) {
             logEvent(this.debug, 'Joined room', data.joinRoom);
@@ -163,12 +206,12 @@ export class ElixirChat {
             resolve(data.joinRoom);
           }
           else {
-            logEvent(this.debug, 'Failed to join room', data, 'error');
+            logEvent(this.debug, 'Failed to join room', { data, query, variables }, 'error');
             this.onConnectErrorCallbacks.forEach(callback => callback(data));
             reject(data);
           }
         }).catch((response: any) => {
-          logEvent(this.debug, 'Failed to join room', response, 'error');
+          logEvent(this.debug, 'Failed to join room', { response, query, variables }, 'error');
           this.onConnectErrorCallbacks.forEach(callback => callback(response));
           reject(response);
         });
@@ -189,7 +232,7 @@ export class ElixirChat {
         this.onConnectSuccessCallbacks.forEach(callback => callback(roomData));
       },
       onSubscribeError: (data) => {
-        logEvent(this.debug, 'Failed to subscribe to messages', data, 'error');
+        logEvent(this.debug, 'Failed to subscribe to messages', { data }, 'error');
         this.onConnectErrorCallbacks.forEach(callback => callback(data));
       },
       onMessage: (response: any) => {
@@ -207,15 +250,16 @@ export class ElixirChat {
   }
 
   public sendMessage(params: IElixirChatSentMessage): Promise<void> {
-    const {
-      text,
-      attachments,
-      responseToMessageId,
-    } = params;
+    const { text, attachments } = params;
 
     if (text.trim() || (attachments && attachments.length)) {
-      logEvent(this.debug, 'Sending a message', params);
-      return this.messagesSubscription.sendMessage(params);
+      return this.messagesSubscription.sendMessage(params)
+        .then(message => {
+          logEvent(this.debug, 'Sent message', { message, params });
+        })
+        .catch(error => {
+          logEvent(this.debug, 'Failed to send message', error, 'error');
+        });
     }
     else {
       const errorMessage = 'Either "text" or "attachment" property must not be empty';
@@ -267,21 +311,31 @@ export class ElixirChat {
       });
   };
 
-  public fetchMessageHistory = (from: number, limit: number): Promise<[IElixirChatReceivedMessage]> => {
+  // TODO: replace 'before' w/ message indexes on backend?
+  public fetchMessageHistory = (limit: number, beforeCursor: string): Promise<[IElixirChatReceivedMessage]> => {
+    const variables = {
+      first: limit,
+      before: beforeCursor,
+    };
+    const query = prepareGraphQLQuery('query', this.roomMessagesQuery, variables, { before: 'ID' });
+
     return new Promise((resolve) => {
-      logEvent(this.debug, 'Fetched message history', { from, limit });
-      const sample = {
-        id: 'zz',
-        text: 'zz',
-        timestamp: 'zz',
-        sender: {
-          id: 'zz',
-          firstName: 'zz',
-          lastName: 'zz',
-        },
-        responseToMessage: null,
-      };
-      resolve([sample, sample]);
+      this.graphQLClient.query(query, variables, this.authToken)
+        .then(response => {
+          if (response.messages) {
+            const messages = simplifyGraphQLJSON(response.messages);
+            logEvent(this.debug, 'Fetched message history', { limit, beforeCursor, messages });
+            resolve(messages);
+          }
+          else {
+            logEvent(this.debug, 'Could not fetch message history', { limit, beforeCursor, response, query, variables }, 'error');
+            reject(response);
+          }
+        })
+        .catch(error => {
+          logEvent(this.debug, 'Fetching message history returned an error', { limit, beforeCursor, error, query, variables }, 'error');
+          reject(error);
+        });
     });
   };
 }

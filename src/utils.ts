@@ -3,18 +3,18 @@ export interface IHandleAPIError {
     params: {
       error: any;
       variables?: any;
-      graphQlQuery?: string;
+      graphQLQuery?: string;
     }
   ) : void;
 }
 
-export const handleAPIError: IHandleAPIError = ({ error, variables, graphQlQuery }) => {
+export const handleAPIError: IHandleAPIError = ({ error, variables, graphQLQuery }) => {
   const errorData = [
     ['Error', error],
     ['Variables', variables],
-    ['GraphQL Query', graphQlQuery || false],
+    ['GraphQL Query', graphQLQuery || false],
   ];
-  logEvent(true, `${graphQlQuery ? 'GraphQL' : 'API'} returned an error`, errorData, 'error')
+  logEvent(true, `${graphQLQuery ? 'GraphQL' : 'API'} returned an error`, errorData, 'error')
 };
 
 
@@ -47,10 +47,10 @@ export const logEvent: ILogEvent = (isDebug = false, message, data, type = 'info
     const additionalDataConsoleStyles = `font-weight: bold;`;
 
     console.groupCollapsed(`%cElixirChat: ${message} %cInfo%c▾`, messageConsoleStyles, infoButtonConsoleStyles, arrowConsoleStyles);
-    if (data instanceof Array) {
-      data.forEach(([title, value]) => {
-        console.log(`%c${title}:\n`, additionalDataConsoleStyles, value, '\n');
-      })
+    if (typeof data === 'object' && !(data instanceof Array)) {
+      Object.keys(data).forEach(key => {
+        console.log(`%c${key}:\n`, additionalDataConsoleStyles, data[key], '\n');
+      });
     }
     else {
       console.log('%c\nData:\n', additionalDataConsoleStyles, data);
@@ -69,3 +69,8 @@ export interface ICapitalize {
 export const capitalize: ICapitalize = (str) => {
   return str.substr(0, 1).toUpperCase() + str.substr(1);
 };
+
+
+export interface ITemplate {
+  (template: string, data: object) : string;
+}

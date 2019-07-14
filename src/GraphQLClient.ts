@@ -1,3 +1,5 @@
+import { template, logEvent } from './utils';
+
 export interface IGraphQLClientConfig {
   url: string;
   token?: string;
@@ -20,12 +22,19 @@ export class GraphQLClient {
     }
   }
 
-  public query(query: string, variables?: object){
+  public query(query: string, variables?: object, token?: string){
+    let headers = this.headers;
+    if (token) {
+      headers = {
+        ...headers,
+        Authorization: `Bearer ${token}`
+      }
+    }
     return new Promise((resolve, reject) => {
       fetch(this.url, {
         method: 'POST',
-        headers: this.headers,
-        body: JSON.stringify({ query, variables })
+        headers,
+        body: JSON.stringify({ query, variables }),
       })
         .then(response => response.json())
         .then(response => {
@@ -39,4 +48,55 @@ export class GraphQLClient {
         .catch(response => reject(response));
     });
   }
+}
+
+interface IPrepareGraphQLQuery {
+  (queryType: 'query' | 'mutation', query: string, variables: any, optionalTypes?: any) : string
+}
+
+export const prepareGraphQLQuery: IPrepareGraphQLQuery = (queryType, query, variables, optionalTypes = {}) => {
+  const queryTypes = [];
+  const queryVariables = [];
+
+  Object.keys(variables).forEach(key => {
+    const variableValue = variables[key];
+    if (variableValue) {
+      let variableType;
+      if (optionalTypes && optionalTypes[key]) {
+        variableType = optionalTypes[key];
+      }
+      else if (/id$/i.test(key)) {
+        variableType = 'ID';
+      }
+      else if (typeof variableValue === 'string') {
+        variableType = 'String';
+      }
+      else if (typeof variableValue === 'number' && variableValue % 1) {
+        variableType = 'Float';
+      }
+      else if (typeof variableValue === 'number' && !(variableValue % 1)) {
+        variableType = 'Int';
+      }
+      else {
+        logEvent(true, `'Unable to detect GraphQL variable type: ${key}: ${variableValue}'`, { query, variables }, 'error');
+        return '';
+      }
+      queryTypes.push(`$${key}: ${variableType}!`);
+      queryVariables.push(`${key}: $${key}`);
+    }
+  });
+  return `
+    ${queryType} (${ queryTypes.join(', ') }) {
+      ${query.trim().replace(/^([a-z_]+).*{/i, `$1 (${ queryVariables.join(', ') }) {`)}        
+    }
+  `;
+};
+
+
+
+export function simplifyGraphQLJSON(graphQLJSON) {
+  return graphQLJSON.edges.map(data => ({
+    ...data.node,
+    cursor: data.cursor,
+  }));
 }
