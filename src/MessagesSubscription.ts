@@ -1,6 +1,6 @@
 import * as AbsintheSocket from '@absinthe/socket'
 import * as Phoenix from 'phoenix'
-import { GraphQLClient, prepareGraphQLQuery } from './GraphQLClient';
+import { GraphQLClient, prepareGraphQLQuery, simplifyGraphQLJSON } from './GraphQLClient';
 
 export interface INewMessage {
   id: string;
@@ -100,6 +100,41 @@ export class MessagesSubscription {
     }
   `;
 
+  protected messageHistoryQuery: string = `
+    messages {
+      edges {
+        cursor
+        node {
+          id
+          text
+          system
+          timestamp
+          data {
+            ... on SystemMessageData {
+              format
+              type
+              author { id firstName lastName }
+            }
+            ... on NotSystemMessageData {
+              responseToMessage {
+                id
+                text
+                sender {
+                  ... on Client { id firstName lastName }
+                  ... on Employee { id firstName lastName }
+                }
+              }
+            }
+          }
+          sender {
+            ... on Client { id firstName lastName }
+            ... on Employee { id firstName lastName }
+          }
+        }
+      }
+    }
+  `;
+
   protected notifier: any;
   protected absintheSocket: any;
   protected graphQLClient: any;
@@ -193,6 +228,33 @@ export class MessagesSubscription {
             reject({ error, variables, graphQLQuery: query });
           });
       }
+    });
+  };
+
+  public fetchMessageHistory = (limit: number, beforeCursor: string): Promise<[INewMessage]> => {
+    const variables = {
+      first: limit,
+      before: beforeCursor,
+    };
+    const query = prepareGraphQLQuery('query', this.messageHistoryQuery, variables, { before: 'ID' });
+
+    return new Promise((resolve, reject) => {
+      this.graphQLClient.query(query, variables)
+        .then(response => {
+          if (response.messages) {
+            let messages = <[INewMessage]>simplifyGraphQLJSON(response.messages);
+            if (beforeCursor) {
+              messages = <[INewMessage]>messages.slice(1);
+            }
+            resolve(messages);
+          }
+          else {
+            reject({ response, limit, beforeCursor, query, variables });
+          }
+        })
+        .catch(error => {
+          reject({ error, limit, beforeCursor, query, variables });
+        });
     });
   };
 }

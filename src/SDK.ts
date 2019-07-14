@@ -70,41 +70,6 @@ export class ElixirChat {
     }
   `;
 
-  protected roomMessagesQuery: string = `
-    messages {
-      edges {
-        cursor
-        node {
-          id
-          text
-          system
-          timestamp
-          data {
-            ... on SystemMessageData {
-              format
-              type
-              author { id firstName lastName }
-            }
-            ... on NotSystemMessageData {
-              responseToMessage {
-                id
-                text
-                sender {
-                  ... on Client { id firstName lastName }
-                  ... on Employee { id firstName lastName }
-                }
-              }
-            }
-          }
-          sender {
-            ... on Client { id firstName lastName }
-            ... on Employee { id firstName lastName }
-          }
-        }
-      }
-    }
-  `;
-
   protected onMessageCallbacks: Array<(message: IElixirChatReceivedMessage) => void> = [];
   protected onConnectSuccessCallbacks: Array<(data?: any) => void> = [];
   protected onConnectErrorCallbacks: Array<(e: any) => void> = [];
@@ -114,9 +79,23 @@ export class ElixirChat {
     this.apiUrl = config.apiUrl;
     this.socketUrl = config.socketUrl;
     this.companyId = config.companyId;
+    this.debug = config.debug || false;
     this.room = config.room;
     this.client = config.client;
-    this.debug = config.debug || false;
+
+    console.log('___ no client 0', this.client);
+
+    const localValues = this.getRoomClientFromLocalStorage();
+    if (!this.room || !this.room.id) {
+      this.room = localValues.room;
+    }
+    console.log('___ no client 1', this.client);
+    if (!this.client || !this.client.id) {
+      this.client = localValues.client;
+      console.log('___ no client 2', this.client);
+    }
+    console.log('___ no client 3', this.client);
+
     this.initialize();
   }
 
@@ -141,21 +120,47 @@ export class ElixirChat {
     this.screenshotTaker = new ScreenshotTaker();
     this.setDefaultConfigValues();
     this.connectToRoom().then(() => {
+      this.saveRoomClientToLocalStorage(this.room, this.client);
       this.subscribeToNewMessages();
       this.subscribeToTypingStatusChange();
     });
   }
 
   protected getDefaultClientData(): IElixirChatUser {
-    const baseTitleArr = uniqueNamesGenerator({ length: 2, separator: ' ' }).split(' ');
-    const displayTitle = baseTitleArr.map(capitalize);
-    const fourDigitPostfix = (Array(4).join('0') + Math.random()).slice(-4);
-    const uniqueId = baseTitleArr.join('-') + '-' + fourDigitPostfix;
-    return {
+    const baseTitle = uniqueNamesGenerator({ length: 2, separator: ' ' });
+    const [firstName, lastName] = baseTitle.split(' ').map(capitalize);
+    const randomFourDigitPostfix = (Array(4).join('0') + Math.random()).slice(-4);
+    const uniqueId = baseTitle.replace(' ', '-') + '-' + randomFourDigitPostfix;
+    const clientData = {
       id: uniqueId,
-      firstName: displayTitle[0],
-      lastName: displayTitle[1]
+      firstName,
+      lastName,
+    };
+    logEvent(this.debug, 'Generated default client data', clientData);
+    return clientData;
+  }
+
+  protected getRoomClientFromLocalStorage(): { room?: IElixirChatRoom, client?: IElixirChatUser } {
+    let room: IElixirChatRoom;
+    let client: IElixirChatUser;
+    try {
+      room = JSON.parse(localStorage.getItem('elixirchat-room'));
     }
+    catch (e) {}
+    try {
+      client = JSON.parse(localStorage.getItem('elixirchat-client'));
+    }
+    catch (e) {}
+    logEvent(this.debug, 'Fetched room, client values from localStorage', { room, client })
+    return {
+      room,
+      client,
+    };
+  }
+
+  protected saveRoomClientToLocalStorage(room: IElixirChatRoom, client: IElixirChatUser): void {
+    localStorage.setItem('elixirchat-room', JSON.stringify(room));
+    localStorage.setItem('elixirchat-client', JSON.stringify(client));
   }
 
   protected setDefaultConfigValues(): void {
@@ -205,11 +210,19 @@ export class ElixirChat {
       this.graphQLClient.query(query, variables)
         .then(({ joinRoom }: any) => {
           if (joinRoom) {
-            logEvent(this.debug, 'Joined room', joinRoom);
-            const client = this.getClientByRoomMembers(joinRoom.room.members);
-            this.elixirRoomId = joinRoom.room.id;
-            this.elixirClientId = client.id; // TODO: remove after 'client' is added to 'RoomWithToken' on backend (after un-authed joinRoom)
             this.authToken = joinRoom.token;
+
+            const client = this.getClientByRoomMembers(joinRoom.room.members);
+            this.client.firstName = client.firstName;
+            this.client.lastName = client.lastName;
+            this.client.id = client.foreignId;
+            this.elixirClientId = client.id; // TODO: remove after 'client' is added to 'RoomWithToken' on backend (after un-authed joinRoom)
+
+            this.room.id = joinRoom.room.foreignId;
+            this.room.title = joinRoom.room.title;
+            this.elixirRoomId = joinRoom.room.id;
+
+            logEvent(this.debug, 'Joined room', { joinRoom, room: this.room, client: this.client });
             resolve(joinRoom);
           }
           else {
@@ -295,6 +308,7 @@ export class ElixirChat {
       return this.messagesSubscription.sendMessage(params)
         .then(message => {
           logEvent(this.debug, 'Sent message', { message, params });
+          this.typingStatusSubscription.dispatchTypedText('', true);
         })
         .catch(error => {
           logEvent(this.debug, 'Failed to send message', error, 'error');
@@ -332,6 +346,7 @@ export class ElixirChat {
     this.setDefaultConfigValues();
     this.messagesSubscription.unsubscribe();
     return this.connectToRoom().then(() => {
+      this.saveRoomClientToLocalStorage(this.room, this.client);
       this.subscribeToNewMessages();
       this.typingStatusSubscription.resubscribeToAnotherRoom(this.room.id);
     });
@@ -357,29 +372,13 @@ export class ElixirChat {
 
   // TODO: replace 'before' w/ message indexes on backend?
   public fetchMessageHistory = (limit: number, beforeCursor: string): Promise<[IElixirChatReceivedMessage]> => {
-    const variables = {
-      first: limit,
-      before: beforeCursor,
-    };
-    const query = prepareGraphQLQuery('query', this.roomMessagesQuery, variables, { before: 'ID' });
-
-    return new Promise((resolve, reject) => {
-      this.graphQLClient.query(query, variables, this.authToken)
-        .then(response => {
-          if (response.messages) {
-            const messages = <[IElixirChatReceivedMessage]>simplifyGraphQLJSON(response.messages);
-            logEvent(this.debug, 'Fetched message history', { limit, beforeCursor, messages });
-            resolve(messages);
-          }
-          else {
-            logEvent(this.debug, 'Could not fetch message history', { limit, beforeCursor, response, query, variables }, 'error');
-            reject(response);
-          }
-        })
-        .catch(error => {
-          logEvent(this.debug, 'Fetching message history returned an error', { limit, beforeCursor, error, query, variables }, 'error');
-          reject(error);
-        });
-    });
+    return this.messagesSubscription.fetchMessageHistory(limit, beforeCursor)
+      .then(messages => {
+        logEvent(this.debug, 'Fetched message history', { limit, beforeCursor, messages });
+        return messages;
+      })
+      .catch(data => {
+        logEvent(this.debug, 'Could not fetch message history', data, 'error');
+      });
   };
 }

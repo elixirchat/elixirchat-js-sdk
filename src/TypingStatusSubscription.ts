@@ -88,7 +88,11 @@ export class TypingStatusSubscription {
   };
 
   public subscribeStatusChange = (): void => {
-    this.channel.on('presence_diff', diff => this.onStatusChange(diff.joins));
+    this.channel.on('presence_diff', diff => {
+      if (diff.joins && Object.values(diff.joins).length) {
+        this.onStatusChange(diff.joins)
+      }
+    });
   };
 
   protected onStatusChange(state: any): void {
@@ -129,12 +133,13 @@ export class TypingStatusSubscription {
     }, 2000);
   }
 
-  public dispatchTypedText = (typedText: string): void => {
+  public dispatchTypedText = (typedText: string, dispatchForcefully: boolean = false): void => {
     if (this.channel) {
-      if (this.typedText !== typedText.trim()) {
+      const trimmedText = typedText.trim();
+      if (dispatchForcefully || this.typedText !== trimmedText) {
         this.channel.push('typing', {
-          typing: true,
-          text: typedText.trim(),
+          typing: Boolean(trimmedText),
+          text: trimmedText,
         });
       }
     }

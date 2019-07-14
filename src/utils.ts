@@ -1,23 +1,3 @@
-export interface IHandleAPIError {
-  (
-    params: {
-      error: any;
-      variables?: any;
-      graphQLQuery?: string;
-    }
-  ) : void;
-}
-
-export const handleAPIError: IHandleAPIError = ({ error, variables, graphQLQuery }) => {
-  const errorData = [
-    ['Error', error],
-    ['Variables', variables],
-    ['GraphQL Query', graphQLQuery || false],
-  ];
-  logEvent(true, `${graphQLQuery ? 'GraphQL' : 'API'} returned an error`, errorData, 'error')
-};
-
-
 export interface ILogEvent {
   (
     isDebug: boolean,
