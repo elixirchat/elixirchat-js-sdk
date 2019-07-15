@@ -61,14 +61,16 @@ export class MessagesSubscription {
               id
               text
               sender {
-                ... on Client { id firstName lastName }
+                __typename
+                ... on Client { id foreignId firstName lastName }
                 ... on Employee { id firstName lastName }
               }
             }
           }
         }
         sender {
-          ... on Client { id firstName lastName }
+          __typename
+          ... on Client { id foreignId firstName lastName }
           ... on Employee { id firstName lastName }
         }
       }
@@ -87,14 +89,16 @@ export class MessagesSubscription {
             id
             text
             sender {
-              ... on Client { id firstName lastName }
+              __typename
+              ... on Client { id foreignId firstName lastName }
               ... on Employee { id firstName lastName }
             }
           }
         }
       }
       sender {
-        ... on Client { id firstName lastName }
+        __typename
+        ... on Client { id foreignId firstName lastName }
         ... on Employee { id firstName lastName }
       }
     }
@@ -120,14 +124,16 @@ export class MessagesSubscription {
                 id
                 text
                 sender {
-                  ... on Client { id firstName lastName }
+                  __typename
+                  ... on Client { id foreignId firstName lastName }
                   ... on Employee { id firstName lastName }
                 }
               }
             }
           }
           sender {
-            ... on Client { id firstName lastName }
+            __typename
+            ... on Client { id foreignId firstName lastName }
             ... on Employee { id firstName lastName }
           }
         }

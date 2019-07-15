@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
+import { DefaultWidgetMessages } from './DefaultWidgetMessages';
 import widgetIframeStyles from './DefaultWidgetIframeStyles';
 
 export interface IDefaultWidgetProps {
@@ -18,6 +19,7 @@ export interface IDefaultWidgetState {
 export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
 
   container: { current: HTMLElement } = React.createRef();
+  messageChunkSize: number = 50;
 
   state = {
     messages: [],
@@ -34,7 +36,7 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
     elixirChatWidget.injectIframeStyles(widgetIframeStyles);
 
     elixirChatWidget.onConnectSuccess(() => {
-      elixirChatWidget.fetchMessageHistory(5).then(messages => {
+      elixirChatWidget.fetchMessageHistory(this.messageChunkSize).then(messages => {
         this.setState({
           messages,
           room: elixirChatWidget.room,
@@ -80,11 +82,11 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
     });
   };
 
-  onLoadMoreClick = (): void => {
+  onLoadMore = (): void => {
     const { messages } = this.state;
 
     const lastMessageCursor = messages[messages.length - 1].cursor;
-    this.props.elixirChatWidget.fetchMessageHistory(5, lastMessageCursor).then(history => {
+    this.props.elixirChatWidget.fetchMessageHistory(this.messageChunkSize, lastMessageCursor).then(history => {
       const updatedMessages = [...messages, ...history];
       this.setState({
         messages: updatedMessages,
@@ -114,38 +116,41 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
       typedText,
     } = this.state;
 
-    const reversedMessages = [...messages].reverse();
+    const { elixirChatWidget } = this.props;
 
     return (
       <div className="elixirchat-chat-container" ref={this.container}>
-        <h3 className="elixirchat-chat-header">Room: {room.title} (ID: {room.id})</h3>
-        <h3 className="elixirchat-chat-header">
-          Client: {client.firstName} {client.lastName} (ID: {client.id})
-        </h3>
 
-        <textarea className="elixirchat-chat-textarea"
-          placeholder="Your message..."
-          onChange={this.onTextareaChange}
-          value={typedText}>
-        </textarea>
+        <h2 className="elixirchat-chat-header">
+          <i className="elixirchat-chat-header__indicator"/>
+          Служба поддержки
+          <button className="elixirchat-chat-header__close"
+            title="Закрыть чат"
+            onClick={elixirChatWidget.toggleChatVisibility}/>
+        </h2>
 
-        <div className="elixirchat-chat-textarea">{currentlyTypingUsers.length} user(s) typing...</div>
-        <button className="elixirchat-chat-submit" onClick={this.onSendMessageClick}>Submit</button>
+        <DefaultWidgetMessages
+          elixirChatWidget={elixirChatWidget}
+          messages={messages}/>
 
-        <ul className="elixirchat-chat-messages">
-          {reversedMessages.map(message => (
-            <li className="elixirchat-chat-message" key={message.id}>
-              <b>{message.sender.firstName}</b>: {message.text}&nbsp;
-              <button onClick={() => this.onReplyClick(message.id)}>Reply</button>
-            </li>
-          ))}
-        </ul>
-        <button onClick={this.onLoadMoreClick}>Load more...</button>
+        <div hidden>
+          <textarea className="elixirchat-chat-textarea"
+            placeholder="Your message..."
+            onChange={this.onTextareaChange}
+            value={typedText}>
+          </textarea>
 
-        {Boolean(replyToId) && (
-          <blockquote className="elixirchat-chat-reply-to">Reply to: ${replyToId}</blockquote>
-        )}
-        <button onClick={this.onScreenShotClick}>Screenshot</button>
+          <div className="elixirchat-chat-textarea">{currentlyTypingUsers.length} user(s) typing...</div>
+          <button className="elixirchat-chat-submit" onClick={this.onSendMessageClick}>Submit</button>
+
+          <button onClick={this.onLoadMore}>Load more...</button>
+
+          {Boolean(replyToId) && (
+            <blockquote className="elixirchat-chat-reply-to">Reply to: ${replyToId}</blockquote>
+          )}
+          <button onClick={this.onScreenShotClick}>Screenshot</button>
+        </div>
+
       </div>
     );
   }
