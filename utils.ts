@@ -80,9 +80,11 @@ export const insertElement: IInsertElement = (tagName, attributes, elementToAppe
 };
 
 
+export interface IInflect {
+  (locale: 'en-US' | 'ru-RU', number: number, endings: Array<string>, hideNumber?: boolean): string
+}
 
-
-export const inflect = (locale, number, endings, hideNumber = false) => {
+export const inflect: IInflect = (locale, number, endings, hideNumber = false) => {
   const getEnding = {};
 
   getEnding['en-US'] = (number, endings) => {
@@ -97,4 +99,4 @@ export const inflect = (locale, number, endings, hideNumber = false) => {
 
   const ending = getEnding[locale](number, endings) || endings[0];
   return hideNumber ? ending : number + ' ' + ending;
-}
+};

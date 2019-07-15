@@ -37,7 +37,7 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
     });
   };
 
-  onReplyClick = (messageId): void => {
+  onReplyClick = (messageId): void => { // TODO: figure is replyTo will be implemented in widget
     this.setState({
       replyToId: messageId
     });
@@ -84,12 +84,7 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
           value={typedText}>
         </textarea>
 
-        <button className="elixirchat-chat-submit" onClick={this.sendMessage}>Submit</button>
-
-        {Boolean(replyToId) && (
-          <blockquote className="elixirchat-chat-reply-to">Reply to: ${replyToId}</blockquote>
-        )}
-
+        <button className="elixirchat-chat-submit" onClick={this.sendMessage} hidden>Submit</button>
       </div>
     );
   }
