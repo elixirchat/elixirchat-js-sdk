@@ -17,17 +17,10 @@ const elixirChatWidget = new ElixirChatWidget({
 });
 
 elixirChatWidget.appendWidget({
-  // container: iframeDocument.body,
-  container: document.getElementById('widget-container'),
+  container: document.getElementById('elixirchat-widget'),
   styles: `
-    .container {
-      position: absolute;
-      top: 4px;
-      left: 5px;
+    .elixirchat-chat-container {
       background: wheat;
-    }
-    .test {
-      background: green;
     }
   `
 });

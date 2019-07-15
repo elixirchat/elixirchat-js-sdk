@@ -53,3 +53,23 @@ export const capitalize: ICapitalize = (str) => {
 
 // TODO: fix?
 export const css = (styles) => styles[0];
+
+
+
+export interface IInsertElement {
+  (tagName: string, attributes?: any, elementToAppendTo?: HTMLElement): HTMLElement
+}
+
+export const insertElement: IInsertElement = (tagName, attributes, elementToAppendTo) => {
+  const element = document.createElement(tagName);
+  if (typeof attributes === 'object') {
+    for (let key in attributes) {
+      element[key] = attributes[key];
+    }
+  }
+  if (elementToAppendTo) {
+    elementToAppendTo.appendChild(element);
+    // console.warn('___ append to', elementToAppendTo, '//', element);
+  }
+  return element;
+};
