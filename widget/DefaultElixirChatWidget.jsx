@@ -1,27 +1,70 @@
-import { h, render } from 'preact';
+import { h, render, Component } from 'preact';
 
+export class DefaultElixirChatWidget extends Component {
 
-// import React, { Component } from 'react';
-// import { render } from 'react-dom';
-// console.log('___ zzz', React);
+  elixirChatWidget = null;
 
-// const render = h => ({ active }) => <h1>ZZZZ</h1>;
+  state = {
+    messages: [],
+    replyToId: null,
+  };
 
+  componentDidMount(){
+    const { elixirChatWidget } = this.props;
+    console.log('componentDidMount', elixirChatWidget);
 
-console.log('___ h', h);
+    elixirChatWidget.onConnectSuccess(() => {
+      elixirChatWidget.fetchMessageHistory(5).then(messages => {
+        this.setState({ messages });
+      });
+    });
+  }
 
+  onClick = () => {
+    const { elixirChatWidget } = this.props;
+    elixirChatWidget.takeScreenshot().then(screenshot => {
+      console.log('Screenshot', screenshot.file);
+      this.setState({
+        test: screenshot.file.name,
+      });
+    });
+  };
 
-export function MyComponent({ prop1, prop2 }){
-  // const test: number = 5;
-  const test = 5;
+  onReplyClick = (messageId) => {
+    this.setState({
+      replyToId: messageId
+    });
+  };
 
-  return (
-    <div id="foo">
-      <div>MyComponent! -{test}-</div>
-      -- prop1: {prop1} / prop2: {prop2} --
-      <button onClick={ e => alert("hi!") }>Click Me</button>
-    </div>
-  );
+  render() {
+    const { messages, replyToId } = this.state;
+    return (
+      <div className="container">
+        <h1>MyComponent:</h1>
+        <ul>
+          {messages.map(message => (
+            <li key={message.id}>
+              <b>{message.sender.firstName}</b>: {message.text}&nbsp;
+              <button onClick={() => this.onReplyClick(message.id)}>Reply</button>
+            </li>
+          ))}
+        </ul>
+        {Boolean(replyToId) && (
+          <blockquote>Reply to: ${replyToId}</blockquote>
+        )}
+        <button onClick={this.onClick}>Screenshot</button>
+      </div>
+    );
+  }
 }
 
-// render(MyComponent({ prop1: 'yo', prop2: 'ff' }), document.body);
+export function appendDefaultElixirChatWidget(container, elixirChatWidget) {
+  let component;
+  render(
+    <DefaultElixirChatWidget
+      elixirChatWidget={elixirChatWidget}
+      ref={(widget) => {component = widget}} />,
+    container
+  );
+  return component;
+}

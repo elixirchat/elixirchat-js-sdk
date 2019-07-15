@@ -122,7 +122,7 @@ export class ElixirChat {
   }
 
   protected getDefaultClientData(): IElixirChatUser {
-    const baseTitle = uniqueNamesGenerator({ length: 2, separator: ' ' });
+    const baseTitle = uniqueNamesGenerator({ length: 2, separator: ' ', dictionaries: null });
     const [firstName, lastName] = baseTitle.split(' ').map(capitalize);
     const randomFourDigitPostfix = (Array(4).join('0') + Math.random()).slice(-4);
     const uniqueId = baseTitle.replace(' ', '-') + '-' + randomFourDigitPostfix;

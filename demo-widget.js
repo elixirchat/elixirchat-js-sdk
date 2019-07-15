@@ -16,15 +16,19 @@ const elixirChatWidget = new ElixirChatWidget({
   debug: true,
 });
 
-elixirChatWidget.onConnectSuccess(() => {
-  console.warn('___ connected widget', elixirChatWidget.room, elixirChatWidget.client);
-});
-
 elixirChatWidget.appendWidget({
+  // container: iframeDocument.body,
   container: document.getElementById('widget-container'),
   styles: `
+    .container {
+      position: absolute;
+      top: 4px;
+      left: 5px;
+    }
     .test {
       background: green;
     }
   `
 });
+
+window.elixirChatWidget = elixirChatWidget;
