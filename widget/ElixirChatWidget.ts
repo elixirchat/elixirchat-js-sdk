@@ -1,8 +1,6 @@
-import cn from 'classnames';
 import ElixirChat from '../src';
-import { appendDefaultElixirChatWidget } from './DefaultWidget/DefaultWidget';
 import { logEvent, insertElement } from '../utils';
-import widgetGlobalStyles from './DefaultWidget/DefaultWidgetGlobalStyles';
+import { appendDefaultElixirChatWidget } from './DefaultWidget/DefaultWidget';
 
 export interface IElixirChatWidgetAppendWidgetConfig {
   container: HTMLElement;
@@ -18,12 +16,6 @@ export class ElixirChatWidget extends ElixirChat {
   public widgetChatReactComponent: any = {};
   public widgetChatIframe: HTMLIFrameElement;
   public widgetButton: HTMLElement;
-
-  protected injectGlobalStyles(styles: string): void {
-    if (styles) {
-      insertElement('style', { innerHTML: styles, type: 'text/css' }, this.container);
-    }
-  }
 
   protected injectIframeStyles(styles: string): void {
     const iframeContainer = <HTMLElement>this.widgetChatIframe.contentWindow.document.querySelector('main');
@@ -87,7 +79,6 @@ export class ElixirChatWidget extends ElixirChat {
     const iframeContainer = <HTMLElement>this.widgetChatIframe.contentWindow.document.querySelector('main');
     this.widgetChatReactComponent = appendDefaultElixirChatWidget(iframeContainer, this);
 
-    this.injectGlobalStyles(widgetGlobalStyles);
     this.injectIframeStyles(this.styles);
   };
 }

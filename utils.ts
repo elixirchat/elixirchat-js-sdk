@@ -51,8 +51,11 @@ export const capitalize: ICapitalize = (str) => {
 };
 
 
+export interface ICss {
+  (template: Array<string>, variables: Array<string>): string
+}
 
-export const css = (template, ...variables) => {
+export const css: ICss = (template, ...variables) => {
   return template.map((fragment, i) => {
     return fragment + (variables[i] || '');
   }).join('');
@@ -72,7 +75,26 @@ export const insertElement: IInsertElement = (tagName, attributes, elementToAppe
   }
   if (elementToAppendTo) {
     elementToAppendTo.appendChild(element);
-    // console.warn('___ append to', elementToAppendTo, '//', element);
   }
   return element;
 };
+
+
+
+
+export const inflect = (locale, number, endings, hideNumber = false) => {
+  const getEnding = {};
+
+  getEnding['en-US'] = (number, endings) => {
+    return number === 1 ? endings[0] : endings[1];
+  };
+
+  getEnding['ru-RU'] = (number, endings) => {
+    const cases = [2, 0, 1, 1, 1, 2];
+    const endingIndex = (number % 100 > 4 && number % 100 < 20) ? 2 : cases[ Math.min(number % 10, 5) ];
+    return endings[endingIndex];
+  };
+
+  const ending = getEnding[locale](number, endings) || endings[0];
+  return hideNumber ? ending : number + ' ' + ending;
+}
