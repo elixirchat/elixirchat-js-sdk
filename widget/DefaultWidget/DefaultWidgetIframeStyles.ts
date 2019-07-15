@@ -1,14 +1,12 @@
 import { css } from '../../utils';
 export default css`
 
-  .zzz {
-    color: brown;
-    font-size: 20px;
-    font-style: italic;
+  .elixirchat-chat-container {
+    font: 15px/20px "Helvetica Neue", Arial;
   }
-  
-  .zzz:hover {
-    background: red;
+  .elixirchat-chat-header {
+    margin: 0 0 6px 0;
+    font-size: 16px;
   }
 
 `

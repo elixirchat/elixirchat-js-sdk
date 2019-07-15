@@ -21,7 +21,6 @@ window.replyToMessage = (messageId) => {
   if (messageId) {
     document.getElementById(messageId).style.background = 'yellow';
   }
-  document.getElementById('#reply-to').innerText = ``
 };
 
 window.elixirChat = new ElixirChat({

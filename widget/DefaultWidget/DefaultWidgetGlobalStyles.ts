@@ -13,8 +13,8 @@ export default css`
   
   .elixirchat-widget-iframe {
     position: fixed;
-    height: 250px;
-    width: 200px;
+    height: 300px;
+    width: 300px;
     bottom: 50px;
     right: 20px;
     border: 0;
