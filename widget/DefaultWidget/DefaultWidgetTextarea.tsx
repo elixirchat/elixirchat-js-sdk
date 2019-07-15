@@ -10,6 +10,7 @@ export interface IDefaultWidgetTextareaState {
   replyToId: string | null;
   currentlyTypingUsers: Array<any>;
   typedText: string;
+  attachments: Array<File>;
 }
 
 export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps, IDefaultWidgetTextareaState> {
@@ -17,6 +18,7 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
   state = {
     replyToId: null,
     typedText: '',
+    attachments: [],
   };
 
   componentDidMount(): void {
@@ -50,16 +52,22 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
     });
   };
 
-  sendMessage = (): void => {
-    const { typedText, replyToId } = this.state;
-    this.props.elixirChatWidget.sendMessage({
-      text: typedText,
-      responseToMessageId: replyToId,
-    });
-    this.setState({
-      typedText: '',
-      replyToId: null,
-    });
+  onTextareaKeyDown = (e) => {
+    if(e.keyCode === 13 && e.shiftKey === false) { // Press "Enter" without holding Shift
+      e.preventDefault();
+      const { typedText, replyToId, attachments } = this.state;
+      if (typedText.trim()) {
+        this.props.elixirChatWidget.sendMessage({
+          text: typedText,
+          responseToMessageId: replyToId,
+          attachments,
+        });
+        this.setState({
+          typedText: '',
+          replyToId: null,
+        });
+      }
+    }
   };
 
   render(): void {
@@ -81,10 +89,9 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
         <textarea className="elixirchat-chat-textarea__textarea"
           placeholder="Напишите сообщение..."
           onChange={this.onTextareaChange}
+          onKeyDown={this.onTextareaKeyDown}
           value={typedText}>
         </textarea>
-
-        <button className="elixirchat-chat-submit" onClick={this.sendMessage} hidden>Submit</button>
       </div>
     );
   }
