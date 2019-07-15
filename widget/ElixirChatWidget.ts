@@ -1,6 +1,9 @@
 import ElixirChat from '../src';
-import { appendDefaultElixirChatWidget } from './DefaultElixirChatWidget.jsx';
+import { appendDefaultElixirChatWidget } from './DefaultElixirChatWidget.tsx';
 import { logEvent } from '../utils';
+// import stylesToInject from './test.css';
+
+// console.log('___ stylesToInject fff', stylesToInject);
 
 export interface IElixirChatWidgetAppendWidgetConfig {
   container: HTMLElement;
@@ -25,9 +28,13 @@ export class ElixirChatWidget extends ElixirChat {
 
   protected appendCallToActionButton(container: HTMLElement){
     const button = document.createElement('button');
+    // button.class = stylesToInject.fff;
     button.innerText = 'Click me';
     container.appendChild(button);
     button.addEventListener('click', this.toggleChatWindowVisibility);
+    if (this.widgetCallToActionButton) {
+      this.widgetCallToActionButton.remove();
+    }
     this.widgetCallToActionButton = button;
   }
 
@@ -40,6 +47,10 @@ export class ElixirChatWidget extends ElixirChat {
     const iframe = document.createElement('iframe');
     iframe.hidden = true;
     container.appendChild(iframe);
+    iframe.contentWindow.document.body.appendChild(document.createElement('main'));
+    if (this.widgetIframe) {
+      this.widgetIframe.remove();
+    }
     this.widgetIframe = iframe;
   }
 
@@ -52,8 +63,9 @@ export class ElixirChatWidget extends ElixirChat {
 
     this.appendChatIframe(container);
     this.appendCallToActionButton(container);
+    this.toggleChatWindowVisibility(); // TODO: remove
 
-    const iframeContainer = this.widgetIframe.contentWindow.document.body;
+    const iframeContainer = <HTMLElement>this.widgetIframe.contentWindow.document.querySelector('main');
     this.injectWidgetStyles(iframeContainer, styles);
     this.widgetComponent = appendDefaultElixirChatWidget(iframeContainer, this);
   };

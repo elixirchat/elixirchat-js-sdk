@@ -24,6 +24,7 @@ elixirChatWidget.appendWidget({
       position: absolute;
       top: 4px;
       left: 5px;
+      background: wheat;
     }
     .test {
       background: green;
