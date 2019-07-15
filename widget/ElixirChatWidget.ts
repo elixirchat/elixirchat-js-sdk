@@ -1,3 +1,4 @@
+import cn from 'classnames';
 import ElixirChat from '../src';
 import { appendDefaultElixirChatWidget } from './DefaultWidget/DefaultWidget';
 import { logEvent, insertElement } from '../utils';
@@ -27,13 +28,13 @@ export class ElixirChatWidget extends ElixirChat {
   protected injectIframeStyles(styles: string): void {
     const iframeContainer = <HTMLElement>this.widgetChatIframe.contentWindow.document.querySelector('main');
     if (styles && iframeContainer) {
-      let el = insertElement('style', { innerHTML: styles, type: 'text/css' }, iframeContainer);
+      insertElement('style', { innerHTML: styles, type: 'text/css' }, iframeContainer);
     }
   }
 
   protected appendWidgetButton(): void {
     const button = insertElement('button', {
-      innerText: 'Click me',
+      title: 'Open chat',
       className: 'elixirchat-widget-button',
     }, this.container);
 
@@ -58,8 +59,15 @@ export class ElixirChatWidget extends ElixirChat {
   }
 
   public toggleChatVisibility = (): void => {
+    const classNameOpen = 'elixirchat-widget-button--active';
     this.widgetIsVisible = !this.widgetIsVisible;
     this.widgetChatIframe.hidden = !this.widgetIsVisible;
+    if (this.widgetIsVisible) {
+      this.widgetButton.classList.add(classNameOpen);
+    }
+    else {
+      this.widgetButton.classList.remove(classNameOpen);
+    }
   };
 
   public appendWidget = ({ container, styles = '' }: IElixirChatWidgetAppendWidgetConfig): void => {

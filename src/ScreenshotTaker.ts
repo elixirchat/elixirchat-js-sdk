@@ -102,6 +102,7 @@ export class ScreenshotTaker {
       const newTab = window.open('');
       if (newTab) {
         newTab.document.body.appendChild(image);
+        image.setAttribute('width', '100%');
         resolve();
       }
       else {

@@ -18,11 +18,11 @@ const elixirChatWidget = new ElixirChatWidget({
 
 elixirChatWidget.appendWidget({
   container: document.getElementById('elixirchat-widget'),
-  styles: `
-    .elixirchat-chat-container {
-      background: wheat;
-    }
-  `
+  // styles: `
+  //   .elixirchat-chat-container {
+  //     background: wheat;
+  //   }
+  // `
 });
 
 window.elixirChatWidget = elixirChatWidget;

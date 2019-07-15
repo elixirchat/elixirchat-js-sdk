@@ -140,9 +140,12 @@ In ElixirChat, the customers and your customer support agents communicate in so 
 ## ElixirChat Config
 
 You have to pass over the config when initializing `new ElixirChat` or `new ElixirChatWidget`.
+
 ```js
 // Example:
 new ElixirChat({
+  apiUrl: 'http://localhost:4000',
+  socketUrl: 'ws://localhost:4000/socket',
   companyId: 'your-company-id-here',
   room: {
     id: 'your-room-id-here',
@@ -158,9 +161,23 @@ new ElixirChat({
 ```
 
 <br/>
+<a id="config-apiUrl"></a>
+
+#### `apiUrl: string` (required)
+Your ElixirChat backend GraphQL URL (for example `https://elixirchat.yourcompany.com:4000`)
+
+
+<br/>
+<a id="config-socketUrl"></a>
+
+#### `socketUrl: string` (required)
+Your ElixirChat backend WebSocket URL starting with `ws:` protocol (for example `ws://elixirchat.yourcompany.com:4000/socket`)
+
+
+<br/>
 <a id="config-companyId"></a>
 
-#### `companyId: string` (the only required parameter)
+#### `companyId: string` (required)
 Your company ID. You will get it from ElixirChat team.
 
 <br/>
@@ -168,11 +185,13 @@ Your company ID. You will get it from ElixirChat team.
 
 #### `room: { id: string, title: string }`
 Pass it if you need a [public room](#public-room). How it works:
+
 - When you use it _for the first time,_ it _creates_ a new [public room](#public-room) (with the specified `id` and `title`).
 - When you use it _again_ later, ElixirChat SDK _connects to the same room_ that's been previously created with this `id`.
-- If you don't pass it at all, a new [private room](#private-room) would be created for every unique visitor.
+- If you don't pass it at all, a new [private room](#private-room) would be created for every _unique_ visitor (but saved to @@@).
 
 __Parameters:__
+
 - `room.id` — Arbitrary string you can use to identify the room.
 - `room.title` — Your public room title that is displayed [in your ElixirChat admin panel (on the left)](#what-are-rooms). Feel free to change it over time if you need to — these changes will be reflected in the admin panel as well.
 
@@ -183,6 +202,7 @@ __Parameters:__
 Pass it if you want to be able recognize your customer later on.
 
 __Parameters:__
+
 - `client.id` - Arbitrary string you can use to identify a particular customer
 - `client.firstName` - Customer's first name to be displayed in the ElixirChat admin panel
 - `client.lastName` - Customer's last name to be displayed in the ElixirChat admin panel

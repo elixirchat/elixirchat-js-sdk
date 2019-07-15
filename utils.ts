@@ -51,9 +51,12 @@ export const capitalize: ICapitalize = (str) => {
 };
 
 
-// TODO: fix?
-export const css = (styles) => styles[0];
 
+export const css = (template, ...variables) => {
+  return template.map((fragment, i) => {
+    return fragment + (variables[i] || '');
+  }).join('');
+};
 
 
 export interface IInsertElement {

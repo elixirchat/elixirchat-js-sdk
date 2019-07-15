@@ -19,6 +19,7 @@
   "homepage": "https://github.com/elixirchat/elixirchat-widget#readme",
   "dependencies": {
     "@absinthe/socket": "^0.2.1",
+    "classnames": "^2.2.6",
     "phoenix": "^1.4.9",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
