@@ -179,7 +179,7 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
           className="elixirchat-chat-textarea__textarea"
           placeholder="Напишите сообщение..."
           minRows={1}
-          maxRows={3}
+          maxRows={5}
           onHeightChange={this.updateVerticalHeight}
           onPaste={this.handleAttachmentPaste}
           onChange={this.onTextareaChange}

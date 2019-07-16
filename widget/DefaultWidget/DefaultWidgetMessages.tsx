@@ -74,7 +74,7 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
             })}>
               <div className="elixirchat-chat-messages__balloon">
                 <div className="elixirchat-chat-messages__sender">
-                  {message.isSentByMe ? 'Я' : message.sender.firstName + ' ' + message.sender.lastName}
+                  {message.isSentByMe ? 'Я' : (message.sender.firstName || '') + ' ' + (message.sender.lastName || '')}
                 </div>
                 <div className="elixirchat-chat-messages__text">{message.text}</div>
               </div>

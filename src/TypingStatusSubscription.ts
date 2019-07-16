@@ -135,7 +135,7 @@ export class TypingStatusSubscription {
 
   public dispatchTypedText = (typedText: string, dispatchForcefully: boolean = false): void => {
     if (this.channel) {
-      const trimmedText = typedText.trim();
+      const trimmedText = <string>typedText.trim();
       if (dispatchForcefully || this.typedText !== trimmedText) {
         this.channel.push('typing', {
           typing: Boolean(trimmedText),
