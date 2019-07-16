@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
-import { inflect } from '../../utils';
 import { DefaultWidgetMessages } from './DefaultWidgetMessages';
 import { DefaultWidgetTextarea } from './DefaultWidgetTextarea';
 import widgetStyles from './iframeStyles/DefaultWidgetStyles';
@@ -22,7 +21,8 @@ export interface IDefaultWidgetState {
 export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
 
   container: { current: HTMLElement } = React.createRef();
-  messageChunkSize: number = 50;
+  scrollBlock: { current: HTMLElement } = React.createRef();
+  messageChunkSize: number = 20;
 
   state = {
     messages: [],
@@ -38,42 +38,70 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
 
     elixirChatWidget.onConnectSuccess(() => {
       elixirChatWidget.fetchMessageHistory(this.messageChunkSize).then(messages => {
-        this.setState({
-          messages,
-          room: elixirChatWidget.room,
-          client: elixirChatWidget.client,
-        });
+        this.setState({ messages });
+        this.scrollToBottom();
       });
     });
 
     elixirChatWidget.onMessage(message => {
       const messages = [message, ...this.state.messages];
-      this.setState({
-        messages,
-      });
+      const hasUserScroll = this.hasUserScroll();
+      this.setState({ messages });
+      if (!hasUserScroll) {
+        this.scrollToBottom();
+      }
     });
 
     elixirChatWidget.onTyping(currentlyTypingUsers => {
-      this.setState({
-        currentlyTypingUsers,
-      });
+      this.setState({ currentlyTypingUsers });
     });
   }
 
   loadPreviousMessages = (callback): void => {
-    if (this.state.isLoadingPreviousMessages) {
-      return;
+    const { messages, isLoadingPreviousMessages } = this.state;
+    const { elixirChatWidget } = this.props;
+
+    if (!isLoadingPreviousMessages) {
+      this.setState({ isLoadingPreviousMessages: true });
+      const lastMessageCursor = messages[messages.length - 1].cursor;
+
+      elixirChatWidget.fetchMessageHistory(this.messageChunkSize, lastMessageCursor).then(history => {
+        const updatedMessages = [...messages, ...history];
+        this.setState({
+          messages: updatedMessages,
+          isLoadingPreviousMessages: false,
+        }, callback);
+      });
     }
-    const { messages } = this.state;
-    this.setState({ isLoadingPreviousMessages: true });
-    const lastMessageCursor = messages[messages.length - 1].cursor;
-    this.props.elixirChatWidget.fetchMessageHistory(this.messageChunkSize, lastMessageCursor).then(history => {
-      const updatedMessages = [...messages, ...history];
-      this.setState({
-        messages: updatedMessages,
-        isLoadingPreviousMessages: false,
-      }, callback);
-    });
+  };
+
+  onMessagesScroll = () => {
+    const scrollBlock = this.scrollBlock.current;
+    if (scrollBlock.scrollTop <= 0) {
+      const initialScrollHeight = scrollBlock.scrollHeight;
+      this.loadPreviousMessages(() => {
+        setTimeout(() => {
+          scrollBlock.scrollTop = scrollBlock.scrollHeight - initialScrollHeight;
+        }, 0);
+      });
+    }
+  };
+
+  hasUserScroll = () => {
+    const scrollBlock = this.scrollBlock.current;
+    return scrollBlock.scrollTop !== scrollBlock.scrollHeight - scrollBlock.offsetHeight;
+  };
+
+  scrollToBottom = (): void => {
+    this.scrollBlock.current.scrollTop = this.scrollBlock.current.scrollHeight;
+  };
+
+  onTextareaVerticalResize = (newTextareaHeight: number) => {
+    const hasUserScroll = this.hasUserScroll();
+    this.scrollBlock.current.style.bottom = newTextareaHeight + 'px';
+    if (!hasUserScroll) {
+      this.scrollToBottom();
+    }
   };
 
   render(): void {
@@ -91,18 +119,16 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
             onClick={elixirChatWidget.toggleChatVisibility}/>
         </h2>
 
-        <DefaultWidgetMessages
-          onLoadPreviousMessages={this.loadPreviousMessages}
-          elixirChatWidget={elixirChatWidget}
-          messages={messages}/>
-
-        {Boolean(currentlyTypingUsers.length) && (
-          <div className="elixirchat-chat-typing">
-            {inflect('ru-RU', currentlyTypingUsers.length, ['человек пишет...', 'человека пишут...', 'человек пишут...'])}
-          </div>
-        )}
+        <div className="elixirchat-chat-scroll" ref={this.scrollBlock} onScroll={this.onMessagesScroll}>
+          <DefaultWidgetMessages
+            onLoadPreviousMessages={this.loadPreviousMessages}
+            elixirChatWidget={elixirChatWidget}
+            messages={messages}/>
+        </div>
 
         <DefaultWidgetTextarea
+          currentlyTypingUsers={currentlyTypingUsers}
+          onVerticalResize={this.onTextareaVerticalResize}
           elixirChatWidget={elixirChatWidget}/>
 
       </div>

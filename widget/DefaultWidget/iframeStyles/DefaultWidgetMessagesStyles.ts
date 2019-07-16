@@ -2,14 +2,6 @@ import { css } from '../../../utils';
 export default css`
 
 .elixirchat-chat-messages {
-  position: fixed;
-  top: 53px;
-  left: 0;
-  right: 0;
-  bottom: 110px;
-  overflow-x: hidden;
-  overflow-y: auto;
-  padding: 20px 30px;
   display: flex;
   flex-direction: column;
   align-items: flex-end;

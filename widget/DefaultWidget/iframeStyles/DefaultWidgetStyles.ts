@@ -2,7 +2,6 @@ import { css } from '../../../utils';
 import fontGraphikRegular from '../assets/fonts/Graphik-Regular-Web.woff';
 import fontGraphikBold from '../assets/fonts/Graphik-Bold-Web.woff';
 import chatCloseIconBlack from '../assets/images/chat-close-icon-black.svg';
-import chatTypingIconBlack from '../assets/images/chat-typing-icon-black.svg';
 
 export default css`
 
@@ -80,29 +79,15 @@ textarea {
   opacity: .4;
 }
 
-.elixirchat-chat-typing {
+.elixirchat-chat-scroll {
   position: fixed;
-  background: #ffffff;
+  top: 53px;
   left: 0;
   right: 0;
   bottom: 110px;
-  font-weight: bold;
-  color: #D5D5D5;
-  padding: 0 30px 18px 56px;
-  box-shadow: 0 -15px 15px 6px rgba(255,255,255,.99);
-}
-
-.elixirchat-chat-typing:before {
-  content: "";
-  position: absolute;
-  left: 30px;
-  top: 3px;
-  width: 18px;
-  height: 11px;
-  background: url("${chatTypingIconBlack}") no-repeat center;
-  background-size: contain;
-  opacity: .15;
-  z-index: 2;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 20px 30px;
 }
 
 `

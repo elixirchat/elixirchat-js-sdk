@@ -61,7 +61,7 @@ export class MessagesSubscription {
               id
               text
               sender {
-                __typename
+              
                 ... on Client { id foreignId firstName lastName }
                 ... on Employee { id firstName lastName }
               }

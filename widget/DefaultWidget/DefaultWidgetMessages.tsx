@@ -8,6 +8,7 @@ import widgetMessagesStyles from './iframeStyles/DefaultWidgetMessagesStyles';
 export interface IDefaultWidgetMessagesProps {
   elixirChatWidget: any;
   messages: Array<any>;
+  onLoadPreviousMessages: any;
 }
 
 export interface IDefaultWidgetMessagesState {
@@ -15,8 +16,6 @@ export interface IDefaultWidgetMessagesState {
 }
 
 export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps, IDefaultWidgetMessagesState> {
-
-  scrollBlock: { current: HTMLElement } = React.createRef();
 
   state = {
     messages: [],
@@ -30,14 +29,8 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
 
   componentDidUpdate(prevProps): void {
     if (prevProps.messages.length !== this.props.messages.length) {
-      console.log('___ update messages', this.props);
-      const messageListHasUserScroll = this.messageListHasUserScroll();
       this.setState({
         messages: this.processMessages(this.props.messages)
-      }, () => {
-        if (!messageListHasUserScroll) {
-          this.scrollToBottom();
-        }
       });
     }
   }
@@ -57,34 +50,11 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
     });
   };
 
-  onMessagesScroll = () => {
-    const scrollBlock = this.scrollBlock.current;
-    if (scrollBlock.scrollTop <= 0) {
-      const initialScrollHeight = scrollBlock.scrollHeight;
-      this.props.onLoadPreviousMessages(() => {
-        setTimeout(() => {
-          scrollBlock.scrollTop = scrollBlock.scrollHeight - initialScrollHeight;
-        }, 0);
-      });
-    }
-  };
-
-  messageListHasUserScroll = () => {
-    const scrollBlock = this.scrollBlock.current;
-    return scrollBlock.scrollTop !== scrollBlock.scrollHeight - scrollBlock.offsetHeight;
-  };
-
-  scrollToBottom = () => {
-    this.scrollBlock.current.scrollTop = this.scrollBlock.current.scrollHeight;
-  };
-
   render(): void {
-
-    const { elixirChatWidget } = this.props;
     const { messages } = this.state;
 
     return (
-      <div className="elixirchat-chat-messages" ref={this.scrollBlock} onScroll={this.onMessagesScroll}>
+      <div className="elixirchat-chat-messages">
         {messages.map(message => (
           <Fragment key={message.id}>
             {message.prependDateTitle && (

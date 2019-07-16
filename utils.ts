@@ -100,3 +100,12 @@ export const inflect: IInflect = (locale, number, endings, hideNumber = false) =
   const ending = getEnding[locale](number, endings) || endings[0];
   return hideNumber ? ending : number + ' ' + ending;
 };
+
+
+export interface IRandomDigitStringId {
+  (idLength: number): string;
+}
+
+export const randomDigitStringId: IRandomDigitStringId = (idLength) => {
+  return (Array(idLength).join('0') + Math.random()).slice(-idLength);
+};

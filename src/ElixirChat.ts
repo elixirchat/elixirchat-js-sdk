@@ -1,13 +1,9 @@
 import { uniqueNamesGenerator } from 'unique-names-generator';
-import { logEvent, capitalize } from '../utils';
+import { logEvent, capitalize, randomDigitStringId } from '../utils';
 import { MessagesSubscription, INewMessage, ISentMessage } from './MessagesSubscription';
 import { TypingStatusSubscription } from './TypingStatusSubscription';
 import { ScreenshotTaker, IScreenshot } from './ScreenshotTaker';
-import {
-  GraphQLClient,
-  prepareGraphQLQuery,
-  simplifyGraphQLJSON,
-} from './GraphQLClient';
+import { GraphQLClient, prepareGraphQLQuery } from './GraphQLClient';
 
 export const API_REFERENCE_URL = 'https://github.com/elixirchat/elixirchat-widget/tree/sdk';
 
@@ -124,7 +120,7 @@ export class ElixirChat {
   protected getDefaultClientData(): IElixirChatUser {
     const baseTitle = uniqueNamesGenerator({ length: 2, separator: ' ', dictionaries: null });
     const [firstName, lastName] = baseTitle.split(' ').map(capitalize);
-    const randomFourDigitPostfix = (Array(4).join('0') + Math.random()).slice(-4);
+    const randomFourDigitPostfix = randomDigitStringId(4);
     const uniqueId = baseTitle.replace(' ', '-') + '-' + randomFourDigitPostfix;
     const clientData = {
       id: uniqueId,
