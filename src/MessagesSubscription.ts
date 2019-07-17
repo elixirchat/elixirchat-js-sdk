@@ -211,13 +211,8 @@ export class MessagesSubscription {
   };
 
   public sendMessage = ({ text, responseToMessageId }: ISentMessage): Promise<void> => {
-    // TODO: send attachments
-    const variables: ISentMessage = {
-      text: text,
-      responseToMessageId: typeof responseToMessageId === 'string' ? responseToMessageId : null,
-    };
+    const variables = { text, responseToMessageId }; // TODO: change when able to send attachments
     const query = prepareGraphQLQuery('mutation', this.sendMessageQuery, variables);
-
     return new Promise((resolve, reject) => {
       if (variables.text) {
         this.graphQLClient

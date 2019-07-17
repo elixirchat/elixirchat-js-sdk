@@ -1,29 +1,6 @@
 import ElixirChat from './src'
 
-window.messages = [];
-window.responseToMessageId = null;
-
-function renderMessages(messages){
-  document.getElementById('messages').innerHTML = messages.map(message => {
-    return `
-      <li id="${message.id}">
-        <b>${message.sender.firstName}</b>: ${message.text}
-        <button onclick="replyToMessage('${message.id}')">Reply</button>
-      </li>
-    `;
-  }).join('');
-}
-
-
-window.replyToMessage = (messageId) => {
-  window.responseToMessageId = messageId;
-  Array.from(document.querySelectorAll('#messages li')).forEach(el => el.style.background = '');
-  if (messageId) {
-    document.getElementById(messageId).style.background = 'yellow';
-  }
-};
-
-window.elixirChat = new ElixirChat({
+const elixirChat = new ElixirChat({
   apiUrl: 'http://localhost:4000',
   socketUrl: 'ws://localhost:4000/socket',
   companyId: '6ac8ce92-3a31-440b-b439-831d292a9730', // huntflow
@@ -39,13 +16,18 @@ window.elixirChat = new ElixirChat({
   debug: true,
 });
 
+let messages = [];
+let attachments = [];
+let screenshot = null;
+let replyTo = null;
+
 elixirChat.onConnectSuccess(() => {
   elixirChat.fetchMessageHistory(5).then(history => {
-    window.messages = history;
+    messages = history;
     renderMessages(messages);
   });
-  document.getElementById('room').innerText = `${elixirChat.room.title} (${elixirChat.room.id})`;
-  document.getElementById('client').innerText = `${elixirChat.client.firstName} ${elixirChat.client.lastName} (${elixirChat.client.id})`;
+  document.getElementById('room').innerHTML = `<b>Room:</b> ${elixirChat.room.title} (ID: ${elixirChat.room.id})`;
+  document.getElementById('client').innerHTML = `<b>Client:</b> ${elixirChat.client.firstName} ${elixirChat.client.lastName} (ID: ${elixirChat.client.id})`;
 });
 
 elixirChat.onMessage(message => {
@@ -54,32 +36,102 @@ elixirChat.onMessage(message => {
 });
 
 elixirChat.onTyping(users => {
-  document.querySelector('#typing').innerText = `${users.length} user(s) typing...`
+  document.getElementById('typing').innerText = users.length ? `${users.length} user(s) typing...` : 'Nobody is currently typing';
 });
 
-document.getElementById('screenshot').addEventListener('click', () => {
-  elixirChat.takeScreenshot();
-});
-
-document.getElementById('submit').addEventListener('click', () => {
-  const textarea = document.getElementById('text');
-  elixirChat.sendMessage({
-    text: textarea.value,
-    responseToMessageId: window.responseToMessageId || undefined,
+function takeScreenshot(e){
+  elixirChat.takeScreenshot().then(result => {
+    screenshot = result.file;
+    document.getElementById('screenshot-preview').src = result.dataUrl;
+    e.target.disabled = true;
+    e.target.innerText = '✔ Screenshot taken';
   });
-  textarea.value = '';
-  replyToMessage(null);
-});
+}
 
-document.getElementById('text').addEventListener('keyup', (e) => {
+function onTextareaKeyup(e){
+  if (e.which === 13) {
+    sendMessage(e.target.value);
+    e.preventDefault();
+    e.target.value = '';
+    return;
+  }
   elixirChat.dispatchTypedText(e.target.value);
-});
+}
 
+function sendMessage(text){
+  if (text.trim()) {
+    const attachments = document.querySelector('input[type=file]').files;
+    elixirChat.sendMessage({
+      text: text,
+      attachments: [...attachments, screenshot],
+      responseToMessageId: replyTo || null,
+    });
+    reset();
+  }
+}
 
-document.getElementById('load-more').addEventListener('click', () => {
-  const lastMessageCursor = messages[messages.length - 1].cursor;
-  elixirChat.fetchMessageHistory(5, lastMessageCursor).then(history => {
-    window.messages = [...messages, ...history];
+function loadMoreMessages(){
+  const lastMessage = messages[messages.length - 1];
+  elixirChat.fetchMessageHistory(5, lastMessage.cursor).then(history => {
+    messages = [...messages, ...history];
     renderMessages(messages);
   });
-});
+}
+
+function replyToMessage(messageId) {
+  replyTo = messageId;
+  document.querySelectorAll('#messages li').forEach(li => li.style.border = '');
+  if (messageId) {
+    document.getElementById(messageId).style.border = '1px solid blue';
+    document.getElementsByTagName('textarea')[0].focus();
+  }
+}
+
+function renderMessages(messages){
+  const template = document.getElementById('message-template');
+  const container = document.getElementById('messages');
+  container.querySelectorAll('li').forEach(li => li.remove());
+  messages.forEach(message => {
+    const clone = document.importNode(template.content, true);
+    const responseToMessage = (message.data && message.data.responseToMessage) || message.responseToMessage || {};
+    clone.querySelector('li').id = message.id;
+    clone.querySelector('blockquote').textContent = responseToMessage.text ? 'Reply to “' + responseToMessage.text.trim() + '”' : '';
+    clone.querySelector('b').textContent = message.sender.firstName + ' ' + message.sender.lastName;
+    clone.querySelector('div').textContent = message.text;
+    clone.querySelector('button').onclick = () => replyToMessage(message.id);
+    container.appendChild(clone);
+  });
+}
+
+function reset(){
+  attachments = [];
+  screenshot = null;
+  replyToMessage(null);
+  document.querySelector('input[type=file]').value = '';
+  document.getElementById('screenshot-preview').src = '';
+  document.getElementById('screenshot').disabled = false;
+  document.getElementById('screenshot').innerText = 'Take screenshot';
+}
+
+
+
+
+
+
+
+// TODO: remove after inserting min.js SDK version
+window.sendMessage = sendMessage;
+window.onTextareaKeyup = onTextareaKeyup;
+window.loadMoreMessages = loadMoreMessages;
+window.renderMessages = renderMessages;
+window.replyToMessage = replyToMessage;
+window.takeScreenshot = takeScreenshot;
+window.renderMessages = renderMessages;
+window.reset = reset;
+
+// TODO: remove after inserting min.js SDK version
+window.messages = messages;
+window.attachments = attachments;
+window.screenshot = screenshot;
+window.replyTo = replyTo;
+window.elixirChat = elixirChat;

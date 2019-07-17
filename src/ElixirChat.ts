@@ -293,12 +293,24 @@ export class ElixirChat {
   }
 
   public sendMessage(params: IElixirChatSentMessage): Promise<void> {
-    const { text, attachments } = params;
+    const text = params.text;
+    const attachments = params.attachments && params.attachments.length
+      ? Array.from(params.attachments).filter(file => file)
+      : [];
+    const responseToMessageId = typeof params.responseToMessageId === 'string' ? params.responseToMessageId : null;
 
-    if (text.trim() || (attachments && attachments.length)) {
-      return this.messagesSubscription.sendMessage(params)
+    if (text.trim() || attachments.length) {
+      return this.messagesSubscription.sendMessage({ text, attachments, responseToMessageId })
         .then(message => {
-          logEvent(this.debug, 'Sent message', { message, params });
+          logEvent(this.debug, 'Sent message', {
+            message,
+            params,
+            normalizedParams: {
+              text,
+              attachments,
+              responseToMessageId,
+            }
+          });
           this.typingStatusSubscription.dispatchTypedText('', true);
         })
         .catch(error => {
@@ -363,7 +375,7 @@ export class ElixirChat {
   };
 
   // TODO: replace 'before' w/ message indexes on backend?
-  public fetchMessageHistory = (limit: number, beforeCursor: string): Promise<[IElixirChatReceivedMessage]> => {
+  public fetchMessageHistory = (limit: number, beforeCursor?: string): Promise<[IElixirChatReceivedMessage]> => {
     return this.messagesSubscription.fetchMessageHistory(limit, beforeCursor)
       .then(messages => {
         logEvent(this.debug, 'Fetched message history', { limit, beforeCursor, messages });
