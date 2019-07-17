@@ -111,33 +111,35 @@ export const randomDigitStringId: IRandomDigitStringId = (idLength) => {
 };
 
 
-export interface IPlayNote {
-  (frequency: number, fadingOutDuration: number): void;
-}
-
-export const playTone: IPlayNote = (frequency, fadingOutDuration = 1) => {
-  const context = new AudioContext();
-  const oscillator = context.createOscillator();
-  const gain = context.createGain();
-  oscillator.type = 'sine';
-  oscillator.connect(gain);
-  oscillator.frequency.value = frequency;
-  gain.connect(context.destination);
-  oscillator.start(0);
-  gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + fadingOutDuration);
-  setTimeout(() => {
-    oscillator.stop();
-  }, fadingOutDuration * 1000);
-};
-
-
 export interface IPlayNotificationSound {
   (): void
 }
 
 export const playNotificationSound: IPlayNotificationSound = () => {
-  playTone(830.6, 0.9); // La (A)
-  setTimeout(() => {
-    playTone(440.0, 1.5); // Sol (G#)
-  }, 150);
+  const context = new AudioContext();
+  const filter = context.createBiquadFilter();
+  filter.type = 'notch';
+  filter.frequency.value = 780;
+  filter.Q.value = 1.5;
+  filter.connect(context.destination);
+
+  const gain1 = context.createGain();
+  gain1.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 1);
+  gain1.connect(filter);
+
+  const tone1 = context.createOscillator();
+  tone1.frequency.value = 830.6;
+  tone1.connect(gain1);
+  tone1.start(0);
+  tone1.stop(1.65);
+
+  const gain2 = context.createGain();
+  gain2.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 1.5);
+  gain2.connect(filter);
+
+  const tone2 = context.createOscillator();
+  tone2.frequency.value = 440;
+  tone2.connect(gain2);
+  tone2.start(0.15);
+  tone2.stop(1.65);
 };
