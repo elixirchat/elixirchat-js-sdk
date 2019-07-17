@@ -101,7 +101,8 @@ export class TypingStatusSubscription {
       return;
     }
 
-    const statusChange = Object.values(state)[0].metas[0];
+    const statusValues = Object.values(state)[0];
+    const statusChange = statusValues.metas[0];
     const userData: ITypingUser = {
       id: userId,
       firstName: statusChange.first_name,

@@ -315,6 +315,7 @@ export class ElixirChat {
         })
         .catch(error => {
           logEvent(this.debug, 'Failed to send message', error, 'error');
+          throw error;
         });
     }
     else {
@@ -371,6 +372,7 @@ export class ElixirChat {
       })
       .catch(e => {
         logEvent(this.debug, 'Could not capture screenshot', e, 'error');
+        throw e;
       });
   };
 
@@ -383,6 +385,7 @@ export class ElixirChat {
       })
       .catch(data => {
         logEvent(this.debug, 'Could not fetch message history', data, 'error');
+        throw data;
       });
   };
 }

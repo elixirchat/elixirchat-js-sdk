@@ -45,7 +45,7 @@ function takeScreenshot(e){
     document.getElementById('screenshot-preview').src = result.dataUrl;
     e.target.disabled = true;
     e.target.innerText = '✔ Screenshot taken';
-  });
+  }).catch(e => { alert(e.message); });
 }
 
 function onTextareaKeyup(e){
