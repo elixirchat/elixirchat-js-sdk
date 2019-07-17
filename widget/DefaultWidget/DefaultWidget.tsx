@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
+import { playNotificationSound } from '../../utils';
 import { DefaultWidgetMessages } from './DefaultWidgetMessages';
 import { DefaultWidgetTextarea } from './DefaultWidgetTextarea';
 import widgetStyles from './iframeStyles/DefaultWidgetStyles';
@@ -47,6 +48,7 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
       const messages = [message, ...this.state.messages];
       const hasUserScroll = this.hasUserScroll();
       this.setState({ messages });
+      playNotificationSound();
       if (!hasUserScroll) {
         this.scrollToBottom();
       }
