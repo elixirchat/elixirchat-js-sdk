@@ -42,6 +42,11 @@ export class ElixirChat {
   public elixirRoomId: string;
   public elixirClientId: string;
   public authToken: string;
+  public connected: boolean;
+
+  public get reachedBeginningOfMessageHistory(): boolean {
+    return this.messagesSubscription ? this.messagesSubscription.reachedBeginningOfMessageHistory : false;
+  }
 
   protected graphQLClient: any;
   protected messagesSubscription: any;
@@ -202,6 +207,7 @@ export class ElixirChat {
         .then(({ joinRoom }: any) => {
           if (joinRoom) {
             this.authToken = joinRoom.token;
+            this.connected = true;
 
             const client = this.getClientByRoomMembers(joinRoom.room.members);
             this.client.firstName = client.firstName;

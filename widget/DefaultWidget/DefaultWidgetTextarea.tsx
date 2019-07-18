@@ -21,6 +21,7 @@ export interface IDefaultWidgetTextareaState {
 export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps, IDefaultWidgetTextareaState> {
 
   container = React.createRef();
+  textarea: HTMLTextAreaElement = null;
 
   state = {
     replyToId: null,
@@ -30,11 +31,14 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
   };
 
   componentDidMount(): void {
-    this.props.elixirChatWidget.injectIframeStyles(widgetTextareaStyles);
-  }
-
-  componentDidUpdate(prevProps): void {
-
+    const { elixirChatWidget } = this.props;
+    elixirChatWidget.injectIframeStyles(widgetTextareaStyles);
+    elixirChatWidget.onToggleChatVisibility((isOpen) => {
+      if (isOpen) {
+        this.updateVerticalHeight({ scrollToBottom: true });
+        this.textarea.focus();
+      }
+    });
   }
 
   onReplyClick = (messageId): void => { // TODO: figure is replyTo will be implemented in widget
@@ -108,12 +112,16 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
 
   onScreenShotClick = (): void => {
     const { elixirChatWidget } = this.props;
+    elixirChatWidget.toggleChatVisibility();
     elixirChatWidget.takeScreenshot().then(screenshot => {
       this.addAttachments([{
         name: 'Скриншот экрана',
         file: screenshot.file,
         isScreenshot: true,
-      }])
+      }]);
+      elixirChatWidget.toggleChatVisibility();
+    }).catch(() => {
+      elixirChatWidget.toggleChatVisibility();
     });
   };
 
@@ -125,13 +133,13 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
     this.addAttachments(attachments);
   };
 
-  updateVerticalHeight = () => {
+  updateVerticalHeight = (options: { scrollToBottom: boolean }) => {
     setTimeout(() => {
       const newHeight = this.container.current.offsetHeight;
       this.setState({
         areTextareaActionsCollapsed: newHeight < 60
       });
-      this.props.onVerticalResize(newHeight);
+      this.props.onVerticalResize(newHeight, options);
     }, 0);
   };
 
@@ -178,6 +186,7 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
         <TextareaAutosize
           className="elixirchat-chat-textarea__textarea"
           placeholder="Напишите сообщение..."
+          inputRef={tag => {this.textarea = tag;}}
           minRows={1}
           maxRows={5}
           onHeightChange={this.updateVerticalHeight}

@@ -67,11 +67,16 @@ function sendMessage(text){
   }
 }
 
-function loadPreviousMessages(){
+function loadPreviousMessages(e){
   elixirChat.fetchMessageHistory(5, messages[0].cursor).then(history => {
     messages = [...history, ...messages];
     renderMessages(messages);
+    if (elixirChat.reachedBeginningOfMessageHistory) {
+      e.target.innerText = 'All messages loaded';
+      e.target.removeAttribute('href');
+    }
   });
+  e.preventDefault();
 }
 
 function replyToMessage(messageId) {

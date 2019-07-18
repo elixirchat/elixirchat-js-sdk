@@ -71,7 +71,6 @@ textarea {
   position: absolute;
   top: 1px;
   right: 0;
-  cursor: pointer;
   transition: opacity 200ms;
 }
 

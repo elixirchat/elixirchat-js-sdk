@@ -17,6 +17,8 @@ export class ElixirChatWidget extends ElixirChat {
   public widgetChatIframe: HTMLIFrameElement;
   public widgetButton: HTMLElement;
 
+  protected onToggleChatVisibilityCallbacks: Array<(isOpen: boolean) => void> = [];
+
   protected injectIframeStyles(styles: string): void {
     const iframeContainer = <HTMLElement>this.widgetChatIframe.contentWindow.document.querySelector('main');
     if (styles && iframeContainer) {
@@ -51,15 +53,25 @@ export class ElixirChatWidget extends ElixirChat {
   }
 
   public toggleChatVisibility = (): void => {
-    const classNameOpen = 'elixirchat-widget-button--active';
+    const iframeClassNameOpening = 'elixirchat-widget-iframe--opening';
+    const buttonClassNameVisible = 'elixirchat-widget-button--visible';
     this.widgetIsVisible = !this.widgetIsVisible;
     this.widgetChatIframe.hidden = !this.widgetIsVisible;
     if (this.widgetIsVisible) {
-      this.widgetButton.classList.add(classNameOpen);
+      this.widgetButton.classList.add(buttonClassNameVisible);
+      this.widgetChatIframe.classList.add(iframeClassNameOpening);
+      setTimeout(() => {
+        this.widgetChatIframe.classList.remove(iframeClassNameOpening);
+      }, 0);
     }
     else {
-      this.widgetButton.classList.remove(classNameOpen);
+      this.widgetButton.classList.remove(buttonClassNameVisible);
     }
+    this.onToggleChatVisibilityCallbacks.forEach(callback => callback(this.widgetIsVisible));
+  };
+
+  public onToggleChatVisibility = (callback) => {
+    this.onToggleChatVisibilityCallbacks.push(callback);
   };
 
   public appendWidget = ({ container, styles = '' }: IElixirChatWidgetAppendWidgetConfig): void => {
@@ -74,7 +86,7 @@ export class ElixirChatWidget extends ElixirChat {
 
     this.appendChatIframe();
     this.appendWidgetButton();
-    this.toggleChatVisibility(); // TODO: remove
+    setTimeout(() => { this.toggleChatVisibility(); }, 500); // TODO: remove
 
     const iframeContainer = <HTMLElement>this.widgetChatIframe.contentWindow.document.querySelector('main');
     this.widgetChatReactComponent = appendDefaultElixirChatWidget(iframeContainer, this);

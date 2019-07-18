@@ -63,7 +63,7 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
     const { messages, isLoadingPreviousMessages } = this.state;
     const { elixirChatWidget } = this.props;
 
-    if (!isLoadingPreviousMessages) {
+    if (!isLoadingPreviousMessages && !elixirChatWidget.reachedBeginningOfMessageHistory) {
       this.setState({ isLoadingPreviousMessages: true });
       elixirChatWidget.fetchMessageHistory(this.messageChunkSize, messages[0].cursor).then(history => {
         const updatedMessages = [...history, ...messages];
@@ -96,10 +96,10 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
     this.scrollBlock.current.scrollTop = this.scrollBlock.current.scrollHeight;
   };
 
-  onTextareaVerticalResize = (newTextareaHeight: number) => {
+  onTextareaVerticalResize = (newTextareaHeight: number, options: { scrollToBottom: boolean }) => {
     const hasUserScroll = this.hasUserScroll();
     this.scrollBlock.current.style.bottom = newTextareaHeight + 'px';
-    if (!hasUserScroll) {
+    if (!hasUserScroll || options.scrollToBottom) {
       this.scrollToBottom();
     }
   };
@@ -130,7 +130,6 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
           currentlyTypingUsers={currentlyTypingUsers}
           onVerticalResize={this.onTextareaVerticalResize}
           elixirChatWidget={elixirChatWidget}/>
-
       </div>
     );
   }

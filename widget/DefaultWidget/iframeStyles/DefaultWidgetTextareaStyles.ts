@@ -71,28 +71,7 @@ export default css`
   vertical-align: top;
   box-sizing: border-box;
   overflow: hidden;
-}
-
-.elixirchat-chat-textarea__actions-screenshot:after,
-.elixirchat-chat-textarea__actions-attach:after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  opacity: .25;
-  cursor: pointer;
-}
-
-.elixirchat-chat-textarea__actions-screenshot:after {
-  background: url("${chatScreenshotIconBlack}") no-repeat center;
-  background-size: 20px 14px;
-}
-
-.elixirchat-chat-textarea__actions-attach:after {
-  background: url("${chatAttachIconBlack}") no-repeat center;
-  background-size: 20px 14px;
+  transition: background-color 200ms;
 }
 
 .elixirchat-chat-textarea__actions-attach-input {
@@ -108,7 +87,32 @@ export default css`
   right: 0;
   top: 0;
   bottom: 0;
-  cursor: pointer;
+}
+
+.elixirchat-chat-textarea__actions-screenshot:hover,
+.elixirchat-chat-textarea__actions-attach-label:hover {
+  background-color: #f5f5f5;
+}
+
+.elixirchat-chat-textarea__actions-screenshot:after,
+.elixirchat-chat-textarea__actions-attach-label:after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  opacity: .25;
+}
+
+.elixirchat-chat-textarea__actions-screenshot:after {
+  background: url("${chatScreenshotIconBlack}") no-repeat center;
+  background-size: 20px 14px;
+}
+
+.elixirchat-chat-textarea__actions-attach-label:after {
+  background: url("${chatAttachIconBlack}") no-repeat center;
+  background-size: 20px 14px;
 }
 
 .elixirchat-chat-textarea__textarea {

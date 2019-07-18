@@ -38,11 +38,11 @@
   opacity: 0;
 }
 
-.elixirchat-widget-button--active:after {
+.elixirchat-widget-button--visible:after {
   opacity: 0;
 }
 
-.elixirchat-widget-button--active:before {
+.elixirchat-widget-button--visible:before {
   opacity: 1;
 }
 
@@ -58,4 +58,13 @@
   border: 0;
   box-shadow: 0 0 60px rgba(0,0,0,.15);
   z-index: 999998;
+  transition: all 200ms;
+  opacity: 1;
+  transform: none;
+  transform-origin: bottom right;
+}
+
+.elixirchat-widget-iframe--opening {
+  opacity: 0;
+  transform: translateY(15px) scale(0.9);
 }

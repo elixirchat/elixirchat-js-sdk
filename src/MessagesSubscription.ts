@@ -11,6 +11,7 @@ export interface INewMessage {
     firstName?: string;
     lastName?: string;
   };
+  cursor?: string;
   responseToMessage: {
     id: string;
     text: string;
@@ -46,6 +47,8 @@ export class MessagesSubscription {
   public onSubscribeError?: (data: any) => void;
   public onMessage: (message: INewMessage) => void;
 
+  protected latestMessageHistoryCursorsCache: Array<INewMessage> = [];
+  protected reachedBeginningOfMessageHistory: boolean = false;
   protected isBeforeUnload: boolean = false;
 
   protected subscriptionQuery: string = `
@@ -207,7 +210,8 @@ export class MessagesSubscription {
 
   public unsubscribe = (): void => {
     window.removeEventListener('beforeunload', this.onBeforeUnload);
-    this.absintheSocket = AbsintheSocket.cancel(this.absintheSocket, this.notifier)
+    this.absintheSocket = AbsintheSocket.cancel(this.absintheSocket, this.notifier);
+    this.latestMessageHistoryCursorsCache = [];
   };
 
   public sendMessage = ({ text, responseToMessageId }: ISentMessage): Promise<void> => {
@@ -232,7 +236,7 @@ export class MessagesSubscription {
     });
   };
 
-  public fetchMessageHistory = (limit: number, beforeCursor: string): Promise<[INewMessage]> => {
+  public fetchMessageHistory = (limit: number, beforeCursor: string): Promise<[INewMessage] | any[]> => {
     const variables = {
       last: limit,
       before: beforeCursor,
@@ -240,10 +244,26 @@ export class MessagesSubscription {
     const query = prepareGraphQLQuery('query', this.messageHistoryQuery, variables, { before: 'String' });
 
     return new Promise((resolve, reject) => {
+      if (this.reachedBeginningOfMessageHistory) {
+        resolve([]);
+        return;
+      }
+
       this.graphQLClient.query(query, variables)
         .then(response => {
           if (response.messages) {
+
             let messages = <[INewMessage]>simplifyGraphQLJSON(response.messages);
+            messages = messages.filter(message => !this.latestMessageHistoryCursorsCache.includes(message.cursor));
+
+            this.latestMessageHistoryCursorsCache = [
+              ...messages.map(message => message.cursor),
+              ...this.latestMessageHistoryCursorsCache,
+            ].slice(0, limit);
+
+            if (messages.length < limit) {
+              this.reachedBeginningOfMessageHistory = true;
+            }
             resolve(messages);
           }
           else {
