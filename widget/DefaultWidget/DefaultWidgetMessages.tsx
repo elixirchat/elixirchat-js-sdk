@@ -37,7 +37,7 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
 
   processMessages = (messages) => {
     return messages.map((message, i) => {
-      const previousMessage = message[i - 1];
+      const previousMessage = messages[i - 1];
       if (previousMessage) {
         const isDayEarlier = dayjs(previousMessage.timestamp).isBefore(dayjs(message.timestamp).startOf('day'));
         if (isDayEarlier) {
