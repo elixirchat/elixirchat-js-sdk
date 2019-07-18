@@ -12,19 +12,23 @@
     padding: 15px 30px 30px 30px;
     font-size: 13px;
   }
+  #typing {
+    margin: 11px 0;
+  }
   #messages {
     padding: 0;
     list-style: none;
-  }
-  #typing {
-    margin: 11px 0;
+    max-height: calc(100vh - 270px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    width: 270px;
   }
   #messages li {
     padding: 3px 55px 8px 8px;
     border: 1px solid #ddd;
     border-radius: 7px;
     width: 250px;
-    margin-bottom: 10px;
+    margin-top: 10px;
     position: relative;
   }
   #messages blockquote {
@@ -57,17 +61,8 @@
   <div id="room"></div>
   <div id="client"></div>
 
-  <textarea rows="1" placeholder="Type message and press Enter..." onkeyup="onTextareaKeyup(event)"></textarea>
-
-  <button id="screenshot" onclick="takeScreenshot(event)">Take screenshot</button>
-  <img src="" id="screenshot-preview">
-
-  Attach files:
-  <input type="file" multiple>
-
-  <div id="typing">Nobody is currently typing</div>
-
   <ul id="messages">
+    <a href="javascript: loadPreviousMessages()">↑ Load previous messages...</a>
     <template id="message-template">
       <li>
         <blockquote></blockquote>
@@ -78,7 +73,16 @@
     </template>
   </ul>
 
-  <button onclick="loadMoreMessages()">Load more messages...</button>
+  <textarea rows="1" placeholder="Type message and press Enter..." onkeyup="onTextareaKeyup(event)"></textarea>
+
+  <button id="screenshot" onclick="takeScreenshot(event)">Take screenshot</button>
+  <img src="" id="screenshot-preview">
+
+  Attach files:
+  <input type="file" multiple>
+
+  <div id="typing">Nobody is currently typing</div>
+
 </div>
 <script type="text/javascript" src="demo.js"></script>
 </body>

@@ -45,7 +45,7 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
     });
 
     elixirChatWidget.onMessage(message => {
-      const messages = [message, ...this.state.messages];
+      const messages = [...this.state.messages, message];
       const hasUserScroll = this.hasUserScroll();
       this.setState({ messages });
       playNotificationSound();
@@ -65,10 +65,8 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
 
     if (!isLoadingPreviousMessages) {
       this.setState({ isLoadingPreviousMessages: true });
-      const lastMessageCursor = messages[messages.length - 1].cursor;
-
-      elixirChatWidget.fetchMessageHistory(this.messageChunkSize, lastMessageCursor).then(history => {
-        const updatedMessages = [...messages, ...history];
+      elixirChatWidget.fetchMessageHistory(this.messageChunkSize, messages[0].cursor).then(history => {
+        const updatedMessages = [...history, ...messages];
         this.setState({
           messages: updatedMessages,
           isLoadingPreviousMessages: false,

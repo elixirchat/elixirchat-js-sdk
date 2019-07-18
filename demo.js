@@ -24,19 +24,19 @@ let replyTo = null;
 elixirChat.onConnectSuccess(() => {
   elixirChat.fetchMessageHistory(5).then(history => {
     messages = history;
-    renderMessages(messages);
+    renderMessages(messages, true);
   });
   document.getElementById('room').innerHTML = `<b>Room:</b> ${elixirChat.room.title} (ID: ${elixirChat.room.id})`;
   document.getElementById('client').innerHTML = `<b>Client:</b> ${elixirChat.client.firstName} ${elixirChat.client.lastName} (ID: ${elixirChat.client.id})`;
 });
 
 elixirChat.onMessage(message => {
-  messages.unshift(message);
-  renderMessages(messages);
+  messages.push(message);
+  renderMessages(messages, true);
 });
 
 elixirChat.onTyping(users => {
-  document.getElementById('typing').innerText = users.length ? `${users.length} user(s) typing...` : 'Nobody is currently typing';
+  document.getElementById('typing').innerText = users.length ? users.length + ' user(s) typing...' : 'Nobody is currently typing';
 });
 
 function takeScreenshot(e){
@@ -49,31 +49,27 @@ function takeScreenshot(e){
 }
 
 function onTextareaKeyup(e){
-  if (e.which === 13) {
+  if (e.which === 13 /* "Enter" key */) {
     sendMessage(e.target.value);
-    e.preventDefault();
     e.target.value = '';
-    return;
   }
   elixirChat.dispatchTypedText(e.target.value);
 }
 
 function sendMessage(text){
-  if (text.trim()) {
-    const attachments = document.querySelector('input[type=file]').files;
+  if (text) {
     elixirChat.sendMessage({
       text: text,
-      attachments: [...attachments, screenshot],
-      responseToMessageId: replyTo || null,
+      attachments: [screenshot, ...document.querySelector('input[type=file]').files],
+      responseToMessageId: replyTo,
     });
     reset();
   }
 }
 
-function loadMoreMessages(){
-  const lastMessage = messages[messages.length - 1];
-  elixirChat.fetchMessageHistory(5, lastMessage.cursor).then(history => {
-    messages = [...messages, ...history];
+function loadPreviousMessages(){
+  elixirChat.fetchMessageHistory(5, messages[0].cursor).then(history => {
+    messages = [...history, ...messages];
     renderMessages(messages);
   });
 }
@@ -87,7 +83,7 @@ function replyToMessage(messageId) {
   }
 }
 
-function renderMessages(messages){
+function renderMessages(messages, shouldScrollDown = false){
   const template = document.getElementById('message-template');
   const container = document.getElementById('messages');
   container.querySelectorAll('li').forEach(li => li.remove());
@@ -101,6 +97,9 @@ function renderMessages(messages){
     clone.querySelector('button').onclick = () => replyToMessage(message.id);
     container.appendChild(clone);
   });
+  if (shouldScrollDown) {
+    container.scrollTop = container.scrollHeight;
+  }
 }
 
 function reset(){
@@ -122,11 +121,10 @@ function reset(){
 // TODO: remove after inserting min.js SDK version
 window.sendMessage = sendMessage;
 window.onTextareaKeyup = onTextareaKeyup;
-window.loadMoreMessages = loadMoreMessages;
+window.loadPreviousMessages = loadPreviousMessages;
 window.renderMessages = renderMessages;
 window.replyToMessage = replyToMessage;
 window.takeScreenshot = takeScreenshot;
-window.renderMessages = renderMessages;
 window.reset = reset;
 
 // TODO: remove after inserting min.js SDK version

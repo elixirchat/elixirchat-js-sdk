@@ -36,7 +36,8 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
   }
 
   processMessages = (messages) => {
-    const reversedMessages = [...messages].reverse();
+    // const reversedMessages = [...messages].reverse();
+    const reversedMessages = [...messages];
     return reversedMessages.map((message, i) => {
       const previousMessage = reversedMessages[i - 1];
       if (previousMessage) {

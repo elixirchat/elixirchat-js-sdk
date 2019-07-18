@@ -234,19 +234,16 @@ export class MessagesSubscription {
 
   public fetchMessageHistory = (limit: number, beforeCursor: string): Promise<[INewMessage]> => {
     const variables = {
-      first: limit,
+      last: limit,
       before: beforeCursor,
     };
-    const query = prepareGraphQLQuery('query', this.messageHistoryQuery, variables, { before: 'ID' });
+    const query = prepareGraphQLQuery('query', this.messageHistoryQuery, variables, { before: 'String' });
 
     return new Promise((resolve, reject) => {
       this.graphQLClient.query(query, variables)
         .then(response => {
           if (response.messages) {
             let messages = <[INewMessage]>simplifyGraphQLJSON(response.messages);
-            if (beforeCursor) {
-              messages = <[INewMessage]>messages.slice(1);
-            }
             resolve(messages);
           }
           else {
