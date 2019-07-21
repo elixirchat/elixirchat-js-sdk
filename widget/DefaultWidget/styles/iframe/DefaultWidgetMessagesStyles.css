@@ -1,6 +1,3 @@
-import { css } from '../../../utils';
-export default css`
-
 .elixirchat-chat-messages {
   display: flex;
   flex-direction: column;
@@ -61,5 +58,3 @@ export default css`
 .elixirchat-chat-messages__item--by-agent .elixirchat-chat-messages__timestamp {
   text-align: left;
 }
-
-`

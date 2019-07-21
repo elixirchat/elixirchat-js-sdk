@@ -1,10 +1,9 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
-import { playNotificationSound } from '../../utils';
+import { playNotificationSound } from '../../utilsWidget';
 import { DefaultWidgetMessages } from './DefaultWidgetMessages';
 import { DefaultWidgetTextarea } from './DefaultWidgetTextarea';
-import widgetStyles from './iframeStyles/DefaultWidgetStyles';
-import './DefaultWidgetGlobalStyles.css';
+import { DefaultWidgetStyles } from './styles';
 
 export interface IDefaultWidgetProps {
   elixirChatWidget: any;
@@ -35,7 +34,7 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
 
   componentDidMount(): void {
     const { elixirChatWidget } = this.props;
-    elixirChatWidget.injectIframeStyles(widgetStyles);
+    elixirChatWidget.injectIframeStyles(DefaultWidgetStyles);
 
     elixirChatWidget.onConnectSuccess(() => {
       elixirChatWidget.fetchMessageHistory(this.messageChunkSize).then(messages => {

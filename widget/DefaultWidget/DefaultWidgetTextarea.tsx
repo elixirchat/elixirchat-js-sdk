@@ -1,8 +1,9 @@
 import React, { Component, Fragment } from 'react';
 import cn from 'classnames';
-import { randomDigitStringId, inflect } from '../../utils';
 import TextareaAutosize from 'react-textarea-autosize';
-import widgetTextareaStyles from './iframeStyles/DefaultWidgetTextareaStyles';
+import { randomDigitStringId } from '../../utilsSDK';
+import { inflect } from '../../utilsWidget';
+import { DefaultWidgetTextareaStyles } from './styles';
 
 export interface IDefaultWidgetTextareaProps {
   elixirChatWidget: any;
@@ -32,7 +33,7 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
 
   componentDidMount(): void {
     const { elixirChatWidget } = this.props;
-    elixirChatWidget.injectIframeStyles(widgetTextareaStyles);
+    elixirChatWidget.injectIframeStyles(DefaultWidgetTextareaStyles);
     elixirChatWidget.onToggleChatVisibility((isOpen) => {
       if (isOpen) {
         this.updateVerticalHeight({ scrollToBottom: true });

@@ -3,7 +3,7 @@ import cn from 'classnames';
 import dayjs from 'dayjs';
 import dayjsCalendar from 'dayjs/plugin/calendar'
 import 'dayjs/locale/ru'
-import widgetMessagesStyles from './iframeStyles/DefaultWidgetMessagesStyles';
+import { DefaultWidgetMessagesStyles } from './styles';
 
 export interface IDefaultWidgetMessagesProps {
   elixirChatWidget: any;
@@ -24,7 +24,7 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
   componentDidMount(): void {
     dayjs.locale('ru');
     dayjs.extend(dayjsCalendar);
-    this.props.elixirChatWidget.injectIframeStyles(widgetMessagesStyles);
+    this.props.elixirChatWidget.injectIframeStyles(DefaultWidgetMessagesStyles);
   }
 
   componentDidUpdate(prevProps): void {

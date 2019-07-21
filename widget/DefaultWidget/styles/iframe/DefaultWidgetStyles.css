@@ -1,22 +1,3 @@
-import { css } from '../../../utils';
-import fontGraphikRegular from '../assets/fonts/Graphik-Regular-Web.woff';
-import fontGraphikBold from '../assets/fonts/Graphik-Bold-Web.woff';
-import chatCloseIconBlack from '../assets/images/chat-close-icon-black.svg';
-
-export default css`
-
-@font-face {
-  font-family: "Graphik";
-  font-weight: normal;
-  src: url("${fontGraphikRegular}") format("woff");
-}
-
-@font-face {
-  font-family: "Graphik";
-  font-weight: bold;
-  src: url("${fontGraphikBold}") format("woff");
-}
-
 body {
   margin: 0;
   padding: 0;
@@ -65,7 +46,7 @@ textarea {
   width: 53px;
   height: 53px;
   border: 0;
-  background: transparent url("${chatCloseIconBlack}") no-repeat center;
+  background: transparent var(--ChatCloseIconBlack) no-repeat center;
   background-size: 15px;
   opacity: .22;
   position: absolute;
@@ -88,5 +69,3 @@ textarea {
   overflow-y: auto;
   padding: 20px 30px;
 }
-
-`

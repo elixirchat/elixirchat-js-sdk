@@ -1,17 +1,3 @@
-import { css } from '../../../utils';
-import chatAttachIconBlack from '../assets/images/chat-attach-icon-black.svg';
-import chatAttachIconBlue from '../assets/images/chat-attach-icon-blue.svg';
-import chatRemoveIconBlue from '../assets/images/chat-remove-icon-blue.svg';
-import chatScreenshotIconBlack from '../assets/images/chat-screenshot-icon-black.svg';
-import chatScreenshotIconBlue from '../assets/images/chat-screenshot-icon-blue.svg';
-import chatTypingIconBlack from '../assets/images/chat-typing-icon-black.svg';
-
-// TODO: figure where to use
-// import chatAttachIconWhite from '../assets/images/chat-attach-icon-white.svg';
-// import chatScreenshotIconWhite from '../assets/images/chat-screenshot-icon-white.svg';
-
-export default css`
-
 .elixirchat-chat-textarea {
   position: fixed;
   bottom: 0;
@@ -41,7 +27,7 @@ export default css`
   top: 3px;
   width: 18px;
   height: 11px;
-  background: url("${chatTypingIconBlack}") no-repeat center;
+  background: var(--ChatTypingIconBlack) no-repeat center;
   background-size: contain;
   opacity: .15;
   z-index: 2;
@@ -106,12 +92,12 @@ export default css`
 }
 
 .elixirchat-chat-textarea__actions-screenshot:after {
-  background: url("${chatScreenshotIconBlack}") no-repeat center;
+  background: var(--ChatScreenshotIconBlack) no-repeat center;
   background-size: 20px 14px;
 }
 
 .elixirchat-chat-textarea__actions-attach-label:after {
-  background: url("${chatAttachIconBlack}") no-repeat center;
+  background: var(--ChatAttachIconBlack) center no-repeat;
   background-size: 20px 14px;
 }
 
@@ -127,7 +113,6 @@ export default css`
   resize: none;
   width: calc(100% - 120px);
 }
-
 
 .elixirchat-chat-attachment-list {
   padding: 0;
@@ -147,7 +132,7 @@ export default css`
   margin-right: 10px;
   width: 14px;
   height: 14px;
-  background: url("${chatAttachIconBlue}") no-repeat center;
+  background: var(--ChatAttachIconBlue) no-repeat center;
   background-size: contain;
   vertical-align: middle;
 }
@@ -155,7 +140,7 @@ export default css`
 .elixirchat-chat-attachment-icon--screenshot {
   width: 16px;
   height: 12px;
-  background: url("${chatScreenshotIconBlue}") no-repeat center;
+  background: var(--ChatScreenshotIconBlue) no-repeat center;
   margin-top: -2px;
 }
 
@@ -173,8 +158,6 @@ export default css`
   margin-left: 9px;
   display: inline-block;
   vertical-align: middle;
-  background: url("${chatRemoveIconBlue}") no-repeat center;
+  background: var(--ChatRemoveIconBlue) no-repeat center;
   background-size: contain;
 }
-
-`

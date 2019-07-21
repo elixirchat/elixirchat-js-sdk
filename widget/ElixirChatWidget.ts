@@ -1,6 +1,9 @@
 import ElixirChat from '../src';
-import { logEvent, insertElement } from '../utils';
+import { logEvent } from '../utilsSDK';
+import { insertElement, generateFontFaceRule } from '../utilsWidget';
 import { appendDefaultElixirChatWidget } from './DefaultWidget/DefaultWidget';
+import { assetsBase64, globalAssetUrlCssVars, iframeAssetUrlCssVars } from './DefaultWidget/assets';
+import { DefaultWidgetGlobalStyles } from './DefaultWidget/styles';
 
 export interface IElixirChatWidgetAppendWidgetConfig {
   container: HTMLElement;
@@ -19,19 +22,47 @@ export class ElixirChatWidget extends ElixirChat {
 
   protected onToggleChatVisibilityCallbacks: Array<(isOpen: boolean) => void> = [];
 
+  protected injectGlobalStyles(styles: string): void {
+    const cssCode = this.areCssVariablesSupported()
+      ? styles
+      : this.replaceCssVariablesWithDataUrls(styles, globalAssetUrlCssVars);
+    insertElement('style', { innerHTML: cssCode, type: 'text/css' }, this.container);
+  }
+
   protected injectIframeStyles(styles: string): void {
     const iframeContainer = <HTMLElement>this.widgetChatIframe.contentWindow.document.querySelector('main');
-    if (styles && iframeContainer) {
-      insertElement('style', { innerHTML: styles, type: 'text/css' }, iframeContainer);
-    }
+    const cssCode = this.areCssVariablesSupported()
+      ? styles
+      : this.replaceCssVariablesWithDataUrls(styles, iframeAssetUrlCssVars);
+    insertElement('style', { innerHTML: cssCode, type: 'text/css' }, iframeContainer);
+  }
+
+  protected replaceCssVariablesWithDataUrls(styles: string, cssVariableRule: string): void {
+    const cssVariables = {};
+    cssVariableRule.trim()
+      .replace(/^.*{/gm, '')
+      .replace(/}$/, '')
+      .split('--')
+      .filter(line => /url\(/i.test(line))
+      .forEach(line => {
+        let [cssVarName, cssVarValue] = line.split(/:\s*url\s*\(/);
+        cssVarName = cssVarName.trim();
+        cssVarValue = cssVarValue.trim().replace(/\s*\)\s*;?$/, '');
+        cssVariables[cssVarName] = cssVarValue;
+      });
+    return styles.replace(/var\(--([a-z0-9_]+)\)/igm, (match, key) => {
+      return `url("${cssVariables[key]}")`;
+    });
+  }
+
+  protected areCssVariablesSupported(): boolean {
+    // Taken from Modernizr
+    const supportsFn = (window.CSS && window.CSS.supports.bind(window.CSS)) || (window.supportsCSS);
+    return !!supportsFn && (supportsFn('--f:0') || supportsFn('--f', 0));
   }
 
   protected appendWidgetButton(): void {
-    const button = insertElement('button', {
-      title: 'Open chat',
-      className: 'elixirchat-widget-button',
-    }, this.container);
-
+    const button = insertElement('button', { className: 'elixirchat-widget-button' }, this.container);
     button.addEventListener('click', this.toggleChatVisibility);
     if (this.widgetButton) {
       this.widgetButton.remove();
@@ -50,6 +81,18 @@ export class ElixirChatWidget extends ElixirChat {
       this.widgetChatIframe.remove();
     }
     this.widgetChatIframe = iframe;
+  }
+
+  protected addendStyles(): void {
+    this.injectGlobalStyles(DefaultWidgetGlobalStyles, this.container);
+    this.injectGlobalStyles(globalAssetUrlCssVars, this.container);
+
+    this.injectIframeStyles([
+      generateFontFaceRule('Graphik', 'normal', assetsBase64.GraphikRegularWeb),
+      generateFontFaceRule('Graphik', 'bold', assetsBase64.GraphikBoldWeb)
+    ].join('\n'));
+    this.injectIframeStyles(this.styles);
+    this.injectIframeStyles(iframeAssetUrlCssVars);
   }
 
   public toggleChatVisibility = (): void => {
@@ -90,7 +133,8 @@ export class ElixirChatWidget extends ElixirChat {
 
     const iframeContainer = <HTMLElement>this.widgetChatIframe.contentWindow.document.querySelector('main');
     this.widgetChatReactComponent = appendDefaultElixirChatWidget(iframeContainer, this);
+    this.addendStyles();
 
-    this.injectIframeStyles(this.styles);
+    logEvent(this.debug, 'Appended ElixirChat default widget', { container })
   };
 }

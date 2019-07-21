@@ -3,9 +3,10 @@
   "version": "0.9.1",
   "description": "JavaScript SDK for https://elixir.chat",
   "scripts": {
-    "dev": "parcel demo.html --port 8000",
-    "demo-widget": "parcel demo-widget.html --port 8001",
-    "production": "parcel build demo.html"
+    "dev-sdk": "parcel demo.html --port 8000",
+    "dev-widget": "parcel demo-widget.html --port 8001",
+    "build-sdk": "parcel build demo.html",
+    "build-widget": "parcel build demo-widget.html"
   },
   "main": "src/index.ts",
   "repository": {

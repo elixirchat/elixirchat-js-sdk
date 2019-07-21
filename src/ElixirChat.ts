@@ -1,5 +1,5 @@
 import { uniqueNamesGenerator } from 'unique-names-generator';
-import { logEvent, capitalize, randomDigitStringId } from '../utils';
+import { logEvent, capitalize, randomDigitStringId } from '../utilsSDK';
 import { MessagesSubscription, INewMessage, ISentMessage } from './MessagesSubscription';
 import { TypingStatusSubscription } from './TypingStatusSubscription';
 import { ScreenshotTaker, IScreenshot } from './ScreenshotTaker';
