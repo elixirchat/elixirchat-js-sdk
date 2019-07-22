@@ -12,7 +12,7 @@ JavaScript SDK for [https://elixir.chat](https://elixir.chat) (также дос
 ## Examples
 | <img src="https://user-images.githubusercontent.com/1618344/61660053-b36e3f80-acd1-11e9-8f0d-79a8be0c2597.png" alt="ElixirChat Widget Demo" width="100%"/> | <img src="https://user-images.githubusercontent.com/1618344/61660172-f29c9080-acd1-11e9-84e4-9048d0d785f6.png" alt="ElixirChat Widget SDK" width="100%"/> |
 | --- |--- |
-| __Fully implemented Elixirchat widget__ (customized with CSS) | __Custom widget__ (written with pure JS from scratch) |
+| __Fully implemented Elixirchat widget.__ Customized with CSS. [How to add?](#add-default-widget) | __Custom widget.__ Written with pure JS from scratch. [How to add?](#create-custom-widget) |
 | [See demo](https://elixirchat.surge.sh/examples/widget.html) | [See demo](https://elixirchat.surge.sh/examples/sdk.html) |
 | [Code](https://github.com/elixirchat/elixirchat-widget/blob/master/build/examples/widget.html) (~20 lines of JS) | [Code](https://github.com/elixirchat/elixirchat-widget/blob/master/build/examples/sdk.html) (~90 lines of JS) |
 
@@ -24,10 +24,13 @@ JavaScript SDK for [https://elixir.chat](https://elixir.chat) (также дос
 
 ### a) Via package manager
 Run `npm i elixirchat --save` and then add this code:
+
 ```js
 import ElixirChatWidget from 'ElixirChat/widget';
 
 const elixirChatWidget = ElixirChatWidget({
+  apiUrl: 'https://elixirchat.yoursite.com:4000', // your ElixirChat API URL
+  socketUrl: 'ws://elixirchat.yoursite.com/socket', // your ElixirChat websocket URL
   companyId: 'your-company-id-here', // you will get companyId from ElixirChat team
   // You may also include optional "room" and "client" parameters here
   // Scroll down to "ElixirChat Config" for details
@@ -36,7 +39,7 @@ const elixirChatWidget = ElixirChatWidget({
 });
 elixirChatWidget.appendWidget({
   container: document.body,
-  styles: `.your-custom-widget-css-code-here { color: green }`,
+  iframeStyles: `.your-custom-widget-css-code-here { color: green }`,
 });
 ```
 
