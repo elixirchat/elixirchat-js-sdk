@@ -4,8 +4,9 @@
   "description": "JavaScript SDK for https://elixir.chat",
   "scripts": {
     "dev": "parcel dev.html --port 8001",
+    "build": "./bin/build.sh",
     "examples": "./bin/browse-examples.sh",
-    "build": "./bin/build.sh"
+    "examples-deploy": "surge build"
   },
   "main": "src/index.ts",
   "repository": {
@@ -35,6 +36,7 @@
     "@babel/preset-typescript": "^7.3.3",
     "http-server": "^0.11.1",
     "parcel-bundler": "^1.12.3",
+    "surge": "^0.21.3",
     "typescript": "^3.5.3"
   }
 }
