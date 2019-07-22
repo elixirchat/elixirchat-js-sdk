@@ -38,15 +38,15 @@ export const assetsBase64 = {
  * @see ElixirChatWidget.replaceCssVariablesWithDataUrls()
  */
 export const iframeAssetUrlCssVars = `:root {
-  --ChatAttachIconBlack:      url(${ChatAttachIconBlack});
-  --ChatAttachIconBlue:       url(${ChatAttachIconBlue});
-  --ChatCloseIconBlack:       url(${ChatCloseIconBlack});
-  --ChatRemoveIconBlue:       url(${ChatRemoveIconBlue});
-  --ChatScreenshotIconBlack:  url(${ChatScreenshotIconBlack});
-  --ChatScreenshotIconBlue:   url(${ChatScreenshotIconBlue});
-  --ChatTypingIconBlack:      url(${ChatTypingIconBlack});
+  --ElixirChatChatAttachIconBlack:      url(${ChatAttachIconBlack});
+  --ElixirChatChatAttachIconBlue:       url(${ChatAttachIconBlue});
+  --ElixirChatChatCloseIconBlack:       url(${ChatCloseIconBlack});
+  --ElixirChatChatRemoveIconBlue:       url(${ChatRemoveIconBlue});
+  --ElixirChatChatScreenshotIconBlack:  url(${ChatScreenshotIconBlack});
+  --ElixirChatChatScreenshotIconBlue:   url(${ChatScreenshotIconBlue});
+  --ElixirChatChatTypingIconBlack:      url(${ChatTypingIconBlack});
 }`;
 export const globalAssetUrlCssVars = `:root {
-  --WidgetIconChat:           url(${WidgetIconChat});
-  --WidgetIconClose:          url(${WidgetIconClose});
+  --ElixirChatWidgetIconChat:           url(${WidgetIconChat});
+  --ElixirChatWidgetIconClose:          url(${WidgetIconClose});
 }`;

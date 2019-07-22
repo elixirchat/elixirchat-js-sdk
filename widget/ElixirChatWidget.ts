@@ -1,4 +1,4 @@
-import { logEvent } from '../utilsSDK';
+import { logEvent } from '../utilsCommon';
 import {
   insertElement,
   parseCssVariables,
@@ -10,21 +10,31 @@ import { appendDefaultElixirChatWidget } from './DefaultWidget/DefaultWidget';
 import { assetsBase64, globalAssetUrlCssVars, iframeAssetUrlCssVars } from './DefaultWidget/assets';
 import { DefaultWidgetGlobalStyles } from './DefaultWidget/styles';
 
-const isDev = true; // TODO: pass flag
 let ElixirChat = window.ElixirChat;
-if (isDev) {
+if (process.env.NODE_ENV === 'development') {
   ElixirChat = require('../sdk').default;
+}
+if (!ElixirChat) {
+  logEvent(
+    true,
+    'Cannot find ElixirChat SDK. Are you sure you imported SDK (ether via "import" or via the <script/> tag)?\n' +
+    'See: https://github.com/elixirchat/elixirchat-widget#add-default-widget', {
+      NODE_ENV: process.env.NODE_ENV
+    }, 'error'
+  );
 }
 
 export interface IElixirChatWidgetAppendWidgetConfig {
   container: HTMLElement;
-  styles?: string;
+  iframeStyles?: string;
+  visibleByDefault?: boolean;
 }
 
 export class ElixirChatWidget extends ElixirChat {
 
   public container: HTMLElement;
-  public styles: string;
+  public iframeStyles: string;
+  public visibleByDefault: boolean;
 
   public widgetIsVisible: boolean = false;
   public widgetChatReactComponent: any = {};
@@ -80,7 +90,7 @@ export class ElixirChatWidget extends ElixirChat {
       generateFontFaceRule('Graphik', 'normal', assetsBase64.GraphikRegularWeb),
       generateFontFaceRule('Graphik', 'bold', assetsBase64.GraphikBoldWeb)
     ].join('\n'));
-    this.injectIframeStyles(this.styles);
+    this.injectIframeStyles(this.iframeStyles);
     this.injectIframeStyles(iframeAssetUrlCssVars);
   }
 
@@ -106,15 +116,16 @@ export class ElixirChatWidget extends ElixirChat {
     this.onToggleChatVisibilityCallbacks.push(callback);
   };
 
-  public appendWidget = ({ container, styles = '' }: IElixirChatWidgetAppendWidgetConfig): void => {
+  public appendWidget = ({ container, iframeStyles = '', visibleByDefault = false }: IElixirChatWidgetAppendWidgetConfig): void => {
     if (!(container instanceof HTMLElement)) {
       const errorMessage = 'You must provide an HTMLElement as a "container" option to appendWidget() method';
-      logEvent(this.debug, errorMessage, { container, styles }, 'error');
+      logEvent(this.debug, errorMessage, { container, iframeStyles }, 'error');
       return;
     }
 
     this.container = container;
-    this.styles = styles;
+    this.iframeStyles = iframeStyles;
+    this.visibleByDefault = visibleByDefault;
 
     this.appendChatIframe();
     this.appendWidgetButton();
@@ -122,6 +133,10 @@ export class ElixirChatWidget extends ElixirChat {
     const iframeContainer = <HTMLElement>this.widgetChatIframe.contentWindow.document.querySelector('main');
     this.widgetChatReactComponent = appendDefaultElixirChatWidget(iframeContainer, this);
     this.addendStyles();
+
+    if (this.visibleByDefault) {
+      this.toggleChatVisibility();
+    }
 
     logEvent(this.debug, 'Appended ElixirChat default widget', { container })
   };

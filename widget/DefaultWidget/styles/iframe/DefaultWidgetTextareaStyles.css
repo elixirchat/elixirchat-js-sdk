@@ -6,6 +6,7 @@
   background: #ffffff;
   z-index: 3;
   box-shadow: 0 -1px 0 rgba(0,0,0,.15);
+  border-radius: 0 0 8px 8px;
 }
 
 .elixirchat-chat-typing {
@@ -27,7 +28,7 @@
   top: 3px;
   width: 18px;
   height: 11px;
-  background: var(--ChatTypingIconBlack) no-repeat center;
+  background: var(--ElixirChatChatTypingIconBlack) no-repeat center;
   background-size: contain;
   opacity: .15;
   z-index: 2;
@@ -58,6 +59,7 @@
   box-sizing: border-box;
   overflow: hidden;
   transition: background-color 200ms;
+  background: #ffffff;
 }
 
 .elixirchat-chat-textarea__actions-attach-input {
@@ -92,12 +94,12 @@
 }
 
 .elixirchat-chat-textarea__actions-screenshot:after {
-  background: var(--ChatScreenshotIconBlack) no-repeat center;
+  background: var(--ElixirChatChatScreenshotIconBlack) no-repeat center;
   background-size: 20px 14px;
 }
 
 .elixirchat-chat-textarea__actions-attach-label:after {
-  background: var(--ChatAttachIconBlack) center no-repeat;
+  background: var(--ElixirChatChatAttachIconBlack) center no-repeat;
   background-size: 20px 14px;
 }
 
@@ -132,7 +134,7 @@
   margin-right: 10px;
   width: 14px;
   height: 14px;
-  background: var(--ChatAttachIconBlue) no-repeat center;
+  background: var(--ElixirChatChatAttachIconBlue) no-repeat center;
   background-size: contain;
   vertical-align: middle;
 }
@@ -140,7 +142,7 @@
 .elixirchat-chat-attachment-icon--screenshot {
   width: 16px;
   height: 12px;
-  background: var(--ChatScreenshotIconBlue) no-repeat center;
+  background: var(--ElixirChatChatScreenshotIconBlue) no-repeat center;
   margin-top: -2px;
 }
 
@@ -158,6 +160,6 @@
   margin-left: 9px;
   display: inline-block;
   vertical-align: middle;
-  background: var(--ChatRemoveIconBlue) no-repeat center;
+  background: var(--ElixirChatChatRemoveIconBlue) no-repeat center;
   background-size: contain;
 }

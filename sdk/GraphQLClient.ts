@@ -1,4 +1,4 @@
-import { logEvent } from '../utilsSDK';
+import { logEvent } from '../utilsCommon';
 
 export interface IGraphQLClientConfig {
   url: string;

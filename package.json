@@ -4,7 +4,7 @@
   "description": "JavaScript SDK for https://elixir.chat",
   "scripts": {
     "dev": "parcel dev.html --port 8001",
-    "examples": "open http://localhost:8002/examples/sdk.html && open http://localhost:8002/examples/widget.html && http-server build -p 8002",
+    "examples": "./bin/browse-examples.sh",
     "build": "./bin/build.sh"
   },
   "main": "src/index.ts",

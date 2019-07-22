@@ -1,27 +1,28 @@
 import ElixirChatWidget from './widget';
 
-// TODO: replace room & company w/ values from demo-server
 const elixirChatWidget = new ElixirChatWidget({
   apiUrl: 'http://localhost:4000',
   socketUrl: 'ws://localhost:4000/socket',
-  companyId: '6ac8ce92-3a31-440b-b439-831d292a9730', // huntflow
+
+  // TODO: replace company ID w/ default values
+  // TODO: backend: populate DB by default values during installation
+  companyId: '6ac8ce92-3a31-440b-b439-831d292a9730',
   room: {
-    id: 'test1',
-    title: 'My new room Z'
+    id: 'dev-room-id',
+    title: 'Development room title'
   },
   client: {
-    id: 'client1',
-    firstName: 'User',
-    lastName: 'Name'
+    id: 'dev-client-id',
+    firstName: 'Development',
+    lastName: 'Client'
   },
   debug: true,
 });
 
 elixirChatWidget.appendWidget({
   container: document.getElementById('elixirchat-widget'),
-  styles: `
-   .elixirchat-chat-container {
-     background: wheat;
-   }
+  visibleByDefault: true,
+  iframeStyles: `
+    /* Your iframe CSS */
   `
 });

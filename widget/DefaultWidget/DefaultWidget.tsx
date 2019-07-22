@@ -29,6 +29,7 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
     room: {},
     client: {},
     currentlyTypingUsers: [],
+    isLoading: true,
     isLoadingPreviousMessages: false,
   };
 
@@ -38,7 +39,7 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
 
     elixirChatWidget.onConnectSuccess(() => {
       elixirChatWidget.fetchMessageHistory(this.messageChunkSize).then(messages => {
-        this.setState({ messages });
+        this.setState({ messages, isLoading: false });
         this.scrollToBottom();
       });
     });
@@ -104,7 +105,7 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
   };
 
   render(): void {
-    const { messages, currentlyTypingUsers } = this.state;
+    const { messages, currentlyTypingUsers, isLoading } = this.state;
     const { elixirChatWidget } = this.props;
 
     return (
@@ -117,6 +118,10 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
             title="Закрыть чат"
             onClick={elixirChatWidget.toggleChatVisibility}/>
         </h2>
+
+        {isLoading && (
+          <i className="elixirchat-chat-spinner"/>
+        )}
 
         <div className="elixirchat-chat-scroll" ref={this.scrollBlock} onScroll={this.onMessagesScroll}>
           <DefaultWidgetMessages

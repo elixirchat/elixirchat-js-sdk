@@ -25,12 +25,12 @@
 }
 
 .elixirchat-widget-button:after {
-  background: var(--WidgetIconChat) no-repeat center 18px;
+  background: var(--ElixirChatWidgetIconChat) no-repeat center 18px;
   background-size: 29px;
 }
 
 .elixirchat-widget-button:before {
-  background: var(--WidgetIconClose) no-repeat center 21px;
+  background: var(--ElixirChatWidgetIconClose) no-repeat center 21px;
   background-size: 20px;
 }
 

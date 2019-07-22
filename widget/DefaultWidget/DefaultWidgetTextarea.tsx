@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import cn from 'classnames';
 import TextareaAutosize from 'react-textarea-autosize';
-import { randomDigitStringId } from '../../utilsSDK';
+import { randomDigitStringId } from '../../utilsCommon';
 import { inflect } from '../../utilsWidget';
 import { DefaultWidgetTextareaStyles } from './styles';
 
