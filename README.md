@@ -1,5 +1,5 @@
 # elixirchat-sdk
-JavaScript SDK for [https://elixir.chat](https://elixir.chat)
+JavaScript SDK for [https://elixir.chat](https://elixir.chat) (также доступно [<img src="https://user-images.githubusercontent.com/1618344/61660503-a56cee80-acd2-11e9-864c-7c643d168c6f.png" width="16"/> на русском языке](https://github.com/elixirchat/elixirchat-widget/blob/master/README-ru.md))
 
 
 <img src="https://user-images.githubusercontent.com/1618344/60431837-42ff6180-9bf0-11e9-9ee5-6a2c4b250fc7.png" alt="ElixirChat widget" width="498"/>
@@ -8,6 +8,15 @@ JavaScript SDK for [https://elixir.chat](https://elixir.chat)
 ### There are two things you can do with ElixirChat SDK:
 1. [Add a fully implemented Elixirchat widget (pictured above) to your website](#add-default-widget) by simply writing a couple lines of code. The widget's look and feel is customizable via CSS.
 2. [Create your own custom widget](#create-custom-widget) that communicates with your ElixirChat admin panel via Elixirchat SDK.
+
+## Examples
+| <img src="https://user-images.githubusercontent.com/1618344/61660053-b36e3f80-acd1-11e9-8f0d-79a8be0c2597.png" alt="ElixirChat Widget Demo" width="100%"/> | <img src="https://user-images.githubusercontent.com/1618344/61660172-f29c9080-acd1-11e9-84e4-9048d0d785f6.png" alt="ElixirChat Widget SDK" width="100%"/> |
+| --- |--- |
+| __Fully implemented Elixirchat widget__ (customized with CSS) | __Custom widget__ (written with pure JS from scratch) |
+| [See demo](https://elixirchat.surge.sh/examples/widget.html) | [See demo](https://elixirchat.surge.sh/examples/sdk.html) |
+| [Code](https://github.com/elixirchat/elixirchat-widget/blob/master/build/examples/widget.html) (~20 lines of JS) | [Code](https://github.com/elixirchat/elixirchat-widget/blob/master/build/examples/sdk.html) (~90 lines of JS) |
+
+
 
 
 <a id="add-default-widget"></a>
@@ -31,7 +40,7 @@ elixirChatWidget.appendWidget({
 });
 ```
 
-### b) Via <script> tag:
+### b) Via `<script>` tag:
 Download `/dist/sdk.min.js` and `/dist/default-widget.min.js` from this repository and then include this snippet anywhere into your HTML-code:
 ```html
 <script src="[YOUR_PATH]/sdk.min.js"></script>
@@ -375,7 +384,7 @@ elixirChat.onConnectSuccess(() => {
 <br/>
 <a id="onConnectError"></a>
 
-#### `onConnectError (() => { ... })`
+#### `onConnectError (error => { ... })`
 A callback that fires if connection to the room failed. This happens either after initial SDK initialization, or after invoking [`reconnect()`](#reconnect) method.
 
 ```js
@@ -386,15 +395,42 @@ elixirChat.onConnectError((e) => {
 
 <br/>
 
-## There is one more method specifically in `ElixirChatWidget`:
+## There are a few more methods specifically in `ElixirChatWidget`:
+
+<a id="toggleChatVisibility"></a>
+#### `toggleChatVisibility()`
+Shows or hides the widget chat window.
+
+```js
+// Example:
+elixirChatWidget.toggleChatVisibility();
+console.log('Chat window is now', elixirChatWidget.widgetIsVisible ? 'open' : 'closed');
+```
+
+
+<a id="onToggleChatVisibility"></a>
+#### `onToggleChatVisibility(callback)`
+Subscribe to open/close events of the widget chat window.
+
+__Parameters:__
+- `callback: function` - function that fires every time the chat window is opened or closed
+
+```js
+// Example:
+elixirChatWidget.onToggleChatVisibility((isVisible) => {
+  console.log('Chat window is now ', isVisible ? 'open' : 'closed');
+});
+```
+
 
 <a id="appendWidget"></a>
-#### `appendWidget ({ container: HTMLElement, styles: string })`
+#### `appendWidget({ container, visibleByDefault, iframeStyles })`
 Append ElixirChat widget to a container, customize via CSS if needed
 
 __Parameters:__
-- `container` - DOM element to where the widget would be appended (at the end of it)
-- `styles` - your custom CSS code applied to ElixirChat Widget so that you can easily change look and feel of your widget
+- `container: HTMLElement` - DOM element to where the widget would be appended (at the end of it)
+- `visibleByDefault: boolean` _(default=false)_ - if true, the widget will be open by default
+- `iframeStyles: string` - your custom CSS code applied to ElixirChat Widget so that you can easily change look and feel of your widget
 
 ```js
 // Example:
@@ -405,4 +441,26 @@ elixirChatWidget.appendWidget({
     .message { background: #53B561 } 
   `,
 });
+```
+
+<a id="developers"></a>
+## For developers
+If you want to roll out ElixirChat SDK as a developer:
+
+```bash
+# Clone the repo and install dependencies
+git clone git@github.com:elixirchat/elixirchat-widget.git
+npm install
+
+# Run dev version on http://localhost:8001/
+npm run dev
+
+# Compile `build/sdk.js` & `build/default-widget.min.js` out of your current code
+npm run build
+
+# Run SDK and widget examples on http://localhost:8002 and open them in your browser
+npm run examples
+
+# Deploy your SDK and widget examples to surge.sh (URL specified in build/CNAME)
+npm run examples-deploy
 ```
