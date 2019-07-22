@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ElixirChat Widget</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, user-scalable=0">
+  <style>
+    body {
+      font: 13px -apple-system, BlinkMacSystemFont, sans-serif;
+      padding: 15px 30px;
+    }
+  </style>
+</head>
+<body>
+<div>
+  <h3>ElixirChat Widget Example</h3>
+  <div id="elixirchat-widget"></div>
+</div>
+<script src="../sdk.min.js"></script>
+<script src="../default-widget.min.js"></script>
+<script>
+
+  // TODO: replace room & company w/ values from demo-server
+  const elixirChatWidget = new ElixirChatWidget({
+    apiUrl: 'http://localhost:4000',
+    socketUrl: 'ws://localhost:4000/socket',
+    companyId: '6ac8ce92-3a31-440b-b439-831d292a9730', // huntflow
+    room: {
+      id: 'test1',
+      title: 'My new room Z'
+    },
+    client: {
+      id: 'client1',
+      firstName: 'User',
+      lastName: 'Name'
+    },
+    debug: true,
+  });
+
+  elixirChatWidget.appendWidget({
+    container: document.getElementById('elixirchat-widget'),
+    styles: `
+     .elixirchat-chat-container {
+       background: wheat;
+     }
+    `
+  });
+</script>
+</body>
+</html>

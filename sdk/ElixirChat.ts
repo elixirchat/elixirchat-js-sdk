@@ -395,3 +395,8 @@ export class ElixirChat {
       });
   };
 }
+
+
+if (typeof window !== 'undefined') {
+  window.ElixirChat = ElixirChat;
+}

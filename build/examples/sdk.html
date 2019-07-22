@@ -1,5 +1,93 @@
-import ElixirChat from './src'
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ElixirChat SDK</title>
+</head>
+<style>
+  * {
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    box-sizing: border-box;
+  }
+  body {
+    padding: 15px 30px 30px 30px;
+    font-size: 13px;
+  }
+  #typing {
+    margin: 11px 0;
+  }
+  #messages {
+    padding: 0;
+    list-style: none;
+    max-height: calc(100vh - 270px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    width: 270px;
+  }
+  #messages li {
+    padding: 3px 55px 8px 8px;
+    border: 1px solid #ddd;
+    border-radius: 7px;
+    width: 250px;
+    margin-top: 10px;
+    position: relative;
+  }
+  #messages blockquote {
+    color: grey;
+    font-style: italic;
+    margin: 5px 0;
+  }
+  #messages button {
+    position: absolute;
+    right: 8px;
+    bottom: 8px;
+  }
+  textarea {
+    display: block;
+    margin: 14px 0;
+    width: 250px;
+    font-size: 13px;
+    padding: 5px 8px;
+  }
+  #screenshot-preview {
+    width: 50px;
+    vertical-align: bottom;
+    margin: 0 15px 0 3px;
+    box-shadow: 2px 2px 2px rgba(0,0,0,.08);
+  }
+</style>
+<body>
+<div>
+  <h3>ElixirChat SDK Example</h3>
+  <div id="room"></div>
+  <div id="client"></div>
 
+  <ul id="messages">
+    <a href="#" onclick="loadPreviousMessages(event);">↑ Load previous messages...</a>
+    <template id="message-template">
+      <li>
+        <blockquote></blockquote>
+        <b></b>
+        <div></div>
+        <button>Reply</button>
+      </li>
+    </template>
+  </ul>
+
+  <textarea rows="1" placeholder="Type message and press Enter..." onkeyup="onTextareaKeyup(event)"></textarea>
+
+  <button id="screenshot" onclick="takeScreenshot(event)">Take screenshot</button>
+  <img src="" id="screenshot-preview">
+
+  Attach files:
+  <input type="file" multiple>
+  <div id="typing">Nobody is currently typing</div>
+</div>
+
+
+<script type="text/javascript" src="../sdk.min.js"></script>
+<script type="text/javascript">
+
+// TODO: replace room & company w/ values from demo-server
 const elixirChat = new ElixirChat({
   apiUrl: 'http://localhost:4000',
   socketUrl: 'ws://localhost:4000/socket',
@@ -117,24 +205,6 @@ function reset(){
   document.getElementById('screenshot').innerText = 'Take screenshot';
 }
 
-
-
-
-
-
-
-// TODO: remove after inserting min.js SDK version
-window.sendMessage = sendMessage;
-window.onTextareaKeyup = onTextareaKeyup;
-window.loadPreviousMessages = loadPreviousMessages;
-window.renderMessages = renderMessages;
-window.replyToMessage = replyToMessage;
-window.takeScreenshot = takeScreenshot;
-window.reset = reset;
-
-// TODO: remove after inserting min.js SDK version
-window.messages = messages;
-window.attachments = attachments;
-window.screenshot = screenshot;
-window.replyTo = replyTo;
-window.elixirChat = elixirChat;
+</script>
+</body>
+</html>

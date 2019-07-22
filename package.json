@@ -1,12 +1,11 @@
 {
   "name": "elixirchat",
-  "version": "0.9.1",
+  "version": "1.0.0",
   "description": "JavaScript SDK for https://elixir.chat",
   "scripts": {
-    "dev-sdk": "parcel demo.html --port 8000",
-    "dev-widget": "parcel demo-widget.html --port 8001",
-    "build-sdk": "parcel build demo.html",
-    "build-widget": "parcel build demo-widget.html"
+    "dev": "parcel dev.html --port 8001",
+    "examples": "open http://localhost:8002/examples/sdk.html && open http://localhost:8002/examples/widget.html && http-server build -p 8002",
+    "build": "./bin/build.sh"
   },
   "main": "src/index.ts",
   "repository": {
@@ -34,6 +33,7 @@
     "@babel/preset-env": "^7.5.4",
     "@babel/preset-react": "^7.0.0",
     "@babel/preset-typescript": "^7.3.3",
+    "http-server": "^0.11.1",
     "parcel-bundler": "^1.12.3",
     "typescript": "^3.5.3"
   }

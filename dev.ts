@@ -1,5 +1,6 @@
 import ElixirChatWidget from './widget';
 
+// TODO: replace room & company w/ values from demo-server
 const elixirChatWidget = new ElixirChatWidget({
   apiUrl: 'http://localhost:4000',
   socketUrl: 'ws://localhost:4000/socket',
@@ -10,19 +11,17 @@ const elixirChatWidget = new ElixirChatWidget({
   },
   client: {
     id: 'client1',
-    firstName: 'Egor',
-    lastName: 'Vinogradov'
+    firstName: 'User',
+    lastName: 'Name'
   },
   debug: true,
 });
 
 elixirChatWidget.appendWidget({
   container: document.getElementById('elixirchat-widget'),
-  // styles: `
-  //   .elixirchat-chat-container {
-  //     background: wheat;
-  //   }
-  // `
+  styles: `
+   .elixirchat-chat-container {
+     background: wheat;
+   }
+  `
 });
-
-window.elixirChatWidget = elixirChatWidget;
