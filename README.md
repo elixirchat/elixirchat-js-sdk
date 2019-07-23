@@ -1,9 +1,11 @@
 # elixirchat-sdk
-JavaScript SDK for [https://elixir.chat](https://elixir.chat)<br>
-Documentaton is also available:
+JavaScript SDK for [https://elixir.chat](https://elixir.chat)
 
-- In Russian (также доступно [на русском языке](https://github.com/elixirchat/elixirchat-widget/blob/master/README-ru.md))
+---
 
+In English | [по-русски](https://github.com/elixirchat/elixirchat-widget/blob/master/README-ru.md)
+
+---
 
 <img src="https://user-images.githubusercontent.com/1618344/60431837-42ff6180-9bf0-11e9-9ee5-6a2c4b250fc7.png" alt="ElixirChat widget" width="498"/>
 
@@ -21,8 +23,9 @@ Documentaton is also available:
 
 
 
-
+<br/>
 <a id="add-default-widget"></a>
+
 ## 1. How to add a fully implemented ElixirChat widget to your website
 
 ### a) Via package manager
@@ -66,9 +69,11 @@ Download `/dist/sdk.min.js` and `/dist/default-widget.min.js` from this reposito
 </script>
 ```
 
-
+<br/>
 <a id="create-custom-widget"></a>
+
 ## 2. How to create your own custom widget
+
 #### Install:
 ```bash
 npm i elixirchat --save
@@ -236,6 +241,7 @@ Class `ElixirChatWidget` extends `ElixirChat` therefore they both share all meth
 
 
 <br/>
+
 ### ElixirChat methods:
 
 <a id="sendMessage"></a>
@@ -430,7 +436,7 @@ elixirChat.takeScreenshot().then(screenshot => {
 <br/>
 <a id="reconnect"></a>
 
-#### `reconnect({ `[`room`](#config-room),[`client`](#config-client)` })`
+#### `reconnect({`[`room`](#config-room),[`client`](#config-client)`})`
 Change room or client (or both) _after_ you already initialized ElixirChat or ElixirChatWidget.
 
 - If you pass a new `room` only, SDK will reconnect you to a new room with the same client data.
@@ -512,6 +518,7 @@ elixirChat.onConnectError((e) => {
 
 <br/>
 <a id="sdk-properties"></a>
+
 ### ElixirChat properties:
 
 - <a id="sdk-apiUrl"></a>`apiUrl: string` - Same as passed to [config](#config-apiUrl)
@@ -553,7 +560,9 @@ elixirChat.onConnectSuccess(() => {
 
 <br/>
 <a id="widget"></a>
+
 ## ElixirChatWidget API
+
 There are a few more methods and properties specifically in ElixirChatWidget.
 
 <br/>
@@ -631,7 +640,7 @@ elixirChatWidget.appendWidget({
 // Examples:
 console.log('Widget React component state is', elixirChatWidget.widgetChatReactComponent.state);
 
-elixirChatWidget.widgetChatIframe.width = '150px';
+elixirChatWidget.widgetChatIframe.style = 'border: 1px solid black';
 
 if (elixirChatWidget.widgetIsVisible) {
 	document.getElementById('my-app-column').className = 'shrinked';
@@ -653,12 +662,12 @@ npm install
 # Run dev version on http://localhost:8001/
 npm run dev
 
-# Compile `build/sdk.js` & `build/default-widget.min.js` out of your current code
+# Compile `build/sdk.min.js` & `build/default-widget.min.js` out of your current code
 npm run build
 
 # Run SDK and widget examples on http://localhost:8002
 npm run examples
 
-# Deploy your SDK and widget examples to surge.sh (URL specified in `build/CNAME`)
+# Deploy your SDK and widget examples to surge.sh (deploy URL is specified in `build/CNAME`)
 npm run examples-deploy
 ```
