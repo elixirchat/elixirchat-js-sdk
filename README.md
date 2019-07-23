@@ -7,7 +7,7 @@ English | [Русский](https://github.com/elixirchat/elixirchat-widget/blob/
 
 
 ### There are two things you can do with ElixirChat SDK:
-1. [Add a fully implemented Elixirchat widget (pictured above) to your website](#add-default-widget) by simply writing a few lines of code. The widget's look and feel is customizable via CSS.
+1. [Add a fully implemented Elixirchat widget (pictured above) to your website](#add-default-widget) by simply writing a few lines of code. The widget's look and feel are customizable via CSS.
 2. [Create your own custom widget](#create-custom-widget) that communicates with your ElixirChat admin panel via Elixirchat SDK.
 
 <br/>
@@ -168,7 +168,7 @@ document.querySelector('#screenshot-button').addEventListener('click', () => {
 
 > _In your ElixirChat admin panel, all rooms are listed on the left_
 
-In ElixirChat, the customers and your customer support agents communicate in so called rooms. There are two types of rooms:
+In ElixirChat, the customers and your customer support agents communicate in so-called rooms. There are two types of rooms:
 
 1. <a id="private-room"></a>__Private room:__ for one-on-one communication between a single customer and an assigned customer support manager.
 2. <a id="public-room"></a>__Public room:__ a group chat where all customers see each other's messages and replies from the assigned customer support manager.
@@ -238,8 +238,10 @@ __Parameters:__
 <a id="config-client"></a>
 
 #### `client: { id, firstName, lastName }` (optional)
-Pass it if you want to be able recognize your customer later on.
-It you pass it, 
+Pass it if you want `firstName` and `lastName` to be displayed in the ElixirChat admin panel.
+
+If you don't pass the `client ` object, 
+a random name will be generated using [unique-names-generator](https://www.npmjs.com/package/unique-names-generator) (name examples: "Spotty Jade", "Italian Crimson", "Hot Aquamarine", etc) and stored in localStorage so that the generated name persists after page refreshes.
 
 __Parameters:__
 
@@ -393,7 +395,7 @@ __Arguments:__
 
 __Callback arguments:__
 
-- `peopleWhoAreTyping: Array<{user}>` - Array of people who are currently typing text in this room. If array is empty, then other participants are not currently typing anything.
+- `peopleWhoAreTyping: Array<{user}>` - Array of people who are currently typing text in this room. If the array is empty, then other participants are not currently typing anything.
     - `{user}.id` - participant's ID
     - `{user}.firstName` - participant's first name
     - `{user}.lastName` - participant's last name
@@ -460,7 +462,7 @@ elixirChat.takeScreenshot().then(screenshot => {
 Change room or client (or both) _after_ you already initialized ElixirChat or ElixirChatWidget.
 
 - If you pass a new `room` only, SDK will reconnect you to a new room with the same client data.
-- If you pass a new `client` only, SDK will reconnect you to the same room with a new client data.
+- If you pass a new `client` only, SDK will reconnect you to the same room with new client data.
     - _BUT,_ if you were previously connected to a [private room](#private-room) (i.e. without passing a room ID in the first place), and you pass a new `client` only, you will be reconnected to a _different_ private room.
 
 __Argument parameters {...}:__
@@ -528,7 +530,7 @@ Subscribe to the event that fires if connection to the room failed. This might h
 
 __Arguments:__
 
-- `callback: function` - Function that fires if connection to the room failed.
+- `callback: function` - Function that fires if connecting to the room failed.
 
 ```js
 elixirChat.onConnectError((e) => {
@@ -607,7 +609,7 @@ Subscribe to open/close events of the widget chat window.
 
 __Arguments:__
 
-- `callback: function` - function that fires every time the chat window is opened or closed
+- `callback: function` - a function that fires every time the chat window is opened or closed
 
 ```js
 // Example:
