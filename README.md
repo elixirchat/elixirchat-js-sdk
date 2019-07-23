@@ -27,7 +27,7 @@ English | [Русский](https://github.com/elixirchat/elixirchat-widget/blob/
 
 ## 1. How to add a fully implemented ElixirChat widget to your website
 
-> _Check out the example in [/build/examples/sdk.html](https://github.com/elixirchat/elixirchat-widget/blob/master/build/examples/sdk.html)_
+> _Check out the example [/build/examples/widget.html](https://github.com/elixirchat/elixirchat-widget/blob/master/build/examples/widget.html)_
 
 ### a) Via package manager
 Run `npm i elixirchat --save` and then add this code:
@@ -80,7 +80,7 @@ Download [`/build/sdk.min.js`](https://github.com/elixirchat/elixirchat-widget/b
 
 ## 2. How to create your own custom widget
 
-> _Check out the example in [/build/examples/widget.html](https://github.com/elixirchat/elixirchat-widget/blob/master/build/examples/widget.html)_
+> _Check out the example [/build/examples/sdk.html](https://github.com/elixirchat/elixirchat-widget/blob/master/build/examples/sdk.html)_
 
 #### Install:
 ```bash
@@ -124,7 +124,12 @@ document.querySelector('#send-message-button').addEventListener('click', () => {
 elixirChat.onMessage((message) => {
   console.log('New message:', message.text);
   console.log('From:', message.sender.firstName, message.sender.lastName);
-  console.log('Is reply to:', message.responseToMessage);
+  console.log('Is reply to:', message.responseToMessage ? message.responseToMessage.text : 'none');
+});
+
+// Load most recent messages
+elixirChat.fetchMessageHistory(10).then(messages => {
+  console.log('Fetched 10 latest messages', messages);
 });
 
 // Track who's currently typing in the room
@@ -197,27 +202,27 @@ new ElixirChat({
 <br/>
 <a id="config-apiUrl"></a>
 
-#### `apiUrl: string` (required)
+#### `apiUrl: string`
 Your ElixirChat backend GraphQL URL (for example `https://elixirchat.yourcompany.com:4000`)
 
 
 <br/>
 <a id="config-socketUrl"></a>
 
-#### `socketUrl: string` (required)
+#### `socketUrl: string`
 Your ElixirChat backend WebSocket URL starting with `ws:`/`wss:` protocol (for example `wss://elixirchat.yourcompany.com:4000/socket`)
 
 
 <br/>
 <a id="config-companyId"></a>
 
-#### `companyId: string` (required)
+#### `companyId: string`
 Your company ID. You will get it from ElixirChat team.
 
 <br/>
 <a id="config-room"></a>
 
-#### `room: { id, title }`
+#### `room: { id, title }` (optional)
 Pass it if you need a [public room](#public-room). How it works:
 
 - When you use it _for the first time,_ it _creates_ a new [public room](#public-room) (with the specified `id` and `title`).
@@ -232,8 +237,9 @@ __Parameters:__
 <br/>
 <a id="config-client"></a>
 
-#### `client: { id, firstName, lastName }` 
+#### `client: { id, firstName, lastName }` (optional)
 Pass it if you want to be able recognize your customer later on.
+It you pass it, 
 
 __Parameters:__
 
@@ -244,7 +250,7 @@ __Parameters:__
 <br/>
 <a id="config-debug"></a>
 
-#### `debug: boolean` `(default=false)`
+#### `debug: boolean` `(default=false)` (optional)
 Enables ElixirChat SDK verbose console output
 
 <br/>
@@ -261,13 +267,13 @@ Class `ElixirChatWidget` extends `ElixirChat` therefore they both share all meth
 <a id="sendMessage"></a>
 
 #### `sendMessage({ text, attachments, responseToMessageId })`
-Send customer's message to the room.
+Send customer's message to the room. Passing at least either `text` or `attachments` is required.
 
 __Argument parameters {...}:__
 
-- `text: string` - message text
-- `attachments: Array<File>` - list of attachments in a [File() format](https://developer.mozilla.org/en-US/docs/Web/API/File)
-- `responseToMessageId: string` - the ID of a message your customer replies to (if any)
+- `text: string (optional)` - message text
+- `attachments: Array<File> (optional)` - list of attachments in a [File() format](https://developer.mozilla.org/en-US/docs/Web/API/File)
+- `responseToMessageId: string (optional)` - the ID of a message your customer replies to (if any)
 
 __Returns: `Promise()`__ whose `then` callback has these arguments:
 
@@ -459,8 +465,8 @@ Change room or client (or both) _after_ you already initialized ElixirChat or El
 
 __Argument parameters {...}:__
 
-- `room: object` - same format as [`room` in the config](#config-room)
-- `client: object` - same format as [`client` in the config](#config-client)
+- `room: object (optional)` - same format as [`room` in the config](#config-room)
+- `client: object (optional)` - same format as [`client` in the config](#config-client)
 
 __Returns: `new Promise()`__
 
