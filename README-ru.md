@@ -1,76 +1,76 @@
 # elixirchat-sdk
-JavaScript SDK for [https://elixir.chat](https://elixir.chat)
+JavaScript SDK для [https://elixir.chat](https://elixir.chat)
 
-English | [Русский](https://github.com/elixirchat/elixirchat-widget/blob/master/README-ru.md)
+[English](https://github.com/elixirchat/elixirchat-widget/blob/master/README.md) | Русский
 
 <img src="https://user-images.githubusercontent.com/1618344/60431837-42ff6180-9bf0-11e9-9ee5-6a2c4b250fc7.png" alt="ElixirChat widget" width="498"/>
 
 
-### There are two things you can do with ElixirChat SDK:
-1. [Add a fully implemented Elixirchat widget (pictured above) to your website](#add-default-widget) by simply writing a few lines of code. The widget's look and feel are customizable via CSS.
-2. [Create your own custom widget](#create-custom-widget) that communicates with your ElixirChat admin panel via Elixirchat SDK.
+### Есть две вещи, которые вы можете сделать с ElixirChat SDK:
+1. [Добавьте полностью готовый виджет Elixirchat (на картинке сверху) на ваш сайт](#add-default-widget) просто написав несколько строк кода. Внешний вид виджета настраивается с помощью CSS.
+2. [Создайте свой кастомный виджет](#create-custom-widget), который будет коммуницировать с вашей админ-панелью ElixirChat через Elixirchat SDK.
 
 <br/>
 
-## Examples
+## Примеры
 
-| <img src="https://user-images.githubusercontent.com/1618344/61660053-b36e3f80-acd1-11e9-8f0d-79a8be0c2597.png" alt="ElixirChat Widget Demo" width="100%"/> | <img src="https://user-images.githubusercontent.com/1618344/61660172-f29c9080-acd1-11e9-84e4-9048d0d785f6.png" alt="ElixirChat SDK Demo" width="100%"/> |
+| <img src="https://user-images.githubusercontent.com/1618344/61660053-b36e3f80-acd1-11e9-8f0d-79a8be0c2597.png" alt="Демо виджета ElixirChat" width="100%"/> | <img src="https://user-images.githubusercontent.com/1618344/61660172-f29c9080-acd1-11e9-84e4-9048d0d785f6.png" alt="Демо ElixirChat SDK" width="100%"/> |
 | --- |--- |
-| __Fully implemented Elixirchat widget__<br> Customized with CSS<br> [How to add?](#add-default-widget) | __Simple custom widget__<br> Written with pure JS from scratch<br> [How to create?](#create-custom-widget) |
-| [See demo](https://elixirchat.surge.sh/examples/widget.html) | [See demo](https://elixirchat.surge.sh/examples/sdk.html) |
-| [Code](https://github.com/elixirchat/elixirchat-widget/blob/master/build/examples/widget.html) (~20 lines of JS) | [Code](https://github.com/elixirchat/elixirchat-widget/blob/master/build/examples/sdk.html) (~90 lines of JS) |
+| __Полностью готовый виджет Elixirchat__<br> Настраиваенный с помощью CSS<br> [Как добавить?](#add-default-widget) | __Простой кастомный виджет__<br> Написано на чистом JS с нуля<br> [Как создать?](#create-custom-widget) |
+| [Посмотреть демо](https://elixirchat.surge.sh/examples/widget.html) | [Посмотреть демо](https://elixirchat.surge.sh/examples/sdk.html) |
+| [Код](https://github.com/elixirchat/elixirchat-widget/blob/master/build/examples/widget.html) (~20 строк JS) | [Код](https://github.com/elixirchat/elixirchat-widget/blob/master/build/examples/sdk.html) (~90 строк JS) |
 
 
 
 <br/>
 <a id="add-default-widget"></a>
 
-## 1. How to add a fully implemented ElixirChat widget to your website
+## 1. Как добавить полностью готовый виджет Elixirchat на ваш сайт
 
-> _Check out the example [/build/examples/widget.html](https://github.com/elixirchat/elixirchat-widget/blob/master/build/examples/widget.html)_
+> _Посмотрите пример [/build/examples/widget.html](https://github.com/elixirchat/elixirchat-widget/blob/master/build/examples/widget.html)_
 
-### a) Via package manager
-Run `npm i elixirchat --save` and then add this code:
+### а) Через пакетный менеджер
+Выполните `npm i elixirchat --save` и затем добавьте этот код:
 
 ```js
 import ElixirChatWidget from 'ElixirChat/widget';
 
 const elixirChatWidget = ElixirChatWidget({
-  apiUrl: 'https://elixirchat.yoursite.com:4000', // your ElixirChat API URL
-  socketUrl: 'wss://elixirchat.yoursite.com:4000/socket', // your ElixirChat websocket URL
-  companyId: 'your-company-id-here', // you will get companyId from ElixirChat team
+  apiUrl: 'https://elixirchat.yoursite.com:4000', // API URL вашего ElixirChat
+  socketUrl: 'wss://elixirchat.yoursite.com:4000/socket', // websocket URL вашего ElixirChat 
+  companyId: 'your-company-id-here', // вы получите companyId от команды ElixirChat
   
-  // You may also include optional "room" and "client" parameters here
-  // Scroll down to "ElixirChat Config" for details
+  // Также можете добавить здесь опциональные параметры "room" и "client"
+  // Прокрутите вниз до "ElixirChat Config" для подробностей
 
-  debug: true // for verbose console output
+  debug: true // для подробного вывода в консоль
 });
 elixirChatWidget.appendWidget({
-  container: document.body,
-  iframeStyles: `.your-custom-widget-css-code-here { color: green }`,
+  container: document.body, // куда рендерить виджет
+  iframeStyles: `.elixirchat-chat-container { color: green }`, // ваш кастомный CSS внутри iframe'а чата
 });
 ```
 
-### b) Via `<script>` tag:
-Download [`/build/sdk.min.js`](https://github.com/elixirchat/elixirchat-widget/blob/master/build/sdk.min.js) and [`/build/default-widget.min.js`](https://github.com/elixirchat/elixirchat-widget/blob/master/build/default-widget.min.js) from this repository and then include this snippet anywhere into your HTML-code:
+### б) Через тег `<script>`:
+Скачайте [`/build/sdk.min.js`](https://github.com/elixirchat/elixirchat-widget/blob/master/build/sdk.min.js) и [`/build/default-widget.min.js`](https://github.com/elixirchat/elixirchat-widget/blob/master/build/default-widget.min.js) из этого репозитория, а затем включите этот фрагмент в любом месте вашего HTML-кода:
 
 ```html
 <script src="[YOUR_PATH]/sdk.min.js"></script>
 <script src="[YOUR_PATH]/default-widget.min.js"></script>
 <script>
   const elixirChatWidget = ElixirChatWidget({
-    apiUrl: 'https://elixirchat.yoursite.com:4000', // your ElixirChat API URL
-    socketUrl: 'wss://elixirchat.yoursite.com:4000/socket', // your ElixirChat websocket URL
-    companyId: 'your-company-id-here', // you will get companyId from ElixirChat team
+    apiUrl: 'https://elixirchat.yoursite.com:4000', // API URL вашего ElixirChat
+    socketUrl: 'wss://elixirchat.yoursite.com:4000/socket', // websocket URL вашего ElixirChat 
+    companyId: 'your-company-id-here', // вы получите companyId от команды ElixirChat
     
-    // You may also include optional "room" and "client" parameters here
-    // Scroll down to "ElixirChat Config" for details
+    // Также можете добавить здесь опциональные параметры "room" и "client"
+    // Прокрутите вниз до "ElixirChat Config" для подробностей
 
-    debug: true // for verbose console output
+    debug: true // для подробного вывода в консоль
   });
   elixirChatWidget.appendWidget({
-    container: document.body,
-    styles: `.your-custom-widget-css-code-here { color: green }`,
+    container: document.body, // куда рендерить виджет
+    iframeStyles: `.elixirchat-chat-container { color: green }`, // ваш кастомный CSS внутри iframe'а чата
   });
 </script>
 ```
@@ -78,76 +78,76 @@ Download [`/build/sdk.min.js`](https://github.com/elixirchat/elixirchat-widget/b
 <br/>
 <a id="create-custom-widget"></a>
 
-## 2. How to create your own custom widget
+## 2. Как создайть свой кастомный виджет
 
-> _Check out the example [/build/examples/sdk.html](https://github.com/elixirchat/elixirchat-widget/blob/master/build/examples/sdk.html)_
+> _Посмотрите пример [/build/examples/sdk.html](https://github.com/elixirchat/elixirchat-widget/blob/master/build/examples/sdk.html)_
 
-#### Install:
+#### Установка:
 ```bash
 npm i elixirchat --save
 ```
-or include [`/build/sdk.min.js`](https://github.com/elixirchat/elixirchat-widget/blob/master/build/sdk.min.js) via the `<script>` tag anywhere into your HTML code
+либо включите [`/build/sdk.min.js`](https://github.com/elixirchat/elixirchat-widget/blob/master/build/sdk.min.js) через тег `<script>` в любом месте вашего HTML-кода
 
 ```html
 <script src="[YOUR_PATH]/sdk.min.js"></script>
 ```
 
-#### Code:
+#### Код:
 ```js
 import ElixirChat from 'elixirchat';
-// Alternatively, if using `<script>` tag, `window.ElixirChat` object be added to global scope.
+// Либо, если используете тег `<script>`, то объект `window.ElixirChat` будет добавлен в глобальный scope.
 
-const elixirChat = new ElixirChat({
-  apiUrl: 'https://elixirchat.yoursite.com:4000', // your ElixirChat API URL
-  socketUrl: 'wss://elixirchat.yoursite.com:4000/socket', // your ElixirChat websocket URL
-  companyId: 'your-company-id-here', // you will get companyId from ElixirChat team
+const elixirChatWidget = ElixirChatWidget({
+  apiUrl: 'https://elixirchat.yoursite.com:4000', // API URL вашего ElixirChat
+  socketUrl: 'wss://elixirchat.yoursite.com:4000/socket', // websocket URL вашего ElixirChat 
+  companyId: 'your-company-id-here', // вы получите companyId от команды ElixirChat
   
-  // You may also include optional "room" and "client" parameters here
-  // Scroll down to "ElixirChat Config" for details
+  // Также можете добавить здесь опциональные параметры "room" и "client"
+  // Прокрутите вниз до "ElixirChat Config" для подробностей
 
-  debug: true // for verbose console output
+  debug: true // для подробного вывода в консоль
 });
 
 
 document.querySelector('#send-message-button').addEventListener('click', () => {
-  // Submit new message
+  // Отправить новое сообщение
   elixirChat.sendMessage({
-    text: document.querySelector('textarea').value, // new message text
-    attachments: document.querySelector('input[type=file]').files, // attached files
-    responseToMessageId: '225a5c-6cf5e0', // the ID of a message you reply to (if any)
+    text: document.querySelector('textarea').value, // текст нового сообщения
+    attachments: document.querySelector('input[type=file]').files, // прикрепленные файлы
+    responseToMessageId: '225a5c-6cf5e0', // ID сообщения, на которое вы отвечаете (если есть)
   })
   .then(newMessage => console.log(newMessage));
 });
 
 
-// Subscribe to new messages in the room
+// Подписаться на новые сообщения в комнате
 elixirChat.onMessage((message) => {
-  console.log('New message:', message.text);
-  console.log('From:', message.sender.firstName, message.sender.lastName);
-  console.log('Is reply to:', message.responseToMessage ? message.responseToMessage.text : 'none');
+  console.log('Новое сообщение:', message.text);
+  console.log('От:', message.sender.firstName, message.sender.lastName);
+  console.log('Это ответ на:', message.responseToMessage ? message.responseToMessage.text : '—');
 });
 
-// Load most recent messages
+// Загрузить самые новые сообщения
 elixirChat.fetchMessageHistory(10).then(messages => {
-  console.log('Fetched 10 latest messages', messages);
+  console.log('Получил 10 последних сообщений', messages);
 });
 
-// Track who's currently typing in the room
+// Отслеживать, кто сейчас печатает в комнате
 elixirChat.onTyping((peopleWhoAreTyping) => {
   if (peopleWhoAreTyping.length) {
-    document.querySelector('#typing').innerHTML = '${peopleWhoAreTyping.map(person => person.firstName).join(', ')} are typing...';
+    document.querySelector('#typing').innerHTML = '${peopleWhoAreTyping.map(person => person.firstName).join(', ')} сейчас печатают...';
   }
   else {
-    document.querySelector('#typing').innerHTML = 'Nobody is typing';
+    document.querySelector('#typing').innerHTML = 'Никто не печатает';
   }
 });
 
-// Take screenshot of your customer's screen
+// Сделайте скриншот экрана вашего клиента
 document.querySelector('#screenshot-button').addEventListener('click', () => {
   elixirChat.takeScreenshot().then(screenshot => {
-    document.querySelector('img#preview').src = screenshot.dataUrl; // show screenshot preview
+  	 document.querySelector('img#preview').src = screenshot.dataUrl; // показать превью скриншота
     elixirchat.sendMessage({
-      attachments: [ screenshot.file ] // screenshot.file is a `File()` instance
+      attachments: [ screenshot.file ] // screenshot.file это инстанс `File()`
     });
   });
 });
@@ -157,12 +157,12 @@ document.querySelector('#screenshot-button').addEventListener('click', () => {
 <br/>
 <a id="docs"></a>
 
-# Documentation
+# Документация
 
 <br/>
 <a id="what-are-rooms"></a>
 
-## Before getting started: What are rooms?
+## Прежде чем начать: что такое комнаты?
 
 <img src="https://user-images.githubusercontent.com/1618344/60435459-26b3f280-9bf9-11e9-9e0c-0a153a07bf09.png" alt="ElixirChat Rooms"/>
 
@@ -665,7 +665,7 @@ console.log('Widget React component state is', elixirChatWidget.widgetChatReactC
 elixirChatWidget.widgetChatIframe.style = 'border: 1px solid black';
 
 if (elixirChatWidget.widgetIsVisible) {
-  document.getElementById('my-app-column').className = 'shrinked';
+	document.getElementById('my-app-column').className = 'shrinked';
 }
 ```
 
