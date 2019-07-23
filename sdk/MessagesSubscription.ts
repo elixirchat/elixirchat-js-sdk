@@ -6,6 +6,7 @@ export interface INewMessage {
   id: string;
   text: string;
   timestamp: string;
+  cursor?: string;
   sender: {
     elixirChatId: string;
     firstName?: string;
@@ -14,7 +15,6 @@ export interface INewMessage {
     isCurrentClient: boolean;
     id?: string;
   };
-  cursor?: string;
   responseToMessage: {
     id: string;
     text: string;

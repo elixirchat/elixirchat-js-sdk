@@ -39,8 +39,8 @@ export class ElixirChat {
   public client?: IElixirChatUser;
   public debug: boolean;
 
-  public elixirRoomId: string;
-  public elixirClientId: string;
+  public elixirChatRoomId: string;
+  public elixirChatClientId: string;
   public authToken: string;
   public connected: boolean;
 
@@ -213,11 +213,11 @@ export class ElixirChat {
             this.client.firstName = client.firstName;
             this.client.lastName = client.lastName;
             this.client.id = client.foreignId;
-            this.elixirClientId = client.id; // TODO: remove after 'client' is added to 'RoomWithToken' on backend (after un-authed joinRoom)
+            this.elixirChatClientId = client.id; // TODO: remove after 'client' is added to 'RoomWithToken' on backend (after un-authed joinRoom)
 
             this.room.id = joinRoom.room.foreignId;
             this.room.title = joinRoom.room.title;
-            this.elixirRoomId = joinRoom.room.id;
+            this.elixirChatRoomId = joinRoom.room.id;
 
             logEvent(this.debug, 'Joined room', { joinRoom, room: this.room, client: this.client });
             resolve(joinRoom);
@@ -252,10 +252,10 @@ export class ElixirChat {
     this.typingStatusSubscription = new TypingStatusSubscription({
       socketUrl: this.socketUrl,
       token: this.authToken,
-      roomId: this.elixirRoomId,
-      clientId: this.elixirClientId,
+      roomId: this.elixirChatRoomId,
+      clientId: this.elixirChatClientId,
       onSubscribeSuccess: () => {
-        logEvent(this.debug, 'Successfully subscribed to typing status change', { roomId: this.elixirRoomId })
+        logEvent(this.debug, 'Successfully subscribed to typing status change', { roomId: this.elixirChatRoomId })
       },
       onSubscribeError: (data) => {
         logEvent(this.debug, 'Failed to subscribe to typing status change', data, 'error');
