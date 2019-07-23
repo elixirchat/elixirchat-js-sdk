@@ -616,6 +616,7 @@ elixirChatWidget.appendWidget({
 ```
 
 <br/>
+
 ### ElixirChatWidget properties:
 
 - <a id="widget-container"></a>`container: HTMLElement` - Same as passed to [`appendWidget()`](#widget-appendWidget)
@@ -640,6 +641,7 @@ if (elixirChatWidget.widgetIsVisible) {
 <br/>
 <a id="developers"></a>
 ## For developers
+
 If you want to roll out ElixirChat SDK and widget as a developer:
 
 ```bash
