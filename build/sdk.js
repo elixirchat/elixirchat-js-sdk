@@ -6681,11 +6681,11 @@ function () {
             _this3.client.firstName = client.firstName;
             _this3.client.lastName = client.lastName;
             _this3.client.id = client.foreignId;
-            _this3.elixirClientId = client.id; // TODO: remove after 'client' is added to 'RoomWithToken' on backend (after un-authed joinRoom)
+            _this3.elixirChatClientId = client.id; // TODO: remove after 'client' is added to 'RoomWithToken' on backend (after un-authed joinRoom)
 
             _this3.room.id = joinRoom.room.foreignId;
             _this3.room.title = joinRoom.room.title;
-            _this3.elixirRoomId = joinRoom.room.id;
+            _this3.elixirChatRoomId = joinRoom.room.id;
             utilsCommon_1.logEvent(_this3.debug, 'Joined room', {
               joinRoom: joinRoom,
               room: _this3.room,
@@ -6751,11 +6751,11 @@ function () {
       this.typingStatusSubscription = new TypingStatusSubscription_1.TypingStatusSubscription({
         socketUrl: this.socketUrl,
         token: this.authToken,
-        roomId: this.elixirRoomId,
-        clientId: this.elixirClientId,
+        roomId: this.elixirChatRoomId,
+        clientId: this.elixirChatClientId,
         onSubscribeSuccess: function onSubscribeSuccess() {
           utilsCommon_1.logEvent(_this5.debug, 'Successfully subscribed to typing status change', {
-            roomId: _this5.elixirRoomId
+            roomId: _this5.elixirChatRoomId
           });
         },
         onSubscribeError: function onSubscribeError(data) {
