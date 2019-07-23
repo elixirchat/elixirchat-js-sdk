@@ -462,14 +462,14 @@ Change room or client (or both) _after_ you already initialized ElixirChat or El
 
 - If you pass a new `room` only, SDK will reconnect you to a new room with the same client data.
 - If you pass a new `client` only, SDK will reconnect you to the same room with new client data.
-    - _BUT,_ if you were previously connected to a [private room](#private-room) (i.e. without passing a room ID in the first place), and you pass a new `client` only, you will be reconnected to a _different_ private room.
+    - _BUT,_ if you were previously connected to a [private room](#private-room) (i.e. without passing a room ID in the first place), and you pass a new `client` only, you will be reconnected to a _new_ private room.
 
 __Argument parameters {...}:__
 
 - `room: object (optional)` - same format as [`room` in the config](#config-room)
 - `client: object (optional)` - same format as [`client` in the config](#config-client)
 
-__Returns: `new Promise()`__
+__Returns: `Promise()`__
 
 ```js
 // Example 1: change both room and client
@@ -532,8 +532,8 @@ __Arguments:__
 - `callback: function` - Function that fires if connecting to the room failed.
 
 ```js
-elixirChat.onConnectError((e) => {
-  console.log('Could not connect to a room', e);
+elixirChat.onConnectError((error) => {
+  console.log('Could not connect to a room', error);
 });
 ```
 
@@ -623,10 +623,10 @@ elixirChatWidget.onToggleChatVisibility((isVisible) => {
 #### `appendWidget({ container, visibleByDefault, iframeStyles })`
 Append ElixirChat widget to a container, customize via CSS if needed.
 
-__Parameters {...}:__
+__Argument parameters {...}:__
 
 - `container: HTMLElement` - DOM element the widget would be appended to (at the end of it).
-- `visibleByDefault: boolean` `(default=false)` - if true, the widget will be open by default.
+- `visibleByDefault: boolean` `(default=false)` - if _true_, the widget will be open by default.
 - `iframeStyles: string` - your custom CSS code applied to ElixirChat Widget _inside the iframe_ so that you can easily change look and feel of the chat window.
 
 __Returns:__
