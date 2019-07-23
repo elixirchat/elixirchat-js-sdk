@@ -7,8 +7,8 @@ JavaScript SDK для [https://elixir.chat](https://elixir.chat)
 
 
 ### Есть две вещи, которые вы можете сделать с ElixirChat SDK:
-1. [Добавьте полностью готовый виджет Elixirchat (на картинке сверху) на ваш сайт](#add-default-widget) просто написав несколько строк кода. Внешний вид виджета настраивается с помощью CSS.
-2. [Создайте свой кастомный виджет](#create-custom-widget), который будет коммуницировать с вашей админ-панелью ElixirChat через Elixirchat SDK.
+1. [Добавить полностью готовый виджет Elixirchat (на картинке сверху) на ваш сайт](#add-default-widget) просто написав несколько строк кода. Внешний вид виджета настраивается с помощью CSS.
+2. [Создать свой кастомный виджет](#create-custom-widget), который будет коммуницировать с вашей админ-панелью ElixirChat через Elixirchat SDK.
 
 <br/>
 
@@ -16,7 +16,7 @@ JavaScript SDK для [https://elixir.chat](https://elixir.chat)
 
 | <img src="https://user-images.githubusercontent.com/1618344/61660053-b36e3f80-acd1-11e9-8f0d-79a8be0c2597.png" alt="Демо виджета ElixirChat" width="100%"/> | <img src="https://user-images.githubusercontent.com/1618344/61660172-f29c9080-acd1-11e9-84e4-9048d0d785f6.png" alt="Демо ElixirChat SDK" width="100%"/> |
 | --- |--- |
-| __Полностью готовый виджет Elixirchat__<br> Настраиваенный с помощью CSS<br> [Как добавить?](#add-default-widget) | __Простой кастомный виджет__<br> Написано на чистом JS с нуля<br> [Как создать?](#create-custom-widget) |
+| __Полностью готовый виджет Elixirchat__<br> Настроенный с помощью CSS<br> [Как добавить?](#add-default-widget) | __Простой кастомный виджет__<br> Написано на чистом JS с нуля<br> [Как создать?](#create-custom-widget) |
 | [Посмотреть демо](https://elixirchat.surge.sh/examples/widget.html) | [Посмотреть демо](https://elixirchat.surge.sh/examples/sdk.html) |
 | [Код](https://github.com/elixirchat/elixirchat-widget/blob/master/build/examples/widget.html) (~20 строк JS) | [Код](https://github.com/elixirchat/elixirchat-widget/blob/master/build/examples/sdk.html) (~90 строк JS) |
 
