@@ -1,7 +1,7 @@
 # elixirchat-sdk
 JavaScript SDK for [https://elixir.chat](https://elixir.chat)
 
-In English | [по-русски](https://github.com/elixirchat/elixirchat-widget/blob/master/README-ru.md)
+English | [Русский](https://github.com/elixirchat/elixirchat-widget/blob/master/README-ru.md)
 
 <img src="https://user-images.githubusercontent.com/1618344/60431837-42ff6180-9bf0-11e9-9ee5-6a2c4b250fc7.png" alt="ElixirChat widget" width="498"/>
 
@@ -435,7 +435,7 @@ elixirChat.takeScreenshot().then(screenshot => {
 <br/>
 <a id="reconnect"></a>
 
-#### `reconnect({`[`room`](#config-room),[`client`](#config-client)`})`
+#### `reconnect({`[`room`](#config-room)`,`[`client`](#config-client)`})`
 Change room or client (or both) _after_ you already initialized ElixirChat or ElixirChatWidget.
 
 - If you pass a new `room` only, SDK will reconnect you to a new room with the same client data.
