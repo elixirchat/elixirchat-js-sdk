@@ -7,7 +7,7 @@ English | [Русский](https://github.com/elixirchat/elixirchat-widget/blob/
 
 
 ### There are two things you can do with ElixirChat SDK:
-1. [Add a fully implemented Elixirchat widget (pictured above) to your website](#add-default-widget) by simply writing a couple lines of code. The widget's look and feel is customizable via CSS.
+1. [Add a fully implemented Elixirchat widget (pictured above) to your website](#add-default-widget) by simply writing a few lines of code. The widget's look and feel is customizable via CSS.
 2. [Create your own custom widget](#create-custom-widget) that communicates with your ElixirChat admin panel via Elixirchat SDK.
 
 <br/>
@@ -16,7 +16,7 @@ English | [Русский](https://github.com/elixirchat/elixirchat-widget/blob/
 
 | <img src="https://user-images.githubusercontent.com/1618344/61660053-b36e3f80-acd1-11e9-8f0d-79a8be0c2597.png" alt="ElixirChat Widget Demo" width="100%"/> | <img src="https://user-images.githubusercontent.com/1618344/61660172-f29c9080-acd1-11e9-84e4-9048d0d785f6.png" alt="ElixirChat Widget SDK" width="100%"/> |
 | --- |--- |
-| __Fully implemented Elixirchat widget__<br> Customized with CSS<br> [How to add?](#add-default-widget) | __Custom widget__<br> Written with pure JS from scratch<br> [How to create?](#create-custom-widget) |
+| __Fully implemented Elixirchat widget__<br> Customized with CSS<br> [How to add?](#add-default-widget) | __Simple custom widget__<br> Written with pure JS from scratch<br> [How to create?](#create-custom-widget) |
 | [See demo](https://elixirchat.surge.sh/examples/widget.html) | [See demo](https://elixirchat.surge.sh/examples/sdk.html) |
 | [Code](https://github.com/elixirchat/elixirchat-widget/blob/master/build/examples/widget.html) (~20 lines of JS) | [Code](https://github.com/elixirchat/elixirchat-widget/blob/master/build/examples/sdk.html) (~90 lines of JS) |
 
@@ -39,6 +39,7 @@ const elixirChatWidget = ElixirChatWidget({
   apiUrl: 'https://elixirchat.yoursite.com:4000', // your ElixirChat API URL
   socketUrl: 'wss://elixirchat.yoursite.com:4000/socket', // your ElixirChat websocket URL
   companyId: 'your-company-id-here', // you will get companyId from ElixirChat team
+  
   // You may also include optional "room" and "client" parameters here
   // Scroll down to "ElixirChat Config" for details
 
@@ -61,6 +62,7 @@ Download [`/build/sdk.min.js`](https://github.com/elixirchat/elixirchat-widget/b
     apiUrl: 'https://elixirchat.yoursite.com:4000', // your ElixirChat API URL
     socketUrl: 'wss://elixirchat.yoursite.com:4000/socket', // your ElixirChat websocket URL
     companyId: 'your-company-id-here', // you will get companyId from ElixirChat team
+    
     // You may also include optional "room" and "client" parameters here
     // Scroll down to "ElixirChat Config" for details
 
@@ -99,6 +101,7 @@ const elixirChat = new ElixirChat({
   apiUrl: 'https://elixirchat.yoursite.com:4000', // your ElixirChat API URL
   socketUrl: 'wss://elixirchat.yoursite.com:4000/socket', // your ElixirChat websocket URL
   companyId: 'your-company-id-here', // you will get companyId from ElixirChat team
+  
   // You may also include optional "room" and "client" parameters here
   // Scroll down to "ElixirChat Config" for details
 
