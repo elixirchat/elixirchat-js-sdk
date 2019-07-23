@@ -272,6 +272,7 @@ export class ElixirChat {
       socketUrl: this.socketUrl,
       apiUrl: this.apiUrl,
       token: this.authToken,
+      currentClientId: this.client.id,
       onSubscribeSuccess: () => {
         const roomData = {
           room: this.room,
@@ -284,21 +285,14 @@ export class ElixirChat {
         logEvent(this.debug, 'Failed to subscribe to messages', { data }, 'error');
         this.onConnectErrorCallbacks.forEach(callback => callback(data));
       },
-      onMessage: (response: any) => {
-        const message : IElixirChatReceivedMessage = {
-          id: response.id,
-          text: response.text,
-          sender: response.sender,
-          timestamp: response.timestamp,
-          responseToMessage: response.data.responseToMessage,
-        };
+      onMessage: (message: IElixirChatReceivedMessage) => {
         logEvent(this.debug, 'Received new message', message);
         this.onMessageCallbacks.forEach(callback => callback(message));
       }
     });
   }
 
-  public sendMessage(params: IElixirChatSentMessage): Promise<void> {
+  public sendMessage(params: IElixirChatSentMessage): Promise<IElixirChatReceivedMessage> {
     const text = params.text;
     const attachments = params.attachments && params.attachments.length
       ? Array.from(params.attachments).filter(file => file)
@@ -318,6 +312,7 @@ export class ElixirChat {
             }
           });
           this.typingStatusSubscription.dispatchTypedText('', true);
+          return message;
         })
         .catch(error => {
           logEvent(this.debug, 'Failed to send message', error, 'error');

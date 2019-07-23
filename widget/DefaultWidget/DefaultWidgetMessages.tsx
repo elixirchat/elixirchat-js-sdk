@@ -44,7 +44,6 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
           message.prependDateTitle = true;
         }
       }
-      message.isSentByMe = this.props.elixirChatWidget.client.id === message.sender.foreignId;
       return message;
     });
   };
@@ -68,12 +67,12 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
             )}
             <div className={cn({
               'elixirchat-chat-messages__item': true,
-              'elixirchat-chat-messages__item--by-me': message.isSentByMe,
-              'elixirchat-chat-messages__item--by-agent': message.sender.__typename === 'Employee',
+              'elixirchat-chat-messages__item--by-me': message.sender.isCurrentClient,
+              'elixirchat-chat-messages__item--by-agent': message.sender.isAgent,
             })}>
               <div className="elixirchat-chat-messages__balloon">
                 <div className="elixirchat-chat-messages__sender">
-                  {message.isSentByMe ? 'Я' : (message.sender.firstName || '') + ' ' + (message.sender.lastName || '')}
+                  {message.sender.isCurrentClient ? 'Я' : (message.sender.firstName || '') + ' ' + (message.sender.lastName || '')}
                 </div>
                 <div className="elixirchat-chat-messages__text">{message.text}</div>
               </div>

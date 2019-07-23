@@ -7,18 +7,24 @@ export interface INewMessage {
   text: string;
   timestamp: string;
   sender: {
-    id: string;
+    elixirChatId: string;
     firstName?: string;
     lastName?: string;
+    isAgent: boolean;
+    isCurrentClient: boolean;
+    id?: string;
   };
   cursor?: string;
   responseToMessage: {
     id: string;
     text: string;
     sender: {
-      id: string;
+      elixirChatId: string;
       firstName?: string;
       lastName?: string;
+      isAgent: boolean;
+      isCurrentClient: boolean;
+      id?: string;
     };
   } | null;
 }
@@ -33,6 +39,7 @@ export interface IMessagesSubscriptionConfig {
   apiUrl: string,
   socketUrl: string,
   token: string,
+  currentClientId: string;
   onSubscribeSuccess?: (data: any) => void;
   onSubscribeError?: (data: any) => void;
   onMessage: (message: INewMessage) => void;
@@ -43,6 +50,7 @@ export class MessagesSubscription {
   public apiUrl: string;
   public socketUrl: string;
   public token: string;
+  public currentClientId: string;
   public onSubscribeSuccess?: (data: any) => void;
   public onSubscribeError?: (data: any) => void;
   public onMessage: (message: INewMessage) => void;
@@ -56,7 +64,6 @@ export class MessagesSubscription {
       newMessage {
         id
         text
-        system
         timestamp
         data {
           ... on NotSystemMessageData {
@@ -64,7 +71,7 @@ export class MessagesSubscription {
               id
               text
               sender {
-              
+                __typename
                 ... on Client { id foreignId firstName lastName }
                 ... on Employee { id firstName lastName }
               }
@@ -84,7 +91,6 @@ export class MessagesSubscription {
     sendMessage {
       id
       text
-      system
       timestamp
       data {
         ... on NotSystemMessageData {
@@ -114,14 +120,8 @@ export class MessagesSubscription {
         node {
           id
           text
-          system
           timestamp
           data {
-            ... on SystemMessageData {
-              format
-              type
-              author { id firstName lastName }
-            }
             ... on NotSystemMessageData {
               responseToMessage {
                 id
@@ -152,6 +152,7 @@ export class MessagesSubscription {
     this.apiUrl = config.apiUrl;
     this.socketUrl = config.socketUrl;
     this.token = config.token;
+    this.currentClientId = config.currentClientId;
     this.onSubscribeSuccess = config.onSubscribeSuccess || function () {};
     this.onSubscribeError = config.onSubscribeError || function () {};
     this.onMessage = config.onMessage;
@@ -194,7 +195,7 @@ export class MessagesSubscription {
       },
       onResult: ({ data }) => {
         if (data && data.newMessage) {
-          this.onMessage(data.newMessage);
+          this.onMessage(this.serializeMessage(data.newMessage));
         }
       },
     })
@@ -212,9 +213,47 @@ export class MessagesSubscription {
     window.removeEventListener('beforeunload', this.onBeforeUnload);
     this.absintheSocket = AbsintheSocket.cancel(this.absintheSocket, this.notifier);
     this.latestMessageHistoryCursorsCache = [];
+    this.reachedBeginningOfMessageHistory = false;
   };
 
-  public sendMessage = ({ text, responseToMessageId }: ISentMessage): Promise<void> => {
+  protected serializeMessage = (message: any): INewMessage => {
+    let responseToMessage = message.data.responseToMessage;
+    if (responseToMessage && responseToMessage.sender) {
+      let responseToMessageSender = {
+        elixirChatId: responseToMessage.sender.id,
+        firstName: responseToMessage.sender.firstName,
+        lastName: responseToMessage.sender.lastName,
+        isAgent: responseToMessage.sender.__typename === 'Employee',
+        isCurrentClient: false,
+      };
+      if (!responseToMessageSender.isAgent) {
+        responseToMessageSender.id = responseToMessage.sender.foreignId;
+        responseToMessageSender.isCurrentClient = responseToMessage.sender.foreignId === this.currentClientId;
+      }
+      responseToMessage = { ...responseToMessage, responseToMessageSender };
+    }
+    let sender = {
+      elixirChatId: message.sender.id,
+      firstName: message.sender.firstName,
+      lastName: message.sender.lastName,
+      isAgent: message.sender.__typename === 'Employee',
+      isCurrentClient: false,
+    };
+    if (!sender.isAgent) {
+      sender.id = message.sender.foreignId;
+      sender.isCurrentClient = message.sender.foreignId === this.currentClientId;
+    }
+    return {
+      id: message.id,
+      text: message.text,
+      timestamp: message.timestamp,
+      sender,
+      responseToMessage,
+      cursor: message.cursor || null,
+    };
+  };
+
+  public sendMessage = ({ text, responseToMessageId }: ISentMessage): Promise<INewMessage> => {
     const variables = { text, responseToMessageId }; // TODO: change when able to send attachments
     const query = prepareGraphQLQuery('mutation', this.sendMessageQuery, variables);
     return new Promise((resolve, reject) => {
@@ -223,7 +262,7 @@ export class MessagesSubscription {
           .query(query, variables)
           .then(data => {
             if (data && data.sendMessage) {
-              resolve(data.sendMessage);
+              resolve(this.serializeMessage(data.sendMessage));
             }
             else {
               reject({ error: data, variables, graphQLQuery: query });
@@ -253,7 +292,7 @@ export class MessagesSubscription {
         .then(response => {
           if (response.messages) {
 
-            let messages = <[INewMessage]>simplifyGraphQLJSON(response.messages);
+            let messages = <[INewMessage]>simplifyGraphQLJSON(response.messages).map(this.serializeMessage);
             messages = messages.filter(message => !this.latestMessageHistoryCursorsCache.includes(message.cursor));
 
             this.latestMessageHistoryCursorsCache = [

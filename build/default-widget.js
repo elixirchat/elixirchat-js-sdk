@@ -1313,7 +1313,6 @@ function (_react_1$Component) {
           }
         }
 
-        message.isSentByMe = _this.props.elixirChatWidget.client.id === message.sender.foreignId;
         return message;
       });
     };
@@ -1356,14 +1355,14 @@ function (_react_1$Component) {
         })), react_1.default.createElement("div", {
           className: classnames_1.default({
             'elixirchat-chat-messages__item': true,
-            'elixirchat-chat-messages__item--by-me': message.isSentByMe,
-            'elixirchat-chat-messages__item--by-agent': message.sender.__typename === 'Employee'
+            'elixirchat-chat-messages__item--by-me': message.sender.isCurrentClient,
+            'elixirchat-chat-messages__item--by-agent': message.sender.isAgent
           })
         }, react_1.default.createElement("div", {
           className: "elixirchat-chat-messages__balloon"
         }, react_1.default.createElement("div", {
           className: "elixirchat-chat-messages__sender"
-        }, message.isSentByMe ? 'Я' : (message.sender.firstName || '') + ' ' + (message.sender.lastName || '')), react_1.default.createElement("div", {
+        }, message.sender.isCurrentClient ? 'Я' : (message.sender.firstName || '') + ' ' + (message.sender.lastName || '')), react_1.default.createElement("div", {
           className: "elixirchat-chat-messages__text"
         }, message.text)), react_1.default.createElement("div", {
           className: "elixirchat-chat-messages__timestamp"
@@ -2607,6 +2606,7 @@ function (_ElixirChat) {
       utilsCommon_1.logEvent(_this.debug, 'Appended ElixirChat default widget', {
         container: container
       });
+      return _this.widgetChatReactComponent;
     };
 
     return _this;

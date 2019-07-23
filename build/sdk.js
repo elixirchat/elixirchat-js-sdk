@@ -5816,9 +5816,9 @@ function () {
     this.latestMessageHistoryCursorsCache = [];
     this.reachedBeginningOfMessageHistory = false;
     this.isBeforeUnload = false;
-    this.subscriptionQuery = "\n    subscription {\n      newMessage {\n        id\n        text\n        system\n        timestamp\n        data {\n          ... on NotSystemMessageData {\n            responseToMessage {\n              id\n              text\n              sender {\n              \n                ... on Client { id foreignId firstName lastName }\n                ... on Employee { id firstName lastName }\n              }\n            }\n          }\n        }\n        sender {\n          __typename\n          ... on Client { id foreignId firstName lastName }\n          ... on Employee { id firstName lastName }\n        }\n      }\n    }\n  ";
-    this.sendMessageQuery = "\n    sendMessage {\n      id\n      text\n      system\n      timestamp\n      data {\n        ... on NotSystemMessageData {\n          responseToMessage {\n            id\n            text\n            sender {\n              __typename\n              ... on Client { id foreignId firstName lastName }\n              ... on Employee { id firstName lastName }\n            }\n          }\n        }\n      }\n      sender {\n        __typename\n        ... on Client { id foreignId firstName lastName }\n        ... on Employee { id firstName lastName }\n      }\n    }\n  ";
-    this.messageHistoryQuery = "\n    messages {\n      edges {\n        cursor\n        node {\n          id\n          text\n          system\n          timestamp\n          data {\n            ... on SystemMessageData {\n              format\n              type\n              author { id firstName lastName }\n            }\n            ... on NotSystemMessageData {\n              responseToMessage {\n                id\n                text\n                sender {\n                  __typename\n                  ... on Client { id foreignId firstName lastName }\n                  ... on Employee { id firstName lastName }\n                }\n              }\n            }\n          }\n          sender {\n            __typename\n            ... on Client { id foreignId firstName lastName }\n            ... on Employee { id firstName lastName }\n          }\n        }\n      }\n    }\n  ";
+    this.subscriptionQuery = "\n    subscription {\n      newMessage {\n        id\n        text\n        timestamp\n        data {\n          ... on NotSystemMessageData {\n            responseToMessage {\n              id\n              text\n              sender {\n                __typename\n                ... on Client { id foreignId firstName lastName }\n                ... on Employee { id firstName lastName }\n              }\n            }\n          }\n        }\n        sender {\n          __typename\n          ... on Client { id foreignId firstName lastName }\n          ... on Employee { id firstName lastName }\n        }\n      }\n    }\n  ";
+    this.sendMessageQuery = "\n    sendMessage {\n      id\n      text\n      timestamp\n      data {\n        ... on NotSystemMessageData {\n          responseToMessage {\n            id\n            text\n            sender {\n              __typename\n              ... on Client { id foreignId firstName lastName }\n              ... on Employee { id firstName lastName }\n            }\n          }\n        }\n      }\n      sender {\n        __typename\n        ... on Client { id foreignId firstName lastName }\n        ... on Employee { id firstName lastName }\n      }\n    }\n  ";
+    this.messageHistoryQuery = "\n    messages {\n      edges {\n        cursor\n        node {\n          id\n          text\n          timestamp\n          data {\n            ... on NotSystemMessageData {\n              responseToMessage {\n                id\n                text\n                sender {\n                  __typename\n                  ... on Client { id foreignId firstName lastName }\n                  ... on Employee { id firstName lastName }\n                }\n              }\n            }\n          }\n          sender {\n            __typename\n            ... on Client { id foreignId firstName lastName }\n            ... on Employee { id firstName lastName }\n          }\n        }\n      }\n    }\n  ";
 
     this.onBeforeUnload = function () {
       _this.isBeforeUnload = true;
@@ -5829,6 +5829,52 @@ function () {
       window.removeEventListener('beforeunload', _this.onBeforeUnload);
       _this.absintheSocket = AbsintheSocket.cancel(_this.absintheSocket, _this.notifier);
       _this.latestMessageHistoryCursorsCache = [];
+      _this.reachedBeginningOfMessageHistory = false;
+    };
+
+    this.serializeMessage = function (message) {
+      var responseToMessage = message.data.responseToMessage;
+
+      if (responseToMessage && responseToMessage.sender) {
+        var responseToMessageSender = {
+          elixirChatId: responseToMessage.sender.id,
+          firstName: responseToMessage.sender.firstName,
+          lastName: responseToMessage.sender.lastName,
+          isAgent: responseToMessage.sender.__typename === 'Employee',
+          isCurrentClient: false
+        };
+
+        if (!responseToMessageSender.isAgent) {
+          responseToMessageSender.id = responseToMessage.sender.foreignId;
+          responseToMessageSender.isCurrentClient = responseToMessage.sender.foreignId === _this.currentClientId;
+        }
+
+        responseToMessage = Object.assign({}, responseToMessage, {
+          responseToMessageSender: responseToMessageSender
+        });
+      }
+
+      var sender = {
+        elixirChatId: message.sender.id,
+        firstName: message.sender.firstName,
+        lastName: message.sender.lastName,
+        isAgent: message.sender.__typename === 'Employee',
+        isCurrentClient: false
+      };
+
+      if (!sender.isAgent) {
+        sender.id = message.sender.foreignId;
+        sender.isCurrentClient = message.sender.foreignId === _this.currentClientId;
+      }
+
+      return {
+        id: message.id,
+        text: message.text,
+        timestamp: message.timestamp,
+        sender: sender,
+        responseToMessage: responseToMessage,
+        cursor: message.cursor || null
+      };
     };
 
     this.sendMessage = function (_ref) {
@@ -5844,7 +5890,7 @@ function () {
         if (variables.text) {
           _this.graphQLClient.query(query, variables).then(function (data) {
             if (data && data.sendMessage) {
-              resolve(data.sendMessage);
+              resolve(_this.serializeMessage(data.sendMessage));
             } else {
               reject({
                 error: data,
@@ -5879,7 +5925,7 @@ function () {
 
         _this.graphQLClient.query(query, variables).then(function (response) {
           if (response.messages) {
-            var messages = GraphQLClient_1.simplifyGraphQLJSON(response.messages);
+            var messages = GraphQLClient_1.simplifyGraphQLJSON(response.messages).map(_this.serializeMessage);
             messages = messages.filter(function (message) {
               return !_this.latestMessageHistoryCursorsCache.includes(message.cursor);
             });
@@ -5916,6 +5962,7 @@ function () {
     this.apiUrl = config.apiUrl;
     this.socketUrl = config.socketUrl;
     this.token = config.token;
+    this.currentClientId = config.currentClientId;
 
     this.onSubscribeSuccess = config.onSubscribeSuccess || function () {};
 
@@ -5966,7 +6013,7 @@ function () {
           var data = _ref2.data;
 
           if (data && data.newMessage) {
-            _this2.onMessage(data.newMessage);
+            _this2.onMessage(_this2.serializeMessage(data.newMessage));
           }
         }
       });
@@ -6734,6 +6781,7 @@ function () {
         socketUrl: this.socketUrl,
         apiUrl: this.apiUrl,
         token: this.authToken,
+        currentClientId: this.client.id,
         onSubscribeSuccess: function onSubscribeSuccess() {
           var roomData = {
             room: _this6.room,
@@ -6754,14 +6802,7 @@ function () {
             return callback(data);
           });
         },
-        onMessage: function onMessage(response) {
-          var message = {
-            id: response.id,
-            text: response.text,
-            sender: response.sender,
-            timestamp: response.timestamp,
-            responseToMessage: response.data.responseToMessage
-          };
+        onMessage: function onMessage(message) {
           utilsCommon_1.logEvent(_this6.debug, 'Received new message', message);
 
           _this6.onMessageCallbacks.forEach(function (callback) {
@@ -6798,6 +6839,8 @@ function () {
           });
 
           _this7.typingStatusSubscription.dispatchTypedText('', true);
+
+          return message;
         }).catch(function (error) {
           utilsCommon_1.logEvent(_this7.debug, 'Failed to send message', error, 'error');
           throw error;
