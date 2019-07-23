@@ -138,7 +138,8 @@ export class ElixirChatWidget extends ElixirChat {
       this.toggleChatVisibility();
     }
 
-    logEvent(this.debug, 'Appended ElixirChat default widget', { container })
+    logEvent(this.debug, 'Appended ElixirChat default widget', { container });
+    return this.widgetChatReactComponent;
   };
 }
 

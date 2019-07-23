@@ -30,7 +30,7 @@ import ElixirChatWidget from 'ElixirChat/widget';
 
 const elixirChatWidget = ElixirChatWidget({
   apiUrl: 'https://elixirchat.yoursite.com:4000', // your ElixirChat API URL
-  socketUrl: 'ws://elixirchat.yoursite.com/socket', // your ElixirChat websocket URL
+  socketUrl: 'ws://elixirchat.yoursite.com:4000/socket', // your ElixirChat websocket URL
   companyId: 'your-company-id-here', // you will get companyId from ElixirChat team
   // You may also include optional "room" and "client" parameters here
   // Scroll down to "ElixirChat Config" for details
@@ -238,6 +238,7 @@ Class `ElixirChatWidget` extends `ElixirChat` therefore they both share some met
 Send customer's message to your customer support agent.
 
 __Parameters:__
+
 - `text` - message text
 - `attachments` - list of attachments in a [JS File() format](https://developer.mozilla.org/en-US/docs/Web/API/File)
 - `responseToMessageId` - the ID of a message your customer replies to (if any)
@@ -261,6 +262,7 @@ elixirChat.sendMessage({
 Callback that fires once a message is received from your customer support agent.
 
 __Callback parameters:__
+
 - `message.id` - message ID
 - `message.text` - message text
 - `message.timestamp` - message timestamp in ISO format
@@ -287,14 +289,19 @@ elixirChat.onMessage((message) => {
 <br/>
 <a id="onTyping"></a>
 
-#### `onTyping ((peopleWhoAreTyping) => { ... })`
-Callback that fires when other participants start or finish typing text in the current room.
+#### `onTyping((peopleWhoAreTyping) => { ... })`
+Subscribe to the event that fires when other participants start or finish typing text in the current room.
 
-__Callback parameters:__
-- `peopleWhoAreTyping[<user>]` - list of people who are currently typing text in this room. If empty array, then other participants are not currently typing anything.
-    - `<user>.id` - participant's ID
-    - `<user>.firstName` - participant's first name
-    - `<user>.lastName` - participant's last name
+__Arguments:__
+
+- `callback: function` - callback that fires when other participants start or finish typing text in the current room.
+
+__Callback arguments:__
+
+- `peopleWhoAreTyping: Array<{user}>` - array of people who are currently typing text in this room. If array is empty, then other participants are not currently typing anything.
+    - `{user}.id` - participant's ID
+    - `{user}.firstName` - participant's first name
+    - `{user}.lastName` - participant's last name
 
 ```js
 elixirChat.onTyping((peopleWhoAreTyping) => {
@@ -308,33 +315,62 @@ elixirChat.onTyping((peopleWhoAreTyping) => {
 ```
 
 <br/>
-<a id="takeScreenshot"></a>
+<a id="dispatchTypedText"></a>
 
-#### `takeScreenshot ()`
-Make a screenshot of the customer's screen (while also asking customer's [permission to share their screen](https://developer.mozilla.org/en-US/docs/Web/API/Screen_Capture_API/Using_Screen_Capture#Capturing_screen_contents)).
+#### `dispatchTypedText(typedText)`
 
-__Returns: `new Promise()`__
+Dispatch the text typed so far by the client to ElixirChat admin panel. This method _doesn't send a message_ but only reports that current client has typed a certain text. This would be displayed in the "typing..." status in ElixirChat admin panel.
+
+__Arguments:__
+
+- `typedText: string` - the text typed so far by the client.
 
 ```js
 // Example:
-elixirChat.takeScreenshot().then(screenshotFile => {
-  // screenshotFile is a `new File()` instance
-  // you can send to ElixirChat admin it via elixirchat.sendMessage({ attachments: [ screenshotFile ] });
+document.querySelector('textarea#message').addEventListener('keyup', (e) => {
+  elixirChat.dispatchTypedText(e.target.value);
 });
+```
+
+
+<br/>
+<a id="takeScreenshot"></a>
+
+#### `takeScreenshot()`
+Make a screenshot of the customer's screen. This would open a [standard browser window asking to share user's screen](https://developer.mozilla.org/en-US/docs/Web/API/Screen_Capture_API/Using_Screen_Capture#Capturing_screen_contents).
+
+__Returns: `Promise()`__ whose `then` callback has these arguments:
+
+- `screenshot: object`:
+  - `screenshot.dataUrl: string` - a base64 data URL string of the screenshot in PNG format
+  - `screenshot.file: File` - a [`File()`](https://developer.mozilla.org/en-US/docs/Web/API/File) instance of the screenshot in PNG format
+
+```js
+// Example:
+elixirChat.takeScreenshot().then(screenshot => {
+  // Render preview
+  document.querySelector('img#preview').src = screenshot.dataUrl;
+  
+  // Send to ElixirChat admin as attachment
+  elixirchat.sendMessage({ attachments: [ screenshot.file ] });
+})
+.catch(e => alert(e.message));
 ```
 
 <br/>
 <a id="reconnect"></a>
 
-#### `reconnect ({ room: { id, title  }, client: { id, firstName, lastName } })`
-Change room or client (or both) _after_ you already initialized `ElixirChat` or `ElixirChatWidget`.
+#### `reconnect({ `[`room`](#config-room),[`client`](#config-client)` })`
+Change room or client (or both) _after_ you already initialized ElixirChat or ElixirChatWidget.
+
 - If you pass a new `room` only, SDK will reconnect you to a new room with the same client data.
 - If you pass a new `client` only, SDK will reconnect you to the same room with a new client data.
     - _BUT,_ if you were previously connected to a [private room](#private-room) (i.e. without passing a room ID in the first place), and you pass a new `client` only, you will be reconnected to a _different_ private room.
 
-__Parameters:__
-- `room: Object` - same format as [`room` in the config](#config-room)
-- `client: Object` - same format as [`client` in the config](#config-client)
+__Argument parameters { ... }:__
+
+- `room: object` - same format as [`room` in the config](#config-room)
+- `client: object` - same format as [`client` in the config](#config-client)
 
 __Returns: `new Promise()`__
 
@@ -373,8 +409,12 @@ elixirChat.reconnect({
 <br/>
 <a id="onConnectSuccess"></a>
 
-#### `onConnectSuccess (() => { ... })`
-A callback that fires after establishing a successful connection to a room. This happens either after initial SDK initialization, or after invoking [`reconnect()`](#reconnect) method.
+#### `onConnectSuccess(() => { ... })`
+Subscribe to the event that fires after establishing a successful connection to a room. This happens either after initial SDK initialization, or after invoking [`reconnect()`](#reconnect) method.
+
+__Arguments:__
+
+- `callback: function` - function that fires after establishing a successful connection to a room.
 
 ```js
 elixirChat.onConnectSuccess(() => {
@@ -387,8 +427,12 @@ elixirChat.onConnectSuccess(() => {
 <br/>
 <a id="onConnectError"></a>
 
-#### `onConnectError (error => { ... })`
-A callback that fires if connection to the room failed. This happens either after initial SDK initialization, or after invoking [`reconnect()`](#reconnect) method.
+#### `onConnectError(error => { ... })`
+Subscribe to the event that fires if connection to the room failed. This might happen either after initial SDK initialization, or after invoking [`reconnect()`](#reconnect) method.
+
+__Arguments:__
+
+- `callback: function` - function that fires if connection to the room failed.
 
 ```js
 elixirChat.onConnectError((e) => {
@@ -398,24 +442,28 @@ elixirChat.onConnectError((e) => {
 
 <br/>
 
-## There are a few more methods specifically in `ElixirChatWidget`:
+## There are a few more methods and properties specifically in ElixirChatWidget:
 
-<a id="toggleChatVisibility"></a>
+### ElixirChatWidget methods:
+
+<a id="widget-toggleChatVisibility"></a>
 #### `toggleChatVisibility()`
-Shows or hides the widget chat window.
+Programmatically show or hide the widget chat window.
 
 ```js
 // Example:
 elixirChatWidget.toggleChatVisibility();
-console.log('Chat window is now', elixirChatWidget.widgetIsVisible ? 'open' : 'closed');
+console.log('Chat window is now ', elixirChatWidget.widgetIsVisible ? 'open' : 'closed');
 ```
 
+<br/>
+<a id="widget-onToggleChatVisibility"></a>
 
-<a id="onToggleChatVisibility"></a>
 #### `onToggleChatVisibility(callback)`
 Subscribe to open/close events of the widget chat window.
 
-__Parameters:__
+__Arguments:__
+
 - `callback: function` - function that fires every time the chat window is opened or closed
 
 ```js
@@ -425,30 +473,64 @@ elixirChatWidget.onToggleChatVisibility((isVisible) => {
 });
 ```
 
+<br/>
+<a id="widget-appendWidget"></a>
 
-<a id="appendWidget"></a>
 #### `appendWidget({ container, visibleByDefault, iframeStyles })`
-Append ElixirChat widget to a container, customize via CSS if needed
+Append ElixirChat widget to a container, customize via CSS if needed.
 
-__Parameters:__
-- `container: HTMLElement` - DOM element to where the widget would be appended (at the end of it)
-- `visibleByDefault: boolean` _(default=false)_ - if true, the widget will be open by default
-- `iframeStyles: string` - your custom CSS code applied to ElixirChat Widget so that you can easily change look and feel of your widget
+__Parameters {...}:__
+
+- `container: HTMLElement` - DOM element the widget would be appended to (at the end of it).
+- `visibleByDefault: boolean` `(default=false)` - if true, the widget will be open by default.
+- `iframeStyles: string` - your custom CSS code applied to ElixirChat Widget _inside the iframe_ so that you can easily change look and feel of the chat window.
+
+__Returns:__
+
+- `JSX.Element` - Widget React component (rendered inside the `<iframe>` element)
+
 
 ```js
 // Example:
 elixirChatWidget.appendWidget({
   container: document.body,
-  styles: `
-    .widget { background: #eeeeee }
-    .message { background: #53B561 } 
+  iframeStyles: `
+    .elixirchat-chat-container { background: #eeeeee }
+    .elixirchat-chat-messages__item { background: #53B561 } 
   `,
 });
 ```
 
+<br/>
+### ElixirChatWidget properties:
+
+<a id="widget-container"></a>
+<a id="widget-iframeStyles"></a>
+<a id="widget-visibleByDefault"></a>
+
+- `container: HTMLElement` - Same as passed to [`appendWidget()`](#widget-appendWidget)
+- `iframeStyles: string` - Same as passed to [`appendWidget()`](#widget-appendWidget)
+- `visibleByDefault: boolean` - Same as passed to [`appendWidget()`](#widget-appendWidget)
+- <a id="widget-widgetIsVisible"></a>`widgetIsVisible: boolean` - Flag indicating whether the chat window is currently open
+- <a id="widget-widgetChatIframe"></a>`widgetChatIframe: HTMLIFrameElement` - Chat window IFrame element
+- <a id="widget-widgetChatReactComponent"></a>`widgetChatReactComponent: JSX.Element` - Widget React component (rendered inside the IFrame element)
+- <a id="widget-widgetButton"></a>`widgetButton: HTMLElement` - Widget activation Button element (rendered outside the IFrame element)
+
+```js
+// Examples:
+console.log('Widget React component state is', elixirChatWidget.widgetChatReactComponent.state);
+
+elixirChatWidget.widgetChatIframe.width = '150px';
+
+if (elixirChatWidget.widgetIsVisible) {
+	document.getElementById('my-app-column').className = 'shrinked';
+}
+```
+
+<br/>
 <a id="developers"></a>
 ## For developers
-If you want to roll out ElixirChat SDK as a developer:
+If you want to roll out ElixirChat SDK and widget as a developer:
 
 ```bash
 # Clone the repo and install dependencies
@@ -461,9 +543,9 @@ npm run dev
 # Compile `build/sdk.js` & `build/default-widget.min.js` out of your current code
 npm run build
 
-# Run SDK and widget examples on http://localhost:8002 and open them in your browser
+# Run SDK and widget examples on http://localhost:8002
 npm run examples
 
-# Deploy your SDK and widget examples to surge.sh (URL specified in build/CNAME)
+# Deploy your SDK and widget examples to surge.sh (URL specified in `build/CNAME`)
 npm run examples-deploy
 ```
