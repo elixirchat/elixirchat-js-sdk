@@ -166,22 +166,22 @@ document.querySelector('#screenshot-button').addEventListener('click', () => {
 
 <img src="https://user-images.githubusercontent.com/1618344/60435459-26b3f280-9bf9-11e9-9e0c-0a153a07bf09.png" alt="ElixirChat Rooms"/>
 
-> _In your ElixirChat admin panel, all rooms are listed on the left_
+> _В вашей админ-панели ElixirChat комнаты показаны слева_
 
-In ElixirChat, the customers and your customer support agents communicate in so-called rooms. There are two types of rooms:
+В ElixirChat клиенты и ваши операторы поддержки общаются в так называемых комнатах. Есть два типа комнат:
 
-1. <a id="private-room"></a>__Private room:__ for one-on-one communication between a single customer and an assigned customer support manager.
-2. <a id="public-room"></a>__Public room:__ a group chat where all customers see each other's messages and replies from the assigned customer support manager.
+1. <a id="private-room"></a>__Приватная комната:__ для общения один на один между отдельным клиентом и ответственным оператором по поддержке клиентов.
+2. <a id="public-room"></a>__Публичная комната:__ групповой чат, где все клиенты видят все сообщения друг друга и ответы ответственного оператора по поддержке клиентов.
 
 <br/>
 <a id="config"></a>
 
-## ElixirChat Config
+## ElixirChat-конфиг
 
-You have to pass over the config when initializing `new ElixirChat` or `new ElixirChatWidget`.
+При инициализации `new ElixirChat` или `new ElixirChatWidget`, необходимо передать конфиг.
 
 ```js
-// Example:
+// Пример:
 new ElixirChat({
   apiUrl: 'https://elixirchat.yoursite.com:4000',
   socketUrl: 'wss://elixirchat.yoursite.com:4000/socket',
@@ -195,7 +195,7 @@ new ElixirChat({
     firstName: 'you may pass your customer\'s first name here',
     firstName: 'you may pass your customer\'s last name here',
   },
-  debug: true, // enables verbose console output
+  debug: true,
 })
 ```
 
@@ -203,86 +203,85 @@ new ElixirChat({
 <a id="config-apiUrl"></a>
 
 #### `apiUrl: string`
-Your ElixirChat backend GraphQL URL (for example `https://elixirchat.yourcompany.com:4000`)
+GraphQL URL вашего бэкэнда ElixirChat (например, `https://elixirchat.yourcompany.com:4000`)
 
 
 <br/>
 <a id="config-socketUrl"></a>
 
 #### `socketUrl: string`
-Your ElixirChat backend WebSocket URL starting with `ws:`/`wss:` protocol (for example `wss://elixirchat.yourcompany.com:4000/socket`)
+WebSocket URL вашего бэкэнда ElixirChat, начинающийся с протокола `ws:`/`wss:` (например, `wss://elixirchat.yourcompany.com:4000/socket`)
 
 
 <br/>
 <a id="config-companyId"></a>
 
 #### `companyId: string`
-Your company ID. You will get it from ElixirChat team.
+ID вашей компании. Вы получите его от команды ElixirChat.
 
 <br/>
 <a id="config-room"></a>
 
-#### `room: { id, title }` (optional)
-Pass it if you need a [public room](#public-room). How it works:
+#### `room: { id, title }` (опционально)
+Задайте опцию `room`, если вам нужна [публичная комната](#public-room). Как это работает:
 
-- When you use it _for the first time,_ it _creates_ a new [public room](#public-room) (with the specified `id` and `title`).
-- When you use it _again_ later, ElixirChat SDK _connects to the same room_ that's been previously created with this `id`.
-- If you don't pass it at all, a new [private room](#private-room) would be created for every _unique_ visitor.
+- Когда вы передаете `room` _в первый раз_, ElixirChat SDK _создает новую [публичную комнату](#public-room) (в переданным `id` и `title`).
+- Когда вы _снова_ инициализируете ElixirChat SDK с тем же `room.id`, SDK _подключается к той же самой комнате_, которая была ранее создана с этим `id`.
+- Если вы не передаете `room` вообще, то новая [приватная комната](#private-room) будет создаваться для каждого _уникального_ посетителя.
 
-__Parameters:__
+__Параметры:__
 
-- `room.id: string` — Arbitrary string you can use to identify the room.
-- `room.title: string` — Your public room title that is displayed [in your ElixirChat admin panel (on the left)](#what-are-rooms). Feel free to change it over time if you need to — these changes will be reflected in the admin panel as well.
+- `room.id: string` — Произвольная строка, используемая для идентификации комнаты.
+- `room.title: string` — Название вашей публичной комнаты, которое отображается [в админ-панели ElixirChat (слева)](#what-are-rooms). `room.title` можно менять в любое время — эти изменения будут сразу отражены в админ-панели.
 
 <br/>
 <a id="config-client"></a>
 
-#### `client: { id, firstName, lastName }` (optional)
-Pass it if you want `firstName` and `lastName` to be displayed in the ElixirChat admin panel.
+#### `client: { id, firstName, lastName }` (опционально)
+Задайте опцию `client`, если хотите, чтобы `firstName` и `lastName` отображались в админ-панели ElixirChat.
 
-If you don't pass the `client ` object, 
-a random name will be generated using [unique-names-generator](https://www.npmjs.com/package/unique-names-generator) (name examples: "Spotty Jade", "Italian Crimson", "Hot Aquamarine", etc) and stored in localStorage so that the generated name persists after page refreshes.
+Если вы не зададите `client`, то будет сгенерировано случайное имя клиента с помощью [unique-names-generator](https://www.npmjs.com/package/unique-names-generator) (например, "Spotty Jade", "Italian Crimson", "Hot Aquamarine" и т.д.), которое будет сохранено в localStorage — чтобы сгенерированное имя сохранялось после перезагрузки страницы.
 
 __Parameters:__
 
-- `client.id: string` - Arbitrary string you can use to identify a particular customer
-- `client.firstName: string` - Customer's first name to be displayed in the ElixirChat admin panel
-- `client.lastName: string` - Customer's last name to be displayed in the ElixirChat admin panel
+- `client.id: string` - Произвольная строка, используемая для идентификации конкретного клиента.
+- `client.firstName: string` - Имя клиента, которое будет отображаться в админ-панели ElixirChat.
+- `client.lastName: string` - Фамилия клиента, которая будет отображаться в админ-панели ElixirChat.
 
 <br/>
 <a id="config-debug"></a>
 
-#### `debug: boolean` `(default=false)` (optional)
-Enables ElixirChat SDK verbose console output
+#### `debug: boolean` `(default=false)` (опционально)
+Включает подробный вывод в консоль от ElixirChat SDK
 
 <br/>
 <a id="elixirchat-methods"></a>
 
 ## ElixirChat API
-Class `ElixirChatWidget` extends `ElixirChat` therefore they both share all methods and properties except [these that are only present in `ElixirChatWidget`](#widget).
+Класс `ElixirChatWidget` наследуется от `ElixirChat`, поэтому они оба имеют те же методы и свойства, кроме [тех, которые присутствуют только в `ElixirChatWidget`](#widget).
 
 
 <br/>
 
-### ElixirChat methods:
+### Методы ElixirChat:
 
 <a id="sendMessage"></a>
 
 #### `sendMessage({ text, attachments, responseToMessageId })`
-Send customer's message to the room. Passing at least either `text` or `attachments` is required.
+Отправка сообщения в комнату. Требуется передать хотя бы либо `text`, либо `attachments`.
 
-__Argument parameters {...}:__
+__Параметры аргумента {...}:__
 
-- `text: string (optional)` - message text
-- `attachments: Array<File> (optional)` - list of attachments in a [File() format](https://developer.mozilla.org/en-US/docs/Web/API/File)
-- `responseToMessageId: string (optional)` - the ID of a message your customer replies to (if any)
+- `text: string (опциональный)` - текст сообщения
+- `attachments: Array<File> (опциональный)` - список вложений в [формате File ()](https://developer.mozilla.org/en-US/docs/Web/API/File)
+- `responseToMessageId: string (опциональный)` - ID сообщения, на которое отвечает пользователь (если есть)
 
-__Returns: `Promise()`__ whose `then` callback has these arguments:
+__Возвращает: `Promise()`__, у которого коллбэк в `then` callback имеет такие аргументы:
 
-- `message` - Your message that's been just sent (in the [format described below](#onMessage-message)).
+- `message` - Ваше сообщение, которое было только что отправлено (в [формате, описанном ниже](#onMessage-message)).
 
 ```js
-// Example:
+// Пример:
 elixirChat.sendMessage({
   text: 'my message text',
   attachments: document.querySelector('#inputFile').files,
@@ -295,33 +294,33 @@ elixirChat.sendMessage({
 <a id="onMessage"></a>
 
 #### `onMessage((message) => { ... })`
-Subscribe to the event that fires every time a new message is sent to the room.
+Подписаться на новые сообщения в комнате.
 
 __Arguments:__
 
-- `callback: function` - Function that runs every time a new message is sent.
+- `callback: function` - Функция, которая выполняется при получении нового сообщения.
 
-__Callback parameters:__
+__Параметры коллбэка:__
 
 - <a id="onMessage-message"></a>`message: object`:
-  - `message.id: string` - message ID
-  - `message.text: string` - message text
-  - `message.timestamp: string` - message timestamp in ISO format
-  - <a id="onMessage-cursor"></a>`message.cursor: string` - message cursor needed for [`fetchMessageHistory()`](#fetchMessageHistory)
-  - `message.sender: object` - sender info:
-      - `sender.elixirChatId: string` - user ID if the sender generated by ElixirChat backend (it's _NOT_ a [`client.id` from config](#config-client))
-      - `sender.firstName: string` - sender's first name
-      - `sender.lastName: string` - sender's last name
-      - `sender.isCurrentUser: boolean` - _true_ if sender is the current client that was [passed on to ElixirChat config as `client`](#config-client)
-      - `sender.isAgent: boolean` - _true_ if the sender is a customer support agent; _false_ if the sender is another client (in case of public room)
-      - `sender.id: string | undefined` - [ElixirChar `client.id`](#config-client) of the sender (however, if sender a customer support agent, then `sender.id` is _undefined_)
-  - `message.responseToMessage: object | null` - contains original message info (if this is a reply to another message) or _null_ (if this message is not a reply)
-      - `responseToMessage.id: string` - original message ID
-      - `responseToMessage.text: string` - original message text
-      - `responseToMessage.sender: object` - original message sender (same format as `message.sender` above)
+  - `message.id: string` - ID сообщения
+  - `message.text: string` - текст сообщения
+  - `message.timestamp: string` - timestamp сообщения в формате ISO
+  - <a id="onMessage-cursor"></a>`message.cursor: string` - поле `cursor`, необходимое для [`fetchMessageHistory()`](#fetchMessageHistory)
+  - `message.sender: object` - информация об отправителе:
+      - `sender.elixirChatId: string` - ID пользователя отправителя, сгенерированный бэкэндом ElixirChat (это _НЕ_ [`client.id` из конфига](#config-client))
+      - `sender.firstName: string` - имя отправителя
+      - `sender.lastName: string` - фамилия отправителя
+      - `sender.isCurrentUser: boolean` - _true_, если отправитель — это текущий клиент, который [был передан в конфиг ElixirChat как `client`](#config-client)
+      - `sender.isAgent: boolean` - _true_, если отправитель — это оператор поддержки клиентов; _false_, если отправитель — это другой клиент (в случае публичной комнаты)
+      - `sender.id: string | undefined` - [ElixirChar `client.id`](#config-client) отправителя (однако, если отправитель агент поддержки клиентов, то `sender.id` - _undefined_)
+  - `message.responseToMessage: object | null` - содержит информацию об изначальном сообщении (если это был ответ на другое сообщение) или _null_ (если это сообщение — не ответ на другое)
+      - `responseToMessage.id: string` - ID изначального сообщения
+      - `responseToMessage.text: string` - текст изначального сообщения
+      - `responseToMessage.sender: object` - отправитель изначального сообщения (в том же формате, что `message.sender` выше)
 
 ```js
-// Example:
+// Пример:
 elixirChat.onMessage((message) => {
   if (message.sender.isCurrentUser) {
     console.log('You sent a message ', message.text);
@@ -350,7 +349,7 @@ Fetch a chunk of message history.
 __Arguments:__
 
 - `limit: number` - the size of the returned message chunk
-- `firstMessageCursor: string (optional)` - the [`cursor`](#onMessage-cursor) field of a message prior to which you'd like to fetch messages. If not provided, the latest messages would be fetched.
+- `firstMessageCursor: string (опционально)` - the [`cursor`](#onMessage-cursor) field of a message prior to which you'd like to fetch messages. If not provided, the latest messages would be fetched.
 
 __Returns: `Promise()`__ whose `then` callback has these arguments:
 
@@ -467,8 +466,8 @@ Change room or client (or both) _after_ you already initialized ElixirChat or El
 
 __Argument parameters {...}:__
 
-- `room: object (optional)` - same format as [`room` in the config](#config-room)
-- `client: object (optional)` - same format as [`client` in the config](#config-client)
+- `room: object (опционально)` - same format as [`room` in the config](#config-room)
+- `client: object (опционально)` - same format as [`client` in the config](#config-client)
 
 __Returns: `new Promise()`__
 
