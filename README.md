@@ -1,11 +1,11 @@
 # elixirchat-sdk
 JavaScript SDK for [https://elixir.chat](https://elixir.chat)
 
----
+<img src="https://user-images.githubusercontent.com/1618344/61722634-4f03bc80-ad73-11e9-8531-3cd989837b4d.png" width="100%" height="1">
 
 In English | [по-русски](https://github.com/elixirchat/elixirchat-widget/blob/master/README-ru.md)
 
----
+<img src="https://user-images.githubusercontent.com/1618344/61722634-4f03bc80-ad73-11e9-8531-3cd989837b4d.png" width="100%" height="1">
 
 <img src="https://user-images.githubusercontent.com/1618344/60431837-42ff6180-9bf0-11e9-9ee5-6a2c4b250fc7.png" alt="ElixirChat widget" width="498"/>
 
@@ -14,7 +14,10 @@ In English | [по-русски](https://github.com/elixirchat/elixirchat-widget
 1. [Add a fully implemented Elixirchat widget (pictured above) to your website](#add-default-widget) by simply writing a couple lines of code. The widget's look and feel is customizable via CSS.
 2. [Create your own custom widget](#create-custom-widget) that communicates with your ElixirChat admin panel via Elixirchat SDK.
 
+<br/>
+
 ## Examples
+
 | <img src="https://user-images.githubusercontent.com/1618344/61660053-b36e3f80-acd1-11e9-8f0d-79a8be0c2597.png" alt="ElixirChat Widget Demo" width="100%"/> | <img src="https://user-images.githubusercontent.com/1618344/61660172-f29c9080-acd1-11e9-84e4-9048d0d785f6.png" alt="ElixirChat Widget SDK" width="100%"/> |
 | --- |--- |
 | __Fully implemented Elixirchat widget__<br> Customized with CSS<br> [How to add?](#add-default-widget) | __Custom widget__<br> Written with pure JS from scratch<br> [How to create?](#create-custom-widget) |
