@@ -27,6 +27,8 @@ English | [Русский](https://github.com/elixirchat/elixirchat-widget/blob/
 
 ## 1. How to add a fully implemented ElixirChat widget to your website
 
+> _Check out the example in [/build/examples/sdk.html](https://github.com/elixirchat/elixirchat-widget/blob/master/build/examples/sdk.html)_
+
 ### a) Via package manager
 Run `npm i elixirchat --save` and then add this code:
 
@@ -35,7 +37,7 @@ import ElixirChatWidget from 'ElixirChat/widget';
 
 const elixirChatWidget = ElixirChatWidget({
   apiUrl: 'https://elixirchat.yoursite.com:4000', // your ElixirChat API URL
-  socketUrl: 'ws://elixirchat.yoursite.com:4000/socket', // your ElixirChat websocket URL
+  socketUrl: 'wss://elixirchat.yoursite.com:4000/socket', // your ElixirChat websocket URL
   companyId: 'your-company-id-here', // you will get companyId from ElixirChat team
   // You may also include optional "room" and "client" parameters here
   // Scroll down to "ElixirChat Config" for details
@@ -49,12 +51,15 @@ elixirChatWidget.appendWidget({
 ```
 
 ### b) Via `<script>` tag:
-Download `/dist/sdk.min.js` and `/dist/default-widget.min.js` from this repository and then include this snippet anywhere into your HTML-code:
+Download [`/build/sdk.min.js`](https://github.com/elixirchat/elixirchat-widget/blob/master/build/sdk.min.js) and [`/build/default-widget.min.js`](https://github.com/elixirchat/elixirchat-widget/blob/master/build/default-widget.min.js) from this repository and then include this snippet anywhere into your HTML-code:
+
 ```html
 <script src="[YOUR_PATH]/sdk.min.js"></script>
 <script src="[YOUR_PATH]/default-widget.min.js"></script>
 <script>
   const elixirChatWidget = ElixirChatWidget({
+    apiUrl: 'https://elixirchat.yoursite.com:4000', // your ElixirChat API URL
+    socketUrl: 'wss://elixirchat.yoursite.com:4000/socket', // your ElixirChat websocket URL
     companyId: 'your-company-id-here', // you will get companyId from ElixirChat team
     // You may also include optional "room" and "client" parameters here
     // Scroll down to "ElixirChat Config" for details
@@ -73,11 +78,14 @@ Download `/dist/sdk.min.js` and `/dist/default-widget.min.js` from this reposito
 
 ## 2. How to create your own custom widget
 
+> _Check out the example in [/build/examples/widget.html](https://github.com/elixirchat/elixirchat-widget/blob/master/build/examples/widget.html)_
+
 #### Install:
 ```bash
 npm i elixirchat --save
 ```
-or include `/dist/sdk.min.js` via the `<script>` tag anywhere into your HTML code (approximately 2Kb)
+or include [`/build/sdk.min.js`](https://github.com/elixirchat/elixirchat-widget/blob/master/build/sdk.min.js) via the `<script>` tag anywhere into your HTML code
+
 ```html
 <script src="[YOUR_PATH]/sdk.min.js"></script>
 ```
@@ -88,6 +96,8 @@ import ElixirChat from 'elixirchat';
 // Alternatively, if using `<script>` tag, `window.ElixirChat` object be added to global scope.
 
 const elixirChat = new ElixirChat({
+  apiUrl: 'https://elixirchat.yoursite.com:4000', // your ElixirChat API URL
+  socketUrl: 'wss://elixirchat.yoursite.com:4000/socket', // your ElixirChat websocket URL
   companyId: 'your-company-id-here', // you will get companyId from ElixirChat team
   // You may also include optional "room" and "client" parameters here
   // Scroll down to "ElixirChat Config" for details
@@ -97,20 +107,21 @@ const elixirChat = new ElixirChat({
 
 
 document.querySelector('#send-message-button').addEventListener('click', () => {
-  // Forward message from a customer to your customer support team
+  // Submit new message
   elixirChat.sendMessage({
-    text: document.querySelector('textarea').value, // message from a customer
-    attachments: document.querySelector('input[type=file]').files, // files attached by your customer
-    responseToMessageId: '225a5c-6cf5e0', // the ID of a message your customer replies to (if any)
+    text: document.querySelector('textarea').value, // new message text
+    attachments: document.querySelector('input[type=file]').files, // attached files
+    responseToMessageId: '225a5c-6cf5e0', // the ID of a message you reply to (if any)
   })
-  .then(status => console.log(status));
+  .then(newMessage => console.log(newMessage));
 });
 
 
-// Subscribe to new messages from your customer support agent
+// Subscribe to new messages in the room
 elixirChat.onMessage((message) => {
-  console.log(message.text, message.responseToMessage); // a new reply from your customer support agent
-  console.log(message.sender.firstName, message.sender.lastName);  // your customer support agent's name
+  console.log('New message:', message.text);
+  console.log('From:', message.sender.firstName, message.sender.lastName);
+  console.log('Is reply to:', message.responseToMessage);
 });
 
 // Track who's currently typing in the room
@@ -123,12 +134,12 @@ elixirChat.onTyping((peopleWhoAreTyping) => {
   }
 });
 
-
+// Take screenshot of your customer's screen
 document.querySelector('#screenshot-button').addEventListener('click', () => {
-  // Make screenshot of your customer's screen (will ask for user's permission)
-  elixirChat.takeScreenshot().then(screenshotFile => {
+  elixirChat.takeScreenshot().then(screenshot => {
+  	 document.querySelector('img#preview').src = screenshot.dataUrl; // show screenshot preview
     elixirchat.sendMessage({
-      attachments: [ screenshotFile ] // screenshotFile is a `new File()` instance
+      attachments: [ screenshot.file ] // screenshot.file is a `File()` instance
     });
   });
 });
@@ -150,6 +161,7 @@ document.querySelector('#screenshot-button').addEventListener('click', () => {
 > _In your ElixirChat admin panel, all rooms are listed on the left_
 
 In ElixirChat, the customers and your customer support agents communicate in so called rooms. There are two types of rooms:
+
 1. <a id="private-room"></a>__Private room:__ for one-on-one communication between a single customer and an assigned customer support manager.
 2. <a id="public-room"></a>__Public room:__ a group chat where all customers see each other's messages and replies from the assigned customer support manager.
 
@@ -163,8 +175,8 @@ You have to pass over the config when initializing `new ElixirChat` or `new Elix
 ```js
 // Example:
 new ElixirChat({
-  apiUrl: 'http://localhost:4000',
-  socketUrl: 'ws://localhost:4000/socket',
+  apiUrl: 'https://elixirchat.yoursite.com:4000',
+  socketUrl: 'wss://elixirchat.yoursite.com:4000/socket',
   companyId: 'your-company-id-here',
   room: {
     id: 'your-room-id-here',
@@ -190,7 +202,7 @@ Your ElixirChat backend GraphQL URL (for example `https://elixirchat.yourcompany
 <a id="config-socketUrl"></a>
 
 #### `socketUrl: string` (required)
-Your ElixirChat backend WebSocket URL starting with `ws:` protocol (for example `ws://elixirchat.yourcompany.com:4000/socket`)
+Your ElixirChat backend WebSocket URL starting with `ws:`/`wss:` protocol (for example `wss://elixirchat.yourcompany.com:4000/socket`)
 
 
 <br/>
@@ -202,34 +214,34 @@ Your company ID. You will get it from ElixirChat team.
 <br/>
 <a id="config-room"></a>
 
-#### `room: { id: string, title: string }`
+#### `room: { id, title }`
 Pass it if you need a [public room](#public-room). How it works:
 
 - When you use it _for the first time,_ it _creates_ a new [public room](#public-room) (with the specified `id` and `title`).
 - When you use it _again_ later, ElixirChat SDK _connects to the same room_ that's been previously created with this `id`.
-- If you don't pass it at all, a new [private room](#private-room) would be created for every _unique_ visitor (but saved to @@@).
+- If you don't pass it at all, a new [private room](#private-room) would be created for every _unique_ visitor.
 
 __Parameters:__
 
-- `room.id` — Arbitrary string you can use to identify the room.
-- `room.title` — Your public room title that is displayed [in your ElixirChat admin panel (on the left)](#what-are-rooms). Feel free to change it over time if you need to — these changes will be reflected in the admin panel as well.
+- `room.id: string` — Arbitrary string you can use to identify the room.
+- `room.title: string` — Your public room title that is displayed [in your ElixirChat admin panel (on the left)](#what-are-rooms). Feel free to change it over time if you need to — these changes will be reflected in the admin panel as well.
 
 <br/>
 <a id="config-client"></a>
 
-#### `client: { id: string, firstName: string, lastName: string }` 
+#### `client: { id, firstName, lastName }` 
 Pass it if you want to be able recognize your customer later on.
 
 __Parameters:__
 
-- `client.id` - Arbitrary string you can use to identify a particular customer
-- `client.firstName` - Customer's first name to be displayed in the ElixirChat admin panel
-- `client.lastName` - Customer's last name to be displayed in the ElixirChat admin panel
+- `client.id: string` - Arbitrary string you can use to identify a particular customer
+- `client.firstName: string` - Customer's first name to be displayed in the ElixirChat admin panel
+- `client.lastName: string` - Customer's last name to be displayed in the ElixirChat admin panel
 
 <br/>
 <a id="config-debug"></a>
 
-#### `debug: boolean` (default = false)
+#### `debug: boolean` `(default=false)`
 Enables ElixirChat SDK verbose console output
 
 <br/>
