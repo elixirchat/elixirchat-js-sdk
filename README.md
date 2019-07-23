@@ -1,9 +1,7 @@
 # elixirchat-sdk
 JavaScript SDK for [https://elixir.chat](https://elixir.chat)
 
-<img src="https://user-images.githubusercontent.com/1618344/61722634-4f03bc80-ad73-11e9-8531-3cd989837b4d.png" width="100%" height="1"><br>
-In English | [по-русски](https://github.com/elixirchat/elixirchat-widget/blob/master/README-ru.md)<br/>
-<img src="https://user-images.githubusercontent.com/1618344/61722634-4f03bc80-ad73-11e9-8531-3cd989837b4d.png" width="100%" height="1">
+In English | [по-русски](https://github.com/elixirchat/elixirchat-widget/blob/master/README-ru.md)
 
 <img src="https://user-images.githubusercontent.com/1618344/60431837-42ff6180-9bf0-11e9-9ee5-6a2c4b250fc7.png" alt="ElixirChat widget" width="498"/>
 
