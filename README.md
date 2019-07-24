@@ -95,7 +95,7 @@ or include [`/build/sdk.min.js`](https://github.com/elixirchat/elixirchat-widget
 #### Code:
 ```js
 import ElixirChat from 'elixirchat';
-// Alternatively, if using `<script>` tag, `window.ElixirChat` object be added to global scope.
+// Alternatively, if using `<script>` tag, the `ElixirChat` object be added to `window`.
 
 const elixirChat = new ElixirChat({
   apiUrl: 'https://elixirchat.yoursite.com:4000', // your ElixirChat API URL
@@ -146,12 +146,15 @@ elixirChat.onTyping((peopleWhoAreTyping) => {
 document.querySelector('#screenshot-button').addEventListener('click', () => {
   elixirChat.takeScreenshot().then(screenshot => {
     document.querySelector('img#preview').src = screenshot.dataUrl; // show screenshot preview
+
+    // Send screenshot as attachment
     elixirchat.sendMessage({
       attachments: [ screenshot.file ] // screenshot.file is a `File()` instance
     });
   });
 });
 
+// Check out the extended example in /build/examples/sdk.html
 ```
 
 <br/>

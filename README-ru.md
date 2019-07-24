@@ -7,7 +7,7 @@ JavaScript SDK для [https://elixir.chat](https://elixir.chat)
 
 
 ### Есть две вещи, которые вы можете сделать с ElixirChat SDK:
-1. [Добавить полностью готовый виджет Elixirchat (на картинке сверху) на ваш сайт](#add-default-widget) просто написав несколько строк кода. Внешний вид виджета настраивается с помощью CSS.
+1. [Добавить полностью готовый виджет Elixirchat (на картинке сверху) на ваш сайт](#add-default-widget), просто написав несколько строк кода. Внешний вид виджета настраивается с помощью CSS.
 2. [Создать свой кастомный виджет](#create-custom-widget), который будет коммуницировать с вашей админ-панелью ElixirChat через Elixirchat SDK.
 
 <br/>
@@ -16,7 +16,7 @@ JavaScript SDK для [https://elixir.chat](https://elixir.chat)
 
 | <img src="https://user-images.githubusercontent.com/1618344/61660053-b36e3f80-acd1-11e9-8f0d-79a8be0c2597.png" alt="Демо виджета ElixirChat" width="100%"/> | <img src="https://user-images.githubusercontent.com/1618344/61660172-f29c9080-acd1-11e9-84e4-9048d0d785f6.png" alt="Демо ElixirChat SDK" width="100%"/> |
 | --- |--- |
-| __Полностью готовый виджет Elixirchat__<br> Настроен с помощью CSS<br> [Как добавить?](#add-default-widget) | __Простой кастомный виджет__<br> Написано на чистом JS с нуля<br> [Как создать?](#create-custom-widget) |
+| __Полностью готовый виджет Elixirchat__<br> Настроен с помощью CSS<br> [Как добавить?](#add-default-widget) | __Простой кастомный виджет__<br> Написан на чистом JS с нуля<br> [Как создать?](#create-custom-widget) |
 | [Посмотреть демо](https://elixirchat.surge.sh/examples/widget.html) | [Посмотреть демо](https://elixirchat.surge.sh/examples/sdk.html) |
 | [Код](https://github.com/elixirchat/elixirchat-widget/blob/master/build/examples/widget.html) (~20 строк JS) | [Код](https://github.com/elixirchat/elixirchat-widget/blob/master/build/examples/sdk.html) (~90 строк JS) |
 
@@ -46,13 +46,13 @@ const elixirChatWidget = ElixirChatWidget({
   debug: true // для подробного вывода в консоль
 });
 elixirChatWidget.appendWidget({
-  container: document.body, // куда рендерить виджет
+  container: document.body, // куда присоединить виджет
   iframeStyles: `.elixirchat-chat-container { color: green }`, // ваш кастомный CSS внутри iframe чата
 });
 ```
 
 ### б) Через тег `<script>`:
-Скачайте [`/build/sdk.min.js`](https://github.com/elixirchat/elixirchat-widget/blob/master/build/sdk.min.js) и [`/build/default-widget.min.js`](https://github.com/elixirchat/elixirchat-widget/blob/master/build/default-widget.min.js) из этого репозитория, а затем включите этот фрагмент в любом месте вашего HTML-кода:
+Скачайте [`/build/sdk.min.js`](https://github.com/elixirchat/elixirchat-widget/blob/master/build/sdk.min.js) и [`/build/default-widget.min.js`](https://github.com/elixirchat/elixirchat-widget/blob/master/build/default-widget.min.js) из этого репозитория, а затем включите этот фрагмент в ваш HTML-код:
 
 ```html
 <script src="[YOUR_PATH]/sdk.min.js"></script>
@@ -69,7 +69,7 @@ elixirChatWidget.appendWidget({
     debug: true // для подробного вывода в консоль
   });
   elixirChatWidget.appendWidget({
-    container: document.body, // куда рендерить виджет
+    container: document.body, // куда присоединить виджет
     iframeStyles: `.elixirchat-chat-container { color: green }`, // ваш кастомный CSS внутри iframe чата
   });
 </script>
@@ -86,7 +86,7 @@ elixirChatWidget.appendWidget({
 ```bash
 npm i elixirchat --save
 ```
-либо включите [`/build/sdk.min.js`](https://github.com/elixirchat/elixirchat-widget/blob/master/build/sdk.min.js) через тег `<script>` в любом месте вашего HTML-кода
+либо включите [`/build/sdk.min.js`](https://github.com/elixirchat/elixirchat-widget/blob/master/build/sdk.min.js) через тег `<script>` в ваш HTML-код
 
 ```html
 <script src="[YOUR_PATH]/sdk.min.js"></script>
@@ -95,7 +95,7 @@ npm i elixirchat --save
 #### Код:
 ```js
 import ElixirChat from 'elixirchat';
-// Либо, если используете тег `<script>`, то объект `window.ElixirChat` будет добавлен в глобальный scope.
+// Либо, если используете тег `<script>`, то объект `ElixirChat` будет добавлен в window.
 
 const elixirChatWidget = ElixirChatWidget({
   apiUrl: 'https://elixirchat.yoursite.com:4000', // API URL вашего ElixirChat
@@ -127,7 +127,7 @@ elixirChat.onMessage((message) => {
   console.log('Это ответ на:', message.responseToMessage ? message.responseToMessage.text : '—');
 });
 
-// Загрузить самые новые сообщения
+// Загрузить последние сообщения в истории переписки
 elixirChat.fetchMessageHistory(10).then(messages => {
   console.log('Получил 10 последних сообщений', messages);
 });
@@ -142,16 +142,19 @@ elixirChat.onTyping((peopleWhoAreTyping) => {
   }
 });
 
-// Сделайте скриншот экрана вашего клиента
+// Сделать скриншот экрана вашего клиента
 document.querySelector('#screenshot-button').addEventListener('click', () => {
   elixirChat.takeScreenshot().then(screenshot => {
-  	 document.querySelector('img#preview').src = screenshot.dataUrl; // показать превью скриншота
+  	document.querySelector('img#preview').src = screenshot.dataUrl; // показать превью скриншота
+
+    // Отправить скриншот как вложение
     elixirchat.sendMessage({
       attachments: [ screenshot.file ] // screenshot.file это инстанс `File()`
     });
   });
 });
 
+// Смотрите раширенный пример в /build/examples/sdk.html
 ```
 
 <br/>
