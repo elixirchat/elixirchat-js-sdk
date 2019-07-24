@@ -3,7 +3,7 @@ JavaScript SDK для [https://elixir.chat](https://elixir.chat)
 
 [English](https://github.com/elixirchat/elixirchat-widget/blob/master/README.md) | Русский
 
-<img src="https://user-images.githubusercontent.com/1618344/60431837-42ff6180-9bf0-11e9-9ee5-6a2c4b250fc7.png" alt="Виджет ElixirChat" width="498"/>
+<img src="https://user-images.githubusercontent.com/1618344/61771606-e95a1380-adf8-11e9-86ca-c248368a7461.png" alt="Виджет ElixirChat" width="498"/>
 
 
 ### Есть две вещи, которые вы можете сделать с ElixirChat SDK:
