@@ -670,10 +670,10 @@ elixirChatWidget.appendWidget({
 // Примеры:
 console.log('state React-компонента виджета:', elixirChatWidget.widgetChatReactComponent.state);
 
-elixirChatWidget.widgetChatIframe.style = 'border: 1px solid black';
+elixirChatWidget.widgetChatIframe.style = 'width: 300px';
 
 if (elixirChatWidget.widgetIsVisible) {
-	document.getElementById('my-app-column').className = 'shrinked';
+  document.getElementById('my-app-column').className = 'shrinked';
 }
 ```
 
