@@ -164,7 +164,7 @@ document.querySelector('#screenshot-button').addEventListener('click', () => {
 
 ## Прежде чем начать: что такое комнаты?
 
-<img src="https://user-images.githubusercontent.com/1618344/61772420-e2cc9b80-adfa-11e9-9546-0c09777576d9.png" alt="Комнаты ElixirChat"/>
+<img src="https://user-images.githubusercontent.com/1618344/61772574-49ea5000-adfb-11e9-9bc7-0d6a89146107.png" alt="Комнаты ElixirChat"/>
 
 > _В вашей админ-панели ElixirChat комнаты показаны слева_
 
