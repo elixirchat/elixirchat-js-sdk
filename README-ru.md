@@ -3,7 +3,7 @@ JavaScript SDK для [https://elixir.chat](https://elixir.chat)
 
 [English](https://github.com/elixirchat/elixirchat-widget/blob/master/README.md) | Русский
 
-<img src="https://user-images.githubusercontent.com/1618344/60431837-42ff6180-9bf0-11e9-9ee5-6a2c4b250fc7.png" alt="ElixirChat widget" width="498"/>
+<img src="https://user-images.githubusercontent.com/1618344/60431837-42ff6180-9bf0-11e9-9ee5-6a2c4b250fc7.png" alt="Виджет ElixirChat" width="498"/>
 
 
 ### Есть две вещи, которые вы можете сделать с ElixirChat SDK:
@@ -41,13 +41,13 @@ const elixirChatWidget = ElixirChatWidget({
   companyId: 'your-company-id-here', // вы получите companyId от команды ElixirChat
   
   // Также можете добавить здесь опциональные параметры "room" и "client"
-  // Прокрутите вниз до "ElixirChat Config" для подробностей
+  // Прокрутите вниз до "ElixirChat-конфиг" для подробностей
 
   debug: true // для подробного вывода в консоль
 });
 elixirChatWidget.appendWidget({
   container: document.body, // куда рендерить виджет
-  iframeStyles: `.elixirchat-chat-container { color: green }`, // ваш кастомный CSS внутри iframe'а чата
+  iframeStyles: `.elixirchat-chat-container { color: green }`, // ваш кастомный CSS внутри iframe чата
 });
 ```
 
@@ -64,13 +64,13 @@ elixirChatWidget.appendWidget({
     companyId: 'your-company-id-here', // вы получите companyId от команды ElixirChat
     
     // Также можете добавить здесь опциональные параметры "room" и "client"
-    // Прокрутите вниз до "ElixirChat Config" для подробностей
+    // Прокрутите вниз до "ElixirChat-конфиг" для подробностей
 
     debug: true // для подробного вывода в консоль
   });
   elixirChatWidget.appendWidget({
     container: document.body, // куда рендерить виджет
-    iframeStyles: `.elixirchat-chat-container { color: green }`, // ваш кастомный CSS внутри iframe'а чата
+    iframeStyles: `.elixirchat-chat-container { color: green }`, // ваш кастомный CSS внутри iframe чата
   });
 </script>
 ```
@@ -78,7 +78,7 @@ elixirChatWidget.appendWidget({
 <br/>
 <a id="create-custom-widget"></a>
 
-## 2. Как создайть свой кастомный виджет
+## 2. Как создать свой кастомный виджет
 
 > _Посмотрите пример [/build/examples/sdk.html](https://github.com/elixirchat/elixirchat-widget/blob/master/build/examples/sdk.html)_
 
@@ -103,7 +103,7 @@ const elixirChatWidget = ElixirChatWidget({
   companyId: 'your-company-id-here', // вы получите companyId от команды ElixirChat
   
   // Также можете добавить здесь опциональные параметры "room" и "client"
-  // Прокрутите вниз до "ElixirChat Config" для подробностей
+  // Прокрутите вниз до "ElixirChat-конфиг" для подробностей
 
   debug: true // для подробного вывода в консоль
 });
@@ -164,7 +164,7 @@ document.querySelector('#screenshot-button').addEventListener('click', () => {
 
 ## Прежде чем начать: что такое комнаты?
 
-<img src="https://user-images.githubusercontent.com/1618344/60435459-26b3f280-9bf9-11e9-9e0c-0a153a07bf09.png" alt="ElixirChat Rooms"/>
+<img src="https://user-images.githubusercontent.com/1618344/61771291-1eb23180-adf8-11e9-87b9-955261e46b5d.png" alt="Комнаты ElixirChat"/>
 
 > _В вашей админ-панели ElixirChat комнаты показаны слева_
 
@@ -225,7 +225,7 @@ ID вашей компании. Вы получите его от команды
 #### `room: { id, title }` (опционально)
 Задайте опцию `room`, если вам нужна [публичная комната](#public-room). Как это работает:
 
-- Когда вы передаете `room` _в первый раз_, ElixirChat SDK _создает новую [публичную комнату](#public-room) (в переданным `id` и `title`).
+- Когда вы передаете `room` _в первый раз_, ElixirChat SDK _создает новую_ [публичную комнату](#public-room) (в переданным `id` и `title`).
 - Когда вы _снова_ инициализируете ElixirChat SDK с тем же `room.id`, SDK _подключается к той же самой комнате_, которая была ранее создана с этим `id`.
 - Если вы не передаете `room` вообще, то новая [приватная комната](#private-room) будет создаваться для каждого _уникального_ посетителя.
 
@@ -555,7 +555,7 @@ elixirChat.onConnectError((error) => {
 - <a id="sdk-elixirChatClientId"></a>`elixirChatClientId: string` - ID текущего клиента, сгенерированный бэкэндом ElixirChat (это _НЕ_ то же, что [`client.id`](#config-client) в конфиге)
 - <a id="sdk-authToken"></a>`authToken: string` - токен, сгенерированный бэкэндом ElixirChat после успешного подключения к комнате
 - <a id="sdk-connected"></a>`connected: boolean` - _true_, если SDK в настоящее время подключен к комнате
-- <a id="sdk-reachedBeginningOfMessageHistory"></a>`reachedBeginningOfMessageHistory: boolean` - _true_, если саммые ранние сообщения в истории были запрошены через [`fetchMessageHistory()`](#fetchMessageHistory) (то есть пользователь прокручивал в самое начало истории переписки в комнате, а [`fetchMessageHistory()`](#fetchMessageHistory) запрашивала сообщения последовательными частями, и в итоге достигла начала истории)
+- <a id="sdk-reachedBeginningOfMessageHistory"></a>`reachedBeginningOfMessageHistory: boolean` - _true_, если самые ранние сообщения в истории были запрошены через [`fetchMessageHistory()`](#fetchMessageHistory) (то есть пользователь прокручивал в самое начало истории переписки в комнате, а метод [`fetchMessageHistory()`](#fetchMessageHistory) запрашивал сообщения последовательными частями, и в итоге достиг начала истории)
 
 ```js
 // Примеры:
