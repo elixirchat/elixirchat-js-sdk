@@ -6082,16 +6082,21 @@ function () {
     };
 
     this.dispatchTypedText = function (typedText) {
-      var dispatchForcefully = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-
       if (_this.channel) {
-        var trimmedText = typedText.trim();
+        var trimmedText = typeof typedText === 'string' ? typedText.trim() : '';
 
-        if (dispatchForcefully || _this.typedText !== trimmedText) {
-          _this.channel.push('typing', {
+        if (typedText === false) {
+          _this.channel.push('typing', JSON.stringify({
+            typing: false,
+            text: ''
+          }));
+        } else if (_this.typedText !== trimmedText) {
+          _this.channel.push('typing', JSON.stringify({
             typing: Boolean(trimmedText),
             text: trimmedText
-          });
+          }));
+
+          _this.typedText = trimmedText;
         }
       }
     };
@@ -6838,7 +6843,7 @@ function () {
             }
           });
 
-          _this7.typingStatusSubscription.dispatchTypedText('', true);
+          _this7.typingStatusSubscription.dispatchTypedText(false);
 
           return message;
         }).catch(function (error) {

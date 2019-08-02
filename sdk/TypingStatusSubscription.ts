@@ -134,14 +134,22 @@ export class TypingStatusSubscription {
     }, 2000);
   }
 
-  public dispatchTypedText = (typedText: string, dispatchForcefully: boolean = false): void => {
+  public dispatchTypedText = (typedText: string | false): void => {
     if (this.channel) {
-      const trimmedText = <string>typedText.trim();
-      if (dispatchForcefully || this.typedText !== trimmedText) {
-        this.channel.push('typing', {
+      const trimmedText = typeof typedText === 'string' ? typedText.trim() : '';
+
+      if (typedText === false) {
+        this.channel.push('typing', JSON.stringify({
+          typing: false,
+          text: '',
+        }));
+      }
+      else if (this.typedText !== trimmedText) {
+        this.channel.push('typing', JSON.stringify({
           typing: Boolean(trimmedText),
           text: trimmedText,
-        });
+        }));
+        this.typedText = trimmedText;
       }
     }
   };

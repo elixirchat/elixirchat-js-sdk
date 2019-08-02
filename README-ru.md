@@ -35,9 +35,9 @@ JavaScript SDK для [https://elixir.chat](https://elixir.chat)
 ```js
 import ElixirChatWidget from 'ElixirChat/widget';
 
-const elixirChatWidget = ElixirChatWidget({
-  apiUrl: 'https://elixirchat.yoursite.com:4000', // API URL вашего ElixirChat
-  socketUrl: 'wss://elixirchat.yoursite.com:4000/socket', // websocket URL вашего ElixirChat 
+const elixirChatWidget = new ElixirChatWidget({
+  apiUrl: 'https://elixirchat.yoursite.com/api', // API URL вашего ElixirChat
+  socketUrl: 'wss://elixirchat.yoursite.com/socket', // websocket URL вашего ElixirChat 
   companyId: 'your-company-id-here', // вы получите companyId от команды ElixirChat
   
   // Также можете добавить здесь опциональные параметры "room" и "client"
@@ -58,9 +58,9 @@ elixirChatWidget.appendWidget({
 <script src="[YOUR_PATH]/sdk.min.js"></script>
 <script src="[YOUR_PATH]/default-widget.min.js"></script>
 <script>
-  const elixirChatWidget = ElixirChatWidget({
-    apiUrl: 'https://elixirchat.yoursite.com:4000', // API URL вашего ElixirChat
-    socketUrl: 'wss://elixirchat.yoursite.com:4000/socket', // websocket URL вашего ElixirChat 
+  const elixirChatWidget = new ElixirChatWidget({
+    apiUrl: 'https://elixirchat.yoursite.com/api', // API URL вашего ElixirChat
+    socketUrl: 'wss://elixirchat.yoursite.com/socket', // websocket URL вашего ElixirChat 
     companyId: 'your-company-id-here', // вы получите companyId от команды ElixirChat
     
     // Также можете добавить здесь опциональные параметры "room" и "client"
@@ -97,9 +97,9 @@ npm i elixirchat --save
 import ElixirChat from 'elixirchat';
 // Либо, если используете тег `<script>`, то объект `ElixirChat` будет добавлен в window.
 
-const elixirChatWidget = ElixirChatWidget({
-  apiUrl: 'https://elixirchat.yoursite.com:4000', // API URL вашего ElixirChat
-  socketUrl: 'wss://elixirchat.yoursite.com:4000/socket', // websocket URL вашего ElixirChat 
+const elixirChatWidget = new ElixirChatWidget({
+  apiUrl: 'https://elixirchat.yoursite.com/api', // API URL вашего ElixirChat
+  socketUrl: 'wss://elixirchat.yoursite.com/socket', // websocket URL вашего ElixirChat 
   companyId: 'your-company-id-here', // вы получите companyId от команды ElixirChat
   
   // Также можете добавить здесь опциональные параметры "room" и "client"
@@ -114,7 +114,7 @@ document.querySelector('#send-message-button').addEventListener('click', () => {
   elixirChat.sendMessage({
     text: document.querySelector('textarea').value, // текст нового сообщения
     attachments: document.querySelector('input[type=file]').files, // прикрепленные файлы
-    responseToMessageId: '225a5c-6cf5e0', // ID сообщения, на которое вы отвечаете (если есть)
+    responseToMessageId: '440b-b439-831d292a9730', // ID сообщения, на которое вы отвечаете (если есть)
   })
   .then(newMessage => console.log(newMessage));
 });
@@ -148,7 +148,7 @@ document.querySelector('#screenshot-button').addEventListener('click', () => {
   	document.querySelector('img#preview').src = screenshot.dataUrl; // показать превью скриншота
 
     // Отправить скриншот как вложение
-    elixirchat.sendMessage({
+    elixirChat.sendMessage({
       attachments: [ screenshot.file ] // screenshot.file это инстанс `File()`
     });
   });
@@ -186,17 +186,18 @@ document.querySelector('#screenshot-button').addEventListener('click', () => {
 ```js
 // Пример:
 new ElixirChat({
-  apiUrl: 'https://elixirchat.yoursite.com:4000',
-  socketUrl: 'wss://elixirchat.yoursite.com:4000/socket',
+  apiUrl: 'https://elixirchat.yoursite.com/api',
+  socketUrl: 'wss://elixirchat.yoursite.com/socket', 
   companyId: 'your-company-id-here',
+  
   room: {
-    id: 'your-room-id-here',
-    title: 'Your room title to be displayed in ElixirChat admin panel (on the left)'
+    id: 'ваш-room-id',
+    title: 'Название комнаты, которое будет видно в админке (слева)'
   },
   client: {
-    id: 'your-own-id-you-may-use-to-identify-a-customer',
-    firstName: 'you may pass your customer\'s first name here',
-    firstName: 'you may pass your customer\'s last name here',
+    id: 'любое-ваше-собственное-id-для-идентификации-клиента',
+    firstName: 'Можно передать имя клиента тут (отобразится в вдминке)',
+    lastName: 'Можно передать фамилию клиента тут (отобразится в вдминке)',
   },
   debug: true,
 })
@@ -206,14 +207,14 @@ new ElixirChat({
 <a id="config-apiUrl"></a>
 
 #### `apiUrl: string`
-GraphQL URL вашего бэкэнда ElixirChat (например, `https://elixirchat.yourcompany.com:4000`)
+GraphQL URL вашего бэкэнда ElixirChat (например, `https://elixirchat.yourcompany.com/api`)
 
 
 <br/>
 <a id="config-socketUrl"></a>
 
 #### `socketUrl: string`
-WebSocket URL вашего бэкэнда ElixirChat, начинающийся с протокола `ws:`/`wss:` (например, `wss://elixirchat.yourcompany.com:4000/socket`)
+WebSocket URL вашего бэкэнда ElixirChat, начинающийся с протокола `ws:`/`wss:` (например, `wss://elixirchat.yourcompany.com/socket`)
 
 
 <br/>
@@ -276,10 +277,10 @@ __Parameters:__
 __Параметры аргумента {...}:__
 
 - `text: string (опционально)` - текст сообщения
-- `attachments: Array<File> (опционально)` - список вложений в [формате File ()](https://developer.mozilla.org/en-US/docs/Web/API/File)
+- `attachments: Array<File> (опционально)` - список вложений в [формате File()](https://developer.mozilla.org/en-US/docs/Web/API/File/File)
 - `responseToMessageId: string (опционально)` - ID сообщения, на которое отвечает пользователь (если есть)
 
-__Возвращает: `Promise()`__, у которого коллбэк в `then` callback имеет такие аргументы:
+__Возвращает: `Promise()`__, у которого коллбэк в `then` имеет такие аргументы:
 
 - `message` - Ваше сообщение, которое было только что отправлено (в [формате, описанном ниже](#onMessage-message)).
 
@@ -287,8 +288,8 @@ __Возвращает: `Promise()`__, у которого коллбэк в `th
 // Пример:
 elixirChat.sendMessage({
   text: 'my message text',
-  attachments: document.querySelector('#inputFile').files,
-  responseToMessageId: '6a4t24-y43th3',
+  attachments: document.querySelector('input[type=file]').files,
+  responseToMessageId: '6ac8ce92-3a31-440b-b439',
 })
 .then(yourMessage => console.log(yourMessage));
 ```
@@ -343,19 +344,18 @@ elixirChat.onMessage((message) => {
 <a id="fetchMessageHistory"></a>
 
 #### `fetchMessageHistory(limit, firstMessageCursor)`
-Fetch a chunk of message history.
 Получить массив сообщений из истории сообщений.
 
 - Длина массива задается аргументом `limit`.
 - Если `firstMessageCursor` не передан, то массив содержит последние сообщения.
-- В противном случае, если `firstMessageCursor` задан, то массив будет содержать сообщения, хронологически предшествующие сообщению с [`cursor`](#onMessage-cursor), равным `firstMessageCursor`.
+- В противном случае, если `firstMessageCursor` задан, то массив будет содержать сообщения, хронологически идущие _до_ сообщения с [`cursor`](#onMessage-cursor), равным `firstMessageCursor`.
 
 __Аргументы:__
 
 - `limit: number` - Длина массива возвращенных сообщений
 - `firstMessageCursor: string (опционально)` - поле [`cursor`](#onMessage-cursor) сообщения, _до_ которого вы хотите запросить сообщения. Если не задано, то будут запрошены последние сообщения.
 
-__Возвращает: `Promise()`__, у которого коллбэк в `then` callback имеет такие аргументы:
+__Возвращает: `Promise()`__, у которого коллбэк в `then` имеет такие аргументы:
 
 - `messages: array` - массив сообщений в [формате, описанном выше](#onMessage-message)
 
@@ -377,7 +377,7 @@ document.querySelector('button#load-previous-messages').addEventListener('click'
 
     // Сделать неактивной кнопку "Загрузить предыдущие сообщения", когда вся история уже загружена
     if (elixirChat.reachedBeginningOfMessageHistory) {
-      e.target.innerText = 'All messages loaded';
+      e.target.innerText = 'Все сообщения уже загружены';
       e.target.disabled = true;
     }
   });
@@ -425,12 +425,16 @@ elixirChat.onTyping((peopleWhoAreTyping) => {
 
 __Аргументы:__
 
-- `typedText: string` - текст, набранный клиентом
+- `typedText: string` - текст, набранный клиентом, _ИЛИ_ _false_, в случае если клиент отправил сообщение
 
 ```js
 // Пример:
 document.querySelector('textarea#message').addEventListener('keyup', (e) => {
   elixirChat.dispatchTypedText(e.target.value);
+});
+
+document.querySelector('button#submit').addEventListener('click', (e) => {
+  elixirChat.dispatchTypedText(false);
 });
 ```
 
@@ -442,11 +446,11 @@ document.querySelector('textarea#message').addEventListener('keyup', (e) => {
 Сделать скриншот экрана клиента. При этом откроется [стандартное окно браузера с просьбой расшарить экран пользователя](https://developer.mozilla.org/en-US/docs/Web/API/Screen_Capture_API/Using_Screen_Capture#Capturing_screen_contents).
 
 
-__Возвращает: `Promise()`__, у которого коллбэк в `then` callback имеет такие аргументы:
+__Возвращает: `Promise()`__, у которого коллбэк в `then` имеет такие аргументы:
 
 - `screenshot: object`:
-  - `screenshot.dataUrl: string` - data URL скриншота (PNG), закодированный в base64
-  - `screenshot.file: File` - инстанс [`File()`](https://developer.mozilla.org/en-US/docs/Web/API/File) скриншота (PNG)
+  - `screenshot.dataUrl: string` - data URL скриншота (в формате PNG), закодированный в base64
+  - `screenshot.file: File` - инстанс [`File()`](https://developer.mozilla.org/en-US/docs/Web/API/File) скриншота (в формате PNG)
 
 ```js
 // Пример:
@@ -554,8 +558,8 @@ elixirChat.onConnectError((error) => {
 - <a id="sdk-room"></a>`room: object` - То же, что было в [конфиге](#config-room)
 - <a id="sdk-client"></a>`client: object` - То же, что было в [конфиге](#config-client)
 - <a id="sdk-debug"></a>`debug: boolean` - То же, что было в [конфиге](#config-debug)
-- <a id="sdk-elixirChatRoomId"></a>`elixirChatRoomId: string` - ID текущей комнаты, сгенерированный бэкэндом ElixirChat (это _НЕ_ то же, что [`room.id`](#config-room) в конфиге)
-- <a id="sdk-elixirChatClientId"></a>`elixirChatClientId: string` - ID текущего клиента, сгенерированный бэкэндом ElixirChat (это _НЕ_ то же, что [`client.id`](#config-client) в конфиге)
+- <a id="sdk-elixirChatRoomId"></a>`elixirChatRoomId: string` - ID текущей комнаты, сгенерированный бэкэндом ElixirChat (это _НЕ_ [`room.id`](#config-room) в конфиге)
+- <a id="sdk-elixirChatClientId"></a>`elixirChatClientId: string` - ID текущего клиента, сгенерированный бэкэндом ElixirChat (это _НЕ_ [`client.id`](#config-client) в конфиге)
 - <a id="sdk-authToken"></a>`authToken: string` - токен, сгенерированный бэкэндом ElixirChat после успешного подключения к комнате
 - <a id="sdk-connected"></a>`connected: boolean` - _true_, если SDK в настоящее время подключен к комнате
 - <a id="sdk-reachedBeginningOfMessageHistory"></a>`reachedBeginningOfMessageHistory: boolean` - _true_, если самые ранние сообщения в истории были запрошены через [`fetchMessageHistory()`](#fetchMessageHistory) (то есть пользователь прокручивал в самое начало истории переписки в комнате, а метод [`fetchMessageHistory()`](#fetchMessageHistory) запрашивал сообщения последовательными частями, и в итоге достиг начала истории)

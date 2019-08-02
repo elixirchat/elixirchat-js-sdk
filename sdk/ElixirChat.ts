@@ -311,7 +311,7 @@ export class ElixirChat {
               responseToMessageId,
             }
           });
-          this.typingStatusSubscription.dispatchTypedText('', true);
+          this.typingStatusSubscription.dispatchTypedText(false);
           return message;
         })
         .catch(error => {

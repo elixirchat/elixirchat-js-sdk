@@ -55,6 +55,10 @@ export class MessagesSubscription {
   public onSubscribeError?: (data: any) => void;
   public onMessage: (message: INewMessage) => void;
 
+  protected notifier: any;
+  protected absintheSocket: any;
+  protected graphQLClient: any;
+
   protected latestMessageHistoryCursorsCache: Array<INewMessage> = [];
   protected reachedBeginningOfMessageHistory: boolean = false;
   protected isBeforeUnload: boolean = false;
@@ -143,10 +147,6 @@ export class MessagesSubscription {
       }
     }
   `;
-
-  protected notifier: any;
-  protected absintheSocket: any;
-  protected graphQLClient: any;
 
   constructor(config: IMessagesSubscriptionConfig) {
     this.apiUrl = config.apiUrl;

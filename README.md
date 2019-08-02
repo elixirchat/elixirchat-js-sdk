@@ -35,9 +35,9 @@ Run `npm i elixirchat --save` and then add this code:
 ```js
 import ElixirChatWidget from 'ElixirChat/widget';
 
-const elixirChatWidget = ElixirChatWidget({
-  apiUrl: 'https://elixirchat.yoursite.com:4000', // your ElixirChat API URL
-  socketUrl: 'wss://elixirchat.yoursite.com:4000/socket', // your ElixirChat websocket URL
+const elixirChatWidget = new ElixirChatWidget({
+  apiUrl: 'https://elixirchat.yoursite.com/api', // your ElixirChat API URL
+  socketUrl: 'wss://elixirchat.yoursite.com/socket', // your ElixirChat websocket URL
   companyId: 'your-company-id-here', // you will get companyId from ElixirChat team
   
   // You may also include optional "room" and "client" parameters here
@@ -58,9 +58,9 @@ Download [`/build/sdk.min.js`](https://github.com/elixirchat/elixirchat-widget/b
 <script src="[YOUR_PATH]/sdk.min.js"></script>
 <script src="[YOUR_PATH]/default-widget.min.js"></script>
 <script>
-  const elixirChatWidget = ElixirChatWidget({
-    apiUrl: 'https://elixirchat.yoursite.com:4000', // your ElixirChat API URL
-    socketUrl: 'wss://elixirchat.yoursite.com:4000/socket', // your ElixirChat websocket URL
+  const elixirChatWidget = new ElixirChatWidget({
+    apiUrl: 'https://elixirchat.yoursite.com/api', // your ElixirChat API URL
+    socketUrl: 'wss://elixirchat.yoursite.com/socket', // your ElixirChat websocket URL
     companyId: 'your-company-id-here', // you will get companyId from ElixirChat team
     
     // You may also include optional "room" and "client" parameters here
@@ -98,8 +98,8 @@ import ElixirChat from 'elixirchat';
 // Alternatively, if using `<script>` tag, the `ElixirChat` object be added to `window`.
 
 const elixirChat = new ElixirChat({
-  apiUrl: 'https://elixirchat.yoursite.com:4000', // your ElixirChat API URL
-  socketUrl: 'wss://elixirchat.yoursite.com:4000/socket', // your ElixirChat websocket URL
+  apiUrl: 'https://elixirchat.yoursite.com/api', // your ElixirChat API URL
+  socketUrl: 'wss://elixirchat.yoursite.com/socket', // your ElixirChat websocket URL
   companyId: 'your-company-id-here', // you will get companyId from ElixirChat team
   
   // You may also include optional "room" and "client" parameters here
@@ -148,7 +148,7 @@ document.querySelector('#screenshot-button').addEventListener('click', () => {
     document.querySelector('img#preview').src = screenshot.dataUrl; // show screenshot preview
 
     // Send screenshot as attachment
-    elixirchat.sendMessage({
+    elixirChat.sendMessage({
       attachments: [ screenshot.file ] // screenshot.file is a `File()` instance
     });
   });
@@ -186,8 +186,8 @@ You have to pass over the config when initializing `new ElixirChat` or `new Elix
 ```js
 // Example:
 new ElixirChat({
-  apiUrl: 'https://elixirchat.yoursite.com:4000',
-  socketUrl: 'wss://elixirchat.yoursite.com:4000/socket',
+  apiUrl: 'https://elixirchat.yoursite.com/api',
+  socketUrl: 'wss://elixirchat.yoursite.com/socket',
   companyId: 'your-company-id-here',
   room: {
     id: 'your-room-id-here',
@@ -195,10 +195,10 @@ new ElixirChat({
   },
   client: {
     id: 'your-own-id-you-may-use-to-identify-a-customer',
-    firstName: 'you may pass your customer\'s first name here',
-    firstName: 'you may pass your customer\'s last name here',
+    firstName: 'you may pass your customer\'s first name here (to show in admin panel)',
+    lastName: 'you may pass your customer\'s last name here (to show in admin panel)',
   },
-  debug: true, // enables verbose console output
+  debug: true,
 })
 ```
 
@@ -206,14 +206,14 @@ new ElixirChat({
 <a id="config-apiUrl"></a>
 
 #### `apiUrl: string`
-Your ElixirChat backend GraphQL URL (for example `https://elixirchat.yourcompany.com:4000`)
+Your ElixirChat backend GraphQL URL (for example `https://elixirchat.yourcompany.com/api`)
 
 
 <br/>
 <a id="config-socketUrl"></a>
 
 #### `socketUrl: string`
-Your ElixirChat backend WebSocket URL starting with `ws:`/`wss:` protocol (for example `wss://elixirchat.yourcompany.com:4000/socket`)
+Your ElixirChat backend WebSocket URL starting with `ws:`/`wss:` protocol (for example `wss://elixirchat.yourcompany.com/socket`)
 
 
 <br/>
@@ -423,12 +423,16 @@ Dispatch the text typed so far by the client to ElixirChat admin panel. This met
 
 __Arguments:__
 
-- `typedText: string` - The text typed so far by the client.
+- `typedText: string | false` - The text typed so far by the client, _OR_ _false_ in case the client submitted his message
 
 ```js
 // Example:
 document.querySelector('textarea#message').addEventListener('keyup', (e) => {
   elixirChat.dispatchTypedText(e.target.value);
+});
+
+document.querySelector('button#submit').addEventListener('click', (e) => {
+  elixirChat.dispatchTypedText(false);
 });
 ```
 
