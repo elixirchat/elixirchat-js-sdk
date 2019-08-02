@@ -47,10 +47,9 @@
 <script>
 
   const elixirChatWidget = new ElixirChatWidget({
-    // TODO: roll out demo server & add demo-server URLs; add docs
-    apiUrl: 'http://localhost:4000',
-    socketUrl: 'ws://localhost:4000/socket',
-    companyId: '6ac8ce92-3a31-440b-b439-831d292a9730', // TODO: replace w/ demo server company ID
+    apiUrl: 'https://dev-admin.elixir.chat/api/',
+    socketUrl: 'wss://https://dev-admin.elixir.chat/api/socket/',
+    companyId: '6b7d23cd-a78d-48f2-b55c-8439f982251c',
 
     /**
      * Remove "room" section if you want a new private room to be created for every unique visitor.

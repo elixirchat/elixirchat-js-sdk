@@ -6086,15 +6086,15 @@ function () {
         var trimmedText = typeof typedText === 'string' ? typedText.trim() : '';
 
         if (typedText === false) {
-          _this.channel.push('typing', JSON.stringify({
+          _this.channel.push('typing', {
             typing: false,
             text: ''
-          }));
+          });
         } else if (_this.typedText !== trimmedText) {
-          _this.channel.push('typing', JSON.stringify({
+          _this.channel.push('typing', {
             typing: Boolean(trimmedText),
             text: trimmedText
-          }));
+          });
 
           _this.typedText = trimmedText;
         }

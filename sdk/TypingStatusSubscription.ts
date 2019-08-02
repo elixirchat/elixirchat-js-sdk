@@ -139,16 +139,16 @@ export class TypingStatusSubscription {
       const trimmedText = typeof typedText === 'string' ? typedText.trim() : '';
 
       if (typedText === false) {
-        this.channel.push('typing', JSON.stringify({
+        this.channel.push('typing', {
           typing: false,
           text: '',
-        }));
+        });
       }
       else if (this.typedText !== trimmedText) {
-        this.channel.push('typing', JSON.stringify({
+        this.channel.push('typing', {
           typing: Boolean(trimmedText),
           text: trimmedText,
-        }));
+        });
         this.typedText = trimmedText;
       }
     }
