@@ -17,7 +17,7 @@ JavaScript SDK для [https://elixir.chat](https://elixir.chat)
 | <img src="https://user-images.githubusercontent.com/1618344/61660053-b36e3f80-acd1-11e9-8f0d-79a8be0c2597.png" alt="Демо виджета ElixirChat" width="100%"/> | <img src="https://user-images.githubusercontent.com/1618344/61660172-f29c9080-acd1-11e9-84e4-9048d0d785f6.png" alt="Демо ElixirChat JS SDK" width="100%"/> |
 | --- |--- |
 | __Полностью готовый виджет Elixirchat__<br> Настроен с помощью CSS<br> [Как добавить?](#add-default-widget) | __Простой кастомный виджет__<br> Написан на чистом JS с нуля<br> [Как создать?](#create-custom-widget) |
-| [Посмотреть демо](https://elixirchat.surge.sh/examples/widget.html) | [Посмотреть демо](https://elixirchat.surge.sh/examples/sdk.html) |
+| [Посмотреть демо](https://demos.elixir.chat/examples/widget.html) | [Посмотреть демо](https://demos.elixir.chat/examples/sdk.html) |
 | [Код](https://github.com/elixirchat/elixirchat-widget/blob/master/build/examples/widget.html) (~20 строк JS) | [Код](https://github.com/elixirchat/elixirchat-widget/blob/master/build/examples/sdk.html) (~90 строк JS) |
 
 
@@ -706,7 +706,4 @@ npm run build
 
 # Запустить SDK и примеры виджетов на http://localhost:8002
 npm run examples
-
-# Задеплоить SDK и примеры виджетов на surge.sh (URL деплоя указан в `build/CNAME`)
-npm run examples-deploy
 ```

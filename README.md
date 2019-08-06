@@ -700,7 +700,4 @@ npm run build
 
 # Run SDK and widget examples on http://localhost:8002
 npm run examples
-
-# Deploy your SDK and widget examples to surge.sh (deploy URL is specified in `build/CNAME`)
-npm run examples-deploy
 ```
