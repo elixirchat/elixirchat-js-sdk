@@ -1,4 +1,4 @@
-# elixirchat-sdk
+# elixirchat-js-sdk
 JavaScript SDK для [https://elixir.chat](https://elixir.chat)
 
 [English](https://github.com/elixirchat/elixirchat-widget/blob/master/README.md) | Русский
@@ -6,15 +6,15 @@ JavaScript SDK для [https://elixir.chat](https://elixir.chat)
 <img src="https://user-images.githubusercontent.com/1618344/61771606-e95a1380-adf8-11e9-86ca-c248368a7461.png" alt="Виджет ElixirChat" width="498"/>
 
 
-### Есть две вещи, которые вы можете сделать с ElixirChat SDK:
+### Есть две вещи, которые вы можете сделать с ElixirChat JS SDK:
 1. [Добавить полностью готовый виджет Elixirchat (на картинке сверху) на ваш сайт](#add-default-widget), просто написав несколько строк кода. Внешний вид виджета настраивается с помощью CSS.
-2. [Создать свой кастомный виджет](#create-custom-widget), который будет коммуницировать с вашей админ-панелью ElixirChat через Elixirchat SDK.
+2. [Создать свой кастомный виджет](#create-custom-widget), который будет коммуницировать с вашей админ-панелью ElixirChat через Elixirchat JS SDK.
 
 <br/>
 
 ## Примеры
 
-| <img src="https://user-images.githubusercontent.com/1618344/61660053-b36e3f80-acd1-11e9-8f0d-79a8be0c2597.png" alt="Демо виджета ElixirChat" width="100%"/> | <img src="https://user-images.githubusercontent.com/1618344/61660172-f29c9080-acd1-11e9-84e4-9048d0d785f6.png" alt="Демо ElixirChat SDK" width="100%"/> |
+| <img src="https://user-images.githubusercontent.com/1618344/61660053-b36e3f80-acd1-11e9-8f0d-79a8be0c2597.png" alt="Демо виджета ElixirChat" width="100%"/> | <img src="https://user-images.githubusercontent.com/1618344/61660172-f29c9080-acd1-11e9-84e4-9048d0d785f6.png" alt="Демо ElixirChat JS SDK" width="100%"/> |
 | --- |--- |
 | __Полностью готовый виджет Elixirchat__<br> Настроен с помощью CSS<br> [Как добавить?](#add-default-widget) | __Простой кастомный виджет__<br> Написан на чистом JS с нуля<br> [Как создать?](#create-custom-widget) |
 | [Посмотреть демо](https://elixirchat.surge.sh/examples/widget.html) | [Посмотреть демо](https://elixirchat.surge.sh/examples/sdk.html) |
@@ -233,8 +233,8 @@ ID вашей компании. Вы получите его от команды
 #### `room: { id, title, data }` (опционально)
 Задайте опцию `room`, если вам нужна [публичная комната](#public-room). Как это работает:
 
-- Когда вы передаете `room` _в первый раз_, ElixirChat SDK _создает новую_ [публичную комнату](#public-room) (в переданным `id` и `title`).
-- Когда вы _снова_ инициализируете ElixirChat SDK с тем же `room.id`, SDK _подключается к той же самой комнате_, которая была ранее создана с этим `id`.
+- Когда вы передаете `room` _в первый раз_, ElixirChat JS SDK _создает новую_ [публичную комнату](#public-room) (в переданным `id` и `title`).
+- Когда вы _снова_ инициализируете ElixirChat JS SDK с тем же `room.id`, SDK _подключается к той же самой комнате_, которая была ранее создана с этим `id`.
 - Если вы не передаете `room` вообще, то новая [приватная комната](#private-room) будет создаваться для каждого _уникального_ посетителя.
 
 __Параметры:__
@@ -261,7 +261,7 @@ __Parameters:__
 <a id="config-debug"></a>
 
 #### `debug: boolean` `(по-умолчанию false)` (опционально)
-Включает подробный вывод в консоль от ElixirChat SDK
+Включает подробный вывод в консоль от ElixirChat JS SDK
 
 <br/>
 <a id="elixirchat-methods"></a>
@@ -691,7 +691,7 @@ if (elixirChatWidget.widgetIsVisible) {
 
 ## Для разработчиков
 
-Если вы хотите развернуть ElixirChat SDK и виджет как разработчик:
+Если вы хотите развернуть ElixirChat JS SDK и виджет как разработчик:
 
 ```bash
 # Клонировать репозиторий и установить зависимости

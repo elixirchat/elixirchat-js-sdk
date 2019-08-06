@@ -1,4 +1,4 @@
-# elixirchat-sdk
+# elixirchat-js-sdk
 JavaScript SDK for [https://elixir.chat](https://elixir.chat)
 
 English | [Русский](https://github.com/elixirchat/elixirchat-widget/blob/master/README-ru.md)
@@ -6,15 +6,15 @@ English | [Русский](https://github.com/elixirchat/elixirchat-widget/blob/
 <img src="https://user-images.githubusercontent.com/1618344/60431837-42ff6180-9bf0-11e9-9ee5-6a2c4b250fc7.png" alt="ElixirChat widget" width="498"/>
 
 
-### There are two things you can do with ElixirChat SDK:
+### There are two things you can do with ElixirChat JS SDK:
 1. [Add a fully implemented Elixirchat widget (pictured above) to your website](#add-default-widget) by simply writing a few lines of code. The widget's look and feel are customizable via CSS.
-2. [Create your own custom widget](#create-custom-widget) that communicates with your ElixirChat admin panel via Elixirchat SDK.
+2. [Create your own custom widget](#create-custom-widget) that communicates with your ElixirChat admin panel via Elixirchat JS SDK.
 
 <br/>
 
 ## Examples
 
-| <img src="https://user-images.githubusercontent.com/1618344/61660053-b36e3f80-acd1-11e9-8f0d-79a8be0c2597.png" alt="ElixirChat Widget Demo" width="100%"/> | <img src="https://user-images.githubusercontent.com/1618344/61660172-f29c9080-acd1-11e9-84e4-9048d0d785f6.png" alt="ElixirChat SDK Demo" width="100%"/> |
+| <img src="https://user-images.githubusercontent.com/1618344/61660053-b36e3f80-acd1-11e9-8f0d-79a8be0c2597.png" alt="ElixirChat Widget Demo" width="100%"/> | <img src="https://user-images.githubusercontent.com/1618344/61660172-f29c9080-acd1-11e9-84e4-9048d0d785f6.png" alt="ElixirChat JS SDK Demo" width="100%"/> |
 | --- |--- |
 | __Fully implemented Elixirchat widget__<br> Customized with CSS<br> [How to add?](#add-default-widget) | __Simple custom widget__<br> Written with pure JS from scratch<br> [How to create?](#create-custom-widget) |
 | [See demo](https://elixirchat.surge.sh/examples/widget.html) | [See demo](https://elixirchat.surge.sh/examples/sdk.html) |
@@ -232,8 +232,8 @@ Your company ID. You will get it from ElixirChat team.
 #### `room: { id, title, data }` (optional)
 Set the `room` option if you need a [public room](#public-room). How it works:
 
-- When you pass `room` _for the first time,_ ElixirChat SDK _creates_ a new [public room](#public-room) (with the specified `id` and `title`).
-- When you initialize ElixirChat SDK with the same `room.id` _again_, the SDK _connects to the same room_ that's been previously created with this `id`.
+- When you pass `room` _for the first time,_ ElixirChat JS SDK _creates_ a new [public room](#public-room) (with the specified `id` and `title`).
+- When you initialize ElixirChat JS SDK with the same `room.id` _again_, the SDK _connects to the same room_ that's been previously created with this `id`.
 - If you don't pass `room` at all, a new [private room](#private-room) would be created for every _unique_ visitor.
 
 __Parameters:__
@@ -260,7 +260,7 @@ __Parameters:__
 <a id="config-debug"></a>
 
 #### `debug: boolean` `(default=false)` (optional)
-Enables ElixirChat SDK verbose console output
+Enables ElixirChat JS SDK verbose console output
 
 <br/>
 <a id="elixirchat-methods"></a>
@@ -685,7 +685,7 @@ if (elixirChatWidget.widgetIsVisible) {
 
 ## For developers
 
-If you want to roll out ElixirChat SDK and widget as a developer:
+If you want to roll out ElixirChat JS SDK and widget as a developer:
 
 ```bash
 # Clone the repo and install dependencies
