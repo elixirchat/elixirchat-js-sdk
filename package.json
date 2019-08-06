@@ -5,8 +5,7 @@
   "scripts": {
     "dev": "parcel dev.html --port 8001",
     "build": "./bin/build.sh",
-    "examples": "./bin/browse-examples.sh",
-    "examples-deploy": "surge build"
+    "examples": "./bin/browse-examples.sh"
   },
   "main": "src/index.ts",
   "repository": {

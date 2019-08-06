@@ -17,7 +17,7 @@ English | [Русский](https://github.com/elixirchat/elixirchat-widget/blob/
 | <img src="https://user-images.githubusercontent.com/1618344/61660053-b36e3f80-acd1-11e9-8f0d-79a8be0c2597.png" alt="ElixirChat Widget Demo" width="100%"/> | <img src="https://user-images.githubusercontent.com/1618344/61660172-f29c9080-acd1-11e9-84e4-9048d0d785f6.png" alt="ElixirChat JS SDK Demo" width="100%"/> |
 | --- |--- |
 | __Fully implemented Elixirchat widget__<br> Customized with CSS<br> [How to add?](#add-default-widget) | __Simple custom widget__<br> Written with pure JS from scratch<br> [How to create?](#create-custom-widget) |
-| [See demo](https://elixirchat.surge.sh/examples/widget.html) | [See demo](https://elixirchat.surge.sh/examples/sdk.html) |
+| [See demo](https://demos.elixir.chat/examples/widget.html) | [See demo](https://demos.elixir.chat/examples/sdk.html) |
 | [Code](https://github.com/elixirchat/elixirchat-widget/blob/master/build/examples/widget.html) (~20 lines of JS) | [Code](https://github.com/elixirchat/elixirchat-widget/blob/master/build/examples/sdk.html) (~90 lines of JS) |
 
 
@@ -700,7 +700,4 @@ npm run build
 
 # Run SDK and widget examples on http://localhost:8002
 npm run examples
-
-# Deploy your SDK and widget examples to surge.sh (deploy URL is specified in `build/CNAME`)
-npm run examples-deploy
 ```
