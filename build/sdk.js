@@ -5746,7 +5746,7 @@ exports.prepareGraphQLQuery = function (queryType, query, variables) {
       } else if (typeof variableValue === 'number' && !(variableValue % 1)) {
         variableType = 'Int';
       } else {
-        utilsCommon_1.logEvent(true, "'Unable to detect GraphQL variable type for \"".concat(key, "\": ").concat(variableValue, "'"), {
+        utilsCommon_1.logEvent(true, "Unable to detect GraphQL variable type for \"".concat(key, "\": ").concat(variableValue), {
           query: query,
           variables: variables,
           optionalTypes: optionalTypes
@@ -6117,11 +6117,17 @@ function () {
 
     this.unsubscribeFromThisRoom = function () {
       return new Promise(function (resolve, reject) {
-        _this.channel.leave().receive('ok', function () {
+        if (_this.channel) {
+          _this.channel.leave().receive('ok', function () {
+            _this.roomId = null;
+            _this.channel = null;
+            resolve();
+          }).receive('error', reject);
+        } else {
           _this.roomId = null;
           _this.channel = null;
           resolve();
-        }).receive('error', reject);
+        }
       });
     };
 
@@ -6646,14 +6652,27 @@ function () {
       };
       var roomId = room.id || defaultClientData.id;
       var roomTitle = room.title || defaultClientData.firstName + ' ' + defaultClientData.lastName;
+      var roomData = room.data || {};
       this.room = {
         id: roomId,
-        title: roomTitle
+        title: roomTitle,
+        data: roomData
       };
       utilsCommon_1.logEvent(this.debug, 'Set room and client values', {
         room: this.room,
         client: this.client
       });
+    }
+  }, {
+    key: "serializeRoomData",
+    value: function serializeRoomData(data) {
+      var serializedData = {};
+
+      for (var key in data) {
+        serializedData[key] = data[key].toString();
+      }
+
+      return JSON.stringify(serializedData);
     }
   }, {
     key: "connectToRoom",
@@ -6665,7 +6684,11 @@ function () {
       });
       var variables = {
         companyId: this.companyId,
-        room: this.room,
+        room: {
+          id: this.room.id,
+          title: this.room.title,
+          data: this.serializeRoomData(this.room.data)
+        },
         client: this.client
       };
       var query = GraphQLClient_1.prepareGraphQLQuery('mutation', this.joinRoomQuery, variables, {

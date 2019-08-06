@@ -79,7 +79,7 @@ export const prepareGraphQLQuery: IPrepareGraphQLQuery = (queryType, query, vari
         variableType = 'Int';
       }
       else {
-        logEvent(true, `'Unable to detect GraphQL variable type for "${key}": ${variableValue}'`, {
+        logEvent(true, `Unable to detect GraphQL variable type for "${key}": ${variableValue}`, {
           query,
           variables,
           optionalTypes,

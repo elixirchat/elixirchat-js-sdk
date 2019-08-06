@@ -9,7 +9,11 @@ const elixirChatWidget = new ElixirChatWidget({
   companyId: '6ac8ce92-3a31-440b-b439-831d292a9730',
   room: {
     id: 'dev-room-id',
-    title: 'Development room title'
+    title: 'Development room title',
+    data: {
+      custom_field_1: 'Optional custom field value 1',
+      custom_field_2: 'Optional custom field value 2',
+    }
   },
   client: {
     id: 'dev-client-id',

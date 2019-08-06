@@ -191,7 +191,11 @@ new ElixirChat({
   companyId: 'your-company-id-here',
   room: {
     id: 'your-room-id-here',
-    title: 'Your room title to be displayed in ElixirChat admin panel (on the left)'
+    title: 'Your room title to be displayed in ElixirChat admin panel (on the left)',
+    data: {
+      custom_field_1: 'Optional custom field value to be displayed in ElixirChat admin panel (on the right)',
+      custom_field_2: 'Another optional custom field value to be displayed in ElixirChat admin panel (on the right)',
+    }
   },
   client: {
     id: 'your-own-id-you-may-use-to-identify-a-customer',
@@ -225,7 +229,7 @@ Your company ID. You will get it from ElixirChat team.
 <br/>
 <a id="config-room"></a>
 
-#### `room: { id, title }` (optional)
+#### `room: { id, title, data }` (optional)
 Set the `room` option if you need a [public room](#public-room). How it works:
 
 - When you pass `room` _for the first time,_ ElixirChat SDK _creates_ a new [public room](#public-room) (with the specified `id` and `title`).
@@ -236,6 +240,7 @@ __Parameters:__
 
 - `room.id: string` — Arbitrary string you can use to identify the room.
 - `room.title: string` — Your public room title that is displayed [in your ElixirChat admin panel (on the left)](#what-are-rooms). Feel free to change it over time if you need to — these changes will be reflected in the admin panel as well.
+- `room.data: object` — Object with your room's custom fields that will be displayed in the admin panel on the right (e.g. "Subscription", "Last Activity" or "API" fields [on the screenshot above](#what-are-rooms)). Custom fields are different for each room. Contact ElixirChat team to enable them in the admin panel.
 
 <br/>
 <a id="config-client"></a>

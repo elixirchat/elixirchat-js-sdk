@@ -170,13 +170,20 @@ export class TypingStatusSubscription {
 
   public unsubscribeFromThisRoom = (): Promise<void> => {
     return new Promise((resolve, reject) => {
-      this.channel.leave()
-        .receive('ok', () => {
-          this.roomId = null;
-          this.channel = null;
-          resolve();
-        })
-        .receive('error', reject);
+      if (this.channel) {
+        this.channel.leave()
+          .receive('ok', () => {
+            this.roomId = null;
+            this.channel = null;
+            resolve();
+          })
+          .receive('error', reject);
+      }
+      else {
+        this.roomId = null;
+        this.channel = null;
+        resolve();
+      }
     });
   }
 }

@@ -179,9 +179,11 @@ export class ElixirChat {
 
     const roomId = room.id || defaultClientData.id;
     const roomTitle = room.title || defaultClientData.firstName + ' ' + defaultClientData.lastName;
+    const roomData = room.data || {};
     this.room = {
       id: roomId,
       title: roomTitle,
+      data: roomData,
     };
 
     logEvent(this.debug, 'Set room and client values', {
@@ -190,11 +192,23 @@ export class ElixirChat {
     });
   };
 
+  serializeRoomData(data){
+    const serializedData = {};
+    for (let key in data) {
+      serializedData[key] = data[key].toString();
+    }
+    return JSON.stringify(serializedData);
+  };
+
   protected connectToRoom(): Promise<void> {
     this.graphQLClient = new GraphQLClient({ url: this.apiUrl });
     const variables = {
       companyId: this.companyId,
-      room: this.room,
+      room: {
+        id: this.room.id,
+        title: this.room.title,
+        data: this.serializeRoomData(this.room.data)
+      },
       client: this.client,
     };
     const query = prepareGraphQLQuery('mutation', this.joinRoomQuery, variables, {
