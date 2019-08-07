@@ -5,12 +5,26 @@ English | [Русский](https://github.com/elixirchat/elixirchat-js-sdk/blob/
 
 <img src="https://user-images.githubusercontent.com/1618344/60431837-42ff6180-9bf0-11e9-9ee5-6a2c4b250fc7.png" alt="ElixirChat widget" width="498"/>
 
+* [What you can do with ElixirChat JS SDK](#what-you-can-do)
+* [Examples](#examples)
+* [How to add a fully implemented ElixirChat widget to your website](#add-default-widget)
+* [How to create your own custom widget](#create-custom-widget)
+* [Documentation](#docs)
+  - [Before getting started: What are rooms?](#what-are-rooms)
+  - [ElixirChat Config](#config)
+  - [ElixirChat API](#elixirchat-methods)
+  - [ElixirChatWidget API](#widget)
+* [For SDK developers](#developers)
 
-### There are two things you can do with ElixirChat JS SDK:
+<br>
+<a id="what-you-can-do"></a>
+
+## There are two things you can do with ElixirChat JS SDK:
 1. [Add a fully implemented Elixirchat widget (pictured above) to your website](#add-default-widget) by simply writing a few lines of code. The widget's look and feel are customizable via CSS.
 2. [Create your own custom widget](#create-custom-widget) that communicates with your ElixirChat admin panel via Elixirchat JS SDK.
 
 <br/>
+<a id="examples"></a>
 
 ## Examples
 
@@ -683,7 +697,7 @@ if (elixirChatWidget.widgetIsVisible) {
 <br/>
 <a id="developers"></a>
 
-## For developers
+## For SDK developers
 
 If you want to roll out ElixirChat JS SDK and widget as a developer:
 
