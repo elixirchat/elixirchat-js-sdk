@@ -2522,7 +2522,7 @@ if ("production" === 'development') {
 }
 
 if (!ElixirChat) {
-  utilsCommon_1.logEvent(true, 'Cannot find ElixirChat SDK. Are you sure you imported SDK (ether via "import" or via the <script/> tag)?\n' + 'See: https://github.com/elixirchat/elixirchat-widget#add-default-widget', {
+  utilsCommon_1.logEvent(true, 'Cannot find ElixirChat SDK. Are you sure you imported SDK (ether via "import" or via the <script/> tag)?\n' + 'See: https://github.com/elixirchat/elixirchat-js-sdk#add-default-widget', {
     NODE_ENV: "production"
   }, 'error');
 }

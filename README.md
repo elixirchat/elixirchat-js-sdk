@@ -1,7 +1,7 @@
 # elixirchat-js-sdk
 JavaScript SDK for [https://elixir.chat](https://elixir.chat)
 
-English | [Русский](https://github.com/elixirchat/elixirchat-widget/blob/master/README-ru.md)
+English | [Русский](https://github.com/elixirchat/elixirchat-js-sdk/blob/master/README-ru.md)
 
 <img src="https://user-images.githubusercontent.com/1618344/60431837-42ff6180-9bf0-11e9-9ee5-6a2c4b250fc7.png" alt="ElixirChat widget" width="498"/>
 
@@ -18,7 +18,7 @@ English | [Русский](https://github.com/elixirchat/elixirchat-widget/blob/
 | --- |--- |
 | __Fully implemented Elixirchat widget__<br> Customized with CSS<br> [How to add?](#add-default-widget) | __Simple custom widget__<br> Written with pure JS from scratch<br> [How to create?](#create-custom-widget) |
 | [See demo](https://demos.elixir.chat/examples/widget.html) | [See demo](https://demos.elixir.chat/examples/sdk.html) |
-| [Code](https://github.com/elixirchat/elixirchat-widget/blob/master/build/examples/widget.html) (~20 lines of JS) | [Code](https://github.com/elixirchat/elixirchat-widget/blob/master/build/examples/sdk.html) (~90 lines of JS) |
+| [Code](https://github.com/elixirchat/elixirchat-js-sdk/blob/master/build/examples/widget.html) (~20 lines of JS) | [Code](https://github.com/elixirchat/elixirchat-js-sdk/blob/master/build/examples/sdk.html) (~90 lines of JS) |
 
 
 
@@ -27,7 +27,7 @@ English | [Русский](https://github.com/elixirchat/elixirchat-widget/blob/
 
 ## 1. How to add a fully implemented ElixirChat widget to your website
 
-> _Check out the example [/build/examples/widget.html](https://github.com/elixirchat/elixirchat-widget/blob/master/build/examples/widget.html)_
+> _Check out the example [/build/examples/widget.html](https://github.com/elixirchat/elixirchat-js-sdk/blob/master/build/examples/widget.html)_
 
 ### a) Via package manager
 Run `npm i elixirchat --save` and then add this code:
@@ -52,7 +52,7 @@ elixirChatWidget.appendWidget({
 ```
 
 ### b) Via `<script>` tag:
-Download [`/build/sdk.min.js`](https://github.com/elixirchat/elixirchat-widget/blob/master/build/sdk.min.js) and [`/build/default-widget.min.js`](https://github.com/elixirchat/elixirchat-widget/blob/master/build/default-widget.min.js) from this repository and then include this snippet anywhere into your HTML-code:
+Download [`/build/sdk.min.js`](https://github.com/elixirchat/elixirchat-js-sdk/blob/master/build/sdk.min.js) and [`/build/default-widget.min.js`](https://github.com/elixirchat/elixirchat-js-sdk/blob/master/build/default-widget.min.js) from this repository and then include this snippet anywhere into your HTML-code:
 
 ```html
 <script src="[YOUR_PATH]/sdk.min.js"></script>
@@ -80,13 +80,13 @@ Download [`/build/sdk.min.js`](https://github.com/elixirchat/elixirchat-widget/b
 
 ## 2. How to create your own custom widget
 
-> _Check out the example [/build/examples/sdk.html](https://github.com/elixirchat/elixirchat-widget/blob/master/build/examples/sdk.html)_
+> _Check out the example [/build/examples/sdk.html](https://github.com/elixirchat/elixirchat-js-sdk/blob/master/build/examples/sdk.html)_
 
 #### Install:
 ```bash
 npm i elixirchat --save
 ```
-or include [`/build/sdk.min.js`](https://github.com/elixirchat/elixirchat-widget/blob/master/build/sdk.min.js) via the `<script>` tag anywhere into your HTML code
+or include [`/build/sdk.min.js`](https://github.com/elixirchat/elixirchat-js-sdk/blob/master/build/sdk.min.js) via the `<script>` tag anywhere into your HTML code
 
 ```html
 <script src="[YOUR_PATH]/sdk.min.js"></script>
@@ -689,7 +689,7 @@ If you want to roll out ElixirChat JS SDK and widget as a developer:
 
 ```bash
 # Clone the repo and install dependencies
-git clone git@github.com:elixirchat/elixirchat-widget.git
+git clone git@github.com:elixirchat/elixirchat-js-sdk.git
 npm install
 
 # Run dev version on http://localhost:8001/

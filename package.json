@@ -10,13 +10,13 @@
   "main": "src/index.ts",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/elixirchat/elixirchat-widget.git"
+    "url": "git+https://github.com/elixirchat/elixirchat-js-sdk.git"
   },
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/elixirchat/elixirchat-widget/issues"
+    "url": "https://github.com/elixirchat/elixirchat-js-sdk/issues"
   },
-  "homepage": "https://github.com/elixirchat/elixirchat-widget#readme",
+  "homepage": "https://github.com/elixirchat/elixirchat-js-sdk#readme",
   "dependencies": {
     "@absinthe/socket": "^0.2.1",
     "classnames": "^2.2.6",

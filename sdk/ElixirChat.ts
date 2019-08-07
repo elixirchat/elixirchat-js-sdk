@@ -5,7 +5,7 @@ import { TypingStatusSubscription } from './TypingStatusSubscription';
 import { ScreenshotTaker, IScreenshot } from './ScreenshotTaker';
 import { GraphQLClient, prepareGraphQLQuery } from './GraphQLClient';
 
-export const API_REFERENCE_URL = 'https://github.com/elixirchat/elixirchat-widget/tree/sdk';
+export const API_REFERENCE_URL = 'https://github.com/elixirchat/elixirchat-js-sdk';
 
 export interface IElixirChatRoom {
   id: string;

@@ -6440,7 +6440,7 @@ var ScreenshotTaker_1 = require("./ScreenshotTaker");
 
 var GraphQLClient_1 = require("./GraphQLClient");
 
-exports.API_REFERENCE_URL = 'https://github.com/elixirchat/elixirchat-widget/tree/sdk';
+exports.API_REFERENCE_URL = 'https://github.com/elixirchat/elixirchat-js-sdk';
 
 var ElixirChat =
 /*#__PURE__*/

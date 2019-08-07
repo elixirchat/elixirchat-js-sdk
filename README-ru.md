@@ -1,7 +1,7 @@
 # elixirchat-js-sdk
 JavaScript SDK для [https://elixir.chat](https://elixir.chat)
 
-[English](https://github.com/elixirchat/elixirchat-widget/blob/master/README.md) | Русский
+[English](https://github.com/elixirchat/elixirchat-js-sdk/blob/master/README.md) | Русский
 
 <img src="https://user-images.githubusercontent.com/1618344/61771606-e95a1380-adf8-11e9-86ca-c248368a7461.png" alt="Виджет ElixirChat" width="498"/>
 
@@ -18,7 +18,7 @@ JavaScript SDK для [https://elixir.chat](https://elixir.chat)
 | --- |--- |
 | __Полностью готовый виджет Elixirchat__<br> Настроен с помощью CSS<br> [Как добавить?](#add-default-widget) | __Простой кастомный виджет__<br> Написан на чистом JS с нуля<br> [Как создать?](#create-custom-widget) |
 | [Посмотреть демо](https://demos.elixir.chat/examples/widget.html) | [Посмотреть демо](https://demos.elixir.chat/examples/sdk.html) |
-| [Код](https://github.com/elixirchat/elixirchat-widget/blob/master/build/examples/widget.html) (~20 строк JS) | [Код](https://github.com/elixirchat/elixirchat-widget/blob/master/build/examples/sdk.html) (~90 строк JS) |
+| [Код](https://github.com/elixirchat/elixirchat-js-sdk/blob/master/build/examples/widget.html) (~20 строк JS) | [Код](https://github.com/elixirchat/elixirchat-js-sdk/blob/master/build/examples/sdk.html) (~90 строк JS) |
 
 
 
@@ -27,7 +27,7 @@ JavaScript SDK для [https://elixir.chat](https://elixir.chat)
 
 ## 1. Как добавить полностью готовый виджет Elixirchat на ваш сайт
 
-> _Посмотрите пример [/build/examples/widget.html](https://github.com/elixirchat/elixirchat-widget/blob/master/build/examples/widget.html)_
+> _Посмотрите пример [/build/examples/widget.html](https://github.com/elixirchat/elixirchat-js-sdk/blob/master/build/examples/widget.html)_
 
 ### а) Через пакетный менеджер
 Выполните `npm i elixirchat --save` и затем добавьте этот код:
@@ -52,7 +52,7 @@ elixirChatWidget.appendWidget({
 ```
 
 ### б) Через тег `<script>`:
-Скачайте [`/build/sdk.min.js`](https://github.com/elixirchat/elixirchat-widget/blob/master/build/sdk.min.js) и [`/build/default-widget.min.js`](https://github.com/elixirchat/elixirchat-widget/blob/master/build/default-widget.min.js) из этого репозитория, а затем включите этот фрагмент в ваш HTML-код:
+Скачайте [`/build/sdk.min.js`](https://github.com/elixirchat/elixirchat-js-sdk/blob/master/build/sdk.min.js) и [`/build/default-widget.min.js`](https://github.com/elixirchat/elixirchat-js-sdk/blob/master/build/default-widget.min.js) из этого репозитория, а затем включите этот фрагмент в ваш HTML-код:
 
 ```html
 <script src="[YOUR_PATH]/sdk.min.js"></script>
@@ -80,13 +80,13 @@ elixirChatWidget.appendWidget({
 
 ## 2. Как создать свой кастомный виджет
 
-> _Посмотрите пример [/build/examples/sdk.html](https://github.com/elixirchat/elixirchat-widget/blob/master/build/examples/sdk.html)_
+> _Посмотрите пример [/build/examples/sdk.html](https://github.com/elixirchat/elixirchat-js-sdk/blob/master/build/examples/sdk.html)_
 
 #### Установка:
 ```bash
 npm i elixirchat --save
 ```
-либо включите [`/build/sdk.min.js`](https://github.com/elixirchat/elixirchat-widget/blob/master/build/sdk.min.js) через тег `<script>` в ваш HTML-код
+либо включите [`/build/sdk.min.js`](https://github.com/elixirchat/elixirchat-js-sdk/blob/master/build/sdk.min.js) через тег `<script>` в ваш HTML-код
 
 ```html
 <script src="[YOUR_PATH]/sdk.min.js"></script>
@@ -695,7 +695,7 @@ if (elixirChatWidget.widgetIsVisible) {
 
 ```bash
 # Клонировать репозиторий и установить зависимости
-git clone git@github.com:elixirchat/elixirchat-widget.git
+git clone git@github.com:elixirchat/elixirchat-js-sdk.git
 npm install
 
 # Запустить dev-версию на http://localhost:8001/
