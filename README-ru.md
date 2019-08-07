@@ -5,7 +5,7 @@ JavaScript SDK для [https://elixir.chat](https://elixir.chat)
 
 <img src="https://user-images.githubusercontent.com/1618344/61771606-e95a1380-adf8-11e9-86ca-c248368a7461.png" alt="Виджет ElixirChat" width="498"/>
 
-* [Что можно сделать на с ElixirChat JS SDK](#what-you-can-do)
+* [Что можно сделать на ElixirChat JS SDK](#what-you-can-do)
 * [Примеры](#examples)
 * [Как добавить полностью готовый виджет Elixirchat на ваш сайт](#add-default-widget)
 * [Как создать свой кастомный виджет](#create-custom-widget)
