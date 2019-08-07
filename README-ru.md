@@ -5,12 +5,26 @@ JavaScript SDK для [https://elixir.chat](https://elixir.chat)
 
 <img src="https://user-images.githubusercontent.com/1618344/61771606-e95a1380-adf8-11e9-86ca-c248368a7461.png" alt="Виджет ElixirChat" width="498"/>
 
+* [Что можно сделать на с ElixirChat JS SDK](#what-you-can-do)
+* [Примеры](#examples)
+* [Как добавить полностью готовый виджет Elixirchat на ваш сайт](#add-default-widget)
+* [Как создать свой кастомный виджет](#create-custom-widget)
+* [Документация](#docs)
+  - [Прежде чем начать: что такое комнаты?](#what-are-rooms)
+  - [ElixirChat-конфиг](#config)
+  - [ElixirChat API](#elixirchat-methods)
+  - [ElixirChatWidget API](#widget)
+* [Для разработчиков SDK](#developers)
 
-### Есть две вещи, которые вы можете сделать с ElixirChat JS SDK:
+<br>
+<a id="what-you-can-do"></a>
+
+## Есть две вещи, которые вы можете сделать с ElixirChat JS SDK:
 1. [Добавить полностью готовый виджет Elixirchat (на картинке сверху) на ваш сайт](#add-default-widget), просто написав несколько строк кода. Внешний вид виджета настраивается с помощью CSS.
 2. [Создать свой кастомный виджет](#create-custom-widget), который будет коммуницировать с вашей админ-панелью ElixirChat через Elixirchat JS SDK.
 
 <br/>
+<a id="examples"></a>
 
 ## Примеры
 
@@ -689,7 +703,7 @@ if (elixirChatWidget.widgetIsVisible) {
 <br/>
 <a id="developers"></a>
 
-## Для разработчиков
+## Для разработчиков SDK
 
 Если вы хотите развернуть ElixirChat JS SDK и виджет как разработчик:
 
