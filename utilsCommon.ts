@@ -41,3 +41,42 @@ export function capitalize(str: string): string {
 export function randomDigitStringId(idLength: number): string {
   return (Array(idLength).join('0') + Math.random()).slice(-idLength);
 }
+
+
+export function parseUrl(url: string): { protocol: string, hostname: string, pathname: string, search: string, hash: string } {
+  const link = document.createElement('a');
+  link.href = url;
+  return link;
+}
+
+
+// Lodash-like _.get
+export function _get(object: any, path: string, defaultValue?: any): any {
+  try {
+    return eval('object.' + path);
+  }
+  catch (e) {
+    return defaultValue;
+  }
+}
+
+
+// Lodash-like _.merge
+export function _merge(object1: object, object2: object): object {
+  const mergedObject = {};
+  for (let a in object1) {
+    mergedObject[a] = object1[a];
+  }
+  for (let b in object2) {
+    if (object2[b]) {
+      mergedObject[b] = object2[b];
+    }
+  }
+  return mergedObject;
+}
+
+
+// Lodash-like _.last
+export function _last(arr: Array): any {
+  return arr[arr.length - 1];
+}

@@ -13,6 +13,7 @@ const ChatAttachIconBlack = dataUrlSvg + fs.readFileSync(__dirname + '/images/ch
 const ChatAttachIconBlue = dataUrlSvg + fs.readFileSync(__dirname + '/images/chat-attach-icon-blue.svg', { encoding: 'base64' });
 const ChatCloseIconBlack = dataUrlSvg + fs.readFileSync(__dirname + '/images/chat-close-icon-black.svg', { encoding: 'base64' });
 const ChatRemoveIconBlue = dataUrlSvg + fs.readFileSync(__dirname + '/images/chat-remove-icon-blue.svg', { encoding: 'base64' });
+const ChatReplyRightIconBlack = dataUrlSvg + fs.readFileSync(__dirname + '/images/chat-reply-right-icon-black.svg', { encoding: 'base64' });
 const ChatScreenshotIconBlack = dataUrlSvg + fs.readFileSync(__dirname + '/images/chat-screenshot-icon-black.svg', { encoding: 'base64' });
 const ChatScreenshotIconBlue = dataUrlSvg + fs.readFileSync(__dirname + '/images/chat-screenshot-icon-blue.svg', { encoding: 'base64' });
 const ChatTypingIconBlack = dataUrlSvg + fs.readFileSync(__dirname + '/images/chat-typing-icon-black.svg', { encoding: 'base64' });
@@ -26,6 +27,7 @@ export const assetsBase64 = {
   ChatAttachIconBlue,
   ChatCloseIconBlack,
   ChatRemoveIconBlue,
+  ChatReplyRightIconBlack,
   ChatScreenshotIconBlack,
   ChatScreenshotIconBlue,
   ChatTypingIconBlack,
@@ -42,6 +44,7 @@ export const iframeAssetUrlCssVars = `:root {
   --ElixirChatChatAttachIconBlue:       url(${ChatAttachIconBlue});
   --ElixirChatChatCloseIconBlack:       url(${ChatCloseIconBlack});
   --ElixirChatChatRemoveIconBlue:       url(${ChatRemoveIconBlue});
+  --ElixirChatReplyRightIconBlack:       url(${ChatReplyRightIconBlack});
   --ElixirChatChatScreenshotIconBlack:  url(${ChatScreenshotIconBlack});
   --ElixirChatChatScreenshotIconBlue:   url(${ChatScreenshotIconBlue});
   --ElixirChatChatTypingIconBlack:      url(${ChatTypingIconBlack});

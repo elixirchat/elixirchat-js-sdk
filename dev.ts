@@ -3,16 +3,18 @@ import ElixirChatWidget from './widget';
 const elixirChatWidget = new ElixirChatWidget({
   apiUrl: 'http://localhost:4000',
   socketUrl: 'ws://localhost:4000/socket',
-
-  // TODO: replace company ID w/ default values
-  // TODO: backend: populate DB by default values during installation
-  companyId: '6ac8ce92-3a31-440b-b439-831d292a9730',
+  companyId: '19f37ff6-11b8-42c9-ae67-4e2ef20ee4c3',
   room: {
     id: 'dev-room-id',
     title: 'Development room title',
     data: {
-      custom_field_1: 'Optional custom field value 1',
-      custom_field_2: 'Optional custom field value 2',
+      type: 'Internal',
+      last_action: 'June 25',
+      permission: 'Paid until December 30',
+      live_page: 'https://example.com/live/#test-page',
+      users: 25,
+      api: 2,
+      version: '7.11.31',
     }
   },
   client: {

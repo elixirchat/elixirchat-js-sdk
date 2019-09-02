@@ -50,6 +50,7 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
 
   render(): void {
     const { messages } = this.state;
+    window.__messages = messages;
 
     return (
       <div className="elixirchat-chat-messages">
@@ -68,12 +69,22 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
             <div className={cn({
               'elixirchat-chat-messages__item': true,
               'elixirchat-chat-messages__item--by-me': message.sender.isCurrentClient,
-              'elixirchat-chat-messages__item--by-agent': message.sender.isAgent,
+              'elixirchat-chat-messages__item--by-agent': message.sender.isOperator,
             })}>
               <div className="elixirchat-chat-messages__balloon">
                 <div className="elixirchat-chat-messages__sender">
                   {message.sender.isCurrentClient ? 'Я' : (message.sender.firstName || '') + ' ' + (message.sender.lastName || '')}
                 </div>
+                {Boolean(message.responseToMessage) && (
+                  <div className="elixirchat-chat-messages__reply-to">
+                    <i className="elixirchat-chat-messages__reply-to-icon"/>
+                    {message.responseToMessage.sender.firstName}&nbsp;
+                    {message.responseToMessage.sender.lastName}&nbsp;
+                    <span title={message.responseToMessage.text}>
+                        {message.responseToMessage.text.substr(0, 100)}
+                      </span>
+                  </div>
+                )}
                 <div className="elixirchat-chat-messages__text">{message.text}</div>
               </div>
               <div className="elixirchat-chat-messages__timestamp">

@@ -1,9 +1,10 @@
 import { uniqueNamesGenerator } from 'unique-names-generator';
 import { logEvent, capitalize, randomDigitStringId } from '../utilsCommon';
-import { MessagesSubscription, INewMessage, ISentMessage } from './MessagesSubscription';
+import { IMessage } from './serializers/serializeMessage';
+import { MessagesSubscription, ISentMessage } from './MessagesSubscription';
 import { TypingStatusSubscription } from './TypingStatusSubscription';
 import { ScreenshotTaker, IScreenshot } from './ScreenshotTaker';
-import { GraphQLClient, prepareGraphQLQuery } from './GraphQLClient';
+import { GraphQLClient } from './GraphQLClient';
 
 export const API_REFERENCE_URL = 'https://github.com/elixirchat/elixirchat-js-sdk';
 
@@ -27,7 +28,7 @@ export interface IElixirChatConfig {
   debug?: boolean,
 }
 
-export interface IElixirChatReceivedMessage extends INewMessage {}
+export interface IElixirChatReceivedMessage extends IMessage {}
 export interface IElixirChatSentMessage extends ISentMessage {}
 export interface IElixirChatScreenshot extends IScreenshot {}
 
@@ -54,18 +55,20 @@ export class ElixirChat {
   protected screenshotTaker: any;
 
   protected joinRoomQuery: string = `
-    joinRoom {
-      token
-      room {
-        id
-        title
-        foreignId
-        members {
-          client {
-            id
-            foreignId
-            firstName
-            lastName
+    mutation($companyId: ID!, $room: ForeignRoom, $client: ForeignClient) {
+      joinRoom (companyId: $companyId, room: $room, client: $client) {
+        token
+        room {
+          id
+          title
+          foreignId
+          members {
+            client {
+              id
+              foreignId
+              firstName
+              lastName
+            }
           }
         }
       }
@@ -177,8 +180,8 @@ export class ElixirChat {
       lastName: clientLastName,
     };
 
-    const roomId = room.id || defaultClientData.id;
-    const roomTitle = room.title || defaultClientData.firstName + ' ' + defaultClientData.lastName;
+    const roomId = room.id || client.id;
+    const roomTitle = room.title || client.firstName + ' ' + client.lastName;
     const roomData = room.data || {};
     this.room = {
       id: roomId,
@@ -202,6 +205,8 @@ export class ElixirChat {
 
   protected connectToRoom(): Promise<void> {
     this.graphQLClient = new GraphQLClient({ url: this.apiUrl });
+
+    const query = this.joinRoomQuery;
     const variables = {
       companyId: this.companyId,
       room: {
@@ -211,11 +216,7 @@ export class ElixirChat {
       },
       client: this.client,
     };
-    const query = prepareGraphQLQuery('mutation', this.joinRoomQuery, variables, {
-      companyId: 'ID',
-      room: 'ForeignRoom',
-      client: 'ForeignClient',
-    });
+
     return new Promise((resolve, reject) => {
       this.graphQLClient.query(query, variables)
         .then(({ joinRoom }: any) => {

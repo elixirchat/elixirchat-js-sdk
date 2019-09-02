@@ -1,33 +1,7 @@
 import * as AbsintheSocket from '@absinthe/socket'
 import * as Phoenix from 'phoenix'
-import { GraphQLClient, prepareGraphQLQuery, simplifyGraphQLJSON } from './GraphQLClient';
-
-export interface INewMessage {
-  id: string;
-  text: string;
-  timestamp: string;
-  cursor?: string;
-  sender: {
-    elixirChatId: string;
-    firstName?: string;
-    lastName?: string;
-    isAgent: boolean;
-    isCurrentClient: boolean;
-    id?: string;
-  };
-  responseToMessage: {
-    id: string;
-    text: string;
-    sender: {
-      elixirChatId: string;
-      firstName?: string;
-      lastName?: string;
-      isAgent: boolean;
-      isCurrentClient: boolean;
-      id?: string;
-    };
-  } | null;
-}
+import { serializeMessage, IMessage } from './serializers/serializeMessage';
+import { GraphQLClient, simplifyGraphQLJSON } from './GraphQLClient';
 
 export interface ISentMessage {
   text?: string,
@@ -42,7 +16,7 @@ export interface IMessagesSubscriptionConfig {
   currentClientId: string;
   onSubscribeSuccess?: (data: any) => void;
   onSubscribeError?: (data: any) => void;
-  onMessage: (message: INewMessage) => void;
+  onMessage: (message: IMessage) => void;
 }
 
 export class MessagesSubscription {
@@ -53,13 +27,13 @@ export class MessagesSubscription {
   public currentClientId: string;
   public onSubscribeSuccess?: (data: any) => void;
   public onSubscribeError?: (data: any) => void;
-  public onMessage: (message: INewMessage) => void;
+  public onMessage: (message: IMessage) => void;
 
   protected notifier: any;
   protected absintheSocket: any;
   protected graphQLClient: any;
 
-  protected latestMessageHistoryCursorsCache: Array<INewMessage> = [];
+  protected latestMessageHistoryCursorsCache: Array<IMessage> = [];
   protected reachedBeginningOfMessageHistory: boolean = false;
   protected isBeforeUnload: boolean = false;
 
@@ -92,56 +66,60 @@ export class MessagesSubscription {
   `;
 
   protected sendMessageQuery: string = `
-    sendMessage {
-      id
-      text
-      timestamp
-      data {
-        ... on NotSystemMessageData {
-          responseToMessage {
-            id
-            text
-            sender {
-              __typename
-              ... on Client { id foreignId firstName lastName }
-              ... on Employee { id firstName lastName }
+    mutation ($text: String, $responseToMessageId: ID) {
+      sendMessage(text: $text, responseToMessageId: $responseToMessageId) {
+        id
+        text
+        timestamp
+        data {
+          ... on NotSystemMessageData {
+            responseToMessage {
+              id
+              text
+              sender {
+                __typename
+                ... on Client { id foreignId firstName lastName }
+                ... on Employee { id firstName lastName }
+              }
             }
           }
         }
-      }
-      sender {
-        __typename
-        ... on Client { id foreignId firstName lastName }
-        ... on Employee { id firstName lastName }
+        sender {
+          __typename
+          ... on Client { id foreignId firstName lastName }
+          ... on Employee { id firstName lastName }
+        }
       }
     }
   `;
 
   protected messageHistoryQuery: string = `
-    messages {
-      edges {
-        cursor
-        node {
-          id
-          text
-          timestamp
-          data {
-            ... on NotSystemMessageData {
-              responseToMessage {
-                id
-                text
-                sender {
-                  __typename
-                  ... on Client { id foreignId firstName lastName }
-                  ... on Employee { id firstName lastName }
+    query ($beforeCursor: String, $limit: Int!) {
+      messages(before: $beforeCursor, last: $limit) {
+        edges {
+          cursor
+          node {
+            id
+            text
+            timestamp
+            data {
+              ... on NotSystemMessageData {
+                responseToMessage {
+                  id
+                  text
+                  sender {
+                    __typename
+                    ... on Client { id foreignId firstName lastName }
+                    ... on Employee { id firstName lastName }
+                  }
                 }
               }
             }
-          }
-          sender {
-            __typename
-            ... on Client { id foreignId firstName lastName }
-            ... on Employee { id firstName lastName }
+            sender {
+              __typename
+              ... on Client { id foreignId firstName lastName }
+              ... on Employee { id firstName lastName }
+            }
           }
         }
       }
@@ -195,7 +173,11 @@ export class MessagesSubscription {
       },
       onResult: ({ data }) => {
         if (data && data.newMessage) {
-          this.onMessage(this.serializeMessage(data.newMessage));
+          const message = serializeMessage(data.newMessage, {
+            apiUrl: this.apiUrl,
+            currentClientId: this.currentClientId,
+          });
+          this.onMessage(message);
         }
       },
     })
@@ -216,71 +198,38 @@ export class MessagesSubscription {
     this.reachedBeginningOfMessageHistory = false;
   };
 
-  protected serializeMessage = (message: any): INewMessage => {
-    let responseToMessage = message.data.responseToMessage;
-    if (responseToMessage && responseToMessage.sender) {
-      let responseToMessageSender = {
-        elixirChatId: responseToMessage.sender.id,
-        firstName: responseToMessage.sender.firstName,
-        lastName: responseToMessage.sender.lastName,
-        isAgent: responseToMessage.sender.__typename === 'Employee',
-        isCurrentClient: false,
-      };
-      if (!responseToMessageSender.isAgent) {
-        responseToMessageSender.id = responseToMessage.sender.foreignId;
-        responseToMessageSender.isCurrentClient = responseToMessage.sender.foreignId === this.currentClientId;
-      }
-      responseToMessage = { ...responseToMessage, responseToMessageSender };
-    }
-    let sender = {
-      elixirChatId: message.sender.id,
-      firstName: message.sender.firstName,
-      lastName: message.sender.lastName,
-      isAgent: message.sender.__typename === 'Employee',
-      isCurrentClient: false,
+  public sendMessage = ({ text, responseToMessageId }: ISentMessage): Promise<IMessage> => {
+    const query = this.sendMessageQuery;
+    const variables = {  // TODO: change when able to send attachments
+      text,
+      responseToMessageId,
     };
-    if (!sender.isAgent) {
-      sender.id = message.sender.foreignId;
-      sender.isCurrentClient = message.sender.foreignId === this.currentClientId;
-    }
-    return {
-      id: message.id,
-      text: message.text,
-      timestamp: message.timestamp,
-      sender,
-      responseToMessage,
-      cursor: message.cursor || null,
-    };
-  };
-
-  public sendMessage = ({ text, responseToMessageId }: ISentMessage): Promise<INewMessage> => {
-    const variables = { text, responseToMessageId }; // TODO: change when able to send attachments
-    const query = prepareGraphQLQuery('mutation', this.sendMessageQuery, variables);
     return new Promise((resolve, reject) => {
       if (variables.text) {
         this.graphQLClient
           .query(query, variables)
           .then(data => {
             if (data && data.sendMessage) {
-              resolve(this.serializeMessage(data.sendMessage));
+              const message = serializeMessage(data.sendMessage, {
+                apiUrl: this.apiUrl,
+                currentClientId: this.currentClientId,
+              });
+              resolve(message);
             }
             else {
-              reject({ error: data, variables, graphQLQuery: query });
+              reject({ error: data, variables, query });
             }
           })
           .catch(error => {
-            reject({ error, variables, graphQLQuery: query });
+            reject({ error, variables, query });
           });
       }
     });
   };
 
-  public fetchMessageHistory = (limit: number, beforeCursor: string): Promise<[INewMessage] | any[]> => {
-    const variables = {
-      last: limit,
-      before: beforeCursor,
-    };
-    const query = prepareGraphQLQuery('query', this.messageHistoryQuery, variables, { before: 'String' });
+  public fetchMessageHistory = (limit: number, beforeCursor: string): Promise<[IMessage] | any[]> => {
+    const query = this.messageHistoryQuery;
+    const variables = { limit, beforeCursor };
 
     return new Promise((resolve, reject) => {
       if (this.reachedBeginningOfMessageHistory) {
@@ -292,8 +241,14 @@ export class MessagesSubscription {
         .then(response => {
           if (response.messages) {
 
-            let messages = <[INewMessage]>simplifyGraphQLJSON(response.messages).map(this.serializeMessage);
-            messages = messages.filter(message => !this.latestMessageHistoryCursorsCache.includes(message.cursor));
+            const messages = <[IMessage]>simplifyGraphQLJSON(response.messages)
+              .map(message => {
+                return serializeMessage(message, {
+                  apiUrl: this.apiUrl,
+                  currentClientId: this.currentClientId,
+                });
+              })
+              .filter(message => !this.latestMessageHistoryCursorsCache.includes(message.cursor));
 
             this.latestMessageHistoryCursorsCache = [
               ...messages.map(message => message.cursor),

@@ -1,5 +1,3 @@
-import { logEvent } from '../utilsCommon';
-
 export interface IGraphQLClientConfig {
   url: string;
   token?: string;
@@ -49,53 +47,6 @@ export class GraphQLClient {
     });
   }
 }
-
-
-export interface IPrepareGraphQLQuery {
-  (queryType: 'query' | 'mutation', query: string, variables: any, optionalTypes?: any) : string
-}
-
-export const prepareGraphQLQuery: IPrepareGraphQLQuery = (queryType, query, variables, optionalTypes = {}) => {
-  const queryTypes = [];
-  const queryVariables = [];
-
-  Object.keys(variables).forEach(key => {
-    const variableValue = variables[key];
-    if (variableValue) {
-      let variableType;
-      if (optionalTypes && optionalTypes[key]) {
-        variableType = optionalTypes[key];
-      }
-      else if (/id$/i.test(key)) {
-        variableType = 'ID';
-      }
-      else if (typeof variableValue === 'string') {
-        variableType = 'String';
-      }
-      else if (typeof variableValue === 'number' && variableValue % 1) {
-        variableType = 'Float';
-      }
-      else if (typeof variableValue === 'number' && !(variableValue % 1)) {
-        variableType = 'Int';
-      }
-      else {
-        logEvent(true, `Unable to detect GraphQL variable type for "${key}": ${variableValue}`, {
-          query,
-          variables,
-          optionalTypes,
-        }, 'error');
-        return '';
-      }
-      queryTypes.push(`$${key}: ${variableType}!`);
-      queryVariables.push(`${key}: $${key}`);
-    }
-  });
-  return `
-    ${queryType} (${ queryTypes.join(', ') }) {
-      ${query.trim().replace(/^([a-z_]+).*{/i, `$1 (${ queryVariables.join(', ') }) {`)}        
-    }
-  `;
-};
 
 
 export interface ISimplifyGraphQLJSON {

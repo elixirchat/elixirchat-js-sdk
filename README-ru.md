@@ -47,7 +47,7 @@ JavaScript SDK для [https://elixir.chat](https://elixir.chat)
 Выполните `npm i elixirchat --save` и затем добавьте этот код:
 
 ```js
-import ElixirChatWidget from 'ElixirChat/widget';
+import ElixirChatWidget from 'elixirchat-js-sdk/widget';
 
 const elixirChatWidget = new ElixirChatWidget({
   apiUrl: 'https://elixirchat.yoursite.com/api', // API URL вашего ElixirChat
@@ -108,7 +108,7 @@ npm i elixirchat --save
 
 #### Код:
 ```js
-import ElixirChat from 'elixirchat';
+import ElixirChat from 'elixirchat-js-sdk';
 // Либо, если используете тег `<script>`, то объект `ElixirChat` будет добавлен в window.
 
 const elixirChatWidget = new ElixirChatWidget({
@@ -334,8 +334,8 @@ __Аргументы коллбэка:__
       - `sender.elixirChatId: string` - ID пользователя отправителя, сгенерированный бэкэндом ElixirChat (это _НЕ_ [`client.id` из конфига](#config-client))
       - `sender.firstName: string` - имя отправителя
       - `sender.lastName: string` - фамилия отправителя
-      - `sender.isCurrentUser: boolean` - _true_, если отправитель — это текущий клиент, который [был передан в конфиг ElixirChat как `client`](#config-client)
-      - `sender.isAgent: boolean` - _true_, если отправитель — это оператор поддержки клиентов; _false_, если отправитель — это другой клиент (в случае публичной комнаты)
+      - `sender.isCurrentClient: boolean` - _true_, если отправитель — это текущий клиент, который [был передан в конфиг ElixirChat как `client`](#config-client)
+      - `sender.isOperator: boolean` - _true_, если отправитель — это оператор поддержки клиентов; _false_, если отправитель — это другой клиент (в случае публичной комнаты)
       - `sender.id: string | undefined` - [ElixirChar `client.id`](#config-client) отправителя (однако, если отправитель агент поддержки клиентов, то `sender.id` - _undefined_)
   - `message.responseToMessage: object | null` - содержит информацию об изначальном сообщении (если это был ответ на другое сообщение) или _null_ (если это сообщение — не ответ на другое)
       - `responseToMessage.id: string` - ID изначального сообщения
@@ -345,11 +345,11 @@ __Аргументы коллбэка:__
 ```js
 // Пример:
 elixirChat.onMessage((message) => {
-  if (message.sender.isCurrentUser) {
+  if (message.sender.isCurrentClient) {
     console.log('Вы отправили сообщение ', message.text);
   }
   else {
-    console.log('Новое сообщение от ', message.sender.isAgent ? 'оператора' : 'клиента');
+    console.log('Новое сообщение от ', message.sender.isOperator ? 'оператора' : 'клиента');
     console.log(message.text);
   }
   if (message.responseToMessage) {

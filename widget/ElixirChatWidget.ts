@@ -36,6 +36,7 @@ export class ElixirChatWidget extends ElixirChat {
   public iframeStyles: string;
   public visibleByDefault: boolean;
 
+  public widgetUnreadCount: number;
   public widgetIsVisible: boolean = false;
   public widgetChatReactComponent: any = {};
   public widgetChatIframe: HTMLIFrameElement;
@@ -62,6 +63,8 @@ export class ElixirChatWidget extends ElixirChat {
 
   protected appendWidgetButton(): void {
     const button = insertElement('button', { className: 'elixirchat-widget-button' }, this.container);
+    insertElement('span', { className: 'elixirchat-widget-button-counter' }, button);
+
     button.addEventListener('click', this.toggleChatVisibility);
     if (this.widgetButton) {
       this.widgetButton.remove();
@@ -85,14 +88,32 @@ export class ElixirChatWidget extends ElixirChat {
   protected addendStyles(): void {
     this.injectGlobalStyles(DefaultWidgetGlobalStyles, this.container);
     this.injectGlobalStyles(globalAssetUrlCssVars, this.container);
+    this.injectGlobalStyles([
+      generateFontFaceRule('Graphik', 'normal', assetsBase64.GraphikRegularWeb)
+    ].join('\n'));
 
+    this.injectIframeStyles(this.iframeStyles);
+    this.injectIframeStyles(iframeAssetUrlCssVars);
     this.injectIframeStyles([
       generateFontFaceRule('Graphik', 'normal', assetsBase64.GraphikRegularWeb),
       generateFontFaceRule('Graphik', 'bold', assetsBase64.GraphikBoldWeb)
     ].join('\n'));
-    this.injectIframeStyles(this.iframeStyles);
-    this.injectIframeStyles(iframeAssetUrlCssVars);
   }
+
+  public setUnreadCount = (count: number): void => {
+    const counter: HTMLElement = this.widgetButton.querySelector('.elixirchat-widget-button-counter');
+    const classNameHasUnread = 'elixirchat-widget-button-counter--has-unread';
+    this.widgetUnreadCount = +count || 0;
+
+    if (count) {
+      counter.classList.add(classNameHasUnread);
+      counter.innerText = count;
+    }
+    else {
+      counter.classList.remove(classNameHasUnread);
+      counter.innerText = '';
+    }
+  };
 
   public toggleChatVisibility = (): void => {
     const iframeClassNameOpening = 'elixirchat-widget-iframe--opening';

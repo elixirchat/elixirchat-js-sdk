@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
+import { _last } from '../../utilsCommon';
 import { playNotificationSound } from '../../utilsWidget';
 import { DefaultWidgetMessages } from './DefaultWidgetMessages';
 import { DefaultWidgetTextarea } from './DefaultWidgetTextarea';
@@ -22,7 +23,7 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
 
   container: { current: HTMLElement } = React.createRef();
   scrollBlock: { current: HTMLElement } = React.createRef();
-  messageChunkSize: number = 20;
+  messageChunkSize: number = 100; // TODO: reduce to 20 when unread message count implemented in server-side
 
   state = {
     messages: [],
@@ -33,6 +34,34 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
     isLoadingPreviousMessages: false,
   };
 
+  updateUnseenRepliesToCurrentClient = () => {
+    const { messages } = this.state;
+    const { elixirChatWidget } = this.props;
+
+    const repliesToCurrentClient = messages.filter(message => {
+      const { responseToMessage } = message;
+      return responseToMessage && responseToMessage.sender.id === elixirChatWidget.elixirChatClientId;
+    });
+
+    if (elixirChatWidget.widgetIsVisible) {
+      const latestReplyToCurrentClient = _last(repliesToCurrentClient);
+      if (latestReplyToCurrentClient) {
+        localStorage.setItem('elixirchat-latest-unseen-reply', latestReplyToCurrentClient.id);
+      }
+      elixirChatWidget.setUnreadCount(0);
+    }
+    else {
+      const latestUnseenReplyId = localStorage.getItem('elixirchat-latest-unseen-reply');
+      const latestUnseenReplyIndex = repliesToCurrentClient
+        .map(message => message.id)
+        .indexOf(latestUnseenReplyId);
+      const unseenRepliesToCurrentClient = latestUnseenReplyIndex === -1
+        ? repliesToCurrentClient
+        : repliesToCurrentClient.slice(latestUnseenReplyIndex + 1);
+      elixirChatWidget.setUnreadCount(unseenRepliesToCurrentClient.length);
+    }
+  };
+
   componentDidMount(): void {
     const { elixirChatWidget } = this.props;
     elixirChatWidget.injectIframeStyles(DefaultWidgetStyles);
@@ -41,6 +70,7 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
       elixirChatWidget.fetchMessageHistory(this.messageChunkSize).then(messages => {
         this.setState({ messages, isLoading: false });
         this.scrollToBottom();
+        this.updateUnseenRepliesToCurrentClient();
       });
     });
 
@@ -52,11 +82,14 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
       if (!hasUserScroll) {
         this.scrollToBottom();
       }
+      this.updateUnseenRepliesToCurrentClient();
     });
 
     elixirChatWidget.onTyping(currentlyTypingUsers => {
       this.setState({ currentlyTypingUsers });
     });
+
+    elixirChatWidget.onToggleChatVisibility(this.updateUnseenRepliesToCurrentClient);
   }
 
   loadPreviousMessages = (callback): void => {

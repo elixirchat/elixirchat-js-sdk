@@ -326,6 +326,42 @@ function randomDigitStringId(idLength) {
 }
 
 exports.randomDigitStringId = randomDigitStringId;
+
+function parseUrl(url) {
+  var link = document.createElement('a');
+  link.href = url;
+  return link;
+}
+
+exports.parseUrl = parseUrl; // Lodash-like _.get
+
+function _get(object, path, defaultValue) {
+  try {
+    return eval('object.' + path);
+  } catch (e) {
+    return defaultValue;
+  }
+}
+
+exports._get = _get; // Lodash-like _.merge
+
+function _merge(object1, object2) {
+  var mergedObject = {};
+
+  for (var a in object1) {
+    mergedObject[a] = object1[a];
+  }
+
+  for (var b in object2) {
+    if (object2[b]) {
+      mergedObject[b] = object2[b];
+    }
+  }
+
+  return mergedObject;
+}
+
+exports._merge = _merge;
 },{}],"5qf4":[function(require,module,exports) {
 
 // https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
@@ -5648,7 +5684,127 @@ var unobserveOrCancel = function unobserveOrCancel(absintheSocket, notifier, obs
 
 
 exports.unobserveOrCancel = unobserveOrCancel;
-},{"core-js/modules/es6.array.find-index":"7sVm","core-js/modules/es6.array.find":"Qppk","core-js/modules/es6.function.name":"N3yi","@jumpn/utils-composite":"7Q0f","phoenix":"XFqm","core-js/modules/web.dom.iterable":"v6Aj","core-js/modules/es6.array.for-each":"VsIt","@babel/runtime/helpers/toConsumableArray":"Fhqp","@jumpn/utils-graphql":"2hqA","zen-observable":"U0NN","core-js/modules/es7.array.includes":"TLss","core-js/modules/es6.string.includes":"fH7p","@babel/runtime/helpers/objectSpread":"fwAU","@babel/runtime/helpers/objectWithoutProperties":"U8F3","core-js/modules/es6.array.index-of":"LvRh","@jumpn/utils-array":"Yu+T","core-js/modules/es6.function.bind":"WIhg","@babel/runtime/helpers/newArrowCheck":"tS9b"}],"1fv+":[function(require,module,exports) {
+},{"core-js/modules/es6.array.find-index":"7sVm","core-js/modules/es6.array.find":"Qppk","core-js/modules/es6.function.name":"N3yi","@jumpn/utils-composite":"7Q0f","phoenix":"XFqm","core-js/modules/web.dom.iterable":"v6Aj","core-js/modules/es6.array.for-each":"VsIt","@babel/runtime/helpers/toConsumableArray":"Fhqp","@jumpn/utils-graphql":"2hqA","zen-observable":"U0NN","core-js/modules/es7.array.includes":"TLss","core-js/modules/es6.string.includes":"fH7p","@babel/runtime/helpers/objectSpread":"fwAU","@babel/runtime/helpers/objectWithoutProperties":"U8F3","core-js/modules/es6.array.index-of":"LvRh","@jumpn/utils-array":"Yu+T","core-js/modules/es6.function.bind":"WIhg","@babel/runtime/helpers/newArrowCheck":"tS9b"}],"sQAQ":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var utilsCommon_1 = require("../../utilsCommon");
+
+function serializeFile(fileData, options) {
+  var file = fileData || {};
+  var thumbnails = null;
+
+  if (file.thumbnails && file.thumbnails.length) {
+    thumbnails = file.thumbnails.map(function (thumbnail) {
+      var serializedThumbnail = serializeFile(thumbnail, options);
+      return {
+        id: serializedThumbnail.id,
+        url: serializedThumbnail.url,
+        name: serializedThumbnail.name,
+        bytesSize: serializedThumbnail.bytesSize,
+        width: serializedThumbnail.width,
+        height: serializedThumbnail.height,
+        contentType: serializedThumbnail.contentType,
+        thumbType: thumbnail.thumbType || null
+      };
+    });
+  }
+
+  var parsedApiUrl = utilsCommon_1.parseUrl(options.apiUrl);
+  var uploadsUrlPrefix = parsedApiUrl.protocol + '//' + parsedApiUrl.hostname + '/';
+  var fileUrl = '';
+
+  if (file.url) {
+    fileUrl = /^uploads/i.test(file.url) ? uploadsUrlPrefix + file.url : file.url;
+  }
+
+  return {
+    id: file.id || null,
+    url: fileUrl,
+    name: file.name || '',
+    bytesSize: file.bytesSize || 0,
+    height: file.height || 0,
+    width: file.width || 0,
+    thumbnails: thumbnails,
+    contentType: file.contentType || null,
+    originalFileObject: file.originalFileObject || null
+  };
+}
+
+exports.serializeFile = serializeFile;
+},{"../../utilsCommon":"EjGt"}],"1lqy":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var utilsCommon_1 = require("../../utilsCommon");
+
+var serializeFile_1 = require("./serializeFile");
+
+function serializeUser(user, options) {
+  var serializedAvatar = serializeFile_1.serializeFile(user.avatar || {}, options);
+  var elixirChatId = utilsCommon_1._get(user, 'foreignId') || null;
+  return {
+    id: utilsCommon_1._get(user, 'id') || null,
+    firstName: utilsCommon_1._get(user, 'firstName') || '',
+    lastName: utilsCommon_1._get(user, 'lastName') || '',
+    avatar: serializedAvatar,
+    isOperator: utilsCommon_1._get(user, '__typename') === 'Employee',
+    isCurrentClient: elixirChatId === options.currentClientId,
+    elixirChatId: elixirChatId
+  };
+}
+
+exports.serializeUser = serializeUser;
+},{"../../utilsCommon":"EjGt","./serializeFile":"sQAQ"}],"ZEl5":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var utilsCommon_1 = require("../../utilsCommon");
+
+var serializeUser_1 = require("./serializeUser");
+
+var serializeFile_1 = require("./serializeFile");
+
+function serializeMessage(message, options) {
+  var sender = message.sender,
+      attachments = message.attachments,
+      _message$data = message.data,
+      data = _message$data === void 0 ? {} : _message$data;
+  var responseToMessage = data.responseToMessage,
+      author = data.author;
+  var serializedSender = serializeUser_1.serializeUser(utilsCommon_1._merge(sender, author), options);
+  var serializedAttachments = (attachments || []).map(function (attachment) {
+    return serializeFile_1.serializeFile(attachment, options);
+  });
+  var serializedResponseToMessage = {
+    id: utilsCommon_1._get(responseToMessage, 'id') || null,
+    text: utilsCommon_1._get(responseToMessage, 'text') || '',
+    sender: serializeUser_1.serializeUser(utilsCommon_1._get(responseToMessage, 'sender', {}), options)
+  };
+  return {
+    id: utilsCommon_1._get(message, 'id') || null,
+    text: utilsCommon_1._get(message, 'text', ''),
+    timestamp: utilsCommon_1._get(message, 'timestamp', ''),
+    cursor: utilsCommon_1._get(message, 'cursor') || null,
+    sender: serializedSender,
+    responseToMessage: serializedResponseToMessage.id ? serializedResponseToMessage : null,
+    attachments: serializedAttachments,
+    isSubmitting: utilsCommon_1._get(message, 'isSubmitting') || false,
+    isSubmissionError: utilsCommon_1._get(message, 'isSubmissionError') || false
+  };
+}
+
+exports.serializeMessage = serializeMessage;
+},{"../../utilsCommon":"EjGt","./serializeUser":"1lqy","./serializeFile":"sQAQ"}],"1fv+":[function(require,module,exports) {
 "use strict";
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -5803,6 +5959,8 @@ var AbsintheSocket = __importStar(require("@absinthe/socket"));
 
 var Phoenix = __importStar(require("phoenix"));
 
+var serializeMessage_1 = require("./serializers/serializeMessage");
+
 var GraphQLClient_1 = require("./GraphQLClient");
 
 var MessagesSubscription =
@@ -5832,51 +5990,6 @@ function () {
       _this.reachedBeginningOfMessageHistory = false;
     };
 
-    this.serializeMessage = function (message) {
-      var responseToMessage = message.data.responseToMessage;
-
-      if (responseToMessage && responseToMessage.sender) {
-        var responseToMessageSender = {
-          elixirChatId: responseToMessage.sender.id,
-          firstName: responseToMessage.sender.firstName,
-          lastName: responseToMessage.sender.lastName,
-          isAgent: responseToMessage.sender.__typename === 'Employee',
-          isCurrentClient: false
-        };
-
-        if (!responseToMessageSender.isAgent) {
-          responseToMessageSender.id = responseToMessage.sender.foreignId;
-          responseToMessageSender.isCurrentClient = responseToMessage.sender.foreignId === _this.currentClientId;
-        }
-
-        responseToMessage = Object.assign({}, responseToMessage, {
-          responseToMessageSender: responseToMessageSender
-        });
-      }
-
-      var sender = {
-        elixirChatId: message.sender.id,
-        firstName: message.sender.firstName,
-        lastName: message.sender.lastName,
-        isAgent: message.sender.__typename === 'Employee',
-        isCurrentClient: false
-      };
-
-      if (!sender.isAgent) {
-        sender.id = message.sender.foreignId;
-        sender.isCurrentClient = message.sender.foreignId === _this.currentClientId;
-      }
-
-      return {
-        id: message.id,
-        text: message.text,
-        timestamp: message.timestamp,
-        sender: sender,
-        responseToMessage: responseToMessage,
-        cursor: message.cursor || null
-      };
-    };
-
     this.sendMessage = function (_ref) {
       var text = _ref.text,
           responseToMessageId = _ref.responseToMessageId;
@@ -5890,7 +6003,11 @@ function () {
         if (variables.text) {
           _this.graphQLClient.query(query, variables).then(function (data) {
             if (data && data.sendMessage) {
-              resolve(_this.serializeMessage(data.sendMessage));
+              var message = serializeMessage_1.serializeMessage(data.sendMessage, {
+                apiUrl: _this.apiUrl,
+                currentClientId: _this.currentClientId
+              });
+              resolve(message);
             } else {
               reject({
                 error: data,
@@ -5925,8 +6042,12 @@ function () {
 
         _this.graphQLClient.query(query, variables).then(function (response) {
           if (response.messages) {
-            var messages = GraphQLClient_1.simplifyGraphQLJSON(response.messages).map(_this.serializeMessage);
-            messages = messages.filter(function (message) {
+            var messages = GraphQLClient_1.simplifyGraphQLJSON(response.messages).map(function (message) {
+              return serializeMessage_1.serializeMessage(message, {
+                apiUrl: _this.apiUrl,
+                currentClientId: _this.currentClientId
+              });
+            }).filter(function (message) {
               return !_this.latestMessageHistoryCursorsCache.includes(message.cursor);
             });
             _this.latestMessageHistoryCursorsCache = [].concat(_toConsumableArray(messages.map(function (message) {
@@ -6013,7 +6134,12 @@ function () {
           var data = _ref2.data;
 
           if (data && data.newMessage) {
-            _this2.onMessage(_this2.serializeMessage(data.newMessage));
+            var message = serializeMessage_1.serializeMessage(data.newMessage, {
+              apiUrl: _this2.apiUrl,
+              currentClientId: _this2.currentClientId
+            });
+
+            _this2.onMessage(message);
           }
         }
       });
@@ -6035,7 +6161,7 @@ function () {
 }();
 
 exports.MessagesSubscription = MessagesSubscription;
-},{"@absinthe/socket":"zTqj","phoenix":"XFqm","./GraphQLClient":"1fv+"}],"QERd":[function(require,module,exports) {
+},{"@absinthe/socket":"zTqj","phoenix":"XFqm","./serializers/serializeMessage":"ZEl5","./GraphQLClient":"1fv+"}],"QERd":[function(require,module,exports) {
 "use strict";
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }

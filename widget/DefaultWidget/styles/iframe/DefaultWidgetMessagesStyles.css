@@ -26,6 +26,27 @@
   padding-bottom: 1px;
 }
 
+
+.elixirchat-chat-messages__reply-to {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #999999;
+  margin: 2px 0 4px 0;
+}
+
+.elixirchat-chat-messages__reply-to-icon {
+  display: inline-block;
+  margin-right: 7px;
+  width: 18px;
+  height: 15px;
+  opacity: .3;
+  vertical-align: text-bottom;
+  transition: opacity 100ms;
+  background: var(--ElixirChatReplyRightIconBlack) center;
+  background-size: contain;
+}
+
 .elixirchat-chat-messages__text {
   white-space: pre-wrap;
 }

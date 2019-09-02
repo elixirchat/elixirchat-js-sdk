@@ -51,6 +51,27 @@
   opacity: 1;
 }
 
+.elixirchat-widget-button-counter {
+  display: none;
+  position: absolute;
+  padding: 0 5px;
+  min-width: 10px;
+  height: 20px;
+  font: 13px/20px Graphik, 'Helvetica Neue', sans-serif;
+  text-align: center;
+  border-radius: 100%;
+  background: #FF006E;
+  color: #ffffff;
+  box-shadow: 0 3px 7px rgba(0,0,0,0.2);
+  z-index: 2;
+  right: 0;
+  top: 0;
+}
+
+.elixirchat-widget-button-counter--has-unread {
+  display: block;
+}
+
 .elixirchat-widget-iframe {
   border-radius: 8px;
   background: #ffffff;
