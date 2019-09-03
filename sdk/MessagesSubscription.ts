@@ -76,8 +76,8 @@ export class MessagesSubscription {
   `;
 
   protected sendMessageQuery: string = `
-    mutation ($text: String, $responseToMessageId: ID) {
-      sendMessage(text: $text, responseToMessageId: $responseToMessageId) {
+    mutation ($text: String!, $responseToMessageId: ID, $attachments: [Upload!]) {
+      sendMessage(text: $text, responseToMessageId: $responseToMessageId, attachments: $attachments) {
         id
         text
         timestamp
@@ -228,32 +228,32 @@ export class MessagesSubscription {
     this.reachedBeginningOfMessageHistory = false;
   };
 
-  public sendMessage = ({ text, responseToMessageId }: ISentMessage): Promise<IMessage> => {
+  public sendMessage = ({ text, attachments, responseToMessageId }: ISentMessage): Promise<IMessage> => {
     const query = this.sendMessageQuery;
-    const variables = {  // TODO: change when able to send attachments
+    const variables = {
       text,
+      attachments,
       responseToMessageId,
     };
+
     return new Promise((resolve, reject) => {
-      if (variables.text) {
-        this.graphQLClient
-          .query(query, variables)
-          .then(data => {
-            if (data && data.sendMessage) {
-              const message = serializeMessage(data.sendMessage, {
-                apiUrl: this.apiUrl,
-                currentClientId: this.currentClientId,
-              });
-              resolve(message);
-            }
-            else {
-              reject({ error: data, variables, query });
-            }
-          })
-          .catch(error => {
-            reject({ error, variables, query });
-          });
-      }
+      this.graphQLClient
+        .query(query, variables, { asFormData: true })
+        .then(data => {
+          if (data && data.sendMessage) {
+            const message = serializeMessage(data.sendMessage, {
+              apiUrl: this.apiUrl,
+              currentClientId: this.currentClientId,
+            });
+            resolve(message);
+          }
+          else {
+            reject({ error: data, variables, query });
+          }
+        })
+        .catch(error => {
+          reject({ error, variables, query });
+        });
     });
   };
 

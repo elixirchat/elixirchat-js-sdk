@@ -72,7 +72,6 @@ export class ScreenshotTaker {
           setTimeout(() => {
             const screenshot: IScreenshot = this.captureVideoFrame();
             this.stopMediaStream();
-            this.openScreenshotInNewTab(screenshot.dataUrl);
             resolve(screenshot);
           }, 500);
         };
@@ -87,29 +86,10 @@ export class ScreenshotTaker {
     for (let i = 0; i < blobBin.length; i++) {
       blobArray.push(blobBin.charCodeAt(i));
     }
-    const blob = new Blob([ new Uint8Array(blobArray) ], {
-      type: 'image/png'
-    });
+    const blob = new Blob([ new Uint8Array(blobArray) ]);
     const fileName = `Screenshot ${new Date().toLocaleString()}.png`;
-    return new File([blob], fileName);
-  }
-
-  // TODO: remove once server screenshot upload ready
-  protected openScreenshotInNewTab(dataUrl: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const image = new Image();
-      image.src = dataUrl;
-      const newTab = window.open('');
-      if (newTab) {
-        newTab.document.body.appendChild(image);
-        image.setAttribute('width', '100%');
-        resolve();
-      }
-      else {
-        reject({
-          message: 'You must allow popups to see the screenshot'
-        });
-      }
+    return new File([blob], fileName, {
+      type: 'image/png'
     });
   }
 }

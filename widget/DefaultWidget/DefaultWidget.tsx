@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
-import { _last } from '../../utilsCommon';
-import { playNotificationSound } from '../../utilsWidget';
+import { _get, _last, randomDigitStringId } from '../../utilsCommon';
+import { playNotificationSound, isWebImage } from '../../utilsWidget';
+import { serializeMessage } from '../../sdk/serializers/serializeMessage';
+import { serializeFile } from '../../sdk/serializers/serializeFile';
 import { DefaultWidgetMessages } from './DefaultWidgetMessages';
 import { DefaultWidgetTextarea } from './DefaultWidgetTextarea';
 import { DefaultWidgetStyles } from './styles';
@@ -32,34 +34,6 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
     currentlyTypingUsers: [],
     isLoading: true,
     isLoadingPreviousMessages: false,
-  };
-
-  updateUnseenRepliesToCurrentClient = () => {
-    const { messages } = this.state;
-    const { elixirChatWidget } = this.props;
-
-    const repliesToCurrentClient = messages.filter(message => {
-      const { responseToMessage } = message;
-      return responseToMessage && responseToMessage.sender.id === elixirChatWidget.elixirChatClientId;
-    });
-
-    if (elixirChatWidget.widgetIsVisible) {
-      const latestReplyToCurrentClient = _last(repliesToCurrentClient);
-      if (latestReplyToCurrentClient) {
-        localStorage.setItem('elixirchat-latest-unseen-reply', latestReplyToCurrentClient.id);
-      }
-      elixirChatWidget.setUnreadCount(0);
-    }
-    else {
-      const latestUnseenReplyId = localStorage.getItem('elixirchat-latest-unseen-reply');
-      const latestUnseenReplyIndex = repliesToCurrentClient
-        .map(message => message.id)
-        .indexOf(latestUnseenReplyId);
-      const unseenRepliesToCurrentClient = latestUnseenReplyIndex === -1
-        ? repliesToCurrentClient
-        : repliesToCurrentClient.slice(latestUnseenReplyIndex + 1);
-      elixirChatWidget.setUnreadCount(unseenRepliesToCurrentClient.length);
-    }
   };
 
   componentDidMount(): void {
@@ -129,11 +103,131 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
     this.scrollBlock.current.scrollTop = this.scrollBlock.current.scrollHeight;
   };
 
-  onTextareaVerticalResize = (newTextareaHeight: number, options: { scrollToBottom: boolean }) => {
+  onTextareaVerticalResize = (newTextareaHeight: number, options: { scrollToBottom: boolean } = {}) => {
     const hasUserScroll = this.hasUserScroll();
     this.scrollBlock.current.style.bottom = newTextareaHeight + 'px';
     if (!hasUserScroll || options.scrollToBottom) {
       this.scrollToBottom();
+    }
+  };
+
+  onMessageSubmit = ({ typedText, replyToId, attachments }) => {
+    console.warn('___ on message submit', {typedText, replyToId, attachments});
+    const { elixirChatWidget } = this.props;
+    const { messages } = this.state;
+
+    if (typedText.trim() || attachments.length) {
+      const temporaryMessage = this.generateTemporaryMessage({ typedText, attachments, replyToId });
+      this.setState({
+        messages: [...messages, temporaryMessage],
+      });
+
+      elixirChatWidget.sendMessage({
+        text: typedText,
+        attachments: attachments.map(attachment => attachment.file),
+        responseToMessageId: replyToId,
+      })
+        .catch(() => {
+          this.changeMessageById(temporaryMessage.id, {
+            isSubmitting: false,
+            isSubmissionError: true,
+          });
+        });
+    }
+  };
+
+  changeMessageById = (messageId, data) => {
+    const { messages } = this.state;
+    const changedMessages = messages.map(message => {
+      if (message.id === messageId) {
+        const changedMessage = { ...message };
+        for (let key in data) {
+          changedMessage[key] = data[key];
+        }
+        return changedMessage;
+      }
+      else {
+        return { ...message };
+      }
+    });
+    this.setState({ messages: changedMessages });
+  };
+
+  generateTemporaryMessage = ({ typedText, attachments, replyToId }) => {
+    const { elixirChatWidget } = this.props;
+    const { messages } = this.state;
+
+    const temporaryMessage = {
+      id: randomDigitStringId(6),
+      text: typedText.trim() || '',
+      timestamp: new Date().toISOString(),
+      sender: {
+        isOperator: false,
+        isCurrentClient: true,
+      },
+      isSubmitting: true,
+      attachments: attachments.map(attachment => {
+        const id = randomDigitStringId(6);
+        const originalFileObject = attachment.file;
+        const url = URL.createObjectURL(originalFileObject);
+        const fileData = {
+          id,
+          url,
+          originalFileObject,
+          name: attachment.name,
+          width: attachment.width,
+          height: attachment.height,
+          bytesSize: originalFileObject.size,
+          contentType: originalFileObject.type,
+        };
+        if (isWebImage(fileData.contentType) && attachment.width && attachment.height) {
+          fileData.thumbnails = [{ id, url }];
+        }
+        return serializeFile(fileData, {
+          apiUrl: elixirChatWidget.apiUrl,
+          currentClientId: elixirChatWidget.client.id,
+        });
+      })
+    };
+    const responseToMessage = messages.filter(message => _get(message, 'responseToMessage.id') === replyToId)[0];
+    if (responseToMessage) {
+      temporaryMessage.responseToMessage = {
+        id: responseToMessage.id,
+        text: responseToMessage.text,
+        sender: responseToMessage.sender
+      };
+    }
+    return serializeMessage(temporaryMessage, {
+      apiUrl: elixirChatWidget.apiUrl,
+      currentClientId: elixirChatWidget.client.id,
+    });
+  };
+
+  updateUnseenRepliesToCurrentClient = () => {
+    const { messages } = this.state;
+    const { elixirChatWidget } = this.props;
+
+    const repliesToCurrentClient = messages.filter(message => {
+      const { responseToMessage } = message;
+      return responseToMessage && responseToMessage.sender.id === elixirChatWidget.elixirChatClientId;
+    });
+
+    if (elixirChatWidget.widgetIsVisible) {
+      const latestReplyToCurrentClient = _last(repliesToCurrentClient);
+      if (latestReplyToCurrentClient) {
+        localStorage.setItem('elixirchat-latest-unseen-reply', latestReplyToCurrentClient.id);
+      }
+      elixirChatWidget.setUnreadCount(0);
+    }
+    else {
+      const latestUnseenReplyId = localStorage.getItem('elixirchat-latest-unseen-reply');
+      const latestUnseenReplyIndex = repliesToCurrentClient
+        .map(message => message.id)
+        .indexOf(latestUnseenReplyId);
+      const unseenRepliesToCurrentClient = latestUnseenReplyIndex === -1
+        ? repliesToCurrentClient
+        : repliesToCurrentClient.slice(latestUnseenReplyIndex + 1);
+      elixirChatWidget.setUnreadCount(unseenRepliesToCurrentClient.length);
     }
   };
 
@@ -164,6 +258,7 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
         </div>
 
         <DefaultWidgetTextarea
+          onMessageSubmit={this.onMessageSubmit}
           currentlyTypingUsers={currentlyTypingUsers}
           onVerticalResize={this.onTextareaVerticalResize}
           elixirChatWidget={elixirChatWidget}/>
@@ -172,10 +267,10 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
   }
 }
 
-export function appendDefaultElixirChatWidget(container, elixirChatWidget) {
+export function appendWidgetIframeContent(container, elixirChatWidget) {
   let component;
   ReactDOM.render((
-    <DefaultWidget elixirChatWidget={elixirChatWidget} ref={(widget) => {component = widget}} />
+    <DefaultWidget ref={(widget) => {component = widget}} elixirChatWidget={elixirChatWidget} />
   ), container);
   return component;
 }

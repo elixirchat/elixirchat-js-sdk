@@ -74,15 +74,15 @@
   color: #ffffff;
 }
 
-.elixirchat-chat-messages__item--by-agent {
+.elixirchat-chat-messages__item--by-operator {
   align-self: flex-start;
 }
 
-.elixirchat-chat-messages__item--by-agent .elixirchat-chat-messages__sender {
+.elixirchat-chat-messages__item--by-operator .elixirchat-chat-messages__sender {
   color: #FF006E;
 }
 
-.elixirchat-chat-messages__item--by-agent .elixirchat-chat-messages__timestamp {
+.elixirchat-chat-messages__item--by-operator .elixirchat-chat-messages__timestamp {
   text-align: left;
 }
 
@@ -166,7 +166,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  padding: 6px 0 0 15px;
+  padding: 6px 0 0 9px;
 }
 
 .elixirchat-chat-files__text-link {
@@ -225,8 +225,8 @@
 }
 
 .elixirchat-chat-images__img {
-  max-width: 350px;
-  max-height: 350px;
+  max-width: 236px;
+  max-height: 236px;
   border-radius: 3px;
   display: block;
 }
@@ -265,4 +265,30 @@
   align-items: center;
   justify-content: center;
   padding-bottom: 25px;
+}
+
+.elixirchat-chat-messages__item--by-me .elixirchat-chat-images {
+  padding: 0 0 3px 0;
+}
+
+.elixirchat-chat-messages__item--by-me .elixirchat-chat-images__link:after,
+.elixirchat-chat-messages__item--by-me .elixirchat-chat-files__preview-image:after {
+  display: none;
+}
+
+.elixirchat-chat-messages__item--by-me .elixirchat-chat-images__item {
+  text-align: right;
+}
+
+.elixirchat-chat-messages__item--by-me .elixirchat-chat-images__img,
+.elixirchat-chat-messages__item--by-me .elixirchat-chat-files__preview {
+  border-radius: 2px;
+}
+
+.elixirchat-chat-messages__item--by-me .elixirchat-chat-files__text-link {
+  color: #ffffff;
+}
+
+.elixirchat-chat-messages__item--by-me .elixirchat-chat-files__text-secondary {
+  color: rgba(255,255,255,.5);
 }

@@ -98,3 +98,40 @@ export function areCssVariablesSupported(): boolean {
   const supportsFn = (window.CSS && window.CSS.supports.bind(window.CSS)) || (window.supportsCSS);
   return !!supportsFn && (supportsFn('--f:0') || supportsFn('--f', 0));
 }
+
+
+export function isWebImage(mimeType: string): boolean {
+  return ['image/jpg', 'image/jpeg', 'image/png', 'image/gif'].includes(mimeType.toLowerCase());
+}
+
+
+export function getHumanReadableFileSize(locale: 'ru-RU' | 'en-US', sizeInBytes: number): string {
+  const unitsDict = {
+    'ru-RU': {
+      'kb': 'Кб',
+      'mb': 'Мб',
+      'gb': 'Гб',
+    },
+    'en-US': {
+      'kb': 'Kb',
+      'mb': 'Mb',
+      'gb': 'Gb',
+    },
+  };
+  const sizeInKb = sizeInBytes / 1024;
+  const sizeInMb = sizeInKb / 1024;
+  const sizeInGb = sizeInMb / 1024;
+
+  let primarySize = sizeInKb;
+  let primaryUnit = 'kb';
+  if (sizeInGb > 1) {
+    primarySize = sizeInGb;
+    primaryUnit = 'gb';
+  }
+  else if (sizeInMb > 1) {
+    primarySize = sizeInMb;
+    primaryUnit = 'mb';
+  }
+  primarySize = primarySize < 0.1 ? 0.1 : +(primarySize.toFixed(1));
+  return primarySize.toLocaleString(locale) + ' ' + unitsDict[locale || 'en-US'][primaryUnit];
+}

@@ -3,7 +3,8 @@ import cn from 'classnames';
 import dayjs from 'dayjs';
 import dayjsCalendar from 'dayjs/plugin/calendar'
 import 'dayjs/locale/ru'
-import { _get, _round, isWebImage, getHumanReadableFileSize } from '../../utilsCommon';
+import { _get, _round } from '../../utilsCommon';
+import { isWebImage, getHumanReadableFileSize } from '../../utilsWidget';
 import { DefaultWidgetMessagesStyles } from './styles';
 
 export interface IDefaultWidgetMessagesProps {
@@ -24,12 +25,14 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
     imagePreviews: [],
   };
 
-  maxThumbnailSize = 250;
+  maxThumbnailSize = 236;
 
   componentDidMount(): void {
     const { messages, elixirChatWidget } = this.props;
     dayjs.locale('ru');
     dayjs.extend(dayjsCalendar);
+
+    elixirChatWidget.widgetChatIframe.contentDocument.addEventListener('keyup', this.onIframeBodyKeyup);
     elixirChatWidget.injectIframeStyles(DefaultWidgetMessagesStyles);
     this.setProcessedMessages(messages);
   }
@@ -94,8 +97,42 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
     return { images, files };
   };
 
+  onIframeBodyKeyup = (e) => {
+    const { elixirChatWidget } = this.props;
+    if (e.which === 27 /* Esc */) {
+      elixirChatWidget.closeImagePreview();
+    }
+    else if (e.which === 37 /* Arrow left */) {
+      this.onImagePreviewArrowNavigation(-1);
+    }
+    else if (e.which === 39 /* Arrow right */) {
+      this.onImagePreviewArrowNavigation(1);
+    }
+  };
+
   onImagePreviewClick = (e, preview) => {
-    console.warn('___ onImagePreviewClick', preview);
+    const { elixirChatWidget } = this.props;
+    this.setState({ currentImagePreview: preview });
+    elixirChatWidget.openImagePreview(preview);
+    e.preventDefault();
+  };
+
+  onImagePreviewArrowNavigation = (delta) => {
+    const { imagePreviews, currentImagePreview } = this.state;
+    const { elixirChatWidget } = this.props;
+    const currentImagePreviewIndex = imagePreviews.map(preview => preview.id).indexOf(currentImagePreview.id);
+
+    let nextImagePreviewIndex = currentImagePreviewIndex + delta;
+    if (nextImagePreviewIndex < 0) {
+      nextImagePreviewIndex = imagePreviews.length - 1;
+    }
+    else if (nextImagePreviewIndex >= imagePreviews.length) {
+      nextImagePreviewIndex = 0;
+    }
+    this.setState({
+      currentImagePreview: imagePreviews[nextImagePreviewIndex]
+    });
+    elixirChatWidget.openImagePreview(imagePreviews[nextImagePreviewIndex]);
   };
 
   render(): void {
@@ -119,8 +156,15 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
             <div className={cn({
               'elixirchat-chat-messages__item': true,
               'elixirchat-chat-messages__item--by-me': message.sender.isCurrentClient,
-              'elixirchat-chat-messages__item--by-agent': message.sender.isOperator,
+              'elixirchat-chat-messages__item--by-operator': message.sender.isOperator,
             })}>
+
+              {message.isSubmissionError && (
+                <h1 style={{ color: 'red' }}>
+                  ERROR
+                </h1>
+              )}
+
               <div className="elixirchat-chat-messages__balloon">
                 <div className="elixirchat-chat-messages__sender">
                   {message.sender.isCurrentClient ? 'Я' : (message.sender.firstName || '') + ' ' + (message.sender.lastName || '')}
@@ -184,8 +228,8 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
                     ))}
                   </ul>
                 )}
-
               </div>
+
               <div className="elixirchat-chat-messages__timestamp">
                 {dayjs(message.timestamp).format('H:mm, D MMMM') /* TODO: handle US date format e.g. "2:30 PM, July 10" */}
               </div>

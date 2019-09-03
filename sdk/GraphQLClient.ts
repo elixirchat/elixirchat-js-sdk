@@ -3,12 +3,22 @@ export interface IGraphQLClientConfig {
   token?: string;
 }
 
+export interface IGraphQLClientQuery {
+  (
+    query: string,
+    variables?: object,
+    options?: {
+      asFormData: boolean,
+    },
+  ): void
+}
+
+
 export class GraphQLClient {
   public url: string;
   public token?: string;
 
   protected headers: any = {
-    'Content-Type': 'application/json',
     'Accept': 'application/json',
   };
 
@@ -20,19 +30,45 @@ export class GraphQLClient {
     }
   }
 
-  public query(query: string, variables?: object, token?: string){
-    let headers = this.headers;
-    if (token) {
+  protected makeFormData(query: string, variables: object): FormData {
+    const formData = new FormData();
+    const formVariables = {
+      roomId: variables.roomId,
+      text: variables.text,
+      attachments: variables.attachments.map(file => file.name),
+      responseToMessageId: variables.responseToMessageId,
+    };
+
+    formData.append('query', query);
+    formData.append('variables', JSON.stringify(formVariables));
+    variables.attachments.forEach(file => {
+      formData.append(file.name, file);
+    });
+
+    return formData;
+  };
+
+  public query(query, variables, options = { asFormData: false }): IGraphQLClientQuery {
+    let headers;
+    let body;
+
+    if (options.asFormData) {
+      body = this.makeFormData(query, variables);
+      headers = this.headers;
+    }
+    else {
+      body = JSON.stringify({ query, variables });
       headers = {
-        ...headers,
-        Authorization: `Bearer ${token}`
+        ...this.headers,
+        'Content-Type': 'application/json',
       }
     }
+
     return new Promise((resolve, reject) => {
       fetch(this.url, {
         method: 'POST',
         headers,
-        body: JSON.stringify({ query, variables }),
+        body,
       })
         .then(response => response.json())
         .then(response => {

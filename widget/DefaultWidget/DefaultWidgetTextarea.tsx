@@ -56,21 +56,22 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
   };
 
   onTextareaKeyDown = (e) => {
+    const { typedText, replyToId, attachments } = this.state;
+    const { onMessageSubmit } = this.props;
+
     if(e.keyCode === 13 && e.shiftKey === false) { // Press "Enter" without holding Shift
       e.preventDefault();
-      const { typedText, replyToId, attachments } = this.state;
-      const { elixirChatWidget } = this.props;
+      if (typedText.trim() || attachments.length) {
 
-      if (typedText.trim()) {
-        elixirChatWidget.sendMessage({
-          text: typedText,
-          responseToMessageId: replyToId,
-          attachments,
-        });
+        console.log('___ this.state', this.state, '---', typedText, attachments, replyToId);
+
+        onMessageSubmit({ typedText, attachments, replyToId });
         this.setState({
           typedText: '',
+          attachments: [],
           replyToId: null,
         });
+        this.updateVerticalHeight();
       }
     }
   };
