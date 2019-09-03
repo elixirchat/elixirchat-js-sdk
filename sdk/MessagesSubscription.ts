@@ -43,6 +43,16 @@ export class MessagesSubscription {
         id
         text
         timestamp
+        attachments {
+          id
+          url
+          name
+          bytesSize
+          height
+          width
+          contentType
+          thumbnails { id url name bytesSize height width contentType thumbType }
+        }
         data {
           ... on NotSystemMessageData {
             responseToMessage {
@@ -71,6 +81,16 @@ export class MessagesSubscription {
         id
         text
         timestamp
+        attachments {
+          id
+          url
+          name
+          bytesSize
+          height
+          width
+          contentType
+          thumbnails { id url name bytesSize height width contentType thumbType }
+        }
         data {
           ... on NotSystemMessageData {
             responseToMessage {
@@ -102,6 +122,16 @@ export class MessagesSubscription {
             id
             text
             timestamp
+            attachments {
+              id
+              url
+              name
+              bytesSize
+              height
+              width
+              contentType
+              thumbnails { id url name bytesSize height width contentType thumbType }
+            }
             data {
               ... on NotSystemMessageData {
                 responseToMessage {

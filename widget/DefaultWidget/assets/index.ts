@@ -19,6 +19,7 @@ const ChatScreenshotIconBlue = dataUrlSvg + fs.readFileSync(__dirname + '/images
 const ChatTypingIconBlack = dataUrlSvg + fs.readFileSync(__dirname + '/images/chat-typing-icon-black.svg', { encoding: 'base64' });
 const WidgetIconChat = dataUrlSvg + fs.readFileSync(__dirname + '/images/widget-icon-chat.svg', { encoding: 'base64' });
 const WidgetIconClose = dataUrlSvg + fs.readFileSync(__dirname + '/images/widget-icon-close.svg', { encoding: 'base64' });
+const SpinnerXsBlack = dataUrlSvg + fs.readFileSync(__dirname + '/images/spinner-xs-black.svg', { encoding: 'base64' });
 
 export const assetsBase64 = {
   GraphikBoldWeb,
@@ -33,6 +34,7 @@ export const assetsBase64 = {
   ChatTypingIconBlack,
   WidgetIconChat,
   WidgetIconClose,
+  SpinnerXsBlack,
 };
 
 /**
@@ -44,10 +46,11 @@ export const iframeAssetUrlCssVars = `:root {
   --ElixirChatChatAttachIconBlue:       url(${ChatAttachIconBlue});
   --ElixirChatChatCloseIconBlack:       url(${ChatCloseIconBlack});
   --ElixirChatChatRemoveIconBlue:       url(${ChatRemoveIconBlue});
-  --ElixirChatReplyRightIconBlack:       url(${ChatReplyRightIconBlack});
+  --ElixirChatReplyRightIconBlack:      url(${ChatReplyRightIconBlack});
   --ElixirChatChatScreenshotIconBlack:  url(${ChatScreenshotIconBlack});
   --ElixirChatChatScreenshotIconBlue:   url(${ChatScreenshotIconBlue});
   --ElixirChatChatTypingIconBlack:      url(${ChatTypingIconBlack});
+  --ElixirChatSpinnerXsBlack:           url(${SpinnerXsBlack});
 }`;
 export const globalAssetUrlCssVars = `:root {
   --ElixirChatWidgetIconChat:           url(${WidgetIconChat});

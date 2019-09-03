@@ -43,7 +43,16 @@ export function randomDigitStringId(idLength: number): string {
 }
 
 
-export function parseUrl(url: string): { protocol: string, hostname: string, pathname: string, search: string, hash: string } {
+type TParseUrl = {
+  protocol: string;
+  host: string;
+  hostname: string;
+  pathname: string;
+  search: string;
+  hash: string;
+};
+
+export function parseUrl(url: string): TParseUrl {
   const link = document.createElement('a');
   link.href = url;
   return link;
@@ -79,4 +88,47 @@ export function _merge(object1: object, object2: object): object {
 // Lodash-like _.last
 export function _last(arr: Array): any {
   return arr[arr.length - 1];
+}
+
+
+// Lodash-like _.round
+export function _round(num: number): number {
+  return +num.toFixed(2);
+}
+
+
+export function isWebImage(mimeType: string): boolean {
+  return ['image/jpg', 'image/jpeg', 'image/png', 'image/gif'].includes(mimeType.toLowerCase());
+}
+
+
+export function getHumanReadableFileSize(locale: 'ru-RU' | 'en-US', sizeInBytes: number): string {
+  const unitsDict = {
+    'ru-RU': {
+      'kb': 'Кб',
+      'mb': 'Мб',
+      'gb': 'Гб',
+    },
+    'en-US': {
+      'kb': 'Kb',
+      'mb': 'Mb',
+      'gb': 'Gb',
+    },
+  };
+  const sizeInKb = sizeInBytes / 1024;
+  const sizeInMb = sizeInKb / 1024;
+  const sizeInGb = sizeInMb / 1024;
+
+  let primarySize = sizeInKb;
+  let primaryUnit = 'kb';
+  if (sizeInGb > 1) {
+    primarySize = sizeInGb;
+    primaryUnit = 'gb';
+  }
+  else if (sizeInMb > 1) {
+    primarySize = sizeInMb;
+    primaryUnit = 'mb';
+  }
+  primarySize = primarySize < 0.1 ? 0.1 : +(primarySize.toFixed(1));
+  return primarySize.toLocaleString(locale) + ' ' + unitsDict[locale || 'en-US'][primaryUnit];
 }

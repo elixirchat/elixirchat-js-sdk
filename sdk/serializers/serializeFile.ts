@@ -39,7 +39,7 @@ export function serializeFile(fileData: any, options?: ISerializeFileOptions): I
   }
 
   const parsedApiUrl = parseUrl(options.apiUrl);
-  const uploadsUrlPrefix = parsedApiUrl.protocol + '//' + parsedApiUrl.hostname + '/';
+  const uploadsUrlPrefix = parsedApiUrl.protocol + '//' + parsedApiUrl.host + '/';
   let fileUrl = '';
   if (file.url) {
     fileUrl = /^uploads/i.test(file.url) ? uploadsUrlPrefix + file.url : file.url;

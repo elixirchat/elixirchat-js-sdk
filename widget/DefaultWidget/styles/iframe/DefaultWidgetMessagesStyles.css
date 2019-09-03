@@ -4,6 +4,12 @@
   align-items: flex-end;
 }
 
+.elixirchat-chat-messages a {
+  color: #0033FF;
+  text-decoration: none;
+  outline: none;
+}
+
 .elixirchat-chat-messages__date-title {
   text-transform: uppercase;
   font-size: 12px;
@@ -78,4 +84,185 @@
 
 .elixirchat-chat-messages__item--by-agent .elixirchat-chat-messages__timestamp {
   text-align: left;
+}
+
+.elixirchat-chat-files {
+  list-style: none;
+  padding: 0 0 5px 0;
+  margin: 0;
+}
+
+.elixirchat-chat-files__item {
+  display: flex;
+  line-height: 21px;
+  margin-top: 10px;
+  padding: 0;
+  cursor: default;
+}
+.elixirchat-chat-files__item:hover .elixirchat-chat-files__preview {
+  background-color: #efefef;
+}
+
+.elixirchat-chat-files__item:hover .elixirchat-chat-files__preview-image:after {
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+}
+
+.elixirchat-chat-files__preview {
+  width: 50px;
+  height: 50px;
+  flex-basis: 50px;
+  flex-shrink: 0;
+  border-radius: 3px;
+  background: #F4F4F4;
+  transition: all 200ms;
+  position: relative;
+}
+
+.elixirchat-chat-files__preview:before {
+  content: "";
+  background-size: contain;
+  background: var(--ElixirChatChatAttachIconBlack) no-repeat center;
+  width: 17px;
+  height: 17px;
+  opacity: 0.18;
+  position: absolute;
+  top: 16px;
+  left: 16px;
+}
+
+.elixirchat-chat-files__preview-image {
+  background-size: cover;
+}
+
+.elixirchat-chat-files__preview-image:after {
+  content: "";
+  position: absolute;
+  border-radius: 3px;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+  pointer-events: none;
+  transition: all 200ms;
+}
+
+.elixirchat-chat-files__preview-image:before {
+  display: none;
+}
+
+.elixirchat-chat-files__preview-submitting {
+  background-image: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.elixirchat-chat-files__preview-submitting:after, .elixirchat-chat-files__preview-submitting:before {
+  display: none;
+}
+
+.elixirchat-chat-files__text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 6px 0 0 15px;
+}
+
+.elixirchat-chat-files__text-link {
+  margin-left: -15px;
+  padding-left: 15px;
+}
+
+.elixirchat-chat-files__text-secondary {
+  color: rgba(0, 0, 0, 0.25);
+}
+
+@keyframes elixirchat-chat-spinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.elixirchat-chat-files__preview-spinner {
+  display: block;
+  width: 22px;
+  height: 22px;
+  border-radius: 100%;
+  background: var(--ElixirChatSpinnerXsBlack) center no-repeat;
+  background-size: contain;
+  opacity: .1;
+  animation: elixirchat-chat-spinner 1s linear infinite;
+}
+
+.elixirchat-chat-images {
+  list-style: none;
+  padding: 0 0 7px 0;
+  margin: -5px 0 0 0;
+}
+
+.elixirchat-chat-images__item {
+  padding: 0;
+  margin-top: 10px;
+}
+
+.elixirchat-chat-images__link {
+  display: inline-block;
+  vertical-align: bottom;
+  position: relative;
+}
+
+.elixirchat-chat-images__link:after {
+  content: "";
+  position: absolute;
+  border-radius: 3px;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);
+  pointer-events: none;
+}
+
+.elixirchat-chat-images__img {
+  max-width: 350px;
+  max-height: 350px;
+  border-radius: 3px;
+  display: block;
+}
+
+.elixirchat-chat-images__img-not-found {
+  position: relative;
+  min-width: 180px;
+  pointer-events: none;
+}
+
+.elixirchat-chat-images__img-not-found:after {
+  content: "(" attr(alt) ")";
+  color: rgba(0, 0, 0, 0.2);
+  display: block;
+  margin: 8px 0 0 20px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: calc(100% - 40px);
+  text-align: center;
+}
+
+.elixirchat-chat-images__img-not-found:before {
+  content: "Файл не найден";
+  color: rgba(0, 0, 0, 0.2);
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 25px;
 }
