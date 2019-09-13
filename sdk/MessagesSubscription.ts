@@ -63,6 +63,7 @@ export class MessagesSubscription {
                 __typename
                 ... on Client { id foreignId firstName lastName }
                 ... on CompanyEmployee {
+                  id
                   employee {
                     id firstName lastName
                   }
@@ -75,6 +76,7 @@ export class MessagesSubscription {
           __typename
           ... on Client { id foreignId firstName lastName }
           ... on CompanyEmployee {
+            id
             employee {
               id firstName lastName
             }

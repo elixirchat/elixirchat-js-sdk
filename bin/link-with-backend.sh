@@ -8,7 +8,9 @@
 
 TRIMMED_BACKEND_PATH=$(npm config get backend-dir | sed 's:/*$::')
 FULL_BACKEND_PATH=$(echo $(cd "$TRIMMED_BACKEND_PATH" && pwd))
-SCHEMA_PATH=$FULL_BACKEND_PATH/schema.graphql
+
+SCHEMA_FILE_NAME=$(cat .graphqlconfig | python -c "import sys, json; print(json.load(sys.stdin)['schemaPath'])")
+SCHEMA_PATH=$FULL_BACKEND_PATH/$SCHEMA_FILE_NAME
 
 if [ ! -e "$SCHEMA_PATH" ]; then
   tput setaf 1
@@ -17,8 +19,10 @@ if [ ! -e "$SCHEMA_PATH" ]; then
   exit 1
 fi
 
+
+
 echo "$FULL_BACKEND_PATH" > .env-backend
-ln "$SCHEMA_PATH" schema.graphql
+ln "$SCHEMA_PATH" "$SCHEMA_FILE_NAME"
 
 tput setaf 2
 printf "\nSuccessfully linked with backend directory"
