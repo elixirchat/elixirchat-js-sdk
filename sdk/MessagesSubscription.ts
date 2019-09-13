@@ -44,6 +44,7 @@ export class MessagesSubscription {
         id
         text
         timestamp
+        system
         attachments {
           id
           url
@@ -63,12 +64,15 @@ export class MessagesSubscription {
                 __typename
                 ... on Client { id foreignId firstName lastName }
                 ... on CompanyEmployee {
-                  id
-                  employee {
-                    firstName lastName
-                  }
+                  employee { id firstName lastName }
                 }
               }
+            }
+          }
+          ... on SystemMessageData {
+            type
+            author {
+              employee { id firstName lastName }
             }
           }
         }
@@ -76,10 +80,7 @@ export class MessagesSubscription {
           __typename
           ... on Client { id foreignId firstName lastName }
           ... on CompanyEmployee {
-            id
-            employee {
-              firstName lastName
-            }
+            employee { id firstName lastName }
           }
         }
       }
@@ -92,6 +93,7 @@ export class MessagesSubscription {
         id
         text
         timestamp
+        system
         attachments {
           id
           url
@@ -111,19 +113,24 @@ export class MessagesSubscription {
                 __typename
                 ... on Client { id foreignId firstName lastName }
                 ... on CompanyEmployee {
-                  id
-                  employee { firstName lastName }
+                  employee { id firstName lastName }
                 }
               }
             }
           }
+          ... on SystemMessageData {
+            type
+            author {
+              employee { id firstName lastName }
+            }
+          }
+
         }
         sender {
           __typename
           ... on Client { id foreignId firstName lastName }
           ... on CompanyEmployee {
-            id
-            employee { firstName lastName }
+            employee { id firstName lastName }
           }
         }
       }
@@ -139,6 +146,7 @@ export class MessagesSubscription {
             id
             text
             timestamp
+            system
             attachments {
               id
               url
@@ -158,19 +166,24 @@ export class MessagesSubscription {
                     __typename
                     ... on Client { id foreignId firstName lastName }
                     ... on CompanyEmployee {
-                      id
-                      employee { firstName lastName }
+                      employee { id firstName lastName }
                     }
                   }
                 }
               }
+              ... on SystemMessageData {
+                type
+                author {
+                  employee { id firstName lastName }
+                }
+              }
+
             }
             sender {
               __typename
               ... on Client { id foreignId firstName lastName }
               ... on CompanyEmployee {
-                id
-                employee { firstName lastName }
+                employee { id firstName lastName }
               }
             }
           }

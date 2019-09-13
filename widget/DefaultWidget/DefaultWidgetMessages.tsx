@@ -141,7 +141,9 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
     return (
       <div className="elixirchat-chat-messages">
         {processedMessages.map(message => (
+
           <Fragment key={message.id}>
+
             {message.prependDateTitle && (
               <div className="elixirchat-chat-messages__date-title">
                 {dayjs(message.timestamp).calendar(null, { // TODO: handle US date format e.g. "2:30 PM, July 10"
@@ -152,87 +154,101 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
                 })}
               </div>
             )}
-            <div className={cn({
-              'elixirchat-chat-messages__item': true,
-              'elixirchat-chat-messages__item--by-me': message.sender.isCurrentClient,
-              'elixirchat-chat-messages__item--by-operator': message.sender.isOperator,
-            })}>
 
-              {message.isSubmissionError && (
-                <h1 style={{ color: 'red' }}>
-                  ERROR
-                </h1>
-              )}
+            {!message.isSystem && (
+              <div className={cn({
+                'elixirchat-chat-messages__item': true,
+                'elixirchat-chat-messages__item--by-me': message.sender.isCurrentClient,
+                'elixirchat-chat-messages__item--by-operator': message.sender.isOperator,
+              })}>
 
-              <div className="elixirchat-chat-messages__balloon">
-                <div className="elixirchat-chat-messages__sender">
-                  {message.sender.isCurrentClient ? 'Я' : (message.sender.firstName || '') + ' ' + (message.sender.lastName || '')}
-                </div>
-                {Boolean(message.responseToMessage) && (
-                  <div className="elixirchat-chat-messages__reply-to">
-                    <i className="elixirchat-chat-messages__reply-to-icon"/>
-                    {message.responseToMessage.sender.firstName}&nbsp;
-                    {message.responseToMessage.sender.lastName}&nbsp;
-                    <span title={message.responseToMessage.text}>
-                        {message.responseToMessage.text.substr(0, 100)}
-                      </span>
+                {message.isSubmissionError && (
+                  <h1 style={{ color: 'red' }}>
+                    ERROR
+                  </h1>
+                )}
+
+                <div className="elixirchat-chat-messages__balloon">
+                  <div className="elixirchat-chat-messages__sender">
+                    {message.sender.isCurrentClient ? 'Я' : (message.sender.firstName || '') + ' ' + (message.sender.lastName || '')}
                   </div>
-                )}
-                <div className="elixirchat-chat-messages__text">{message.text}</div>
+                  {Boolean(message.responseToMessage) && (
+                    <div className="elixirchat-chat-messages__reply-to">
+                      <i className="elixirchat-chat-messages__reply-to-icon"/>
+                      {message.responseToMessage.sender.firstName}&nbsp;
+                      {message.responseToMessage.sender.lastName}&nbsp;
+                      <span title={message.responseToMessage.text}>
+                          {message.responseToMessage.text.substr(0, 100)}
+                        </span>
+                    </div>
+                  )}
+                  <div className="elixirchat-chat-messages__text">{message.text}</div>
 
-                {Boolean(message.files) && (
-                  <ul className="elixirchat-chat-files">
-                    {message.files.map(file => (
-                      <li key={file.id} className="elixirchat-chat-files__item">
-                        <a className={cn({
-                          ['elixirchat-chat-files__preview']: true,
-                          ['elixirchat-chat-files__preview-image']: file.thumbnailUrl,
-                          ['elixirchat-chat-files__preview-submitting']: message.isSubmitting,
-                        })}
-                          style={{ backgroundImage: `url(${file.thumbnailUrl})` }}
-                          href={file.url}
-                          target="_blank">
-                          {message.isSubmitting && (
-                            <i className="elixirchat-chat-files__preview-spinner"/>
-                          )}
-                        </a>
-                        <div className="elixirchat-chat-files__text">
-                          <a className="elixirchat-chat-files__text-link" href={file.url} target="_blank">{file.name}</a>
-                          <br/>
-                          <span className="elixirchat-chat-files__text-secondary">
-                              {message.isSubmitting ? 'Загрузка...' : getHumanReadableFileSize('ru-RU', file.bytesSize)}
-                            </span>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                )}
+                  {Boolean(message.files) && (
+                    <ul className="elixirchat-chat-files">
+                      {message.files.map(file => (
+                        <li key={file.id} className="elixirchat-chat-files__item">
+                          <a className={cn({
+                            ['elixirchat-chat-files__preview']: true,
+                            ['elixirchat-chat-files__preview-image']: file.thumbnailUrl,
+                            ['elixirchat-chat-files__preview-submitting']: message.isSubmitting,
+                          })}
+                            style={{ backgroundImage: `url(${file.thumbnailUrl})` }}
+                            href={file.url}
+                            target="_blank">
+                            {message.isSubmitting && (
+                              <i className="elixirchat-chat-files__preview-spinner"/>
+                            )}
+                          </a>
+                          <div className="elixirchat-chat-files__text">
+                            <a className="elixirchat-chat-files__text-link" href={file.url} target="_blank">{file.name}</a>
+                            <br/>
+                            <span className="elixirchat-chat-files__text-secondary">
+                                {message.isSubmitting ? 'Загрузка...' : getHumanReadableFileSize('ru-RU', file.bytesSize)}
+                              </span>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
 
-                {Boolean(message.images) && (
-                  <ul className="elixirchat-chat-images">
-                    {message.images.map(image => (
-                      <li key={image.id} className="elixirchat-chat-images__item">
-                        <a className="elixirchat-chat-images__link"
-                          href={image.url}
-                          target="_blank"
-                          onClick={e => this.onImagePreviewClick(e, { ...image, sender: message.sender })}>
-                          <img className="elixirchat-chat-images__img"
-                            width={_round(image.thumbnailWidth, 2)}
-                            height={_round(image.thumbnailHeight)}
-                            src={image.thumbnailUrl}
-                            alt={image.name}
-                            onError={e => e.target.classList.add('elixirchat-chat-images__img-not-found')}/>
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                )}
+                  {Boolean(message.images) && (
+                    <ul className="elixirchat-chat-images">
+                      {message.images.map(image => (
+                        <li key={image.id} className="elixirchat-chat-images__item">
+                          <a className="elixirchat-chat-images__link"
+                            href={image.url}
+                            target="_blank"
+                            onClick={e => this.onImagePreviewClick(e, { ...image, sender: message.sender })}>
+                            <img className="elixirchat-chat-images__img"
+                              width={_round(image.thumbnailWidth, 2)}
+                              height={_round(image.thumbnailHeight)}
+                              src={image.thumbnailUrl}
+                              alt={image.name}
+                              onError={e => e.target.classList.add('elixirchat-chat-images__img-not-found')}/>
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+
+                <div className="elixirchat-chat-messages__timestamp">
+                  {dayjs(message.timestamp).format('H:mm, D MMMM') /* TODO: handle US date format e.g. "2:30 PM, July 10" */}
+                </div>
               </div>
+            )}
 
-              <div className="elixirchat-chat-messages__timestamp">
-                {dayjs(message.timestamp).format('H:mm, D MMMM') /* TODO: handle US date format e.g. "2:30 PM, July 10" */}
+            {message.isSystem && (
+              <div className={cn({
+                'elixirchat-chat-messages__item': true,
+                'elixirchat-chat-messages__item--by-me': message.sender.isCurrentClient,
+                'elixirchat-chat-messages__item--by-operator': message.sender.isOperator,
+              })}>
+                SYSTEM MESSAGE
               </div>
-            </div>
+            )}
+
           </Fragment>
         ))}
       </div>

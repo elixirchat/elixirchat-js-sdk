@@ -13,6 +13,10 @@ export interface IMessage {
     text: string;
     sender: IUser;
   };
+  isSystem: boolean;
+  systemData: null | {
+    type: string | null;
+  },
   attachments: Array<IFile>,
   isSubmitting: boolean,
   isSubmissionError: boolean,
@@ -24,10 +28,14 @@ export interface ISerializeMessageOptions {
 }
 
 export function serializeMessage(message: any, options?: ISerializeMessageOptions): IMessage {
-  let { sender, attachments, data = {} } = message;
-  let { responseToMessage, author } = data;
+  let { sender = {}, attachments, data = {} } = message;
+  let { responseToMessage, author = {} } = data;
 
-  const serializedSender = serializeUser(_merge(sender, author), options);
+  const senderEmployee = _get(sender, 'employee');
+  const senderData = senderEmployee || sender || {};
+  const authorData = _get(author, 'employee') || {};
+
+  const serializedSender = serializeUser(_merge(senderData, authorData), options);
   const serializedAttachments = (attachments || []).map(attachment => serializeFile(attachment, options));
 
   const serializedResponseToMessage = {
@@ -35,6 +43,8 @@ export function serializeMessage(message: any, options?: ISerializeMessageOption
     text: _get(responseToMessage, 'text') || '',
     sender: serializeUser(_get(responseToMessage, 'sender', {}), options),
   };
+
+  const isSystem = _get(message, 'system', false);
 
   return {
     id: _get(message, 'id') || null,
@@ -46,5 +56,9 @@ export function serializeMessage(message: any, options?: ISerializeMessageOption
     attachments: serializedAttachments,
     isSubmitting: _get(message, 'isSubmitting') || false,
     isSubmissionError: _get(message, 'isSubmissionError') || false,
+    isSystem,
+    systemData: !isSystem ? null : {
+      type: _get(message, 'data.type') || null,
+    },
   };
 }
