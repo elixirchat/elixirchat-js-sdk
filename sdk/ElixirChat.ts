@@ -224,6 +224,10 @@ export class ElixirChat {
             this.authToken = joinRoom.token;
             this.connected = true;
 
+            console.log('%c___ zzz', 'color: green;', joinRoom);
+            window.__joinRoom = joinRoom;
+
+
             const client = this.getClientByRoomMembers(joinRoom.room.members);
             this.client.firstName = client.firstName;
             this.client.lastName = client.lastName;
@@ -392,7 +396,6 @@ export class ElixirChat {
       });
   };
 
-  // TODO: replace 'before' w/ message indexes on backend?
   public fetchMessageHistory = (limit: number, beforeCursor?: string): Promise<[IElixirChatReceivedMessage]> => {
     return this.messagesSubscription.fetchMessageHistory(limit, beforeCursor)
       .then(messages => {

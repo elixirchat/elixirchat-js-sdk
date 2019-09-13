@@ -2,6 +2,7 @@ import * as AbsintheSocket from '@absinthe/socket'
 import * as Phoenix from 'phoenix'
 import { serializeMessage, IMessage } from './serializers/serializeMessage';
 import { GraphQLClient, simplifyGraphQLJSON } from './GraphQLClient';
+import { gql } from '../utilsCommon';
 
 export interface ISentMessage {
   text?: string,
@@ -37,7 +38,7 @@ export class MessagesSubscription {
   protected reachedBeginningOfMessageHistory: boolean = false;
   protected isBeforeUnload: boolean = false;
 
-  protected subscriptionQuery: string = `
+  protected subscriptionQuery: string = gql`
     subscription {
       newMessage {
         id
@@ -61,7 +62,11 @@ export class MessagesSubscription {
               sender {
                 __typename
                 ... on Client { id foreignId firstName lastName }
-                ... on Employee { id firstName lastName }
+                ... on CompanyEmployee {
+                  employee {
+                    id firstName lastName
+                  }
+                }
               }
             }
           }
@@ -69,7 +74,11 @@ export class MessagesSubscription {
         sender {
           __typename
           ... on Client { id foreignId firstName lastName }
-          ... on Employee { id firstName lastName }
+          ... on CompanyEmployee {
+            employee {
+              id firstName lastName
+            }
+          }
         }
       }
     }

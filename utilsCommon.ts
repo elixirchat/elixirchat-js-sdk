@@ -95,3 +95,15 @@ export function _last(arr: Array): any {
 export function _round(num: number): number {
   return +num.toFixed(2);
 }
+
+
+/**
+ * When used like this:
+ *  @example gql`some string`
+ * it simply returns its argument i.e. "some string"
+ *
+ * It's only designed to trigger WebStorm Plugin "JS GraphQL" highlight strings as graphql queries
+ */
+export function gql(queryParts: Array<string>):string {
+  return queryParts.join('');
+}

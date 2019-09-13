@@ -3,7 +3,7 @@ import ElixirChatWidget from './widget';
 const elixirChatWidget = new ElixirChatWidget({
   apiUrl: 'http://localhost:4000',
   socketUrl: 'ws://localhost:4000/socket',
-  companyId: '26796b48-5c49-45c4-a6a4-860280af8e27',
+  companyId: 'd774c50a-42ff-46ba-8ed6-1904d4485ac4',
   room: {
     id: 'dev-room-id',
     title: 'Development room title',

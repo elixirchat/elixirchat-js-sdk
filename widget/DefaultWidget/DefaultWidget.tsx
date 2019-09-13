@@ -112,7 +112,6 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
   };
 
   onMessageSubmit = ({ typedText, replyToId, attachments }) => {
-    console.warn('___ on message submit', {typedText, replyToId, attachments});
     const { elixirChatWidget } = this.props;
     const { messages } = this.state;
 

@@ -62,9 +62,6 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
     if(e.keyCode === 13 && e.shiftKey === false) { // Press "Enter" without holding Shift
       e.preventDefault();
       if (typedText.trim() || attachments.length) {
-
-        console.log('___ this.state', this.state, '---', typedText, attachments, replyToId);
-
         onMessageSubmit({ typedText, attachments, replyToId });
         this.setState({
           typedText: '',

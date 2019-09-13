@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "parcel dev.html --port 8001",
     "build": "./bin/build.sh",
-    "examples": "./bin/browse-examples.sh"
+    "examples": "./bin/browse-examples.sh",
+    "link-with-backend": "./bin/link-with-backend.sh"
   },
   "main": "src/index.ts",
   "repository": {
