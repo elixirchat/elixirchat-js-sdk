@@ -65,7 +65,7 @@ export class MessagesSubscription {
                 ... on CompanyEmployee {
                   id
                   employee {
-                    id firstName lastName
+                    firstName lastName
                   }
                 }
               }
@@ -78,7 +78,7 @@ export class MessagesSubscription {
           ... on CompanyEmployee {
             id
             employee {
-              id firstName lastName
+              firstName lastName
             }
           }
         }
@@ -86,7 +86,7 @@ export class MessagesSubscription {
     }
   `;
 
-  protected sendMessageQuery: string = `
+  protected sendMessageQuery: string = gql`
     mutation ($text: String!, $responseToMessageId: ID, $attachments: [Upload!]) {
       sendMessage(text: $text, responseToMessageId: $responseToMessageId, attachments: $attachments) {
         id
@@ -110,7 +110,10 @@ export class MessagesSubscription {
               sender {
                 __typename
                 ... on Client { id foreignId firstName lastName }
-                ... on Employee { id firstName lastName }
+                ... on CompanyEmployee {
+                  id
+                  employee { firstName lastName }
+                }
               }
             }
           }
@@ -118,13 +121,16 @@ export class MessagesSubscription {
         sender {
           __typename
           ... on Client { id foreignId firstName lastName }
-          ... on Employee { id firstName lastName }
+          ... on CompanyEmployee {
+            id
+            employee { firstName lastName }
+          }
         }
       }
     }
   `;
 
-  protected messageHistoryQuery: string = `
+  protected messageHistoryQuery: string = gql`
     query ($beforeCursor: String, $limit: Int!) {
       messages(before: $beforeCursor, last: $limit) {
         edges {
@@ -151,7 +157,10 @@ export class MessagesSubscription {
                   sender {
                     __typename
                     ... on Client { id foreignId firstName lastName }
-                    ... on Employee { id firstName lastName }
+                    ... on CompanyEmployee {
+                      id
+                      employee { firstName lastName }
+                    }
                   }
                 }
               }
@@ -159,7 +168,10 @@ export class MessagesSubscription {
             sender {
               __typename
               ... on Client { id foreignId firstName lastName }
-              ... on Employee { id firstName lastName }
+              ... on CompanyEmployee {
+                id
+                employee { firstName lastName }
+              }
             }
           }
         }
