@@ -106,3 +106,20 @@ textarea {
   margin: -15px 0 0 0;
   left: -2px;
 }
+
+.elixirchat-chat-fatal-error {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 0;
+  right: 0;
+  display: block;
+  padding: 0 50px;
+  color: #999999;
+  line-height: 22px;
+  text-align: center;
+}
+
+.elixirchat-chat-fatal-error--nowrap {
+  white-space: nowrap;
+}

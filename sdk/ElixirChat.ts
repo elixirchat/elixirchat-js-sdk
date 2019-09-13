@@ -150,7 +150,7 @@ export class ElixirChat {
       client = JSON.parse(localStorage.getItem('elixirchat-client'));
     }
     catch (e) {}
-    logEvent(this.debug, 'Fetched room, client values from localStorage', { room, client })
+    logEvent(this.debug, 'Fetched room, client values from localStorage', { room, client });
     return {
       room,
       client,

@@ -50,7 +50,6 @@ export class ElixirChatWidget extends ElixirChat {
   public widgetImagePreviewImg: HTMLImageElement;
 
   protected onToggleChatVisibilityCallbacks: Array<(isOpen: boolean) => void> = [];
-  protected onImagePreviewArrowNavigationCallbacks: Array<(delta: number) => void> = [];
 
   protected injectGlobalStyles(styles: string): void {
     let cssCode = styles;

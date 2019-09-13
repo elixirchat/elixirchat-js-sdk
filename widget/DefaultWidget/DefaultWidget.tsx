@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import ReactDOM from 'react-dom';
 import { _get, _last, randomDigitStringId } from '../../utilsCommon';
 import { playNotificationSound, isWebImage } from '../../utilsWidget';
@@ -33,6 +33,7 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
     client: {},
     currentlyTypingUsers: [],
     isLoading: true,
+    isLoadingError: false,
     isLoadingPreviousMessages: false,
   };
 
@@ -41,10 +42,24 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
     elixirChatWidget.injectIframeStyles(DefaultWidgetStyles);
 
     elixirChatWidget.onConnectSuccess(() => {
-      elixirChatWidget.fetchMessageHistory(this.messageChunkSize).then(messages => {
-        this.setState({ messages, isLoading: false });
-        this.scrollToBottom();
-        this.updateUnseenRepliesToCurrentClient();
+      elixirChatWidget.fetchMessageHistory(this.messageChunkSize)
+        .then(messages => {
+          this.setState({ messages, isLoading: false });
+          this.scrollToBottom();
+          this.updateUnseenRepliesToCurrentClient();
+        })
+        .catch(() => {
+          this.setState({
+            isLoading: false,
+            isLoadingError: true,
+          });
+        });
+    });
+
+    elixirChatWidget.onConnectError(() => {
+      this.setState({
+        isLoading: false,
+        isLoadingError: true,
       });
     });
 
@@ -231,7 +246,12 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
   };
 
   render(): void {
-    const { messages, currentlyTypingUsers, isLoading } = this.state;
+    const {
+      messages,
+      currentlyTypingUsers,
+      isLoading,
+      isLoadingError,
+    } = this.state;
     const { elixirChatWidget } = this.props;
 
     return (
@@ -249,18 +269,31 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
           <i className="elixirchat-chat-spinner"/>
         )}
 
-        <div className="elixirchat-chat-scroll" ref={this.scrollBlock} onScroll={this.onMessagesScroll}>
-          <DefaultWidgetMessages
-            onLoadPreviousMessages={this.loadPreviousMessages}
-            elixirChatWidget={elixirChatWidget}
-            messages={messages}/>
-        </div>
+        {isLoadingError && (
+          <div className="elixirchat-chat-fatal-error">
+            {/* TODO: add webmaster email from config */}
+            Ошибка загрузки. <br/>
+            Пожалуйста, перезагрузите
+            страницу <span className="elixirchat-chat-fatal-error--nowrap">или свяжитесь с</span> администратором.
+          </div>
+        )}
 
-        <DefaultWidgetTextarea
-          onMessageSubmit={this.onMessageSubmit}
-          currentlyTypingUsers={currentlyTypingUsers}
-          onVerticalResize={this.onTextareaVerticalResize}
-          elixirChatWidget={elixirChatWidget}/>
+        {(!isLoading && !isLoadingError) && (
+          <Fragment>
+            <div className="elixirchat-chat-scroll" ref={this.scrollBlock} onScroll={this.onMessagesScroll}>
+              <DefaultWidgetMessages
+                onLoadPreviousMessages={this.loadPreviousMessages}
+                elixirChatWidget={elixirChatWidget}
+                messages={messages}/>
+            </div>
+
+            <DefaultWidgetTextarea
+              onMessageSubmit={this.onMessageSubmit}
+              currentlyTypingUsers={currentlyTypingUsers}
+              onVerticalResize={this.onTextareaVerticalResize}
+              elixirChatWidget={elixirChatWidget}/>
+          </Fragment>
+        )}
       </div>
     );
   }
