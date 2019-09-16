@@ -148,6 +148,10 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
     });
   };
 
+  onReplyClick = (message) => {
+    this.props.onReplyMessage(message);
+  };
+
   render(): void {
     const { processedMessages } = this.state;
 
@@ -161,7 +165,7 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
 
             {message.prependDateTitle && (
               <div className="elixirchat-chat-messages__date-title">
-                {dayjs(message.timestamp).calendar(null, { // TODO: handle US date format e.g. "2:30 PM, July 10"
+                {dayjs(message.timestamp).calendar(null, {
                   sameDay: '[Сегодня, ] D MMMM',
                   lastDay: '[Вчера, ] D MMMM',
                   lastWeek: 'D MMMM',
@@ -249,7 +253,8 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
                 </div>
 
                 <div className="elixirchat-chat-messages__timestamp">
-                  {dayjs(message.timestamp).format('H:mm, D MMMM') /* TODO: handle US date format e.g. "2:30 PM, July 10" */}
+                  {dayjs(message.timestamp).format('H:mm, D MMMM')}
+                  - <u onClick={() => this.onReplyClick(message)}>Reply</u>
                 </div>
               </div>
             )}
@@ -265,12 +270,16 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
                     {(message.sender.firstName || '') + ' ' + (message.sender.lastName || '')}
                   </div>
                   <div className="elixirchat-chat-messages__text">
-                    Пожалуйста, пришлите скриншот вашего экрана <br/>
-                    <button onClick={this.onTakeScreenshotClick}>Сделать скриншот</button>
+                    Пожалуйста, пришлите скриншот вашего экрана.
                   </div>
+                  <button className="elixirchat-chat-messages__take-screenshot"
+                    onClick={this.onTakeScreenshotClick}>
+                    <i className="elixirchat-chat-messages__take-screenshot-icon"/>
+                    Сделать скриншот
+                  </button>
                 </div>
                 <div className="elixirchat-chat-messages__timestamp">
-                  {dayjs(message.timestamp).format('H:mm, D MMMM') /* TODO: handle US date format e.g. "2:30 PM, July 10" */}
+                  {dayjs(message.timestamp).format('H:mm, D MMMM')}
                 </div>
               </div>
             )}

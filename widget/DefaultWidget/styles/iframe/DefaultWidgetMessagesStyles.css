@@ -178,6 +178,10 @@
   color: rgba(0, 0, 0, 0.25);
 }
 
+.elixirchat-chat-messages__take-screenshot {}
+
+.elixirchat-chat-messages__take-screenshot-icon {}
+
 @keyframes elixirchat-chat-spinner {
   to {
     transform: rotate(360deg);

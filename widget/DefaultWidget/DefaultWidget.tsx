@@ -264,6 +264,11 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
     console.log('___ screenshot requested');
   };
 
+  onReplyMessage = (message) => {
+    console.log('___ on reply to id', message);
+    this.setState({ replyToId: message.id });
+  };
+
   render(): void {
     const {
       messages,
@@ -308,6 +313,7 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
               <DefaultWidgetMessages
                 onLoadPreviousMessages={this.loadPreviousMessages}
                 onScreenshotRequest={this.onScreenshotRequest}
+                onReplyMessage={this.onReplyMessage}
                 elixirChatWidget={elixirChatWidget}
                 messages={messages}/>
             </div>

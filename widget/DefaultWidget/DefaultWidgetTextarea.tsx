@@ -12,6 +12,9 @@ export interface IDefaultWidgetTextareaProps {
 }
 
 export interface IDefaultWidgetTextareaState {
+  // typedText: string;
+  // replyToId: string | null;
+  // attachments: Array<File>;
   areTextareaActionsCollapsed: boolean;
 }
 
@@ -21,6 +24,9 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
   textarea: HTMLTextAreaElement = null;
 
   state = {
+    // typedText: '',
+    // replyToId: null,
+    // attachments: [],
     areTextareaActionsCollapsed: false,
   };
 
@@ -35,15 +41,27 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
     });
   }
 
+  // onReplyClick = (messageId): void => { // TODO: figure is replyTo will be implemented in widget
+  //   this.setState({
+  //     replyToId: messageId
+  //   });
+  // };
+
   onTextareaChange = (e): void => {
     const { elixirChatWidget, onChange } = this.props;
     elixirChatWidget.dispatchTypedText(e.target.value);
     onChange({
       typedText: e.target.value,
     });
+    // this.setState({
+    //   typedText: e.target.value,
+    // });
   };
 
   onTextareaKeyDown = (e) => {
+    // const { typedText, replyToId, attachments } = this.state;
+    // const { onMessageSubmit, onChange } = this.props;
+
     const {
       onMessageSubmit,
       onChange,
@@ -61,6 +79,11 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
           attachments: [],
           replyToId: null,
         });
+        // this.setState({
+        //   typedText: '',
+        //   attachments: [],
+        //   replyToId: null,
+        // });
         this.updateVerticalHeight();
       }
     }
@@ -72,6 +95,13 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
   };
 
   addAttachments = newAttachments => {
+    // this.setState({
+    //   attachments: [
+    //     ...this.state.attachments,
+    //     ...attachments.map(item => ({ ...item, id: randomDigitStringId(6) }))
+    //   ]
+    // });
+
     const { attachments, onChange } = this.props;
     onChange({
       attachments: [
@@ -84,6 +114,10 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
   };
 
   removeAttachment = attachmentId => {
+    // this.setState({
+    //   attachments: this.state.attachments.filter(item => item.id !== attachmentId)
+    // });
+
     const { attachments, onChange } = this.props;
     onChange({
       attachments: attachments.filter(item => item.id !== attachmentId)
@@ -141,7 +175,9 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
 
   render(): void {
 
-    const { areTextareaActionsCollapsed } = this.state;
+    const {
+      areTextareaActionsCollapsed,
+    } = this.state;
 
     const {
       typedText,

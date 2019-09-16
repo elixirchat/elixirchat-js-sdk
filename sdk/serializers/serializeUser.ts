@@ -1,5 +1,4 @@
 import { _get } from '../../utilsCommon';
-import { serializeFile, IFile } from './serializeFile';
 
 export interface IUser {
   id: string | null;
@@ -8,7 +7,6 @@ export interface IUser {
   lastName: string;
   isOperator: boolean;
   isCurrentClient: boolean;
-  avatar: IFile;
 }
 
 export interface ISerializeUserOptions {
