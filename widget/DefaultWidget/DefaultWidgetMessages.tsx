@@ -138,6 +138,8 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
   render(): void {
     const { processedMessages } = this.state;
 
+    window.__processedMessages = processedMessages;
+
     return (
       <div className="elixirchat-chat-messages">
         {processedMessages.map(message => (

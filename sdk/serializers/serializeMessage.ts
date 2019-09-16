@@ -38,6 +38,8 @@ export function serializeMessage(message: any, options?: ISerializeMessageOption
   const serializedSender = serializeUser(_merge(senderData, authorData), options);
   const serializedAttachments = (attachments || []).map(attachment => serializeFile(attachment, options));
 
+  console.log('___ message', message);
+
   const serializedResponseToMessage = {
     id: _get(responseToMessage, 'id') || null,
     text: _get(responseToMessage, 'text') || '',
