@@ -186,9 +186,8 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
       text: typedText.trim() || '',
       timestamp: new Date().toISOString(),
       sender: {
-        id: elixirChatWidget.elixirChatClientId,
-        // isOperator: false,
-        // isCurrentClient: true,
+        __typename: 'Client',
+        foreignId: elixirChatWidget.client.id,
       },
       isSubmitting: true,
       attachments: attachments.map(attachment => {
