@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import ReactDOM from 'react-dom';
 import { _get, _last, randomDigitStringId } from '../../utilsCommon';
 import { playNotificationSound, isWebImage } from '../../utilsWidget';
-import { serializeMessage } from '../../sdk/serializers/serializeMessage';
+import { serializeMessage, IMessage } from '../../sdk/serializers/serializeMessage';
 import { serializeFile } from '../../sdk/serializers/serializeFile';
 import { DefaultWidgetMessages } from './DefaultWidgetMessages';
 import { DefaultWidgetTextarea } from './DefaultWidgetTextarea';
@@ -13,12 +13,17 @@ export interface IDefaultWidgetProps {
 }
 
 export interface IDefaultWidgetState {
-  messages: Array<any>;
+
+  typedText: string;
+  replyToId: string | null;
+  messages: Array<IMessage>;
+  attachments: Array<{ file: File, name: string, id: string, isScreenshot: boolean }>;
   room: any;
   client: any;
-  replyToId: string | null;
   currentlyTypingUsers: Array<any>;
-  typedText: string;
+  isLoading: boolean;
+  isLoadingError: boolean;
+  isLoadingPreviousMessages: boolean;
 }
 
 export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
@@ -28,6 +33,11 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
   messageChunkSize: number = 100; // TODO: reduce to 20 when unread message count implemented in server-side
 
   state = {
+
+    typedText: '',
+    attachments: [],
+    replyToId: null,
+
     messages: [],
     room: {},
     client: {},
@@ -176,8 +186,9 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
       text: typedText.trim() || '',
       timestamp: new Date().toISOString(),
       sender: {
-        isOperator: false,
-        isCurrentClient: true,
+        id: elixirChatWidget.elixirChatClientId,
+        // isOperator: false,
+        // isCurrentClient: true,
       },
       isSubmitting: true,
       attachments: attachments.map(attachment => {
@@ -245,14 +256,28 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
     }
   };
 
+  onTextareaChange = (stateChange) => {
+    this.setState(stateChange);
+    console.log('___ text area change', stateChange);
+  };
+
+  onScreenshotRequest = () => {
+    console.log('___ screenshot requested');
+  };
+
   render(): void {
     const {
       messages,
+      typedText,
+      attachments,
+      replyToId,
       currentlyTypingUsers,
       isLoading,
       isLoadingError,
     } = this.state;
     const { elixirChatWidget } = this.props;
+
+    window.__this = this;
 
     return (
       <div className="elixirchat-chat-container" ref={this.container}>
@@ -283,12 +308,17 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
             <div className="elixirchat-chat-scroll" ref={this.scrollBlock} onScroll={this.onMessagesScroll}>
               <DefaultWidgetMessages
                 onLoadPreviousMessages={this.loadPreviousMessages}
+                onScreenshotRequest={this.onScreenshotRequest}
                 elixirChatWidget={elixirChatWidget}
                 messages={messages}/>
             </div>
 
             <DefaultWidgetTextarea
               onMessageSubmit={this.onMessageSubmit}
+              onChange={this.onTextareaChange}
+              typedText={typedText}
+              attachments={attachments}
+              replyToId={replyToId}
               currentlyTypingUsers={currentlyTypingUsers}
               onVerticalResize={this.onTextareaVerticalResize}
               elixirChatWidget={elixirChatWidget}/>

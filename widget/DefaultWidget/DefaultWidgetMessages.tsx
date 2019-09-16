@@ -135,6 +135,19 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
     elixirChatWidget.openImagePreview(imagePreviews[nextImagePreviewIndex]);
   };
 
+  onTakeScreenshotClick = () => {
+    const { elixirChatWidget } = this.props;
+    elixirChatWidget.toggleChatVisibility();
+    elixirChatWidget.takeScreenshot().then(screenshot => {
+
+      console.log('___ screenshot taken', screenshot);
+
+      elixirChatWidget.toggleChatVisibility();
+    }).catch(() => {
+      elixirChatWidget.toggleChatVisibility();
+    });
+  };
+
   render(): void {
     const { processedMessages } = this.state;
 
@@ -244,10 +257,21 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
             {message.isSystem && (
               <div className={cn({
                 'elixirchat-chat-messages__item': true,
-                'elixirchat-chat-messages__item--by-me': message.sender.isCurrentClient,
-                'elixirchat-chat-messages__item--by-operator': message.sender.isOperator,
+                'elixirchat-chat-messages__item--by-operator': true,
+                'elixirchat-chat-messages__item--system': true,
               })}>
-                SYSTEM MESSAGE
+                <div className="elixirchat-chat-messages__balloon">
+                  <div className="elixirchat-chat-messages__sender">
+                    {(message.sender.firstName || '') + ' ' + (message.sender.lastName || '')}
+                  </div>
+                  <div className="elixirchat-chat-messages__text">
+                    Пожалуйста, пришлите скриншот вашего экрана <br/>
+                    <button onClick={this.onTakeScreenshotClick}>Сделать скриншот</button>
+                  </div>
+                </div>
+                <div className="elixirchat-chat-messages__timestamp">
+                  {dayjs(message.timestamp).format('H:mm, D MMMM') /* TODO: handle US date format e.g. "2:30 PM, July 10" */}
+                </div>
               </div>
             )}
 

@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import cn from 'classnames';
 import TextareaAutosize from 'react-textarea-autosize';
 import { randomDigitStringId } from '../../utilsCommon';
@@ -7,15 +7,14 @@ import { DefaultWidgetTextareaStyles } from './styles';
 
 export interface IDefaultWidgetTextareaProps {
   elixirChatWidget: any;
-  currentlyTypingUsers: any;
+  currentlyTypingUsers: Array<any>;
   onVerticalResize: any;
 }
 
 export interface IDefaultWidgetTextareaState {
-  replyToId: string | null;
-  currentlyTypingUsers: Array<any>;
-  typedText: string;
-  attachments: Array<File>;
+  // typedText: string;
+  // replyToId: string | null;
+  // attachments: Array<File>;
   areTextareaActionsCollapsed: boolean;
 }
 
@@ -25,9 +24,9 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
   textarea: HTMLTextAreaElement = null;
 
   state = {
-    replyToId: null,
-    typedText: '',
-    attachments: [],
+    // typedText: '',
+    // replyToId: null,
+    // attachments: [],
     areTextareaActionsCollapsed: false,
   };
 
@@ -42,32 +41,49 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
     });
   }
 
-  onReplyClick = (messageId): void => { // TODO: figure is replyTo will be implemented in widget
-    this.setState({
-      replyToId: messageId
-    });
-  };
+  // onReplyClick = (messageId): void => { // TODO: figure is replyTo will be implemented in widget
+  //   this.setState({
+  //     replyToId: messageId
+  //   });
+  // };
 
   onTextareaChange = (e): void => {
-    this.props.elixirChatWidget.dispatchTypedText(e.target.value);
-    this.setState({
+    const { elixirChatWidget, onChange } = this.props;
+    elixirChatWidget.dispatchTypedText(e.target.value);
+    onChange({
       typedText: e.target.value,
     });
+    // this.setState({
+    //   typedText: e.target.value,
+    // });
   };
 
   onTextareaKeyDown = (e) => {
-    const { typedText, replyToId, attachments } = this.state;
-    const { onMessageSubmit } = this.props;
+    // const { typedText, replyToId, attachments } = this.state;
+    // const { onMessageSubmit, onChange } = this.props;
+
+    const {
+      onMessageSubmit,
+      onChange,
+      typedText,
+      replyToId,
+      attachments,
+    } = this.props;
 
     if(e.keyCode === 13 && e.shiftKey === false) { // Press "Enter" without holding Shift
       e.preventDefault();
       if (typedText.trim() || attachments.length) {
         onMessageSubmit({ typedText, attachments, replyToId });
-        this.setState({
+        onChange({
           typedText: '',
           attachments: [],
           replyToId: null,
         });
+        // this.setState({
+        //   typedText: '',
+        //   attachments: [],
+        //   replyToId: null,
+        // });
         this.updateVerticalHeight();
       }
     }
@@ -78,20 +94,35 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
     this.updateVerticalHeight();
   };
 
-  addAttachments = attachments => {
-    this.setState({
+  addAttachments = newAttachments => {
+    // this.setState({
+    //   attachments: [
+    //     ...this.state.attachments,
+    //     ...attachments.map(item => ({ ...item, id: randomDigitStringId(6) }))
+    //   ]
+    // });
+
+    const { attachments, onChange } = this.props;
+    onChange({
       attachments: [
-        ...this.state.attachments,
-        ...attachments.map(item => ({ ...item, id: randomDigitStringId(6) }))
+        ...attachments,
+        ...newAttachments.map(item => ({ ...item, id: randomDigitStringId(6) }))
       ]
     });
+
     this.updateVerticalHeight();
   };
 
   removeAttachment = attachmentId => {
-    this.setState({
-      attachments: this.state.attachments.filter(item => item.id !== attachmentId)
+    // this.setState({
+    //   attachments: this.state.attachments.filter(item => item.id !== attachmentId)
+    // });
+
+    const { attachments, onChange } = this.props;
+    onChange({
+      attachments: attachments.filter(item => item.id !== attachmentId)
     });
+
     this.updateVerticalHeight();
   };
 
@@ -145,13 +176,18 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
   render(): void {
 
     const {
-      typedText,
-      attachments,
-      replyToId,
+      // typedText,
+      // attachments,
+      // replyToId,
       areTextareaActionsCollapsed,
     } = this.state;
 
-    const { currentlyTypingUsers } = this.props;
+    const {
+      typedText,
+      replyToId,
+      attachments,
+      currentlyTypingUsers,
+    } = this.props;
 
     return (
       <div className="elixirchat-chat-textarea" ref={this.container}>
