@@ -29,10 +29,22 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
     elixirChatWidget.injectIframeStyles(DefaultWidgetTextareaStyles);
     elixirChatWidget.onToggleChatVisibility((isOpen) => {
       if (isOpen) {
-        this.updateVerticalHeight({ scrollToBottom: true });
+        this.updateVerticalHeight({ forceScrollToBottom: true });
         this.textarea.focus();
       }
     });
+  }
+
+  componentDidUpdate(prevProps) {
+    const {
+      textareaText,
+      textareaResponseToMessageId,
+      textareaAttachments,
+    } = this.props;
+
+    if (textareaResponseToMessageId !== prevProps.textareaResponseToMessageId) {
+      this.updateVerticalHeight();
+    }
   }
 
   onTextareaChange = (e): void => {
@@ -60,7 +72,6 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
           textareaResponseToMessageId: null,
           textareaAttachments: [],
         });
-        this.updateVerticalHeight();
       }
     }
   };
@@ -136,12 +147,16 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
     this.addAttachments(textareaAttachments);
   };
 
-  updateVerticalHeight = (options: { scrollToBottom: boolean }) => {
+  updateVerticalHeight = (options: { forceScrollToBottom: boolean }) => {
     setTimeout(() => {
+      const { textareaResponseToMessageId } = this.props;
       const newHeight = this.container.current.offsetHeight;
-      this.setState({
-        areTextareaActionsCollapsed: newHeight < 60
-      });
+
+      let areTextareaActionsCollapsed = newHeight < 60;
+      if (textareaResponseToMessageId) {
+        areTextareaActionsCollapsed = newHeight < 90;
+      }
+      this.setState({ areTextareaActionsCollapsed });
       this.props.onVerticalResize(newHeight, options);
     }, 0);
   };

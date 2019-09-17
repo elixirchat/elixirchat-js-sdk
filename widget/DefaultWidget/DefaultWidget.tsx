@@ -74,8 +74,8 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
     });
 
     elixirChatWidget.onMessage(message => {
-      const messages = [...this.state.messages, message];
       const hasUserScroll = this.hasUserScroll();
+      const messages = [...this.state.messages, message];
       const isMessageSentByCurrentClient = message.sender.isCurrentClient;
 
       if (isMessageSentByCurrentClient) {
@@ -135,15 +135,16 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
     this.scrollBlock.current.scrollTop = this.scrollBlock.current.scrollHeight;
   };
 
-  onTextareaVerticalResize = (newTextareaHeight: number, options: { scrollToBottom: boolean } = {}) => {
+  onTextareaVerticalResize = (newTextareaHeight: number, options: { forceScrollToBottom: boolean } = {}) => {
     const hasUserScroll = this.hasUserScroll();
     this.scrollBlock.current.style.bottom = newTextareaHeight + 'px';
-    if (!hasUserScroll || options.scrollToBottom) {
+
+    if (!hasUserScroll || options.forceScrollToBottom) {
       this.scrollToBottom();
     }
   };
 
-  onMessageSubmit = () => {
+  onMessageSubmit = async () => {
     const { elixirChatWidget } = this.props;
     const {
       textareaText,
@@ -153,15 +154,18 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
     } = this.state;
 
     if (textareaText.trim() || textareaAttachments.length) {
+      const hasUserScroll = this.hasUserScroll();
       const temporaryMessage = this.generateTemporaryMessage({
         textareaText,
         textareaResponseToMessageId,
         textareaAttachments,
       });
-      this.setState({
+      await this.setState({
         messages: [...messages, temporaryMessage],
       });
-
+      if (!hasUserScroll) {
+        this.scrollToBottom();
+      }
       elixirChatWidget.sendMessage({
         text: textareaText,
         responseToMessageId: textareaResponseToMessageId,

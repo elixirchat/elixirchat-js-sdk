@@ -63,13 +63,18 @@
 .elixirchat-chat-messages__timestamp {
   text-align: right;
   color: #999999;
-  padding-top: 3px;
+  padding-top: 4px;
   white-space: nowrap;
 }
 
 .elixirchat-chat-messages__reply {
   margin-left: 10px;
   cursor: default;
+}
+
+.elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__reply {
+  margin-left: 0;
+  margin-right: 10px;
 }
 
 .elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__reply-to {

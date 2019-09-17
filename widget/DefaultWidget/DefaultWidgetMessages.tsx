@@ -172,7 +172,7 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
                 'elixirchat-chat-messages__item': true,
                 'elixirchat-chat-messages__item--by-me': message.sender.isCurrentClient,
                 'elixirchat-chat-messages__item--by-operator': message.sender.isOperator,
-              })}>
+              })} onDoubleClick={() => onReplyMessage(message.id)}>
 
                 {message.isSubmissionError && (
                   <h1 style={{ color: 'red' }}>
@@ -248,14 +248,16 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
                 )}
 
                 <div className="elixirchat-chat-messages__timestamp">
-                  {dayjs(message.timestamp).format('H:mm, D MMMM')}
-
+                  {/*{dayjs(message.timestamp).format('H:mm, D MMMM')}*/}
+                  {!message.sender.isCurrentClient && dayjs(message.timestamp).format('H:mm')}
                   {!message.isSystem && (
                     <span className="elixirchat-chat-messages__reply"
+                      title="Для ответа также можно дважды кликнуть сообщение"
                       onClick={() => onReplyMessage(message.id)}>
                       Ответить
                     </span>
                   )}
+                  {message.sender.isCurrentClient && dayjs(message.timestamp).format('H:mm')}
                 </div>
               </div>
             )}
