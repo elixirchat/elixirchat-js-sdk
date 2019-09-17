@@ -343,7 +343,21 @@ function _get(object, path, defaultValue) {
   }
 }
 
-exports._get = _get; // Lodash-like _.merge
+exports._get = _get; // Lodash-like _.omit
+
+function _omit(object, listOfKeys) {
+  var newObject = {};
+
+  for (var key in object) {
+    if (!listOfKeys.includes(key)) {
+      newObject[key] = object[key];
+    }
+  }
+
+  return newObject;
+}
+
+exports._omit = _omit; // Lodash-like _.merge
 
 function _merge(object1, object2) {
   var mergedObject = {};
@@ -361,7 +375,35 @@ function _merge(object1, object2) {
   return mergedObject;
 }
 
-exports._merge = _merge;
+exports._merge = _merge; // Lodash-like _.last
+
+function _last(arr) {
+  return arr[arr.length - 1];
+}
+
+exports._last = _last; // Lodash-like _.round
+
+function _round(num) {
+  return +num.toFixed(2);
+}
+
+exports._round = _round; // Similar to Lodash-like _.isEqual but doesn't perform deep comparison (unlike  _.isEqual in Lodash)
+
+function _isEqualShallow(object1, object2) {
+  if (Object.keys(object1).length !== Object.keys(object2).length) {
+    return false;
+  }
+
+  for (var key in object1) {
+    if (object1[key] !== object2[key]) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+exports._isEqualShallow = _isEqualShallow;
 },{}],"5qf4":[function(require,module,exports) {
 
 // https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
@@ -5684,7 +5726,29 @@ var unobserveOrCancel = function unobserveOrCancel(absintheSocket, notifier, obs
 
 
 exports.unobserveOrCancel = unobserveOrCancel;
-},{"core-js/modules/es6.array.find-index":"7sVm","core-js/modules/es6.array.find":"Qppk","core-js/modules/es6.function.name":"N3yi","@jumpn/utils-composite":"7Q0f","phoenix":"XFqm","core-js/modules/web.dom.iterable":"v6Aj","core-js/modules/es6.array.for-each":"VsIt","@babel/runtime/helpers/toConsumableArray":"Fhqp","@jumpn/utils-graphql":"2hqA","zen-observable":"U0NN","core-js/modules/es7.array.includes":"TLss","core-js/modules/es6.string.includes":"fH7p","@babel/runtime/helpers/objectSpread":"fwAU","@babel/runtime/helpers/objectWithoutProperties":"U8F3","core-js/modules/es6.array.index-of":"LvRh","@jumpn/utils-array":"Yu+T","core-js/modules/es6.function.bind":"WIhg","@babel/runtime/helpers/newArrowCheck":"tS9b"}],"sQAQ":[function(require,module,exports) {
+},{"core-js/modules/es6.array.find-index":"7sVm","core-js/modules/es6.array.find":"Qppk","core-js/modules/es6.function.name":"N3yi","@jumpn/utils-composite":"7Q0f","phoenix":"XFqm","core-js/modules/web.dom.iterable":"v6Aj","core-js/modules/es6.array.for-each":"VsIt","@babel/runtime/helpers/toConsumableArray":"Fhqp","@jumpn/utils-graphql":"2hqA","zen-observable":"U0NN","core-js/modules/es7.array.includes":"TLss","core-js/modules/es6.string.includes":"fH7p","@babel/runtime/helpers/objectSpread":"fwAU","@babel/runtime/helpers/objectWithoutProperties":"U8F3","core-js/modules/es6.array.index-of":"LvRh","@jumpn/utils-array":"Yu+T","core-js/modules/es6.function.bind":"WIhg","@babel/runtime/helpers/newArrowCheck":"tS9b"}],"1lqy":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var utilsCommon_1 = require("../../utilsCommon");
+
+function serializeUser(user, options) {
+  var elixirChatId = utilsCommon_1._get(user, 'foreignId') || null;
+  return {
+    id: utilsCommon_1._get(user, 'id') || null,
+    firstName: utilsCommon_1._get(user, 'firstName') || '',
+    lastName: utilsCommon_1._get(user, 'lastName') || '',
+    isOperator: utilsCommon_1._get(user, '__typename') !== 'Client',
+    isCurrentClient: elixirChatId === options.currentClientId,
+    elixirChatId: elixirChatId
+  };
+}
+
+exports.serializeUser = serializeUser;
+},{"../../utilsCommon":"EjGt"}],"sQAQ":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -5714,7 +5778,7 @@ function serializeFile(fileData, options) {
   }
 
   var parsedApiUrl = utilsCommon_1.parseUrl(options.apiUrl);
-  var uploadsUrlPrefix = parsedApiUrl.protocol + '//' + parsedApiUrl.hostname + '/';
+  var uploadsUrlPrefix = parsedApiUrl.protocol + '//' + parsedApiUrl.host + '/';
   var fileUrl = '';
 
   if (file.url) {
@@ -5735,33 +5799,7 @@ function serializeFile(fileData, options) {
 }
 
 exports.serializeFile = serializeFile;
-},{"../../utilsCommon":"EjGt"}],"1lqy":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var utilsCommon_1 = require("../../utilsCommon");
-
-var serializeFile_1 = require("./serializeFile");
-
-function serializeUser(user, options) {
-  var serializedAvatar = serializeFile_1.serializeFile(user.avatar || {}, options);
-  var elixirChatId = utilsCommon_1._get(user, 'foreignId') || null;
-  return {
-    id: utilsCommon_1._get(user, 'id') || null,
-    firstName: utilsCommon_1._get(user, 'firstName') || '',
-    lastName: utilsCommon_1._get(user, 'lastName') || '',
-    avatar: serializedAvatar,
-    isOperator: utilsCommon_1._get(user, '__typename') === 'Employee',
-    isCurrentClient: elixirChatId === options.currentClientId,
-    elixirChatId: elixirChatId
-  };
-}
-
-exports.serializeUser = serializeUser;
-},{"../../utilsCommon":"EjGt","./serializeFile":"sQAQ"}],"ZEl5":[function(require,module,exports) {
+},{"../../utilsCommon":"EjGt"}],"ZEl5":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -5775,21 +5813,32 @@ var serializeUser_1 = require("./serializeUser");
 var serializeFile_1 = require("./serializeFile");
 
 function serializeMessage(message, options) {
-  var sender = message.sender,
+  var _message$sender = message.sender,
+      sender = _message$sender === void 0 ? {} : _message$sender,
       attachments = message.attachments,
       _message$data = message.data,
       data = _message$data === void 0 ? {} : _message$data;
   var responseToMessage = data.responseToMessage,
-      author = data.author;
-  var serializedSender = serializeUser_1.serializeUser(utilsCommon_1._merge(sender, author), options);
+      _data$author = data.author,
+      author = _data$author === void 0 ? {} : _data$author; // TODO: change backend API structure into same-format inline objects
+
+  var senderData = Object.assign({}, utilsCommon_1._omit(sender, ['employee']), utilsCommon_1._get(sender, 'employee'), utilsCommon_1._omit(author, ['employee']), utilsCommon_1._get(author, 'employee'));
+  var serializedSender = serializeUser_1.serializeUser(senderData, options);
   var serializedAttachments = (attachments || []).map(function (attachment) {
     return serializeFile_1.serializeFile(attachment, options);
   });
+
+  var responseToMessageSender = utilsCommon_1._get(responseToMessage, 'sender', {});
+
+  var responseToMessageSenderData = Object.assign({}, utilsCommon_1._omit(responseToMessageSender, ['employee']), utilsCommon_1._get(responseToMessageSender, 'employee'));
   var serializedResponseToMessage = {
     id: utilsCommon_1._get(responseToMessage, 'id') || null,
     text: utilsCommon_1._get(responseToMessage, 'text') || '',
-    sender: serializeUser_1.serializeUser(utilsCommon_1._get(responseToMessage, 'sender', {}), options)
+    sender: serializeUser_1.serializeUser(responseToMessageSenderData, options)
   };
+
+  var isSystem = utilsCommon_1._get(message, 'system', false);
+
   return {
     id: utilsCommon_1._get(message, 'id') || null,
     text: utilsCommon_1._get(message, 'text', ''),
@@ -5799,7 +5848,11 @@ function serializeMessage(message, options) {
     responseToMessage: serializedResponseToMessage.id ? serializedResponseToMessage : null,
     attachments: serializedAttachments,
     isSubmitting: utilsCommon_1._get(message, 'isSubmitting') || false,
-    isSubmissionError: utilsCommon_1._get(message, 'isSubmissionError') || false
+    isSubmissionError: utilsCommon_1._get(message, 'isSubmissionError') || false,
+    isSystem: isSystem,
+    systemData: !isSystem ? null : {
+      type: utilsCommon_1._get(message, 'data.type') || null
+    }
   };
 }
 
@@ -5817,8 +5870,6 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var utilsCommon_1 = require("../utilsCommon");
-
 var GraphQLClient =
 /*#__PURE__*/
 function () {
@@ -5829,7 +5880,6 @@ function () {
     _classCallCheck(this, GraphQLClient);
 
     this.headers = {
-      'Content-Type': 'application/json',
       'Accept': 'application/json'
     };
     this.url = url;
@@ -5841,15 +5891,45 @@ function () {
   }
 
   _createClass(GraphQLClient, [{
+    key: "makeFormData",
+    value: function makeFormData(query, variables) {
+      var formData = new FormData();
+      var formVariables = {
+        roomId: variables.roomId,
+        text: variables.text,
+        attachments: variables.attachments.map(function (file) {
+          return file.name;
+        }),
+        responseToMessageId: variables.responseToMessageId
+      };
+      formData.append('query', query);
+      formData.append('variables', JSON.stringify(formVariables));
+      variables.attachments.forEach(function (file) {
+        formData.append(file.name, file);
+      });
+      return formData;
+    }
+  }, {
     key: "query",
-    value: function query(_query, variables, token) {
+    value: function query(_query, variables) {
       var _this = this;
 
-      var headers = this.headers;
+      var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {
+        asFormData: false
+      };
+      var headers;
+      var body;
 
-      if (token) {
-        headers = Object.assign({}, headers, {
-          Authorization: "Bearer ".concat(token)
+      if (options.asFormData) {
+        body = this.makeFormData(_query, variables);
+        headers = this.headers;
+      } else {
+        body = JSON.stringify({
+          query: _query,
+          variables: variables
+        });
+        headers = Object.assign({}, this.headers, {
+          'Content-Type': 'application/json'
         });
       }
 
@@ -5857,10 +5937,7 @@ function () {
         fetch(_this.url, {
           method: 'POST',
           headers: headers,
-          body: JSON.stringify({
-            query: _query,
-            variables: variables
-          })
+          body: body
         }).then(function (response) {
           return response.json();
         }).then(function (response) {
@@ -5881,42 +5958,6 @@ function () {
 
 exports.GraphQLClient = GraphQLClient;
 
-exports.prepareGraphQLQuery = function (queryType, query, variables) {
-  var optionalTypes = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
-  var queryTypes = [];
-  var queryVariables = [];
-  Object.keys(variables).forEach(function (key) {
-    var variableValue = variables[key];
-
-    if (variableValue) {
-      var variableType;
-
-      if (optionalTypes && optionalTypes[key]) {
-        variableType = optionalTypes[key];
-      } else if (/id$/i.test(key)) {
-        variableType = 'ID';
-      } else if (typeof variableValue === 'string') {
-        variableType = 'String';
-      } else if (typeof variableValue === 'number' && variableValue % 1) {
-        variableType = 'Float';
-      } else if (typeof variableValue === 'number' && !(variableValue % 1)) {
-        variableType = 'Int';
-      } else {
-        utilsCommon_1.logEvent(true, "Unable to detect GraphQL variable type for \"".concat(key, "\": ").concat(variableValue), {
-          query: query,
-          variables: variables,
-          optionalTypes: optionalTypes
-        }, 'error');
-        return '';
-      }
-
-      queryTypes.push("$".concat(key, ": ").concat(variableType, "!"));
-      queryVariables.push("".concat(key, ": $").concat(key));
-    }
-  });
-  return "\n    ".concat(queryType, " (").concat(queryTypes.join(', '), ") {\n      ").concat(query.trim().replace(/^([a-z_]+).*{/i, "$1 (".concat(queryVariables.join(', '), ") {")), "        \n    }\n  ");
-};
-
 exports.simplifyGraphQLJSON = function (graphQLJSON) {
   return graphQLJSON.edges.map(function (data) {
     return Object.assign({}, data.node, {
@@ -5924,7 +5965,11 @@ exports.simplifyGraphQLJSON = function (graphQLJSON) {
     });
   });
 };
-},{"../utilsCommon":"EjGt"}],"y8vH":[function(require,module,exports) {
+
+exports.gql = function (queryParts) {
+  return queryParts.join('');
+};
+},{}],"y8vH":[function(require,module,exports) {
 "use strict";
 
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
@@ -5934,6 +5979,38 @@ function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread n
 function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
 
 function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
+
+function _templateObject3() {
+  var data = _taggedTemplateLiteral(["\n    query ($beforeCursor: String, $limit: Int!) {\n      messages(before: $beforeCursor, last: $limit) {\n        edges {\n          cursor\n          node {\n            id\n            text\n            timestamp\n            system\n            attachments {\n              id\n              url\n              name\n              bytesSize\n              height\n              width\n              contentType\n              thumbnails { id url name bytesSize height width contentType thumbType }\n            }\n            data {\n              ... on NotSystemMessageData {\n                responseToMessage {\n                  id\n                  text\n                  sender {\n                    __typename\n                    ... on Client { id foreignId firstName lastName }\n                    ... on CompanyEmployee {\n                      employee { id firstName lastName }\n                    }\n                  }\n                }\n              }\n              ... on SystemMessageData {\n                type\n                author {\n                  employee { id firstName lastName }\n                }\n              }\n\n            }\n            sender {\n              __typename\n              ... on Client { id foreignId firstName lastName }\n              ... on CompanyEmployee {\n                employee { id firstName lastName }\n              }\n            }\n          }\n        }\n      }\n    }\n  "]);
+
+  _templateObject3 = function _templateObject3() {
+    return data;
+  };
+
+  return data;
+}
+
+function _templateObject2() {
+  var data = _taggedTemplateLiteral(["\n    mutation ($text: String!, $responseToMessageId: ID, $attachments: [Upload!]) {\n      sendMessage(text: $text, responseToMessageId: $responseToMessageId, attachments: $attachments) {\n        id\n        text\n        timestamp\n        system\n        attachments {\n          id\n          url\n          name\n          bytesSize\n          height\n          width\n          contentType\n          thumbnails { id url name bytesSize height width contentType thumbType }\n        }\n        data {\n          ... on NotSystemMessageData {\n            responseToMessage {\n              id\n              text\n              sender {\n                __typename\n                ... on Client { id foreignId firstName lastName }\n                ... on CompanyEmployee {\n                  employee { id firstName lastName }\n                }\n              }\n            }\n          }\n          ... on SystemMessageData {\n            type\n            author {\n              employee { id firstName lastName }\n            }\n          }\n\n        }\n        sender {\n          __typename\n          ... on Client { id foreignId firstName lastName }\n          ... on CompanyEmployee {\n            employee { id firstName lastName }\n          }\n        }\n      }\n    }\n  "]);
+
+  _templateObject2 = function _templateObject2() {
+    return data;
+  };
+
+  return data;
+}
+
+function _templateObject() {
+  var data = _taggedTemplateLiteral(["\n    subscription {\n      newMessage {\n        id\n        text\n        timestamp\n        system\n        attachments {\n          id\n          url\n          name\n          bytesSize\n          height\n          width\n          contentType\n          thumbnails { id url name bytesSize height width contentType thumbType }\n        }\n        data {\n          ... on NotSystemMessageData {\n            responseToMessage {\n              id\n              text\n              sender {\n                __typename\n                ... on Client { id foreignId firstName lastName }\n                ... on CompanyEmployee {\n                  employee { id firstName lastName }\n                }\n              }\n            }\n          }\n          ... on SystemMessageData {\n            type\n            author {\n              employee { id firstName lastName }\n            }\n          }\n        }\n        sender {\n          __typename\n          ... on Client { id foreignId firstName lastName }\n          ... on CompanyEmployee {\n            employee { id firstName lastName }\n          }\n        }\n      }\n    }\n  "]);
+
+  _templateObject = function _templateObject() {
+    return data;
+  };
+
+  return data;
+}
+
+function _taggedTemplateLiteral(strings, raw) { if (!raw) { raw = strings.slice(0); } return Object.freeze(Object.defineProperties(strings, { raw: { value: Object.freeze(raw) } })); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -5974,9 +6051,9 @@ function () {
     this.latestMessageHistoryCursorsCache = [];
     this.reachedBeginningOfMessageHistory = false;
     this.isBeforeUnload = false;
-    this.subscriptionQuery = "\n    subscription {\n      newMessage {\n        id\n        text\n        timestamp\n        data {\n          ... on NotSystemMessageData {\n            responseToMessage {\n              id\n              text\n              sender {\n                __typename\n                ... on Client { id foreignId firstName lastName }\n                ... on Employee { id firstName lastName }\n              }\n            }\n          }\n        }\n        sender {\n          __typename\n          ... on Client { id foreignId firstName lastName }\n          ... on Employee { id firstName lastName }\n        }\n      }\n    }\n  ";
-    this.sendMessageQuery = "\n    sendMessage {\n      id\n      text\n      timestamp\n      data {\n        ... on NotSystemMessageData {\n          responseToMessage {\n            id\n            text\n            sender {\n              __typename\n              ... on Client { id foreignId firstName lastName }\n              ... on Employee { id firstName lastName }\n            }\n          }\n        }\n      }\n      sender {\n        __typename\n        ... on Client { id foreignId firstName lastName }\n        ... on Employee { id firstName lastName }\n      }\n    }\n  ";
-    this.messageHistoryQuery = "\n    messages {\n      edges {\n        cursor\n        node {\n          id\n          text\n          timestamp\n          data {\n            ... on NotSystemMessageData {\n              responseToMessage {\n                id\n                text\n                sender {\n                  __typename\n                  ... on Client { id foreignId firstName lastName }\n                  ... on Employee { id firstName lastName }\n                }\n              }\n            }\n          }\n          sender {\n            __typename\n            ... on Client { id foreignId firstName lastName }\n            ... on Employee { id firstName lastName }\n          }\n        }\n      }\n    }\n  ";
+    this.subscriptionQuery = GraphQLClient_1.gql(_templateObject());
+    this.sendMessageQuery = GraphQLClient_1.gql(_templateObject2());
+    this.messageHistoryQuery = GraphQLClient_1.gql(_templateObject3());
 
     this.onBeforeUnload = function () {
       _this.isBeforeUnload = true;
@@ -5992,48 +6069,47 @@ function () {
 
     this.sendMessage = function (_ref) {
       var text = _ref.text,
+          attachments = _ref.attachments,
           responseToMessageId = _ref.responseToMessageId;
+      var query = _this.sendMessageQuery;
       var variables = {
         text: text,
+        attachments: attachments,
         responseToMessageId: responseToMessageId
-      }; // TODO: change when able to send attachments
-
-      var query = GraphQLClient_1.prepareGraphQLQuery('mutation', _this.sendMessageQuery, variables);
+      };
       return new Promise(function (resolve, reject) {
-        if (variables.text) {
-          _this.graphQLClient.query(query, variables).then(function (data) {
-            if (data && data.sendMessage) {
-              var message = serializeMessage_1.serializeMessage(data.sendMessage, {
-                apiUrl: _this.apiUrl,
-                currentClientId: _this.currentClientId
-              });
-              resolve(message);
-            } else {
-              reject({
-                error: data,
-                variables: variables,
-                graphQLQuery: query
-              });
-            }
-          }).catch(function (error) {
-            reject({
-              error: error,
-              variables: variables,
-              graphQLQuery: query
+        _this.graphQLClient.query(query, variables, {
+          asFormData: true
+        }).then(function (data) {
+          if (data && data.sendMessage) {
+            var message = serializeMessage_1.serializeMessage(data.sendMessage, {
+              apiUrl: _this.apiUrl,
+              currentClientId: _this.currentClientId
             });
+            resolve(message);
+          } else {
+            reject({
+              error: data,
+              variables: variables,
+              query: query
+            });
+          }
+        }).catch(function (error) {
+          reject({
+            error: error,
+            variables: variables,
+            query: query
           });
-        }
+        });
       });
     };
 
     this.fetchMessageHistory = function (limit, beforeCursor) {
+      var query = _this.messageHistoryQuery;
       var variables = {
-        last: limit,
-        before: beforeCursor
+        limit: limit,
+        beforeCursor: beforeCursor
       };
-      var query = GraphQLClient_1.prepareGraphQLQuery('query', _this.messageHistoryQuery, variables, {
-        before: 'String'
-      });
       return new Promise(function (resolve, reject) {
         if (_this.reachedBeginningOfMessageHistory) {
           resolve([]);
@@ -6421,8 +6497,6 @@ function () {
 
               _this.stopMediaStream();
 
-              _this.openScreenshotInNewTab(screenshot.dataUrl);
-
               resolve(screenshot);
             }, 500);
           };
@@ -6501,30 +6575,10 @@ function () {
         blobArray.push(blobBin.charCodeAt(i));
       }
 
-      var blob = new Blob([new Uint8Array(blobArray)], {
-        type: 'image/png'
-      });
+      var blob = new Blob([new Uint8Array(blobArray)]);
       var fileName = "Screenshot ".concat(new Date().toLocaleString(), ".png");
-      return new File([blob], fileName);
-    } // TODO: remove once server screenshot upload ready
-
-  }, {
-    key: "openScreenshotInNewTab",
-    value: function openScreenshotInNewTab(dataUrl) {
-      return new Promise(function (resolve, reject) {
-        var image = new Image();
-        image.src = dataUrl;
-        var newTab = window.open('');
-
-        if (newTab) {
-          newTab.document.body.appendChild(image);
-          image.setAttribute('width', '100%');
-          resolve();
-        } else {
-          reject({
-            message: 'You must allow popups to see the screenshot'
-          });
-        }
+      return new File([blob], fileName, {
+        type: 'image/png'
       });
     }
   }]);
@@ -6543,6 +6597,18 @@ function _nonIterableRest() { throw new TypeError("Invalid attempt to destructur
 function _iterableToArrayLimit(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
 
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+
+function _templateObject() {
+  var data = _taggedTemplateLiteral(["\n    mutation($companyId: Uuid!, $room: ForeignRoom, $client: ForeignClient) {\n      joinRoom (companyId: $companyId, room: $room, client: $client) {\n        token\n        client {\n          id\n          foreignId\n          firstName\n          lastName\n        }\n        room {\n          id\n          title\n          foreignId\n          members {\n            client {\n              id\n              foreignId\n              firstName\n              lastName\n            }\n          }\n        }\n      }\n    }\n  "]);
+
+  _templateObject = function _templateObject() {
+    return data;
+  };
+
+  return data;
+}
+
+function _taggedTemplateLiteral(strings, raw) { if (!raw) { raw = strings.slice(0); } return Object.freeze(Object.defineProperties(strings, { raw: { value: Object.freeze(raw) } })); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -6576,7 +6642,7 @@ function () {
 
     _classCallCheck(this, ElixirChat);
 
-    this.joinRoomQuery = "\n    joinRoom {\n      token\n      room {\n        id\n        title\n        foreignId\n        members {\n          client {\n            id\n            foreignId\n            firstName\n            lastName\n          }\n        }\n      }\n    }\n  ";
+    this.joinRoomQuery = GraphQLClient_1.gql(_templateObject());
     this.onMessageCallbacks = [];
     this.onConnectSuccessCallbacks = [];
     this.onConnectErrorCallbacks = [];
@@ -6639,8 +6705,7 @@ function () {
         utilsCommon_1.logEvent(_this.debug, 'Could not capture screenshot', e, 'error');
         throw e;
       });
-    }; // TODO: replace 'before' w/ message indexes on backend?
-
+    };
 
     this.fetchMessageHistory = function (limit, beforeCursor) {
       return _this.messagesSubscription.fetchMessageHistory(limit, beforeCursor).then(function (messages) {
@@ -6776,8 +6841,8 @@ function () {
         firstName: clientFirstName,
         lastName: clientLastName
       };
-      var roomId = room.id || defaultClientData.id;
-      var roomTitle = room.title || defaultClientData.firstName + ' ' + defaultClientData.lastName;
+      var roomId = room.id || client.id;
+      var roomTitle = room.title || client.firstName + ' ' + client.lastName;
       var roomData = room.data || {};
       this.room = {
         id: roomId,
@@ -6808,6 +6873,7 @@ function () {
       this.graphQLClient = new GraphQLClient_1.GraphQLClient({
         url: this.apiUrl
       });
+      var query = this.joinRoomQuery;
       var variables = {
         companyId: this.companyId,
         room: {
@@ -6817,11 +6883,6 @@ function () {
         },
         client: this.client
       };
-      var query = GraphQLClient_1.prepareGraphQLQuery('mutation', this.joinRoomQuery, variables, {
-        companyId: 'ID',
-        room: 'ForeignRoom',
-        client: 'ForeignClient'
-      });
       return new Promise(function (resolve, reject) {
         _this3.graphQLClient.query(query, variables).then(function (_ref2) {
           var joinRoom = _ref2.joinRoom;
@@ -6829,14 +6890,10 @@ function () {
           if (joinRoom) {
             _this3.authToken = joinRoom.token;
             _this3.connected = true;
-
-            var client = _this3.getClientByRoomMembers(joinRoom.room.members);
-
-            _this3.client.firstName = client.firstName;
-            _this3.client.lastName = client.lastName;
-            _this3.client.id = client.foreignId;
-            _this3.elixirChatClientId = client.id; // TODO: remove after 'client' is added to 'RoomWithToken' on backend (after un-authed joinRoom)
-
+            _this3.client.firstName = joinRoom.client.firstName;
+            _this3.client.lastName = joinRoom.client.lastName;
+            _this3.client.id = joinRoom.client.foreignId;
+            _this3.elixirChatClientId = joinRoom.client.id;
             _this3.room.id = joinRoom.room.foreignId;
             _this3.room.title = joinRoom.room.title;
             _this3.elixirChatRoomId = joinRoom.room.id;
@@ -6873,34 +6930,11 @@ function () {
           reject(response);
         });
       });
-    } // TODO: remove after 'client' is added to 'RoomWithToken' on backend (after un-authed joinRoom)
-
-  }, {
-    key: "getClientByRoomMembers",
-    value: function getClientByRoomMembers() {
-      var _this4 = this;
-
-      var members = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [{}];
-
-      try {
-        var client = members.filter(function (member) {
-          return member.client.foreignId === _this4.client.id;
-        })[0].client;
-        utilsCommon_1.logEvent(this.debug, 'Got client info by room members list', {
-          client: client
-        });
-        return client;
-      } catch (e) {
-        utilsCommon_1.logEvent(this.debug, 'Failed to get client info from room members list', {
-          members: members
-        }, 'error');
-        return {};
-      }
     }
   }, {
     key: "subscribeToTypingStatusChange",
     value: function subscribeToTypingStatusChange() {
-      var _this5 = this;
+      var _this4 = this;
 
       this.typingStatusSubscription = new TypingStatusSubscription_1.TypingStatusSubscription({
         socketUrl: this.socketUrl,
@@ -6908,19 +6942,19 @@ function () {
         roomId: this.elixirChatRoomId,
         clientId: this.elixirChatClientId,
         onSubscribeSuccess: function onSubscribeSuccess() {
-          utilsCommon_1.logEvent(_this5.debug, 'Successfully subscribed to typing status change', {
-            roomId: _this5.elixirChatRoomId
+          utilsCommon_1.logEvent(_this4.debug, 'Successfully subscribed to typing status change', {
+            roomId: _this4.elixirChatRoomId
           });
         },
         onSubscribeError: function onSubscribeError(data) {
-          utilsCommon_1.logEvent(_this5.debug, 'Failed to subscribe to typing status change', data, 'error');
+          utilsCommon_1.logEvent(_this4.debug, 'Failed to subscribe to typing status change', data, 'error');
         },
         onChange: function onChange(peopleWhoAreTyping) {
-          utilsCommon_1.logEvent(_this5.debug, 'Some users started/stopped typing', {
+          utilsCommon_1.logEvent(_this4.debug, 'Some users started/stopped typing', {
             peopleWhoAreTyping: peopleWhoAreTyping
           });
 
-          _this5.onTypingCallbacks.forEach(function (callback) {
+          _this4.onTypingCallbacks.forEach(function (callback) {
             return callback(peopleWhoAreTyping);
           });
         }
@@ -6929,7 +6963,7 @@ function () {
   }, {
     key: "subscribeToNewMessages",
     value: function subscribeToNewMessages() {
-      var _this6 = this;
+      var _this5 = this;
 
       this.messagesSubscription = new MessagesSubscription_1.MessagesSubscription({
         socketUrl: this.socketUrl,
@@ -6938,28 +6972,28 @@ function () {
         currentClientId: this.client.id,
         onSubscribeSuccess: function onSubscribeSuccess() {
           var roomData = {
-            room: _this6.room,
-            client: _this6.client
+            room: _this5.room,
+            client: _this5.client
           };
-          utilsCommon_1.logEvent(_this6.debug, 'Successfully subscribed to messages', roomData);
+          utilsCommon_1.logEvent(_this5.debug, 'Successfully subscribed to messages', roomData);
 
-          _this6.onConnectSuccessCallbacks.forEach(function (callback) {
+          _this5.onConnectSuccessCallbacks.forEach(function (callback) {
             return callback(roomData);
           });
         },
         onSubscribeError: function onSubscribeError(data) {
-          utilsCommon_1.logEvent(_this6.debug, 'Failed to subscribe to messages', {
+          utilsCommon_1.logEvent(_this5.debug, 'Failed to subscribe to messages', {
             data: data
           }, 'error');
 
-          _this6.onConnectErrorCallbacks.forEach(function (callback) {
+          _this5.onConnectErrorCallbacks.forEach(function (callback) {
             return callback(data);
           });
         },
         onMessage: function onMessage(message) {
-          utilsCommon_1.logEvent(_this6.debug, 'Received new message', message);
+          utilsCommon_1.logEvent(_this5.debug, 'Received new message', message);
 
-          _this6.onMessageCallbacks.forEach(function (callback) {
+          _this5.onMessageCallbacks.forEach(function (callback) {
             return callback(message);
           });
         }
@@ -6968,7 +7002,7 @@ function () {
   }, {
     key: "sendMessage",
     value: function sendMessage(params) {
-      var _this7 = this;
+      var _this6 = this;
 
       var text = params.text;
       var attachments = params.attachments && params.attachments.length ? Array.from(params.attachments).filter(function (file) {
@@ -6982,7 +7016,7 @@ function () {
           attachments: attachments,
           responseToMessageId: responseToMessageId
         }).then(function (message) {
-          utilsCommon_1.logEvent(_this7.debug, 'Sent message', {
+          utilsCommon_1.logEvent(_this6.debug, 'Sent message', {
             message: message,
             params: params,
             normalizedParams: {
@@ -6992,11 +7026,11 @@ function () {
             }
           });
 
-          _this7.typingStatusSubscription.dispatchTypedText(false);
+          _this6.typingStatusSubscription.dispatchTypedText(false);
 
           return message;
         }).catch(function (error) {
-          utilsCommon_1.logEvent(_this7.debug, 'Failed to send message', error, 'error');
+          utilsCommon_1.logEvent(_this6.debug, 'Failed to send message', error, 'error');
           throw error;
         });
       } else {
