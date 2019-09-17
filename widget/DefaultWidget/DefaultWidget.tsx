@@ -13,14 +13,13 @@ export interface IDefaultWidgetProps {
 }
 
 export interface IDefaultWidgetState {
-
-  typedText: string;
-  replyToId: string | null;
   messages: Array<IMessage>;
-  attachments: Array<{ file: File, name: string, id: string, isScreenshot: boolean }>;
   room: any;
   client: any;
   currentlyTypingUsers: Array<any>;
+  textareaText: string;
+  textareaResponseToMessageId: string | null;
+  textareaAttachments: Array<{ id: string, file: File, name: string, isScreenshot: boolean }>;
   isLoading: boolean;
   isLoadingError: boolean;
   isLoadingPreviousMessages: boolean;
@@ -33,15 +32,13 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
   messageChunkSize: number = 100; // TODO: reduce to 20 when unread message count implemented in server-side
 
   state = {
-
-    typedText: '',
-    attachments: [],
-    replyToId: null,
-
     messages: [],
     room: {},
     client: {},
     currentlyTypingUsers: [],
+    textareaText: '',
+    textareaResponseToMessageId: null,
+    textareaAttachments: [],
     isLoading: true,
     isLoadingError: false,
     isLoadingPreviousMessages: false,
@@ -136,20 +133,29 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
     }
   };
 
-  onMessageSubmit = ({ typedText, replyToId, attachments }) => {
+  onMessageSubmit = () => {
     const { elixirChatWidget } = this.props;
-    const { messages } = this.state;
+    const {
+      textareaText,
+      textareaResponseToMessageId,
+      textareaAttachments,
+      messages,
+    } = this.state;
 
-    if (typedText.trim() || attachments.length) {
-      const temporaryMessage = this.generateTemporaryMessage({ typedText, attachments, replyToId });
+    if (textareaText.trim() || textareaAttachments.length) {
+      const temporaryMessage = this.generateTemporaryMessage({
+        textareaText,
+        textareaResponseToMessageId,
+        textareaAttachments,
+      });
       this.setState({
         messages: [...messages, temporaryMessage],
       });
 
       elixirChatWidget.sendMessage({
-        text: typedText,
-        attachments: attachments.map(attachment => attachment.file),
-        responseToMessageId: replyToId,
+        text: textareaText,
+        responseToMessageId: textareaResponseToMessageId,
+        attachments: textareaAttachments.map(attachment => attachment.file),
       })
         .catch(() => {
           this.changeMessageById(temporaryMessage.id, {
@@ -177,20 +183,20 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
     this.setState({ messages: changedMessages });
   };
 
-  generateTemporaryMessage = ({ typedText, attachments, replyToId }) => {
+  generateTemporaryMessage = ({ textareaText, textareaResponseToMessageId, textareaAttachments }) => {
     const { elixirChatWidget } = this.props;
     const { messages } = this.state;
 
     const temporaryMessage = {
       id: randomDigitStringId(6),
-      text: typedText.trim() || '',
+      text: textareaText.trim() || '',
       timestamp: new Date().toISOString(),
       sender: {
         __typename: 'Client',
         foreignId: elixirChatWidget.client.id,
       },
       isSubmitting: true,
-      attachments: attachments.map(attachment => {
+      attachments: textareaAttachments.map(attachment => {
         const id = randomDigitStringId(6);
         const originalFileObject = attachment.file;
         const url = URL.createObjectURL(originalFileObject);
@@ -213,7 +219,9 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
         });
       })
     };
-    const responseToMessage = messages.filter(message => _get(message, 'responseToMessage.id') === replyToId)[0];
+    const responseToMessage = messages.filter(message => {
+      return _get(message, 'responseToMessage.id') === textareaResponseToMessageId;
+    })[0];
     if (responseToMessage) {
       temporaryMessage.responseToMessage = {
         id: responseToMessage.id,
@@ -257,24 +265,33 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
 
   onTextareaChange = (stateChange) => {
     this.setState(stateChange);
-    console.log('___ text area change', stateChange);
   };
 
-  onScreenshotRequest = () => {
-    console.log('___ screenshot requested');
+  onScreenshotRequestFulfilled = (screenshot) => {
+    const { textareaText, textareaAttachments } = this.state;
+    const newAttachment = {
+      id: randomDigitStringId(6),
+      name: 'Скриншот экрана',
+      file: screenshot.file,
+      isScreenshot: true,
+    };
+    const updatedText = textareaText.trim() ? textareaText : 'Вот скриншот моего экрана';
+    this.setState({
+      textareaText: updatedText,
+      textareaAttachments: [ ...textareaAttachments, newAttachment ]
+    });
   };
 
-  onReplyMessage = (message) => {
-    console.log('___ on reply to id', message);
-    this.setState({ replyToId: message.id });
+  onReplyMessage = (messageId) => {
+    this.setState({ textareaResponseToMessageId: messageId });
   };
 
   render(): void {
     const {
       messages,
-      typedText,
-      attachments,
-      replyToId,
+      textareaText,
+      textareaResponseToMessageId,
+      textareaAttachments,
       currentlyTypingUsers,
       isLoading,
       isLoadingError,
@@ -312,7 +329,7 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
             <div className="elixirchat-chat-scroll" ref={this.scrollBlock} onScroll={this.onMessagesScroll}>
               <DefaultWidgetMessages
                 onLoadPreviousMessages={this.loadPreviousMessages}
-                onScreenshotRequest={this.onScreenshotRequest}
+                onScreenshotRequestFulfilled={this.onScreenshotRequestFulfilled}
                 onReplyMessage={this.onReplyMessage}
                 elixirChatWidget={elixirChatWidget}
                 messages={messages}/>
@@ -321,9 +338,9 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
             <DefaultWidgetTextarea
               onMessageSubmit={this.onMessageSubmit}
               onChange={this.onTextareaChange}
-              typedText={typedText}
-              attachments={attachments}
-              replyToId={replyToId}
+              textareaText={textareaText}
+              textareaResponseToMessageId={textareaResponseToMessageId}
+              textareaAttachments={textareaAttachments}
               currentlyTypingUsers={currentlyTypingUsers}
               onVerticalResize={this.onTextareaVerticalResize}
               elixirChatWidget={elixirChatWidget}/>

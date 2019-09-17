@@ -136,24 +136,19 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
   };
 
   onTakeScreenshotClick = () => {
-    const { elixirChatWidget } = this.props;
+    const { elixirChatWidget, onScreenshotRequestFulfilled } = this.props;
     elixirChatWidget.toggleChatVisibility();
     elixirChatWidget.takeScreenshot().then(screenshot => {
-
-      console.log('___ screenshot taken', screenshot);
-
+      onScreenshotRequestFulfilled(screenshot);
       elixirChatWidget.toggleChatVisibility();
     }).catch(() => {
       elixirChatWidget.toggleChatVisibility();
     });
   };
 
-  onReplyClick = (message) => {
-    this.props.onReplyMessage(message);
-  };
-
   render(): void {
     const { processedMessages } = this.state;
+    const { onReplyMessage } = this.props;
 
     window.__processedMessages = processedMessages;
 
@@ -254,7 +249,12 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
 
                 <div className="elixirchat-chat-messages__timestamp">
                   {dayjs(message.timestamp).format('H:mm, D MMMM')}
-                  - <u onClick={() => this.onReplyClick(message)}>Reply</u>
+
+                  {!message.sender.isCurrentClient && (
+                    <Fragment>
+                      - <u onClick={() => onReplyMessage(message.id)}>Reply</u>
+                    </Fragment>
+                  )}
                 </div>
               </div>
             )}

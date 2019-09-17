@@ -12,9 +12,6 @@ export interface IDefaultWidgetTextareaProps {
 }
 
 export interface IDefaultWidgetTextareaState {
-  // typedText: string;
-  // replyToId: string | null;
-  // attachments: Array<File>;
   areTextareaActionsCollapsed: boolean;
 }
 
@@ -24,9 +21,6 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
   textarea: HTMLTextAreaElement = null;
 
   state = {
-    // typedText: '',
-    // replyToId: null,
-    // attachments: [],
     areTextareaActionsCollapsed: false,
   };
 
@@ -41,88 +35,57 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
     });
   }
 
-  // onReplyClick = (messageId): void => { // TODO: figure is replyTo will be implemented in widget
-  //   this.setState({
-  //     replyToId: messageId
-  //   });
-  // };
-
   onTextareaChange = (e): void => {
     const { elixirChatWidget, onChange } = this.props;
-    elixirChatWidget.dispatchTypedText(e.target.value);
-    onChange({
-      typedText: e.target.value,
-    });
-    // this.setState({
-    //   typedText: e.target.value,
-    // });
+    const textareaText = e.target.value;
+    elixirChatWidget.dispatchTypedText(textareaText);
+    onChange({ textareaText });
   };
 
   onTextareaKeyDown = (e) => {
-    // const { typedText, replyToId, attachments } = this.state;
-    // const { onMessageSubmit, onChange } = this.props;
-
     const {
       onMessageSubmit,
       onChange,
-      typedText,
-      replyToId,
-      attachments,
+      textareaText,
+      textareaResponseToMessageId,
+      textareaAttachments,
     } = this.props;
 
     if(e.keyCode === 13 && e.shiftKey === false) { // Press "Enter" without holding Shift
       e.preventDefault();
-      if (typedText.trim() || attachments.length) {
-        onMessageSubmit({ typedText, attachments, replyToId });
+      if (textareaText.trim() || textareaAttachments.length) {
+        onMessageSubmit({ textareaText, textareaResponseToMessageId, textareaAttachments });
         onChange({
-          typedText: '',
-          attachments: [],
-          replyToId: null,
+          textareaText: '',
+          textareaResponseToMessageId: null,
+          textareaAttachments: [],
         });
-        // this.setState({
-        //   typedText: '',
-        //   attachments: [],
-        //   replyToId: null,
-        // });
         this.updateVerticalHeight();
       }
     }
   };
 
   onRemoveReplyTo = () => {
-    // this.props.onRemoveReplyTo();
+    this.props.onChange({ textareaResponseToMessageId: null });
     this.updateVerticalHeight();
   };
 
   addAttachments = newAttachments => {
-    // this.setState({
-    //   attachments: [
-    //     ...this.state.attachments,
-    //     ...attachments.map(item => ({ ...item, id: randomDigitStringId(6) }))
-    //   ]
-    // });
-
-    const { attachments, onChange } = this.props;
+    const { textareaAttachments, onChange } = this.props;
     onChange({
-      attachments: [
-        ...attachments,
+      textareaAttachments: [
+        ...textareaAttachments,
         ...newAttachments.map(item => ({ ...item, id: randomDigitStringId(6) }))
       ]
     });
-
     this.updateVerticalHeight();
   };
 
   removeAttachment = attachmentId => {
-    // this.setState({
-    //   attachments: this.state.attachments.filter(item => item.id !== attachmentId)
-    // });
-
-    const { attachments, onChange } = this.props;
+    const { textareaAttachments, onChange } = this.props;
     onChange({
-      attachments: attachments.filter(item => item.id !== attachmentId)
+      textareaAttachments: textareaAttachments.filter(item => item.id !== attachmentId)
     });
-
     this.updateVerticalHeight();
   };
 
@@ -140,7 +103,7 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
     }
   };
 
-  onScreenShotClick = (): void => {
+  onScreenShotClick = () => {
     const { elixirChatWidget } = this.props;
     elixirChatWidget.toggleChatVisibility();
     elixirChatWidget.takeScreenshot().then(screenshot => {
@@ -156,11 +119,11 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
   };
 
   onInputFileChange = (e) => {
-    const attachments = Array.from(e.target.files).map(file => ({
+    const textareaAttachments = Array.from(e.target.files).map(file => ({
       name: file.name,
       file,
     }));
-    this.addAttachments(attachments);
+    this.addAttachments(textareaAttachments);
   };
 
   updateVerticalHeight = (options: { scrollToBottom: boolean }) => {
@@ -180,9 +143,9 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
     } = this.state;
 
     const {
-      typedText,
-      replyToId,
-      attachments,
+      textareaText,
+      textareaResponseToMessageId,
+      textareaAttachments,
       currentlyTypingUsers,
     } = this.props;
 
@@ -192,6 +155,12 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
         {Boolean(currentlyTypingUsers.length) && (
           <div className="elixirchat-chat-typing">
             {inflect('ru-RU', currentlyTypingUsers.length, ['человек пишет...', 'человека пишут...', 'человек пишут...'])}
+          </div>
+        )}
+
+        {textareaResponseToMessageId && (
+          <div>
+            Response: ${textareaResponseToMessageId.substr(0, 6)} - <u onClick={this.onRemoveReplyTo}>⨉</u>
           </div>
         )}
 
@@ -225,12 +194,12 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
           onPaste={this.handleAttachmentPaste}
           onChange={this.onTextareaChange}
           onKeyDown={this.onTextareaKeyDown}
-          value={typedText}>
+          value={textareaText}>
         </TextareaAutosize>
 
-        {Boolean(attachments.length) && (
+        {Boolean(textareaAttachments.length) && (
           <ul className="elixirchat-chat-attachment-list">
-            {attachments.map(attachment => (
+            {textareaAttachments.map(attachment => (
               <li key={attachment.id} className="elixirchat-chat-attachment-item">
                 <i className={cn({
                   'elixirchat-chat-attachment-icon': true,
