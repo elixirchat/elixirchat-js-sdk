@@ -200,6 +200,7 @@
   height: 12px;
   background: var(--ElixirChatChatScreenshotIconWhite) no-repeat center;
   margin-right: 8px;
+  vertical-align: text-top;
 }
 
 @keyframes elixirchat-chat-spinner {

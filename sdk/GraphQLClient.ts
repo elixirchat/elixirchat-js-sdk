@@ -95,3 +95,19 @@ export const simplifyGraphQLJSON: ISimplifyGraphQLJSON = (graphQLJSON) => {
     cursor: data.cursor,
   }));
 };
+
+
+/**
+ * When used like this:
+ *  @example gql`some string`
+ * it simply returns its argument i.e. "some string"
+ *
+ * It's only designed to trigger WebStorm Plugin "JS GraphQL" highlight strings as graphql queries
+ */
+export interface IGql {
+  (queryParts: Array<string>): string
+}
+
+export const gql: IGql = (queryParts) => {
+  return queryParts.join('');
+};

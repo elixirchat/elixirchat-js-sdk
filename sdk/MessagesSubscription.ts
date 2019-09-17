@@ -1,8 +1,7 @@
 import * as AbsintheSocket from '@absinthe/socket'
 import * as Phoenix from 'phoenix'
 import { serializeMessage, IMessage } from './serializers/serializeMessage';
-import { GraphQLClient, simplifyGraphQLJSON } from './GraphQLClient';
-import { gql } from '../utilsCommon';
+import { GraphQLClient, simplifyGraphQLJSON, gql } from './GraphQLClient';
 
 export interface ISentMessage {
   text?: string,

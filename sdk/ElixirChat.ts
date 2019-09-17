@@ -4,7 +4,7 @@ import { IMessage } from './serializers/serializeMessage';
 import { MessagesSubscription, ISentMessage } from './MessagesSubscription';
 import { TypingStatusSubscription } from './TypingStatusSubscription';
 import { ScreenshotTaker, IScreenshot } from './ScreenshotTaker';
-import { GraphQLClient } from './GraphQLClient';
+import { GraphQLClient, gql } from './GraphQLClient';
 
 export const API_REFERENCE_URL = 'https://github.com/elixirchat/elixirchat-js-sdk';
 
@@ -54,10 +54,16 @@ export class ElixirChat {
   protected typingStatusSubscription: any;
   protected screenshotTaker: any;
 
-  protected joinRoomQuery: string = `
-    mutation($companyId: ID!, $room: ForeignRoom, $client: ForeignClient) {
+  protected joinRoomQuery: string = gql`
+    mutation($companyId: Uuid!, $room: ForeignRoom, $client: ForeignClient) {
       joinRoom (companyId: $companyId, room: $room, client: $client) {
         token
+        client {
+          id
+          foreignId
+          firstName
+          lastName
+        }
         room {
           id
           title
@@ -224,15 +230,10 @@ export class ElixirChat {
             this.authToken = joinRoom.token;
             this.connected = true;
 
-            console.log('%c___ zzz', 'color: green;', joinRoom);
-            window.__joinRoom = joinRoom;
-
-
-            const client = this.getClientByRoomMembers(joinRoom.room.members);
-            this.client.firstName = client.firstName;
-            this.client.lastName = client.lastName;
-            this.client.id = client.foreignId;
-            this.elixirChatClientId = client.id; // TODO: remove after 'client' is added to 'RoomWithToken' on backend (after un-authed joinRoom)
+            this.client.firstName = joinRoom.client.firstName;
+            this.client.lastName = joinRoom.client.lastName;
+            this.client.id = joinRoom.client.foreignId;
+            this.elixirChatClientId = joinRoom.client.id;
 
             this.room.id = joinRoom.room.foreignId;
             this.room.title = joinRoom.room.title;
@@ -252,19 +253,6 @@ export class ElixirChat {
           reject(response);
         });
     });
-  }
-
-  // TODO: remove after 'client' is added to 'RoomWithToken' on backend (after un-authed joinRoom)
-  protected getClientByRoomMembers(members: [any] = [{}]): any {
-    try {
-      const client = members.filter(member => member.client.foreignId === this.client.id)[0].client;
-      logEvent(this.debug, 'Got client info by room members list', { client });
-      return client;
-    }
-    catch (e) {
-      logEvent(this.debug, 'Failed to get client info from room members list', { members }, 'error');
-      return {};
-    }
   }
 
   protected subscribeToTypingStatusChange(): void {
