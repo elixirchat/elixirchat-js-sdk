@@ -25,7 +25,7 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
     imagePreviews: [],
   };
 
-  maxThumbnailSize = 236;
+  maxThumbnailSize = 256;
 
   componentDidMount(): void {
     const { messages, elixirChatWidget } = this.props;
@@ -196,7 +196,7 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
                   )}
                   <div className="elixirchat-chat-messages__text">{message.text}</div>
 
-                  {Boolean(message.files) && (
+                  {Boolean(message.files) && Boolean(message.files.length) && (
                     <ul className="elixirchat-chat-files">
                       {message.files.map(file => (
                         <li key={file.id} className="elixirchat-chat-files__item">
@@ -223,8 +223,10 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
                       ))}
                     </ul>
                   )}
+                </div>
 
-                  {Boolean(message.images) && (
+                {Boolean(message.images) && Boolean(message.images.length) && (
+                  <div className="elixirchat-chat-messages__balloon-">
                     <ul className="elixirchat-chat-images">
                       {message.images.map(image => (
                         <li key={image.id} className="elixirchat-chat-images__item">
@@ -242,8 +244,8 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
                         </li>
                       ))}
                     </ul>
-                  )}
-                </div>
+                  </div>
+                )}
 
                 <div className="elixirchat-chat-messages__timestamp">
                   {dayjs(message.timestamp).format('H:mm, D MMMM')}
