@@ -6194,12 +6194,7 @@ function () {
       });
       AbsintheSocket.observe(this.absintheSocket, notifier, {
         onAbort: function onAbort(e) {
-          return _this2.onSubscribeFail(e, 'onAbort');
-        },
-        onError: function onError(e) {
-          if (!_this2.isBeforeUnload) {
-            _this2.onSubscribeFail(e, 'onError');
-          }
+          return _this2.onSubscribeAbort(e);
         },
         onStart: function onStart(notifier) {
           _this2.notifier = notifier;
@@ -6221,8 +6216,8 @@ function () {
       });
     }
   }, {
-    key: "onSubscribeFail",
-    value: function onSubscribeFail(error, methodName) {
+    key: "onSubscribeAbort",
+    value: function onSubscribeAbort(error, methodName) {
       this.onSubscribeError({
         error: error,
         variables: {

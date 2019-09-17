@@ -226,12 +226,7 @@ export class MessagesSubscription {
       operation: this.subscriptionQuery,
     });
     AbsintheSocket.observe(this.absintheSocket, notifier, {
-      onAbort: e => this.onSubscribeFail(e, 'onAbort'),
-      onError:  e => {
-        if (!this.isBeforeUnload) {
-          this.onSubscribeFail(e, 'onError');
-        }
-      },
+      onAbort: e => this.onSubscribeAbort(e),
       onStart: notifier => {
         this.notifier = notifier;
         this.onSubscribeSuccess(notifier);
@@ -248,7 +243,7 @@ export class MessagesSubscription {
     })
   }
 
-  protected onSubscribeFail(error: any, methodName: string): void {
+  protected onSubscribeAbort(error: any, methodName: string): void {
     this.onSubscribeError({
       error,
       variables: { methodName },
