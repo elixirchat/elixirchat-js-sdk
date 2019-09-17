@@ -1,4 +1,4 @@
-import { _get, _merge } from '../../utilsCommon';
+import { _get, _omit } from '../../utilsCommon';
 import { serializeUser, IUser } from './serializeUser';
 import { serializeFile, IFile } from './serializeFile';
 
@@ -31,19 +31,28 @@ export function serializeMessage(message: any, options?: ISerializeMessageOption
   let { sender = {}, attachments, data = {} } = message;
   let { responseToMessage, author = {} } = data;
 
-  const senderEmployee = _get(sender, 'employee');
-  const senderData = senderEmployee || sender || {};
-  const authorData = _get(author, 'employee') || {};
+  // TODO: change backend API structure into same-format inline objects
+  const senderData = {
+    ..._omit(sender, ['employee']),
+    ..._get(sender, 'employee'),
+    ..._omit(author, ['employee']),
+    ..._get(author, 'employee'),
+  };
 
-  const serializedSender = serializeUser(_merge(senderData, authorData), options);
+  const serializedSender = serializeUser(senderData, options);
   const serializedAttachments = (attachments || []).map(attachment => serializeFile(attachment, options));
 
   console.log('___ message', message);
 
+  const responseToMessageSender = _get(responseToMessage, 'sender', {});
+  const responseToMessageSenderData = {
+    ..._omit(responseToMessageSender, ['employee']),
+    ..._get(responseToMessageSender, 'employee')
+  };
   const serializedResponseToMessage = {
     id: _get(responseToMessage, 'id') || null,
     text: _get(responseToMessage, 'text') || '',
-    sender: serializeUser(_get(responseToMessage, 'sender', {}), options),
+    sender: serializeUser(responseToMessageSenderData, options),
   };
 
   const isSystem = _get(message, 'system', false);

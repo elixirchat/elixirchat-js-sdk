@@ -184,55 +184,45 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
   };
 
   generateTemporaryMessage = ({ textareaText, textareaResponseToMessageId, textareaAttachments }) => {
-    const { elixirChatWidget } = this.props;
     const { messages } = this.state;
+    const responseToMessage = messages.filter(message => {
+      return message.id === textareaResponseToMessageId;
+    })[0];
 
-    const temporaryMessage = {
+    const attachments = textareaAttachments.map(attachment => {
+      const id = randomDigitStringId(6);
+      const originalFileObject = attachment.file;
+      const contentType = originalFileObject.type;
+      const url = URL.createObjectURL(originalFileObject);
+      let thumbnails = [];
+      if (isWebImage(contentType) && attachment.width && attachment.height) {
+        thumbnails = [{ id, url }];
+      }
+      return {
+        id,
+        url,
+        originalFileObject,
+        contentType,
+        thumbnails,
+        name: attachment.name,
+        width: attachment.width,
+        height: attachment.height,
+        bytesSize: originalFileObject.size,
+      };
+    });
+
+    return  {
       id: randomDigitStringId(6),
       text: textareaText.trim() || '',
       timestamp: new Date().toISOString(),
       sender: {
-        __typename: 'Client',
-        foreignId: elixirChatWidget.client.id,
+        isOperator: false,
+        isCurrentClient: true,
       },
+      responseToMessage: responseToMessage || null,
+      attachments: attachments,
       isSubmitting: true,
-      attachments: textareaAttachments.map(attachment => {
-        const id = randomDigitStringId(6);
-        const originalFileObject = attachment.file;
-        const url = URL.createObjectURL(originalFileObject);
-        const fileData = {
-          id,
-          url,
-          originalFileObject,
-          name: attachment.name,
-          width: attachment.width,
-          height: attachment.height,
-          bytesSize: originalFileObject.size,
-          contentType: originalFileObject.type,
-        };
-        if (isWebImage(fileData.contentType) && attachment.width && attachment.height) {
-          fileData.thumbnails = [{ id, url }];
-        }
-        return serializeFile(fileData, {
-          apiUrl: elixirChatWidget.apiUrl,
-          currentClientId: elixirChatWidget.client.id,
-        });
-      })
     };
-    const responseToMessage = messages.filter(message => {
-      return _get(message, 'responseToMessage.id') === textareaResponseToMessageId;
-    })[0];
-    if (responseToMessage) {
-      temporaryMessage.responseToMessage = {
-        id: responseToMessage.id,
-        text: responseToMessage.text,
-        sender: responseToMessage.sender
-      };
-    }
-    return serializeMessage(temporaryMessage, {
-      apiUrl: elixirChatWidget.apiUrl,
-      currentClientId: elixirChatWidget.client.id,
-    });
   };
 
   updateUnseenRepliesToCurrentClient = () => {
