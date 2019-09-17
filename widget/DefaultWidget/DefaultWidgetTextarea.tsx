@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import cn from 'classnames';
 import TextareaAutosize from 'react-textarea-autosize';
 import { randomDigitStringId } from '../../utilsCommon';
-import { inflect } from '../../utilsWidget';
+import { inflect, getImageDimensions } from '../../utilsWidget';
 import { DefaultWidgetTextareaStyles } from './styles';
 
 export interface IDefaultWidgetTextareaProps {
@@ -70,12 +70,22 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
     this.updateVerticalHeight();
   };
 
-  addAttachments = newAttachments => {
+  addAttachments = async newAttachments => {
     const { textareaAttachments, onChange } = this.props;
+    const enrichedNewAttachments = newAttachments.map(async attachment => {
+      const id = randomDigitStringId(6);
+      const imageBlobUrl = URL.createObjectURL(attachment.file);
+      const dimensions = await getImageDimensions(imageBlobUrl);
+      return {
+        ...attachment,
+        ...dimensions,
+        id,
+      };
+    });
     onChange({
       textareaAttachments: [
         ...textareaAttachments,
-        ...newAttachments.map(item => ({ ...item, id: randomDigitStringId(6) }))
+        ...await Promise.all(enrichedNewAttachments),
       ]
     });
     this.updateVerticalHeight();

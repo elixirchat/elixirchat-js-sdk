@@ -135,3 +135,23 @@ export function getHumanReadableFileSize(locale: 'ru-RU' | 'en-US', sizeInBytes:
   primarySize = primarySize < 0.1 ? 0.1 : +(primarySize.toFixed(1));
   return primarySize.toLocaleString(locale) + ' ' + unitsDict[locale || 'en-US'][primaryUnit];
 }
+
+
+export async function getImageDimensions(imageUrl) {
+  return new Promise(resolve => {
+    const image = new Image();
+    image.onload = () => {
+      resolve({
+        width: image.width,
+        height: image.height,
+      });
+    };
+    image.onerror = () => {
+      resolve({
+        width: 0,
+        height: 0,
+      });
+    };
+    image.src = imageUrl;
+  });
+}

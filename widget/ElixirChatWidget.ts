@@ -1,3 +1,4 @@
+import 'babel-polyfill';
 import { logEvent } from '../utilsCommon';
 import {
   insertElement,
