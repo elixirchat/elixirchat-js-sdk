@@ -199,10 +199,15 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
 
   areMessagesEquivalent = (message1, message2) => {
     const normalizeMessage = (message) => {
+      const attachmentsHash = message.attachments.map(attachment => {
+        const originalFileName = _get(attachment, 'originalFileObject.name');
+        return originalFileName || attachment.name;
+      }).sort().join();
+
       return {
         text: message.text || '',
         responseToMessageId: _get(message, 'responseToMessage.id') || null,
-        attachmentsHash: message.attachments.map(message => message.name).sort().join(),
+        attachmentsHash,
       }
     };
     return _isEqualShallow(normalizeMessage(message1), normalizeMessage(message2));
