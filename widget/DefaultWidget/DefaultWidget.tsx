@@ -1,9 +1,8 @@
 import React, { Component, Fragment } from 'react';
 import ReactDOM from 'react-dom';
-import { _get, _last, randomDigitStringId } from '../../utilsCommon';
+import { _get, _last, _isEqualShallow, randomDigitStringId } from '../../utilsCommon';
 import { playNotificationSound, isWebImage } from '../../utilsWidget';
-import { serializeMessage, IMessage } from '../../sdk/serializers/serializeMessage';
-import { serializeFile } from '../../sdk/serializers/serializeFile';
+import { IMessage } from '../../sdk/serializers/serializeMessage';
 import { DefaultWidgetMessages } from './DefaultWidgetMessages';
 import { DefaultWidgetTextarea } from './DefaultWidgetTextarea';
 import { DefaultWidgetStyles } from './styles';
@@ -73,8 +72,15 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
     elixirChatWidget.onMessage(message => {
       const messages = [...this.state.messages, message];
       const hasUserScroll = this.hasUserScroll();
-      this.setState({ messages });
-      playNotificationSound();
+      const isMessageSentByCurrentClient = message.sender.isCurrentClient;
+
+      if (isMessageSentByCurrentClient) {
+        this.replaceTemporaryMessageWithActualOne(message);
+      }
+      else {
+        this.setState({ messages });
+        playNotificationSound();
+      }
       if (!hasUserScroll) {
         this.scrollToBottom();
       }
@@ -181,6 +187,25 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
       }
     });
     this.setState({ messages: changedMessages });
+  };
+
+  replaceTemporaryMessageWithActualOne = (newMessage) => {
+    const { messages } = this.state;
+    const temporaryMessage = _last(messages.filter(message => {
+      return this.areMessagesEquivalent(message, newMessage);
+    }));
+    this.changeMessageById(temporaryMessage.id, newMessage);
+  };
+
+  areMessagesEquivalent = (message1, message2) => {
+    const normalizeMessage = (message) => {
+      return {
+        text: message.text || '',
+        responseToMessageId: _get(message, 'responseToMessage.id') || null,
+        attachmentsHash: message.attachments.map(message => message.name).sort().join(),
+      }
+    };
+    return _isEqualShallow(normalizeMessage(message1), normalizeMessage(message2));
   };
 
   generateTemporaryMessage = ({ textareaText, textareaResponseToMessageId, textareaAttachments }) => {
