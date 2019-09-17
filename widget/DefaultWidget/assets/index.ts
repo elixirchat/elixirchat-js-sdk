@@ -16,6 +16,7 @@ const ChatRemoveIconBlue = dataUrlSvg + fs.readFileSync(__dirname + '/images/cha
 const ChatReplyRightIconBlack = dataUrlSvg + fs.readFileSync(__dirname + '/images/chat-reply-right-icon-black.svg', { encoding: 'base64' });
 const ChatScreenshotIconBlack = dataUrlSvg + fs.readFileSync(__dirname + '/images/chat-screenshot-icon-black.svg', { encoding: 'base64' });
 const ChatScreenshotIconBlue = dataUrlSvg + fs.readFileSync(__dirname + '/images/chat-screenshot-icon-blue.svg', { encoding: 'base64' });
+const ChatScreenshotIconWhite = dataUrlSvg + fs.readFileSync(__dirname + '/images/chat-screenshot-icon-white.svg', { encoding: 'base64' });
 const ChatTypingIconBlack = dataUrlSvg + fs.readFileSync(__dirname + '/images/chat-typing-icon-black.svg', { encoding: 'base64' });
 const WidgetIconChat = dataUrlSvg + fs.readFileSync(__dirname + '/images/widget-icon-chat.svg', { encoding: 'base64' });
 const WidgetIconClose = dataUrlSvg + fs.readFileSync(__dirname + '/images/widget-icon-close.svg', { encoding: 'base64' });
@@ -31,6 +32,7 @@ export const assetsBase64 = {
   ChatReplyRightIconBlack,
   ChatScreenshotIconBlack,
   ChatScreenshotIconBlue,
+  ChatScreenshotIconWhite,
   ChatTypingIconBlack,
   WidgetIconChat,
   WidgetIconClose,
@@ -49,6 +51,7 @@ export const iframeAssetUrlCssVars = `:root {
   --ElixirChatReplyRightIconBlack:      url(${ChatReplyRightIconBlack});
   --ElixirChatChatScreenshotIconBlack:  url(${ChatScreenshotIconBlack});
   --ElixirChatChatScreenshotIconBlue:   url(${ChatScreenshotIconBlue});
+  --ElixirChatChatScreenshotIconWhite:  url(${ChatScreenshotIconWhite});
   --ElixirChatChatTypingIconBlack:      url(${ChatTypingIconBlack});
   --ElixirChatSpinnerXsBlack:           url(${SpinnerXsBlack});
 }`;

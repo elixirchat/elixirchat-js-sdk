@@ -178,9 +178,29 @@
   color: rgba(0, 0, 0, 0.25);
 }
 
-.elixirchat-chat-messages__take-screenshot {}
+.elixirchat-chat-messages__take-screenshot {
+  background: #FF006E;
+  color: #ffffff;
+  border: 0;
+  border-radius: 4px;
+  padding: 1px 11px 0 11px;
+  height: 31px;
+  line-height: 31px;
+  margin: 6px 0 3px 0;
+  transition: background-color 300ms;
+}
 
-.elixirchat-chat-messages__take-screenshot-icon {}
+.elixirchat-chat-messages__take-screenshot:hover {
+  background: #e4006a;
+}
+
+.elixirchat-chat-messages__take-screenshot-icon {
+  display: inline-block;
+  width: 16px;
+  height: 12px;
+  background: var(--ElixirChatChatScreenshotIconWhite) no-repeat center;
+  margin-right: 8px;
+}
 
 @keyframes elixirchat-chat-spinner {
   to {

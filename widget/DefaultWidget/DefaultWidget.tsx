@@ -1,7 +1,11 @@
 import React, { Component, Fragment } from 'react';
 import ReactDOM from 'react-dom';
 import { _get, _last, _isEqualShallow, randomDigitStringId } from '../../utilsCommon';
-import { playNotificationSound, isWebImage } from '../../utilsWidget';
+import {
+  playNotificationSound,
+  getImageDimensions,
+  isWebImage,
+} from '../../utilsWidget';
 import { IMessage } from '../../sdk/serializers/serializeMessage';
 import { DefaultWidgetMessages } from './DefaultWidgetMessages';
 import { DefaultWidgetTextarea } from './DefaultWidgetTextarea';
@@ -287,13 +291,16 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
     this.setState(stateChange);
   };
 
-  onScreenshotRequestFulfilled = (screenshot) => {
+  onScreenshotRequestFulfilled = async (screenshot) => {
     const { textareaText, textareaAttachments } = this.state;
+    const imageBlobUrl = URL.createObjectURL(screenshot.file);
+    const dimensions = await getImageDimensions(imageBlobUrl);
     const newAttachment = {
       id: randomDigitStringId(6),
       name: 'Скриншот экрана',
       file: screenshot.file,
       isScreenshot: true,
+      ...dimensions,
     };
     const updatedText = textareaText.trim() ? textareaText : 'Вот скриншот моего экрана';
     this.setState({
@@ -317,8 +324,6 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
       isLoadingError,
     } = this.state;
     const { elixirChatWidget } = this.props;
-
-    window.__this = this;
 
     return (
       <div className="elixirchat-chat-container" ref={this.container}>

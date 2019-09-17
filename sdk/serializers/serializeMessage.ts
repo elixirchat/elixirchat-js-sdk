@@ -42,8 +42,6 @@ export function serializeMessage(message: any, options?: ISerializeMessageOption
   const serializedSender = serializeUser(senderData, options);
   const serializedAttachments = (attachments || []).map(attachment => serializeFile(attachment, options));
 
-  console.log('___ message', message);
-
   const responseToMessageSender = _get(responseToMessage, 'sender', {});
   const responseToMessageSenderData = {
     ..._omit(responseToMessageSender, ['employee']),
