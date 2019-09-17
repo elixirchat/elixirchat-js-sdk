@@ -14,6 +14,8 @@ const ChatAttachIconBlue = dataUrlSvg + fs.readFileSync(__dirname + '/images/cha
 const ChatCloseIconBlack = dataUrlSvg + fs.readFileSync(__dirname + '/images/chat-close-icon-black.svg', { encoding: 'base64' });
 const ChatRemoveIconBlue = dataUrlSvg + fs.readFileSync(__dirname + '/images/chat-remove-icon-blue.svg', { encoding: 'base64' });
 const ChatReplyRightIconBlack = dataUrlSvg + fs.readFileSync(__dirname + '/images/chat-reply-right-icon-black.svg', { encoding: 'base64' });
+const ChatReplyRightIconWhite = dataUrlSvg + fs.readFileSync(__dirname + '/images/chat-reply-right-icon-white.svg', { encoding: 'base64' });
+const ChatReplyRightIconBlue = dataUrlSvg + fs.readFileSync(__dirname + '/images/chat-reply-right-icon-blue.svg', { encoding: 'base64' });
 const ChatScreenshotIconBlack = dataUrlSvg + fs.readFileSync(__dirname + '/images/chat-screenshot-icon-black.svg', { encoding: 'base64' });
 const ChatScreenshotIconBlue = dataUrlSvg + fs.readFileSync(__dirname + '/images/chat-screenshot-icon-blue.svg', { encoding: 'base64' });
 const ChatScreenshotIconWhite = dataUrlSvg + fs.readFileSync(__dirname + '/images/chat-screenshot-icon-white.svg', { encoding: 'base64' });
@@ -30,6 +32,8 @@ export const assetsBase64 = {
   ChatCloseIconBlack,
   ChatRemoveIconBlue,
   ChatReplyRightIconBlack,
+  ChatReplyRightIconWhite,
+  ChatReplyRightIconBlue,
   ChatScreenshotIconBlack,
   ChatScreenshotIconBlue,
   ChatScreenshotIconWhite,
@@ -49,6 +53,8 @@ export const iframeAssetUrlCssVars = `:root {
   --ElixirChatChatCloseIconBlack:       url(${ChatCloseIconBlack});
   --ElixirChatChatRemoveIconBlue:       url(${ChatRemoveIconBlue});
   --ElixirChatReplyRightIconBlack:      url(${ChatReplyRightIconBlack});
+  --ElixirChatReplyRightIconWhite:      url(${ChatReplyRightIconWhite});
+  --ElixirChatReplyRightIconBlue:       url(${ChatReplyRightIconBlue});
   --ElixirChatChatScreenshotIconBlack:  url(${ChatScreenshotIconBlack});
   --ElixirChatChatScreenshotIconBlue:   url(${ChatScreenshotIconBlue});
   --ElixirChatChatScreenshotIconWhite:  url(${ChatScreenshotIconWhite});

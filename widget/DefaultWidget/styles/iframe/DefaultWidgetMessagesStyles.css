@@ -32,7 +32,6 @@
   padding-bottom: 1px;
 }
 
-
 .elixirchat-chat-messages__reply-to {
   white-space: nowrap;
   overflow: hidden;
@@ -61,6 +60,21 @@
   text-align: right;
   color: #999999;
   padding-top: 3px;
+  white-space: nowrap;
+}
+
+.elixirchat-chat-messages__reply {
+  margin-left: 10px;
+  cursor: default;
+}
+
+.elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__reply-to {
+  color: rgba(255,255,255,.65);
+}
+
+.elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__reply-to-icon {
+  opacity: .6;
+  background: var(--ElixirChatReplyRightIconWhite) center;
 }
 
 .elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__balloon {

@@ -249,9 +249,10 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
                   {dayjs(message.timestamp).format('H:mm, D MMMM')}
 
                   {!message.sender.isCurrentClient && (
-                    <Fragment>
-                      - <u onClick={() => onReplyMessage(message.id)}>Reply</u>
-                    </Fragment>
+                    <span className="elixirchat-chat-messages__reply"
+                      onClick={() => onReplyMessage(message.id)}>
+                      Ответить
+                    </span>
                   )}
                 </div>
               </div>

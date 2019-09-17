@@ -34,6 +34,37 @@
   z-index: 2;
 }
 
+.elixirchat-chat-textarea__reply-to {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #0033FF;
+  margin: 16px 35px 0 30px;
+}
+
+.elixirchat-chat-textarea__reply-to-icon {
+  display: inline-block;
+  margin-right: 7px;
+  width: 18px;
+  height: 15px;
+  vertical-align: text-bottom;
+  transition: opacity 100ms;
+  background: var(--ElixirChatReplyRightIconBlue) center;
+  background-size: contain;
+}
+
+.elixirchat-chat-textarea__reply-to-remove {
+  width: 11px;
+  height: 11px;
+  display: inline-block;
+  vertical-align: middle;
+  background: var(--ElixirChatChatRemoveIconBlue) no-repeat center;
+  background-size: contain;
+  position: absolute;
+  right: 21px;
+  top: 19px;
+}
+
 .elixirchat-chat-textarea__actions {
   position: absolute;
   right: 20px;

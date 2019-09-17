@@ -147,17 +147,18 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
   };
 
   render(): void {
-
+    const { areTextareaActionsCollapsed } = this.state;
     const {
-      areTextareaActionsCollapsed,
-    } = this.state;
-
-    const {
+      messages,
       textareaText,
       textareaResponseToMessageId,
       textareaAttachments,
       currentlyTypingUsers,
     } = this.props;
+
+    const responseToMessage = messages.filter(message => {
+      return message.id === textareaResponseToMessageId;
+    })[0];
 
     return (
       <div className="elixirchat-chat-textarea" ref={this.container}>
@@ -168,9 +169,15 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
           </div>
         )}
 
-        {textareaResponseToMessageId && (
-          <div>
-            Response: ${textareaResponseToMessageId.substr(0, 6)} - <u onClick={this.onRemoveReplyTo}>⨉</u>
+        {Boolean(responseToMessage) && (
+          <div className="elixirchat-chat-textarea__reply-to">
+            <i className="elixirchat-chat-textarea__reply-to-icon"/>
+            {responseToMessage.sender.firstName}&nbsp;
+            {responseToMessage.sender.lastName}&nbsp;
+            <span title={responseToMessage.text}>
+              {responseToMessage.text.substr(0, 100)}
+            </span>
+            <span className="elixirchat-chat-textarea__reply-to-remove" onClick={this.onRemoveReplyTo}/>
           </div>
         )}
 

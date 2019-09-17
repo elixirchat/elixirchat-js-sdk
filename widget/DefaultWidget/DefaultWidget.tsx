@@ -363,6 +363,7 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
             <DefaultWidgetTextarea
               onMessageSubmit={this.onMessageSubmit}
               onChange={this.onTextareaChange}
+              messages={messages}
               textareaText={textareaText}
               textareaResponseToMessageId={textareaResponseToMessageId}
               textareaAttachments={textareaAttachments}
