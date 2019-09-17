@@ -8,7 +8,7 @@
     "examples": "./bin/browse-examples.sh",
     "link-with-backend": "./bin/link-with-backend.sh"
   },
-  "main": "src/index.ts",
+  "main": "sdk/index.ts",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/elixirchat/elixirchat-js-sdk.git"
