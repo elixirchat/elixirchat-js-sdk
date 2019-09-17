@@ -277,7 +277,6 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
                   </div>
                   <button className="elixirchat-chat-messages__take-screenshot"
                     onClick={this.onTakeScreenshotClick}>
-                    <i className="elixirchat-chat-messages__take-screenshot-icon"/>
                     Сделать скриншот
                   </button>
                 </div>

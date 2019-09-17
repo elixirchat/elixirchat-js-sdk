@@ -36,14 +36,12 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
   }
 
   componentDidUpdate(prevProps) {
-    const {
-      textareaText,
-      textareaResponseToMessageId,
-      textareaAttachments,
-    } = this.props;
-
-    if (textareaResponseToMessageId !== prevProps.textareaResponseToMessageId) {
+    const { textareaAttachments, textareaResponseToMessageId } = this.props;
+    const didResponseToMessageIdChange = textareaResponseToMessageId !== prevProps.textareaResponseToMessageId;
+    const didAttachmentsChange = textareaAttachments !== prevProps.textareaAttachments;
+    if (didResponseToMessageIdChange || didAttachmentsChange) {
       this.updateVerticalHeight();
+      this.textarea.focus();
     }
   }
 
@@ -149,14 +147,10 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
 
   updateVerticalHeight = (options: { forceScrollToBottom: boolean }) => {
     setTimeout(() => {
-      const { textareaResponseToMessageId } = this.props;
       const newHeight = this.container.current.offsetHeight;
-
-      let areTextareaActionsCollapsed = newHeight < 60;
-      if (textareaResponseToMessageId) {
-        areTextareaActionsCollapsed = newHeight < 90;
-      }
-      this.setState({ areTextareaActionsCollapsed });
+      this.setState({
+        areTextareaActionsCollapsed: newHeight < 60,
+      });
       this.props.onVerticalResize(newHeight, options);
     }, 0);
   };
@@ -186,11 +180,11 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
 
         {Boolean(responseToMessage) && (
           <div className="elixirchat-chat-textarea__reply-to">
-            <i className="elixirchat-chat-textarea__reply-to-icon"/>
-            {responseToMessage.sender.firstName}&nbsp;
-            {responseToMessage.sender.lastName}&nbsp;
-            <span title={responseToMessage.text}>
-              {responseToMessage.text.substr(0, 100)}
+            <span className="elixirchat-chat-textarea__reply-to-text">
+              <i className="elixirchat-chat-textarea__reply-to-icon"/>
+              <span title={responseToMessage.text}>
+                {responseToMessage.text.substr(0, 100)}
+              </span>
             </span>
             <span className="elixirchat-chat-textarea__reply-to-remove" onClick={this.onRemoveReplyTo}/>
           </div>

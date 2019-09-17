@@ -217,15 +217,6 @@
   background: #e4006a;
 }
 
-.elixirchat-chat-messages__take-screenshot-icon {
-  display: inline-block;
-  width: 16px;
-  height: 12px;
-  background: var(--ElixirChatChatScreenshotIconWhite) no-repeat center;
-  margin-right: 8px;
-  vertical-align: text-top;
-}
-
 @keyframes elixirchat-chat-spinner {
   to {
     transform: rotate(360deg);
