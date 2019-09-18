@@ -18,6 +18,7 @@ export interface IDefaultWidgetTextareaState {
 export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps, IDefaultWidgetTextareaState> {
 
   container = React.createRef();
+  inputFile = React.createRef();
   textarea: HTMLTextAreaElement = null;
 
   state = {
@@ -143,6 +144,7 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
       file,
     }));
     this.addAttachments(textareaAttachments);
+    this.inputFile.current.value = '';
   };
 
   updateVerticalHeight = (options: { forceScrollToBottom: boolean }) => {
@@ -183,7 +185,10 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
             <span className="elixirchat-chat-textarea__reply-to-text">
               <i className="elixirchat-chat-textarea__reply-to-icon"/>
               <span title={responseToMessage.text}>
-                {responseToMessage.text.substr(0, 100)}
+                {responseToMessage.text && responseToMessage.text.substr(0, 100)}
+                {!responseToMessage.text && (
+                  responseToMessage.sender.firstName + ' ' + responseToMessage.sender.lastName
+                )}
               </span>
             </span>
             <span className="elixirchat-chat-textarea__reply-to-remove" onClick={this.onRemoveReplyTo}/>
@@ -204,6 +209,7 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
               className="elixirchat-chat-textarea__actions-attach-input"
               id="DefaultWidget-file-upload"
               type="file"
+              ref={this.inputFile}
               multiple={true}
               onChange={this.onInputFileChange}/>
             <label className="elixirchat-chat-textarea__actions-attach-label" htmlFor="DefaultWidget-file-upload"/>
