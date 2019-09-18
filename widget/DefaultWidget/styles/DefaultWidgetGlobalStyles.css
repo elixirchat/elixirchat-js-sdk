@@ -110,7 +110,7 @@
   background: rgba(0,0,0,.8);
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 40px 50px 30px 50px;
+  padding: 40px 50px 0 50px;
   text-align: center;
   display: none;
 }
@@ -127,6 +127,7 @@
   position: relative;
   z-index: 2;
   box-shadow: 0 4px 8px rgba(0,0,0,.15);
+  margin-bottom: 40px;
 }
 
 .elixirchat-widget-image-preview__img--error:after {
