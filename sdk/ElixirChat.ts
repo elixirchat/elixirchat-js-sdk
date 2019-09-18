@@ -295,7 +295,13 @@ export class ElixirChat {
       onMessage: (message: IElixirChatReceivedMessage) => {
         logEvent(this.debug, 'Received new message', message);
         this.onMessageCallbacks.forEach(callback => callback(message));
-      }
+      },
+      onUnsubscribe: () => {
+        logEvent(this.debug, 'Unsubscribed from messages', {
+          room: this.room,
+          client: this.client,
+        });
+      },
     });
   }
 

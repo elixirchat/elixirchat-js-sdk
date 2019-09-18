@@ -16,6 +16,7 @@ export interface IMessagesSubscriptionConfig {
   currentClientId: string;
   onSubscribeSuccess?: (data: any) => void;
   onSubscribeError?: (data: any) => void;
+  onUnsubscribe?: () => void;
   onMessage: (message: IMessage) => void;
 }
 
@@ -27,6 +28,7 @@ export class MessagesSubscription {
   public currentClientId: string;
   public onSubscribeSuccess?: (data: any) => void;
   public onSubscribeError?: (data: any) => void;
+  public onUnsubscribe?: () => void;
   public onMessage: (message: IMessage) => void;
 
   protected notifier: any;
@@ -36,6 +38,7 @@ export class MessagesSubscription {
   protected latestMessageHistoryCursorsCache: Array<IMessage> = [];
   protected reachedBeginningOfMessageHistory: boolean = false;
   protected isBeforeUnload: boolean = false;
+  protected isCurrentlySubscribed: boolean = false;
 
   protected subscriptionQuery: string = gql`
     subscription {
@@ -198,6 +201,7 @@ export class MessagesSubscription {
     this.currentClientId = config.currentClientId;
     this.onSubscribeSuccess = config.onSubscribeSuccess || function () {};
     this.onSubscribeError = config.onSubscribeError || function () {};
+    this.onUnsubscribe = config.onUnsubscribe || function () {};
     this.onMessage = config.onMessage;
     this.initialize();
   }
@@ -229,7 +233,10 @@ export class MessagesSubscription {
       onAbort: e => this.onSubscribeAbort(e),
       onStart: notifier => {
         this.notifier = notifier;
-        this.onSubscribeSuccess(notifier);
+        if (!this.isCurrentlySubscribed) {
+          this.isCurrentlySubscribed = true;
+          this.onSubscribeSuccess(notifier);
+        }
       },
       onResult: ({ data }) => {
         if (data && data.newMessage) {
@@ -256,6 +263,8 @@ export class MessagesSubscription {
     this.absintheSocket = AbsintheSocket.cancel(this.absintheSocket, this.notifier);
     this.latestMessageHistoryCursorsCache = [];
     this.reachedBeginningOfMessageHistory = false;
+    this.isCurrentlySubscribed = false;
+    this.onUnsubscribe();
   };
 
   public sendMessage = ({ text, attachments, responseToMessageId }: ISentMessage): Promise<IMessage> => {
