@@ -203,7 +203,14 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
     const temporaryMessage = _last(messages.filter(message => {
       return this.areMessagesEquivalent(message, newMessage);
     }));
-    this.changeMessageById(temporaryMessage.id, newMessage);
+    if (temporaryMessage) {
+      this.changeMessageById(temporaryMessage.id, newMessage);
+    }
+    else {
+      this.setState({
+        messages: [...this.state.messages, newMessage]
+      });
+    }
   };
 
   areMessagesEquivalent = (message1, message2) => {

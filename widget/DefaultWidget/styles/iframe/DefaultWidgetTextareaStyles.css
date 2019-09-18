@@ -138,7 +138,7 @@
 
 .elixirchat-chat-textarea__actions-attach-label:after {
   background: var(--ElixirChatChatAttachIconBlack) center no-repeat;
-  background-size: 20px 14px;
+  background-size: 14px 14px;
 }
 
 .elixirchat-chat-textarea__textarea {
