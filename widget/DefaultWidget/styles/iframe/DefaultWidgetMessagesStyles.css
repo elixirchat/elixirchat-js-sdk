@@ -60,11 +60,16 @@
   white-space: pre-wrap;
 }
 
-.elixirchat-chat-messages__timestamp {
+.elixirchat-chat-messages__bottom {
   text-align: right;
   color: #999999;
   padding-top: 4px;
   white-space: nowrap;
+}
+
+.elixirchat-chat-messages__submission-error {
+  color: #ff006e;
+  cursor: pointer;
 }
 
 .elixirchat-chat-messages__reply {
@@ -105,7 +110,7 @@
   color: #FF006E;
 }
 
-.elixirchat-chat-messages__item--by-operator .elixirchat-chat-messages__timestamp {
+.elixirchat-chat-messages__item--by-operator .elixirchat-chat-messages__bottom {
   text-align: left;
 }
 
@@ -214,7 +219,7 @@
 }
 
 .elixirchat-chat-messages__take-screenshot:hover {
-  background: #e4006a;
+  background: #e6025f;
 }
 
 @keyframes elixirchat-chat-spinner {

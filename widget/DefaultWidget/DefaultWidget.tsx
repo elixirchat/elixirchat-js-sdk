@@ -176,6 +176,7 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
             isSubmitting: false,
             isSubmissionError: true,
           });
+          elixirChatWidget.dispatchTypedText(false);
         });
     }
   };
@@ -317,6 +318,25 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
     this.setState({ textareaResponseToMessageId: messageId });
   };
 
+  onSubmitRetry = async (message) => {
+    const { elixirChatWidget } = this.props;
+
+    this.changeMessageById(message.id, {
+      isSubmitting: true,
+      isSubmissionError: false,
+    });
+    elixirChatWidget.sendMessage({
+      text: message.text,
+      attachments: message.attachments.map(attachment => attachment.originalFileObject).filter(file => file),
+      responseToMessageId: _get(message, 'responseToMessage.id'),
+    }).catch(() => {
+      this.changeMessageById(message.id, {
+        isSubmitting: false,
+        isSubmissionError: true,
+      });
+    });
+  };
+
   render(): void {
     const {
       messages,
@@ -360,6 +380,7 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
                 onLoadPreviousMessages={this.loadPreviousMessages}
                 onScreenshotRequestFulfilled={this.onScreenshotRequestFulfilled}
                 onReplyMessage={this.onReplyMessage}
+                onSubmitRetry={this.onSubmitRetry}
                 elixirChatWidget={elixirChatWidget}
                 messages={messages}/>
             </div>

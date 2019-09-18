@@ -148,7 +148,7 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
 
   render(): void {
     const { processedMessages } = this.state;
-    const { onReplyMessage } = this.props;
+    const { onReplyMessage, onSubmitRetry } = this.props;
 
     return (
       <div className="elixirchat-chat-messages">
@@ -172,15 +172,9 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
                 'elixirchat-chat-messages__item': true,
                 'elixirchat-chat-messages__item--by-me': message.sender.isCurrentClient,
                 'elixirchat-chat-messages__item--by-operator': message.sender.isOperator,
-              })} onDoubleClick={() => onReplyMessage(message.id)}>
+              })}>
 
-                {message.isSubmissionError && (
-                  <h1 style={{ color: 'red' }}>
-                    ERROR
-                  </h1>
-                )}
-
-                <div className="elixirchat-chat-messages__balloon">
+                <div className="elixirchat-chat-messages__balloon" onDoubleClick={() => onReplyMessage(message.id)}>
                   <div className="elixirchat-chat-messages__sender">
                     {message.sender.isCurrentClient ? 'Я' : (message.sender.firstName || '') + ' ' + (message.sender.lastName || '')}
                   </div>
@@ -247,17 +241,27 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
                   </div>
                 )}
 
-                <div className="elixirchat-chat-messages__timestamp">
-                  {/*{dayjs(message.timestamp).format('H:mm, D MMMM')}*/}
-                  {!message.sender.isCurrentClient && dayjs(message.timestamp).format('H:mm')}
-                  {!message.isSystem && (
-                    <span className="elixirchat-chat-messages__reply"
-                      title="Для ответа также можно дважды кликнуть сообщение"
-                      onClick={() => onReplyMessage(message.id)}>
-                      Ответить
+                <div className="elixirchat-chat-messages__bottom">
+                  {message.isSubmissionError && (
+                    <span className="elixirchat-chat-messages__submission-error"
+                      title="Нажмите, чтобы отправить еще раз"
+                      onClick={() => onSubmitRetry(message)}>
+                      Не отправлено
                     </span>
                   )}
-                  {message.sender.isCurrentClient && dayjs(message.timestamp).format('H:mm')}
+                  {!message.isSubmissionError && (
+                    <Fragment>
+                      {!message.sender.isCurrentClient && dayjs(message.timestamp).format('H:mm')}
+                      {!message.isSystem && (
+                        <span className="elixirchat-chat-messages__reply"
+                          title="Для ответа также можно дважды кликнуть сообщение"
+                          onClick={() => onReplyMessage(message.id)}>
+                          Ответить
+                        </span>
+                      )}
+                      {message.sender.isCurrentClient && dayjs(message.timestamp).format('H:mm')}
+                    </Fragment>
+                  )}
                 </div>
               </div>
             )}
@@ -280,7 +284,7 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
                     Сделать скриншот
                   </button>
                 </div>
-                <div className="elixirchat-chat-messages__timestamp">
+                <div className="elixirchat-chat-messages__bottom">
                   {dayjs(message.timestamp).format('H:mm, D MMMM')}
                 </div>
               </div>
