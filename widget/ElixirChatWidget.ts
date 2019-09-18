@@ -84,26 +84,34 @@ export class ElixirChatWidget extends ElixirChat {
   }
 
   protected appendChatIframe(): void {
-    const iframe = <HTMLIFrameElement>insertElement('iframe', {
-      hidden: true,
-      className: 'elixirchat-widget-iframe',
-    }, this.container);
+    return new Promise((resolve) => {
 
-    iframe.contentWindow.document.body.appendChild(insertElement('main'));
-    if (this.widgetChatIframe) {
-      this.widgetChatIframe.remove();
-    }
-    this.widgetChatIframe = iframe;
+      const iframe = <HTMLIFrameElement>document.createElement('iframe');
+      iframe.className = 'elixirchat-widget-iframe';
+      iframe.hidden = true;
 
-    const iframeContainer = <HTMLElement>iframe.contentWindow.document.querySelector('main');
-    this.widgetChatReactComponent = appendWidgetIframeContent(iframeContainer, this);
+      iframe.onload = () => {
+        iframe.contentWindow.document.body.appendChild(insertElement('main'));
+        if (this.widgetChatIframe) {
+          this.widgetChatIframe.remove();
+        }
+        this.widgetChatIframe = iframe;
 
-    this.injectIframeStyles(this.iframeStyles);
-    this.injectIframeStyles(iframeAssetUrlCssVars);
-    this.injectIframeStyles([
-      generateFontFaceRule('Graphik', 'normal', assetsBase64.GraphikRegularWeb),
-      generateFontFaceRule('Graphik', 'bold', assetsBase64.GraphikBoldWeb)
-    ].join('\n'));
+        const iframeContainer = <HTMLElement>iframe.contentWindow.document.querySelector('main');
+        this.widgetChatReactComponent = appendWidgetIframeContent(iframeContainer, this);
+
+        this.injectIframeStyles(this.iframeStyles);
+        this.injectIframeStyles(iframeAssetUrlCssVars);
+        this.injectIframeStyles([
+          generateFontFaceRule('Graphik', 'normal', assetsBase64.GraphikRegularWeb),
+          generateFontFaceRule('Graphik', 'bold', assetsBase64.GraphikBoldWeb)
+        ].join('\n'));
+
+        resolve();
+      };
+
+      this.container.appendChild(iframe);
+    });
   }
 
   protected appendImagePreview(): void {
@@ -207,7 +215,7 @@ export class ElixirChatWidget extends ElixirChat {
     this.onToggleChatVisibilityCallbacks.push(callback);
   };
 
-  public appendWidget = ({ container, iframeStyles = '', visibleByDefault = false }: IElixirChatWidgetAppendWidgetConfig): void => {
+  public appendWidget = async ({ container, iframeStyles = '', visibleByDefault = false }: IElixirChatWidgetAppendWidgetConfig): void => {
     if (!(container instanceof HTMLElement)) {
       const errorMessage = 'You must provide an HTMLElement as a "container" option to appendWidget() method';
       logEvent(this.debug, errorMessage, { container, iframeStyles }, 'error');
@@ -218,7 +226,7 @@ export class ElixirChatWidget extends ElixirChat {
     this.iframeStyles = iframeStyles;
     this.visibleByDefault = visibleByDefault;
 
-    this.appendChatIframe();
+    await this.appendChatIframe();
     this.appendWidgetButton();
     this.appendImagePreview();
 
