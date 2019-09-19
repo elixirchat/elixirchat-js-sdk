@@ -325,15 +325,7 @@ function randomDigitStringId(idLength) {
   return (Array(idLength).join('0') + Math.random()).slice(-idLength);
 }
 
-exports.randomDigitStringId = randomDigitStringId;
-
-function parseUrl(url) {
-  var link = document.createElement('a');
-  link.href = url;
-  return link;
-}
-
-exports.parseUrl = parseUrl; // Lodash-like _.get
+exports.randomDigitStringId = randomDigitStringId; // Lodash-like _.get
 
 function _get(object, path, defaultValue) {
   try {
@@ -5755,8 +5747,6 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var utilsCommon_1 = require("../../utilsCommon");
-
 function serializeFile(fileData, options) {
   var file = fileData || {};
   var thumbnails = null;
@@ -5777,8 +5767,7 @@ function serializeFile(fileData, options) {
     });
   }
 
-  var parsedApiUrl = utilsCommon_1.parseUrl(options.apiUrl);
-  var uploadsUrlPrefix = parsedApiUrl.protocol + '//' + parsedApiUrl.host + '/';
+  var uploadsUrlPrefix = options.backendStaticUrl.replace(/\/$/, '') + '/';
   var fileUrl = '';
 
   if (file.url) {
@@ -5799,7 +5788,7 @@ function serializeFile(fileData, options) {
 }
 
 exports.serializeFile = serializeFile;
-},{"../../utilsCommon":"EjGt"}],"ZEl5":[function(require,module,exports) {
+},{}],"ZEl5":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -5841,8 +5830,8 @@ function serializeMessage(message, options) {
 
   return {
     id: utilsCommon_1._get(message, 'id') || null,
-    text: utilsCommon_1._get(message, 'text', ''),
-    timestamp: utilsCommon_1._get(message, 'timestamp', ''),
+    text: utilsCommon_1._get(message, 'text') || '',
+    timestamp: utilsCommon_1._get(message, 'timestamp') || '',
     cursor: utilsCommon_1._get(message, 'cursor') || null,
     sender: serializedSender,
     responseToMessage: serializedResponseToMessage.id ? serializedResponseToMessage : null,
@@ -6087,7 +6076,7 @@ function () {
         }).then(function (data) {
           if (data && data.sendMessage) {
             var message = serializeMessage_1.serializeMessage(data.sendMessage, {
-              apiUrl: _this.apiUrl,
+              backendStaticUrl: _this.backendStaticUrl,
               currentClientId: _this.currentClientId
             });
             resolve(message);
@@ -6124,7 +6113,7 @@ function () {
           if (response.messages) {
             var messages = GraphQLClient_1.simplifyGraphQLJSON(response.messages).map(function (message) {
               return serializeMessage_1.serializeMessage(message, {
-                apiUrl: _this.apiUrl,
+                backendStaticUrl: _this.backendStaticUrl,
                 currentClientId: _this.currentClientId
               });
             }).filter(function (message) {
@@ -6162,6 +6151,7 @@ function () {
 
     this.apiUrl = config.apiUrl;
     this.socketUrl = config.socketUrl;
+    this.backendStaticUrl = config.backendStaticUrl;
     this.token = config.token;
     this.currentClientId = config.currentClientId;
 
@@ -6216,7 +6206,7 @@ function () {
 
           if (data && data.newMessage) {
             var message = serializeMessage_1.serializeMessage(data.newMessage, {
-              apiUrl: _this2.apiUrl,
+              backendStaticUrl: _this2.backendStaticUrl,
               currentClientId: _this2.currentClientId
             });
 
@@ -6728,6 +6718,7 @@ function () {
 
     this.apiUrl = config.apiUrl;
     this.socketUrl = config.socketUrl;
+    this.backendStaticUrl = config.backendStaticUrl;
     this.companyId = config.companyId;
     this.debug = config.debug || false;
     this.room = config.room;
@@ -6758,6 +6749,7 @@ function () {
       utilsCommon_1.logEvent(this.debug, 'Initializing ElixirChat', {
         apiUrl: this.apiUrl,
         socketUrl: this.socketUrl,
+        backendStaticUrl: this.backendStaticUrl,
         companyId: this.companyId,
         room: this.room,
         client: this.client,
@@ -6971,8 +6963,9 @@ function () {
       var _this5 = this;
 
       this.messagesSubscription = new MessagesSubscription_1.MessagesSubscription({
-        socketUrl: this.socketUrl,
         apiUrl: this.apiUrl,
+        socketUrl: this.socketUrl,
+        backendStaticUrl: this.backendStaticUrl,
         token: this.authToken,
         currentClientId: this.client.id,
         onSubscribeSuccess: function onSubscribeSuccess() {
