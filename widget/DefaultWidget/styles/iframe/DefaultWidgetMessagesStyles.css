@@ -288,13 +288,14 @@
   display: block;
 }
 
-.elixirchat-chat-images__img-not-found {
+.elixirchat-chat-images__item-not-found > img {
   position: relative;
   min-width: 180px;
   pointer-events: none;
+  cursor: default;
 }
 
-.elixirchat-chat-images__img-not-found:after {
+.elixirchat-chat-images__item-not-found > img:after {
   content: "(" attr(alt) ")";
   color: rgba(0, 0, 0, 0.2);
   display: block;
@@ -309,8 +310,8 @@
   text-align: center;
 }
 
-.elixirchat-chat-images__img-not-found:before {
-  content: "Файл не найден";
+.elixirchat-chat-images__item-not-found > img:before {
+  content: attr(data-error-message);
   color: rgba(0, 0, 0, 0.2);
   position: absolute;
   top: 0;

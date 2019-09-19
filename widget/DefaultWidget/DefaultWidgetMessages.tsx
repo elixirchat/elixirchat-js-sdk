@@ -240,16 +240,19 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
                     <ul className="elixirchat-chat-images">
                       {message.images.map(image => (
                         <li key={image.id} className="elixirchat-chat-images__item">
+
                           <a className="elixirchat-chat-images__link"
                             href={image.url}
                             target="_blank"
                             onClick={e => this.onImagePreviewClick(e, { ...image, sender: message.sender })}>
+
                             <img className="elixirchat-chat-images__img"
                               width={_round(image.thumbnailWidth, 2)}
                               height={_round(image.thumbnailHeight)}
                               src={image.thumbnailUrl}
                               alt={image.name}
-                              onError={e => e.target.classList.add('elixirchat-chat-images__img-not-found')}/>
+                              data-error-message="Файл не найден"
+                              onError={e => e.target.parentNode.classList.add('elixirchat-chat-images__item-not-found')}/>
                           </a>
                         </li>
                       ))}

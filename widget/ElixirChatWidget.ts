@@ -120,15 +120,10 @@ export class ElixirChatWidget extends ElixirChat {
     const img = insertElement('img', { className: 'elixirchat-widget-image-preview__img' }, inner);
 
     const imagePreviewImgClassNameLoading = 'elixirchat-widget-image-preview__img--loading';
-    const imagePreviewImgClassNameError = 'elixirchat-widget-image-preview__img--error';
 
     container.onclick = () => this.closeImagePreview();
-    img.onerror = () => {
-      img.classList.add(imagePreviewImgClassNameError);
-      img.classList.remove(imagePreviewImgClassNameLoading);
-    };
     img.onload = () => {
-      img.classList.remove(imagePreviewImgClassNameError, imagePreviewImgClassNameLoading);
+      img.classList.remove(imagePreviewImgClassNameLoading);
     };
     this.widgetImagePreview = container;
     this.widgetImagePreviewImg = img;

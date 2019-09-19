@@ -130,36 +130,6 @@
   margin-bottom: 40px;
 }
 
-.elixirchat-widget-image-preview__img--error:after {
-  content: "(" attr(alt) ")";
-  color: rgba(0, 0, 0, 0.2);
-  display: block;
-  margin: 8px 0 0 20px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: calc(100% - 40px);
-  text-align: center;
-}
-
-.elixirchat-widget-image-preview__img--error:before {
-  content: "Файл не найден";
-  color: rgba(0, 0, 0, 0.2);
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding-bottom: 25px;
-}
-
 .elixirchat-widget-image-preview__img--loading {
   display: none;
 }
