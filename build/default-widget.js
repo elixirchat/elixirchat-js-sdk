@@ -9357,11 +9357,11 @@ Object.defineProperty(exports, "__esModule", {
 var fs = require('fs'); // Styles outside the Chat iframe
 
 
-exports.DefaultWidgetGlobalStyles = ".elixirchat-widget-button {\n  position: fixed;\n  bottom: 30px;\n  right: 30px;\n  width: 60px;\n  height: 60px;\n  border: 0;\n  cursor: pointer;\n  border-radius: 100%;\n  background-color: #FF006E;\n  box-shadow: 0 0 25px rgba(0,0,0,.15);\n  outline: none;\n  z-index: 999999;\n  transition: background-color 200ms;\n}\n\n.elixirchat-widget-button:hover {\n  background-color: #e6025f;\n}\n\n.elixirchat-widget-button:after,\n.elixirchat-widget-button:before {\n  content: \"\";\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  top: 0;\n  left: 0;\n  transition: opacity 300ms;\n}\n\n.elixirchat-widget-button:after {\n  background: var(--ElixirChatWidgetIconChat) no-repeat center 18px;\n  background-size: 29px;\n}\n\n.elixirchat-widget-button:before {\n  background: var(--ElixirChatWidgetIconClose) no-repeat center 21px;\n  background-size: 20px;\n}\n\n.elixirchat-widget-button:before {\n  opacity: 0;\n}\n\n.elixirchat-widget-button--visible:after {\n  opacity: 0;\n}\n\n.elixirchat-widget-button--visible:before {\n  opacity: 1;\n}\n\n.elixirchat-widget-button-counter {\n  display: none;\n  position: absolute;\n  padding: 0 5px;\n  min-width: 10px;\n  height: 20px;\n  font: 13px/20px Graphik, 'Helvetica Neue', sans-serif;\n  text-align: center;\n  border-radius: 100%;\n  background: #FF006E;\n  color: #ffffff;\n  box-shadow: 0 3px 7px rgba(0,0,0,0.2);\n  z-index: 2;\n  right: 0;\n  top: 0;\n}\n\n.elixirchat-widget-button-counter--has-unread {\n  display: block;\n}\n\n.elixirchat-widget-iframe {\n  border-radius: 8px;\n  background: #ffffff;\n  position: fixed;\n  max-height: 600px;\n  height: calc(100vh - 130px);\n  width: 380px;\n  bottom: 100px;\n  right: 30px;\n  border: 0;\n  box-shadow: 0 0 60px rgba(0,0,0,.15);\n  z-index: 999998;\n  transition: all 200ms;\n  opacity: 1;\n  transform: none;\n  transform-origin: bottom right;\n  display: none;\n}\n\n.elixirchat-widget-iframe--opening {\n  opacity: 0;\n  transform: translateY(15px) scale(0.9);\n}\n\n.elixirchat-widget-iframe--visible {\n  display: block;\n}\n\n.elixirchat-widget-image-preview {\n  position: fixed;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  top: 0;\n  z-index: 9999999;\n  background: rgba(0,0,0,.8);\n  overflow-y: auto;\n  overflow-x: hidden;\n  padding: 40px 50px 30px 50px;\n  text-align: center;\n  display: none;\n}\n\n.elixirchat-widget-image-preview--visible {\n  display: block;\n}\n\n.elixirchat-widget-image-preview__inner {\n  display: inline-block;\n}\n\n.elixirchat-widget-image-preview__img {\n  position: relative;\n  z-index: 2;\n  box-shadow: 0 4px 8px rgba(0,0,0,.15);\n}\n\n.elixirchat-widget-image-preview__img--error:after {\n  content: \"(\" attr(alt) \")\";\n  color: rgba(0, 0, 0, 0.2);\n  display: block;\n  margin: 8px 0 0 20px;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  position: absolute;\n  top: 50%;\n  transform: translateY(-50%);\n  width: calc(100% - 40px);\n  text-align: center;\n}\n\n.elixirchat-widget-image-preview__img--error:before {\n  content: \"\u0424\u0430\u0439\u043B \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\";\n  color: rgba(0, 0, 0, 0.2);\n  position: absolute;\n  top: 0;\n  bottom: 0;\n  left: 0;\n  right: 0;\n  background: #fff;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  padding-bottom: 25px;\n}\n\n.elixirchat-widget-image-preview__img--loading {\n  display: none;\n}\n\n@media (max-width: 480px) {\n  .elixirchat-widget-iframe {\n    bottom: 0;\n    right: 0;\n    left: 0;\n    top: 0;\n    width: 100%;\n    height: 100%;\n    max-height: 100%;\n    z-index: 9999999;\n    border-radius: 0;\n  }\n\n  .elixirchat-widget-button {\n    right: 20px;\n    bottom: 20px;\n  }\n}\n"; // Styles inside the Chat iframe
+exports.DefaultWidgetGlobalStyles = ".elixirchat-widget-button {\n  position: fixed;\n  bottom: 30px;\n  right: 30px;\n  width: 60px;\n  height: 60px;\n  border: 0;\n  cursor: pointer;\n  border-radius: 100%;\n  background-color: #FF006E;\n  box-shadow: 0 0 25px rgba(0,0,0,.15);\n  outline: none;\n  z-index: 999999;\n  transition: background-color 200ms;\n}\n\n.elixirchat-widget-button:hover {\n  background-color: #e6025f;\n}\n\n.elixirchat-widget-button:after,\n.elixirchat-widget-button:before {\n  content: \"\";\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  top: 0;\n  left: 0;\n  transition: opacity 300ms;\n}\n\n.elixirchat-widget-button:after {\n  background: var(--ElixirChatWidgetIconChat) no-repeat center 18px;\n  background-size: 29px;\n}\n\n.elixirchat-widget-button:before {\n  background: var(--ElixirChatWidgetIconClose) no-repeat center 21px;\n  background-size: 20px;\n}\n\n.elixirchat-widget-button:before {\n  opacity: 0;\n}\n\n.elixirchat-widget-button--visible:after {\n  opacity: 0;\n}\n\n.elixirchat-widget-button--visible:before {\n  opacity: 1;\n}\n\n.elixirchat-widget-button-counter {\n  display: none;\n  position: absolute;\n  padding: 0 5px;\n  min-width: 10px;\n  height: 20px;\n  font: 13px/20px Graphik, 'Helvetica Neue', sans-serif;\n  text-align: center;\n  border-radius: 100%;\n  background: #FF006E;\n  color: #ffffff;\n  box-shadow: 0 3px 7px rgba(0,0,0,0.2);\n  z-index: 2;\n  right: 0;\n  top: 0;\n}\n\n.elixirchat-widget-button-counter--has-unread {\n  display: block;\n}\n\n.elixirchat-widget-iframe {\n  border-radius: 8px;\n  background: #ffffff;\n  position: fixed;\n  max-height: 600px;\n  height: calc(100vh - 130px);\n  width: 380px;\n  bottom: 100px;\n  right: 30px;\n  border: 0;\n  box-shadow: 0 0 60px rgba(0,0,0,.15);\n  z-index: 999998;\n  transition: all 200ms;\n  opacity: 1;\n  transform: none;\n  transform-origin: bottom right;\n  display: none;\n}\n\n.elixirchat-widget-iframe--opening {\n  opacity: 0;\n  transform: translateY(15px) scale(0.9);\n}\n\n.elixirchat-widget-iframe--visible {\n  display: block;\n}\n\n.elixirchat-widget-image-preview {\n  position: fixed;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  top: 0;\n  z-index: 9999999;\n  background: rgba(0,0,0,.8);\n  overflow-y: auto;\n  overflow-x: hidden;\n  padding: 40px 50px 0 50px;\n  text-align: center;\n  display: none;\n}\n\n.elixirchat-widget-image-preview--visible {\n  display: block;\n}\n\n.elixirchat-widget-image-preview__inner {\n  display: inline-block;\n}\n\n.elixirchat-widget-image-preview__img {\n  position: relative;\n  z-index: 2;\n  box-shadow: 0 4px 8px rgba(0,0,0,.15);\n  margin-bottom: 40px;\n}\n\n.elixirchat-widget-image-preview__img--error:after {\n  content: \"(\" attr(alt) \")\";\n  color: rgba(0, 0, 0, 0.2);\n  display: block;\n  margin: 8px 0 0 20px;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  position: absolute;\n  top: 50%;\n  transform: translateY(-50%);\n  width: calc(100% - 40px);\n  text-align: center;\n}\n\n.elixirchat-widget-image-preview__img--error:before {\n  content: \"\u0424\u0430\u0439\u043B \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\";\n  color: rgba(0, 0, 0, 0.2);\n  position: absolute;\n  top: 0;\n  bottom: 0;\n  left: 0;\n  right: 0;\n  background: #fff;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  padding-bottom: 25px;\n}\n\n.elixirchat-widget-image-preview__img--loading {\n  display: none;\n}\n\n@media (max-width: 480px) {\n  .elixirchat-widget-iframe {\n    bottom: 0;\n    right: 0;\n    left: 0;\n    top: 0;\n    width: 100%;\n    height: 100%;\n    max-height: 100%;\n    z-index: 9999999;\n    border-radius: 0;\n  }\n\n  .elixirchat-widget-button {\n    right: 20px;\n    bottom: 20px;\n  }\n}\n"; // Styles inside the Chat iframe
 
 exports.DefaultWidgetStyles = "body {\n  margin: 0;\n  padding: 0;\n}\n\nbody,\ninput,\nbutton,\ntextarea {\n  font: 14px/18px Graphik, 'Helvetica Neue', sans-serif;\n  outline: none;\n  color: #151319;\n  -webkit-font-smoothing: antialiased;\n  -moz-osx-font-smoothing: grayscale;\n}\n\n.elixirchat-chat-container {\n  position: absolute;\n  top: 0;\n  bottom: 0;\n  right: 0;\n  left: 0;\n}\n\n.elixirchat-chat-header {\n  margin: 0;\n  font-size: 16px;\n  height: 53px;\n  box-sizing: border-box;\n  box-shadow: 0 1px 0 rgba(0,0,0,.15);\n  padding: 19px 0 0 30px;\n  position: fixed;\n  top: 0;\n  left: 0;\n  right: 0;\n  z-index: 2;\n  border-radius: 8px 8px 0 0;\n  background: #ffffff;\n}\n\n.elixirchat-chat-header__indicator {\n  display: inline-block;\n  width: 10px;\n  height: 10px;\n  border-radius: 100%;\n  background: #50C900;\n  vertical-align: middle;\n  margin-right: 8px;\n  margin-top: -2px;\n}\n\n.elixirchat-chat-header__close {\n  width: 53px;\n  height: 53px;\n  border: 0;\n  background: transparent var(--ElixirChatChatCloseIconBlack) no-repeat center;\n  background-size: 15px;\n  opacity: .22;\n  position: absolute;\n  top: 1px;\n  right: 0;\n  transition: opacity 200ms;\n}\n\n.elixirchat-chat-header__close:hover {\n  opacity: .4;\n}\n\n.elixirchat-chat-scroll {\n  position: fixed;\n  top: 53px;\n  left: 0;\n  right: 0;\n  bottom: 110px;\n  overflow-x: hidden;\n  overflow-y: auto;\n  padding: 20px 30px;\n}\n\n@keyframes spinner {\n  to {\n    transform: rotate(360deg);\n  }\n}\n\n.elixirchat-chat-spinner {\n  position: fixed;\n  top: 50%;\n  margin: -45px 0 0 -45px;\n  left: 50%;\n  display: block;\n  width: 90px;\n  height: 90px;\n  border-radius: 100%;\n  border: 1px solid #E2E2E2;\n  animation: spinner 1s linear infinite;\n}\n\n.elixirchat-chat-spinner:after {\n  content: '';\n  background: #ffffff;\n  width: 5px;\n  height: 30px;\n  position: absolute;\n  top: 50%;\n  margin: -15px 0 0 0;\n  left: -2px;\n}\n\n.elixirchat-chat-fatal-error {\n  position: fixed;\n  top: 50%;\n  transform: translateY(-50%);\n  left: 0;\n  right: 0;\n  display: block;\n  padding: 0 50px;\n  color: #999999;\n  line-height: 22px;\n  text-align: center;\n}\n\n.elixirchat-chat-fatal-error--nowrap {\n  white-space: nowrap;\n}\n";
-exports.DefaultWidgetMessagesStyles = ".elixirchat-chat-messages {\n  display: flex;\n  flex-direction: column;\n  align-items: flex-end;\n}\n\n.elixirchat-chat-messages a {\n  color: #0033FF;\n  text-decoration: none;\n  outline: none;\n}\n\n.elixirchat-chat-messages__date-title {\n  text-transform: uppercase;\n  font-size: 12px;\n  font-weight: bold;\n  border-bottom: 1px solid #151319;\n  line-height: 21px;\n  margin-bottom: 15px;\n  width: 100%;\n}\n\n.elixirchat-chat-messages__item {\n  max-width: 80%;\n  min-width: 50%;\n  margin-bottom: 15px;\n}\n\n.elixirchat-chat-messages__sender {\n  color: #0033FF;\n  font-weight: bold;\n  padding-bottom: 1px;\n}\n\n.elixirchat-chat-messages__balloon + .elixirchat-chat-messages__balloon {\n  margin-top: 10px;\n}\n\n.elixirchat-chat-messages__reply-to {\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  color: #999999;\n  margin: 2px 0 4px 0;\n}\n\n.elixirchat-chat-messages__reply-to-icon {\n  display: inline-block;\n  margin-right: 7px;\n  width: 18px;\n  height: 15px;\n  opacity: .3;\n  vertical-align: text-bottom;\n  transition: opacity 100ms;\n  background: var(--ElixirChatReplyRightIconBlack) center;\n  background-size: contain;\n}\n\n.elixirchat-chat-messages__text {\n  white-space: pre-wrap;\n}\n\n.elixirchat-chat-messages__timestamp {\n  text-align: right;\n  color: #999999;\n  padding-top: 4px;\n  white-space: nowrap;\n}\n\n.elixirchat-chat-messages__reply {\n  margin-left: 10px;\n  cursor: default;\n}\n\n.elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__reply {\n  margin-left: 0;\n  margin-right: 10px;\n}\n\n.elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__reply-to {\n  color: rgba(255,255,255,.65);\n}\n\n.elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__reply-to-icon {\n  opacity: .6;\n  background: var(--ElixirChatReplyRightIconWhite) center;\n}\n\n.elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__balloon {\n  padding: 9px 10px 7px 10px;\n  border-radius: 3px;\n  background: #0033FF;\n  color: #ffffff;\n}\n\n.elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__sender {\n  color: #ffffff;\n}\n\n.elixirchat-chat-messages__item--by-operator {\n  align-self: flex-start;\n}\n\n.elixirchat-chat-messages__item--by-operator .elixirchat-chat-messages__sender {\n  color: #FF006E;\n}\n\n.elixirchat-chat-messages__item--by-operator .elixirchat-chat-messages__timestamp {\n  text-align: left;\n}\n\n.elixirchat-chat-files {\n  list-style: none;\n  padding: 0 0 4px 0;\n  margin: 0;\n}\n\n.elixirchat-chat-files__item {\n  display: flex;\n  line-height: 21px;\n  margin-top: 10px;\n  padding: 0;\n  cursor: default;\n}\n.elixirchat-chat-files__item:hover .elixirchat-chat-files__preview {\n  background-color: #efefef;\n}\n\n.elixirchat-chat-files__item:hover .elixirchat-chat-files__preview-image:after {\n  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);\n}\n\n.elixirchat-chat-files__preview {\n  width: 50px;\n  height: 50px;\n  flex-basis: 50px;\n  flex-shrink: 0;\n  border-radius: 3px;\n  background: #F4F4F4;\n  transition: all 200ms;\n  position: relative;\n}\n\n.elixirchat-chat-files__preview:before {\n  content: \"\";\n  background-size: contain;\n  background: var(--ElixirChatChatAttachIconBlack) no-repeat center;\n  width: 17px;\n  height: 17px;\n  opacity: 0.18;\n  position: absolute;\n  top: 16px;\n  left: 16px;\n}\n\n.elixirchat-chat-files__preview-image {\n  background-size: cover;\n}\n\n.elixirchat-chat-files__preview-image:after {\n  content: \"\";\n  position: absolute;\n  border-radius: 3px;\n  top: 0;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);\n  pointer-events: none;\n  transition: all 200ms;\n}\n\n.elixirchat-chat-files__preview-image:before {\n  display: none;\n}\n\n.elixirchat-chat-files__preview-submitting {\n  background-image: none;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n\n.elixirchat-chat-files__preview-submitting:after, .elixirchat-chat-files__preview-submitting:before {\n  display: none;\n}\n\n.elixirchat-chat-files__text {\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  padding: 6px 0 0 9px;\n}\n\n.elixirchat-chat-files__text-link {\n  margin-left: -15px;\n  padding-left: 15px;\n}\n\n.elixirchat-chat-files__text-secondary {\n  color: rgba(0, 0, 0, 0.25);\n}\n\n.elixirchat-chat-messages__take-screenshot {\n  background: #FF006E;\n  color: #ffffff;\n  border: 0;\n  border-radius: 4px;\n  padding: 1px 11px 0 11px;\n  height: 31px;\n  line-height: 31px;\n  margin: 6px 0 3px 0;\n  transition: background-color 300ms;\n}\n\n.elixirchat-chat-messages__take-screenshot:hover {\n  background: #e4006a;\n}\n\n@keyframes elixirchat-chat-spinner {\n  to {\n    transform: rotate(360deg);\n  }\n}\n\n.elixirchat-chat-files__preview-spinner {\n  display: block;\n  width: 22px;\n  height: 22px;\n  border-radius: 100%;\n  background: var(--ElixirChatSpinnerXsBlack) center no-repeat;\n  background-size: contain;\n  opacity: .1;\n  animation: elixirchat-chat-spinner 1s linear infinite;\n}\n\n.elixirchat-chat-images {\n  list-style: none;\n  padding: 0 0 0 0;\n  margin: 6px 0 2px 0;\n}\n\n.elixirchat-chat-images__item {\n  padding: 0;\n  margin-top: 6px;\n}\n\n.elixirchat-chat-images__item:first-child {\n  margin-top: 2px;\n}\n\n.elixirchat-chat-images__link {\n  display: inline-block;\n  vertical-align: bottom;\n  position: relative;\n}\n\n.elixirchat-chat-images__link:after {\n  content: \"\";\n  position: absolute;\n  border-radius: 3px;\n  top: 0;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);\n  pointer-events: none;\n}\n\n.elixirchat-chat-images__img {\n  max-width: 256px;\n  max-height: 256px;\n  border-radius: 3px;\n  display: block;\n}\n\n.elixirchat-chat-images__img-not-found {\n  position: relative;\n  min-width: 180px;\n  pointer-events: none;\n}\n\n.elixirchat-chat-images__img-not-found:after {\n  content: \"(\" attr(alt) \")\";\n  color: rgba(0, 0, 0, 0.2);\n  display: block;\n  margin: 8px 0 0 20px;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  position: absolute;\n  top: 50%;\n  transform: translateY(-50%);\n  width: calc(100% - 40px);\n  text-align: center;\n}\n\n.elixirchat-chat-images__img-not-found:before {\n  content: \"\u0424\u0430\u0439\u043B \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\";\n  color: rgba(0, 0, 0, 0.2);\n  position: absolute;\n  top: 0;\n  bottom: 0;\n  left: 0;\n  right: 0;\n  background: #fff;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  padding-bottom: 25px;\n}\n\n.elixirchat-chat-messages__item--by-me .elixirchat-chat-images__item {\n  text-align: right;\n}\n\n.elixirchat-chat-messages__item--by-me .elixirchat-chat-files__text-link {\n  color: #ffffff;\n}\n\n.elixirchat-chat-messages__item--by-me .elixirchat-chat-files__text-secondary {\n  color: rgba(255,255,255,.5);\n}\n";
-exports.DefaultWidgetTextareaStyles = ".elixirchat-chat-textarea {\n  position: fixed;\n  bottom: 0;\n  left: 0;\n  right: 0;\n  background: #ffffff;\n  z-index: 3;\n  box-shadow: 0 -1px 0 rgba(0,0,0,.15);\n  border-radius: 0 0 8px 8px;\n}\n\n.elixirchat-chat-typing {\n  position: absolute;\n  background: #ffffff;\n  left: 0;\n  right: 0;\n  bottom: 100%;\n  font-weight: bold;\n  color: #D5D5D5;\n  padding: 0 30px 18px 56px;\n  box-shadow: 0 -15px 15px 6px rgba(255,255,255,.99), inset 0 -1px 0 rgba(0,0,0,.15);\n}\n\n.elixirchat-chat-typing:before {\n  content: \"\";\n  position: absolute;\n  left: 30px;\n  top: 3px;\n  width: 18px;\n  height: 11px;\n  background: var(--ElixirChatChatTypingIconBlack) no-repeat center;\n  background-size: contain;\n  opacity: .15;\n  z-index: 2;\n}\n\n.elixirchat-chat-textarea__reply-to {\n  color: #0033FF;\n  margin: 18px 0 -8px 30px;\n  position: relative;\n  z-index: 1;\n}\n\n.elixirchat-chat-textarea__reply-to-text {\n  display: inline-block;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 139px);\n}\n\n.elixirchat-chat-textarea__reply-to-icon {\n  display: inline-block;\n  margin-right: 4px;\n  width: 16px;\n  height: 13px;\n  vertical-align: text-top;\n  transition: opacity 100ms;\n  background: var(--ElixirChatReplyRightIconBlue) center;\n  background-size: contain;\n}\n\n.elixirchat-chat-textarea__reply-to-remove {\n  width: 10px;\n  height: 10px;\n  display: inline-block;\n  vertical-align: text-top;\n  background: var(--ElixirChatChatRemoveIconBlue) no-repeat center;\n  background-size: contain;\n  right: 21px;\n  top: 19px;\n  margin: -3px 0 0 6px;\n}\n\n.elixirchat-chat-textarea__actions {\n  position: absolute;\n  right: 20px;\n  bottom: 20px;\n  z-index: 2;\n  transition: transform 200ms;\n}\n\n.elixirchat-chat-textarea__actions--collapsed {\n  transform: translateY(9px);\n}\n\n.elixirchat-chat-textarea__actions-screenshot,\n.elixirchat-chat-textarea__actions-attach {\n  width: 38px;\n  height: 31px;\n  border: 1px solid #D5D5D5;\n  border-radius: 7px;\n  position: relative;\n  margin-left: 10px;\n  display: inline-block;\n  vertical-align: top;\n  box-sizing: border-box;\n  overflow: hidden;\n  transition: background-color 200ms;\n  background: #ffffff;\n}\n\n.elixirchat-chat-textarea__actions-attach-input {\n  position: absolute;\n  z-index: 1;\n  opacity: 0;\n}\n\n.elixirchat-chat-textarea__actions-attach-label {\n  position: absolute;\n  z-index: 2;\n  left: 0;\n  right: 0;\n  top: 0;\n  bottom: 0;\n}\n\n.elixirchat-chat-textarea__actions-screenshot:hover,\n.elixirchat-chat-textarea__actions-attach-label:hover {\n  background-color: #f5f5f5;\n}\n\n.elixirchat-chat-textarea__actions-screenshot:after,\n.elixirchat-chat-textarea__actions-attach-label:after {\n  content: \"\";\n  position: absolute;\n  top: 0;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  opacity: .25;\n}\n\n.elixirchat-chat-textarea__actions-screenshot:after {\n  background: var(--ElixirChatChatScreenshotIconBlack) no-repeat center;\n  background-size: 20px 14px;\n}\n\n.elixirchat-chat-textarea__actions-attach-label:after {\n  background: var(--ElixirChatChatAttachIconBlack) center no-repeat;\n  background-size: 20px 14px;\n}\n\n.elixirchat-chat-textarea__textarea {\n  border: 0;\n  position: relative;\n  left: 0;\n  top: 0;\n  bottom: 0;\n  right: 0;\n  padding: 17px 0 0 30px;\n  margin-bottom: 17px;\n  resize: none;\n  width: calc(100% - 120px);\n}\n\n.elixirchat-chat-attachment-list {\n  padding: 0;\n  margin: -2px 0 15px 30px;\n  list-style: none;\n  line-height: 22px;\n  color: #0033FF;\n}\n\n.elixirchat-chat-attachment-item {\n  margin: 0;\n  white-space: nowrap;\n}\n\n.elixirchat-chat-attachment-icon {\n  display: inline-block;\n  margin-right: 10px;\n  width: 14px;\n  height: 14px;\n  background: var(--ElixirChatChatAttachIconBlue) no-repeat center;\n  background-size: contain;\n  vertical-align: middle;\n}\n\n.elixirchat-chat-attachment-icon--screenshot {\n  width: 16px;\n  height: 12px;\n  background: var(--ElixirChatChatScreenshotIconBlue) no-repeat center;\n  margin-top: -2px;\n}\n\n.elixirchat-chat-attachment-filename {\n  max-width: calc(100% - 165px);\n  display: inline-block;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  vertical-align: middle;\n}\n\n.elixirchat-chat-attachment-remove {\n  width: 11px;\n  height: 11px;\n  margin-left: 9px;\n  display: inline-block;\n  vertical-align: middle;\n  background: var(--ElixirChatChatRemoveIconBlue) no-repeat center;\n  background-size: contain;\n}\n";
+exports.DefaultWidgetMessagesStyles = ".elixirchat-chat-messages {\n  display: flex;\n  flex-direction: column;\n  align-items: flex-end;\n}\n\n.elixirchat-chat-messages a {\n  color: #0033FF;\n  text-decoration: none;\n  outline: none;\n}\n\n.elixirchat-chat-messages__date-title {\n  text-transform: uppercase;\n  font-size: 12px;\n  font-weight: bold;\n  border-bottom: 1px solid #151319;\n  line-height: 21px;\n  margin-bottom: 15px;\n  width: 100%;\n}\n\n.elixirchat-chat-messages__item {\n  max-width: 80%;\n  min-width: 50%;\n  margin-bottom: 15px;\n}\n\n.elixirchat-chat-messages__sender {\n  color: #0033FF;\n  font-weight: bold;\n  padding-bottom: 1px;\n}\n\n.elixirchat-chat-messages__balloon + .elixirchat-chat-messages__balloon {\n  margin-top: 10px;\n}\n\n.elixirchat-chat-messages__reply-to {\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  color: #999999;\n  margin: 2px 0 4px 0;\n}\n\n.elixirchat-chat-messages__reply-to-icon {\n  display: inline-block;\n  margin-right: 7px;\n  width: 18px;\n  height: 15px;\n  opacity: .3;\n  vertical-align: text-bottom;\n  transition: opacity 100ms;\n  background: var(--ElixirChatReplyRightIconBlack) center;\n  background-size: contain;\n}\n\n.elixirchat-chat-messages__text {\n  white-space: pre-wrap;\n}\n\n.elixirchat-chat-messages__bottom {\n  text-align: right;\n  color: #999999;\n  padding-top: 4px;\n  white-space: nowrap;\n}\n\n.elixirchat-chat-messages__submission-error {\n  color: #ff006e;\n  cursor: pointer;\n}\n\n.elixirchat-chat-messages__reply {\n  margin-left: 10px;\n  cursor: default;\n}\n\n.elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__reply {\n  margin-left: 0;\n  margin-right: 10px;\n}\n\n.elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__reply-to {\n  color: rgba(255,255,255,.65);\n}\n\n.elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__reply-to-icon {\n  opacity: .6;\n  background: var(--ElixirChatReplyRightIconWhite) center;\n}\n\n.elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__balloon {\n  padding: 9px 10px 7px 10px;\n  border-radius: 3px;\n  background: #0033FF;\n  color: #ffffff;\n}\n\n.elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__sender {\n  color: #ffffff;\n}\n\n.elixirchat-chat-messages__item--by-operator {\n  align-self: flex-start;\n}\n\n.elixirchat-chat-messages__item--by-operator .elixirchat-chat-messages__sender {\n  color: #FF006E;\n}\n\n.elixirchat-chat-messages__item--by-operator .elixirchat-chat-messages__bottom {\n  text-align: left;\n}\n\n.elixirchat-chat-files {\n  list-style: none;\n  padding: 0 0 4px 0;\n  margin: 0;\n}\n\n.elixirchat-chat-files__item {\n  display: flex;\n  line-height: 21px;\n  margin-top: 10px;\n  padding: 0;\n  cursor: default;\n}\n.elixirchat-chat-files__item:hover .elixirchat-chat-files__preview {\n  background-color: #efefef;\n}\n\n.elixirchat-chat-files__item:hover .elixirchat-chat-files__preview-image:after {\n  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);\n}\n\n.elixirchat-chat-files__preview {\n  width: 50px;\n  height: 50px;\n  flex-basis: 50px;\n  flex-shrink: 0;\n  border-radius: 3px;\n  background: #F4F4F4;\n  transition: all 200ms;\n  position: relative;\n}\n\n.elixirchat-chat-files__preview:before {\n  content: \"\";\n  background-size: contain;\n  background: var(--ElixirChatChatAttachIconBlack) no-repeat center;\n  width: 17px;\n  height: 17px;\n  opacity: 0.18;\n  position: absolute;\n  top: 16px;\n  left: 16px;\n}\n\n.elixirchat-chat-files__preview-image {\n  background-size: cover;\n}\n\n.elixirchat-chat-files__preview-image:after {\n  content: \"\";\n  position: absolute;\n  border-radius: 3px;\n  top: 0;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);\n  pointer-events: none;\n  transition: all 200ms;\n}\n\n.elixirchat-chat-files__preview-image:before {\n  display: none;\n}\n\n.elixirchat-chat-files__preview-submitting {\n  background-image: none;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n\n.elixirchat-chat-files__preview-submitting:after, .elixirchat-chat-files__preview-submitting:before {\n  display: none;\n}\n\n.elixirchat-chat-files__text {\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  padding: 6px 0 0 9px;\n}\n\n.elixirchat-chat-files__text-link {\n  margin-left: -15px;\n  padding-left: 15px;\n}\n\n.elixirchat-chat-files__text-secondary {\n  color: rgba(0, 0, 0, 0.25);\n}\n\n.elixirchat-chat-messages__take-screenshot {\n  background: #FF006E;\n  color: #ffffff;\n  border: 0;\n  border-radius: 4px;\n  padding: 1px 11px 0 11px;\n  height: 31px;\n  line-height: 31px;\n  margin: 6px 0 3px 0;\n  transition: background-color 300ms;\n}\n\n.elixirchat-chat-messages__take-screenshot:hover {\n  background: #e6025f;\n}\n\n@keyframes elixirchat-chat-spinner {\n  to {\n    transform: rotate(360deg);\n  }\n}\n\n.elixirchat-chat-files__preview-spinner {\n  display: block;\n  width: 22px;\n  height: 22px;\n  border-radius: 100%;\n  background: var(--ElixirChatSpinnerXsBlack) center no-repeat;\n  background-size: contain;\n  opacity: .1;\n  animation: elixirchat-chat-spinner 1s linear infinite;\n}\n\n.elixirchat-chat-images {\n  list-style: none;\n  padding: 0 0 0 0;\n  margin: 6px 0 2px 0;\n}\n\n.elixirchat-chat-images__item {\n  padding: 0;\n  margin-top: 6px;\n}\n\n.elixirchat-chat-images__item:first-child {\n  margin-top: 2px;\n}\n\n.elixirchat-chat-images__link {\n  display: inline-block;\n  vertical-align: bottom;\n  position: relative;\n}\n\n.elixirchat-chat-images__link:after {\n  content: \"\";\n  position: absolute;\n  border-radius: 3px;\n  top: 0;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);\n  pointer-events: none;\n}\n\n.elixirchat-chat-images__img {\n  max-width: 256px;\n  max-height: 256px;\n  border-radius: 3px;\n  display: block;\n}\n\n.elixirchat-chat-images__img-not-found {\n  position: relative;\n  min-width: 180px;\n  pointer-events: none;\n}\n\n.elixirchat-chat-images__img-not-found:after {\n  content: \"(\" attr(alt) \")\";\n  color: rgba(0, 0, 0, 0.2);\n  display: block;\n  margin: 8px 0 0 20px;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  position: absolute;\n  top: 50%;\n  transform: translateY(-50%);\n  width: calc(100% - 40px);\n  text-align: center;\n}\n\n.elixirchat-chat-images__img-not-found:before {\n  content: \"\u0424\u0430\u0439\u043B \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\";\n  color: rgba(0, 0, 0, 0.2);\n  position: absolute;\n  top: 0;\n  bottom: 0;\n  left: 0;\n  right: 0;\n  background: #fff;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  padding-bottom: 25px;\n}\n\n.elixirchat-chat-messages__item--by-me .elixirchat-chat-images__item {\n  text-align: right;\n}\n\n.elixirchat-chat-messages__item--by-me .elixirchat-chat-files__text-link {\n  color: #ffffff;\n}\n\n.elixirchat-chat-messages__item--by-me .elixirchat-chat-files__text-secondary {\n  color: rgba(255,255,255,.5);\n}\n";
+exports.DefaultWidgetTextareaStyles = ".elixirchat-chat-textarea {\n  position: fixed;\n  bottom: 0;\n  left: 0;\n  right: 0;\n  background: #ffffff;\n  z-index: 3;\n  box-shadow: 0 -1px 0 rgba(0,0,0,.15);\n  border-radius: 0 0 8px 8px;\n}\n\n.elixirchat-chat-typing {\n  position: absolute;\n  background: #ffffff;\n  left: 0;\n  right: 0;\n  bottom: 100%;\n  font-weight: bold;\n  color: #D5D5D5;\n  padding: 0 30px 18px 56px;\n  box-shadow: 0 -15px 15px 6px rgba(255,255,255,.99), inset 0 -1px 0 rgba(0,0,0,.15);\n}\n\n.elixirchat-chat-typing:before {\n  content: \"\";\n  position: absolute;\n  left: 30px;\n  top: 3px;\n  width: 18px;\n  height: 11px;\n  background: var(--ElixirChatChatTypingIconBlack) no-repeat center;\n  background-size: contain;\n  opacity: .15;\n  z-index: 2;\n}\n\n.elixirchat-chat-textarea__reply-to {\n  color: #0033FF;\n  margin: 18px 0 -8px 30px;\n  position: relative;\n  z-index: 1;\n}\n\n.elixirchat-chat-textarea__reply-to-text {\n  display: inline-block;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 139px);\n}\n\n.elixirchat-chat-textarea__reply-to-icon {\n  display: inline-block;\n  margin-right: 4px;\n  width: 16px;\n  height: 13px;\n  vertical-align: text-top;\n  transition: opacity 100ms;\n  background: var(--ElixirChatReplyRightIconBlue) center;\n  background-size: contain;\n}\n\n.elixirchat-chat-textarea__reply-to-remove {\n  width: 10px;\n  height: 10px;\n  display: inline-block;\n  vertical-align: text-top;\n  background: var(--ElixirChatChatRemoveIconBlue) no-repeat center;\n  background-size: contain;\n  right: 21px;\n  top: 19px;\n  margin: -3px 0 0 6px;\n}\n\n.elixirchat-chat-textarea__actions {\n  position: absolute;\n  right: 20px;\n  bottom: 20px;\n  z-index: 2;\n  transition: transform 200ms;\n}\n\n.elixirchat-chat-textarea__actions--collapsed {\n  transform: translateY(9px);\n}\n\n.elixirchat-chat-textarea__actions-screenshot,\n.elixirchat-chat-textarea__actions-attach {\n  width: 38px;\n  height: 31px;\n  border: 1px solid #D5D5D5;\n  border-radius: 7px;\n  position: relative;\n  margin-left: 10px;\n  display: inline-block;\n  vertical-align: top;\n  box-sizing: border-box;\n  overflow: hidden;\n  transition: background-color 200ms;\n  background: #ffffff;\n}\n\n.elixirchat-chat-textarea__actions-attach-input {\n  position: absolute;\n  z-index: 1;\n  opacity: 0;\n}\n\n.elixirchat-chat-textarea__actions-attach-label {\n  position: absolute;\n  z-index: 2;\n  left: 0;\n  right: 0;\n  top: 0;\n  bottom: 0;\n}\n\n.elixirchat-chat-textarea__actions-screenshot:hover,\n.elixirchat-chat-textarea__actions-attach-label:hover {\n  background-color: #f5f5f5;\n}\n\n.elixirchat-chat-textarea__actions-screenshot:after,\n.elixirchat-chat-textarea__actions-attach-label:after {\n  content: \"\";\n  position: absolute;\n  top: 0;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  opacity: .25;\n}\n\n.elixirchat-chat-textarea__actions-screenshot:after {\n  background: var(--ElixirChatChatScreenshotIconBlack) no-repeat center;\n  background-size: 20px 14px;\n}\n\n.elixirchat-chat-textarea__actions-attach-label:after {\n  background: var(--ElixirChatChatAttachIconBlack) center no-repeat;\n  background-size: 14px 14px;\n}\n\n.elixirchat-chat-textarea__textarea {\n  border: 0;\n  position: relative;\n  left: 0;\n  top: 0;\n  bottom: 0;\n  right: 0;\n  padding: 17px 0 0 30px;\n  margin-bottom: 17px;\n  resize: none;\n  width: calc(100% - 120px);\n}\n\n.elixirchat-chat-attachment-list {\n  padding: 0;\n  margin: -2px 0 15px 30px;\n  list-style: none;\n  line-height: 22px;\n  color: #0033FF;\n}\n\n.elixirchat-chat-attachment-item {\n  margin: 0;\n  white-space: nowrap;\n}\n\n.elixirchat-chat-attachment-icon {\n  display: inline-block;\n  margin-right: 10px;\n  width: 14px;\n  height: 14px;\n  background: var(--ElixirChatChatAttachIconBlue) no-repeat center;\n  background-size: contain;\n  vertical-align: middle;\n}\n\n.elixirchat-chat-attachment-icon--screenshot {\n  width: 16px;\n  height: 12px;\n  background: var(--ElixirChatChatScreenshotIconBlue) no-repeat center;\n  margin-top: -2px;\n}\n\n.elixirchat-chat-attachment-filename {\n  max-width: calc(100% - 165px);\n  display: inline-block;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  vertical-align: middle;\n}\n\n.elixirchat-chat-attachment-remove {\n  width: 11px;\n  height: 11px;\n  margin-left: 9px;\n  display: inline-block;\n  vertical-align: middle;\n  background: var(--ElixirChatChatRemoveIconBlue) no-repeat center;\n  background-size: contain;\n}\n";
 },{"fs":"70rD"}],"Q0s5":[function(require,module,exports) {
 "use strict";
 
@@ -9596,7 +9596,9 @@ function (_react_1$Component) {
       var _this2 = this;
 
       var processedMessages = this.state.processedMessages;
-      var onReplyMessage = this.props.onReplyMessage;
+      var _this$props3 = this.props,
+          onReplyMessage = _this$props3.onReplyMessage,
+          onSubmitRetry = _this$props3.onSubmitRetry;
       return react_1.default.createElement("div", {
         className: "elixirchat-chat-messages"
       }, processedMessages.map(function (message) {
@@ -9614,16 +9616,12 @@ function (_react_1$Component) {
             'elixirchat-chat-messages__item': true,
             'elixirchat-chat-messages__item--by-me': message.sender.isCurrentClient,
             'elixirchat-chat-messages__item--by-operator': message.sender.isOperator
-          }),
+          })
+        }, react_1.default.createElement("div", {
+          className: "elixirchat-chat-messages__balloon",
           onDoubleClick: function onDoubleClick() {
             return onReplyMessage(message.id);
           }
-        }, message.isSubmissionError && react_1.default.createElement("h1", {
-          style: {
-            color: 'red'
-          }
-        }, "ERROR"), react_1.default.createElement("div", {
-          className: "elixirchat-chat-messages__balloon"
         }, react_1.default.createElement("div", {
           className: "elixirchat-chat-messages__sender"
         }, message.sender.isCurrentClient ? 'Я' : (message.sender.firstName || '') + ' ' + (message.sender.lastName || '')), Boolean(message.responseToMessage) && react_1.default.createElement("div", {
@@ -9688,14 +9686,20 @@ function (_react_1$Component) {
             }
           })));
         }))), react_1.default.createElement("div", {
-          className: "elixirchat-chat-messages__timestamp"
-        }, !message.sender.isCurrentClient && dayjs_1.default(message.timestamp).format('H:mm'), !message.isSystem && react_1.default.createElement("span", {
+          className: "elixirchat-chat-messages__bottom"
+        }, message.isSubmissionError && react_1.default.createElement("span", {
+          className: "elixirchat-chat-messages__submission-error",
+          title: "\u041D\u0430\u0436\u043C\u0438\u0442\u0435, \u0447\u0442\u043E\u0431\u044B \u043E\u0442\u043F\u0440\u0430\u0432\u0438\u0442\u044C \u0435\u0449\u0435 \u0440\u0430\u0437",
+          onClick: function onClick() {
+            return onSubmitRetry(message);
+          }
+        }, "\u041D\u0435 \u043E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u043E"), !message.isSubmissionError && react_1.default.createElement(react_1.Fragment, null, !message.sender.isCurrentClient && dayjs_1.default(message.timestamp).format('H:mm'), !message.isSystem && react_1.default.createElement("span", {
           className: "elixirchat-chat-messages__reply",
           title: "\u0414\u043B\u044F \u043E\u0442\u0432\u0435\u0442\u0430 \u0442\u0430\u043A\u0436\u0435 \u043C\u043E\u0436\u043D\u043E \u0434\u0432\u0430\u0436\u0434\u044B \u043A\u043B\u0438\u043A\u043D\u0443\u0442\u044C \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435",
           onClick: function onClick() {
             return onReplyMessage(message.id);
           }
-        }, "\u041E\u0442\u0432\u0435\u0442\u0438\u0442\u044C"), message.sender.isCurrentClient && dayjs_1.default(message.timestamp).format('H:mm'))), message.isSystem && react_1.default.createElement("div", {
+        }, "\u041E\u0442\u0432\u0435\u0442\u0438\u0442\u044C"), message.sender.isCurrentClient && dayjs_1.default(message.timestamp).format('H:mm')))), message.isSystem && react_1.default.createElement("div", {
           className: classnames_1.default({
             'elixirchat-chat-messages__item': true,
             'elixirchat-chat-messages__item--by-operator': true,
@@ -9711,7 +9715,7 @@ function (_react_1$Component) {
           className: "elixirchat-chat-messages__take-screenshot",
           onClick: _this2.onTakeScreenshotClick
         }, "\u0421\u0434\u0435\u043B\u0430\u0442\u044C \u0441\u043A\u0440\u0438\u043D\u0448\u043E\u0442")), react_1.default.createElement("div", {
-          className: "elixirchat-chat-messages__timestamp"
+          className: "elixirchat-chat-messages__bottom"
         }, dayjs_1.default(message.timestamp).format('H:mm, D MMMM'))));
       }));
     }
@@ -10321,6 +10325,7 @@ function (_react_1$Component) {
 
     _this = _possibleConstructorReturn(this, _getPrototypeOf(DefaultWidgetTextarea).apply(this, arguments));
     _this.container = react_1.default.createRef();
+    _this.inputFile = react_1.default.createRef();
     _this.textarea = null;
     _this.state = {
       areTextareaActionsCollapsed: false
@@ -10504,6 +10509,8 @@ function (_react_1$Component) {
       });
 
       _this.addAttachments(textareaAttachments);
+
+      _this.inputFile.current.value = '';
     };
 
     _this.updateVerticalHeight = function (options) {
@@ -10580,7 +10587,7 @@ function (_react_1$Component) {
         className: "elixirchat-chat-textarea__reply-to-icon"
       }), react_1.default.createElement("span", {
         title: responseToMessage.text
-      }, responseToMessage.text.substr(0, 100))), react_1.default.createElement("span", {
+      }, responseToMessage.text && responseToMessage.text.substr(0, 100), !responseToMessage.text && responseToMessage.sender.firstName + ' ' + responseToMessage.sender.lastName)), react_1.default.createElement("span", {
         className: "elixirchat-chat-textarea__reply-to-remove",
         onClick: this.onRemoveReplyTo
       })), react_1.default.createElement("div", {
@@ -10599,6 +10606,7 @@ function (_react_1$Component) {
         className: "elixirchat-chat-textarea__actions-attach-input",
         id: "DefaultWidget-file-upload",
         type: "file",
+        ref: this.inputFile,
         multiple: true,
         onChange: this.onInputFileChange
       }), react_1.default.createElement("label", {
@@ -10843,6 +10851,8 @@ function (_react_1$Component) {
                   isSubmitting: false,
                   isSubmissionError: true
                 });
+
+                elixirChatWidget.dispatchTypedText(false);
               });
 
             case 9:
@@ -10881,7 +10891,13 @@ function (_react_1$Component) {
         return _this.areMessagesEquivalent(message, newMessage);
       }));
 
-      _this.changeMessageById(temporaryMessage.id, newMessage);
+      if (temporaryMessage) {
+        _this.changeMessageById(temporaryMessage.id, newMessage);
+      } else {
+        _this.setState({
+          messages: [].concat(_toConsumableArray(_this.state.messages), [newMessage])
+        });
+      }
     };
 
     _this.areMessagesEquivalent = function (message1, message2) {
@@ -11030,6 +11046,52 @@ function (_react_1$Component) {
       });
     };
 
+    _this.onSubmitRetry =
+    /*#__PURE__*/
+    function () {
+      var _ref4 = _asyncToGenerator(
+      /*#__PURE__*/
+      regeneratorRuntime.mark(function _callee3(message) {
+        var elixirChatWidget;
+        return regeneratorRuntime.wrap(function _callee3$(_context3) {
+          while (1) {
+            switch (_context3.prev = _context3.next) {
+              case 0:
+                elixirChatWidget = _this.props.elixirChatWidget;
+
+                _this.changeMessageById(message.id, {
+                  isSubmitting: true,
+                  isSubmissionError: false
+                });
+
+                elixirChatWidget.sendMessage({
+                  text: message.text,
+                  attachments: message.attachments.map(function (attachment) {
+                    return attachment.originalFileObject;
+                  }).filter(function (file) {
+                    return file;
+                  }),
+                  responseToMessageId: utilsCommon_1._get(message, 'responseToMessage.id')
+                }).catch(function () {
+                  _this.changeMessageById(message.id, {
+                    isSubmitting: false,
+                    isSubmissionError: true
+                  });
+                });
+
+              case 3:
+              case "end":
+                return _context3.stop();
+            }
+          }
+        }, _callee3);
+      }));
+
+      return function (_x2) {
+        return _ref4.apply(this, arguments);
+      };
+    }();
+
     return _this;
   }
 
@@ -11129,6 +11191,7 @@ function (_react_1$Component) {
         onLoadPreviousMessages: this.loadPreviousMessages,
         onScreenshotRequestFulfilled: this.onScreenshotRequestFulfilled,
         onReplyMessage: this.onReplyMessage,
+        onSubmitRetry: this.onSubmitRetry,
         elixirChatWidget: elixirChatWidget,
         messages: messages
       })), react_1.default.createElement(DefaultWidgetTextarea_1.DefaultWidgetTextarea, {
@@ -11222,6 +11285,10 @@ exports.globalAssetUrlCssVars = ":root {\n  --ElixirChatWidgetIconChat:         
 "use strict";
 
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+
+function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -11329,41 +11396,65 @@ function (_ElixirChat) {
       _this.onToggleChatVisibilityCallbacks.push(callback);
     };
 
-    _this.appendWidget = function (_ref) {
-      var container = _ref.container,
-          _ref$iframeStyles = _ref.iframeStyles,
-          iframeStyles = _ref$iframeStyles === void 0 ? '' : _ref$iframeStyles,
-          _ref$visibleByDefault = _ref.visibleByDefault,
-          visibleByDefault = _ref$visibleByDefault === void 0 ? false : _ref$visibleByDefault;
+    _this.appendWidget =
+    /*#__PURE__*/
+    function () {
+      var _ref2 = _asyncToGenerator(
+      /*#__PURE__*/
+      regeneratorRuntime.mark(function _callee(_ref) {
+        var container, _ref$iframeStyles, iframeStyles, _ref$visibleByDefault, visibleByDefault, errorMessage;
 
-      if (!(container instanceof HTMLElement)) {
-        var errorMessage = 'You must provide an HTMLElement as a "container" option to appendWidget() method';
-        utilsCommon_1.logEvent(_this.debug, errorMessage, {
-          container: container,
-          iframeStyles: iframeStyles
-        }, 'error');
-        return;
-      }
+        return regeneratorRuntime.wrap(function _callee$(_context) {
+          while (1) {
+            switch (_context.prev = _context.next) {
+              case 0:
+                container = _ref.container, _ref$iframeStyles = _ref.iframeStyles, iframeStyles = _ref$iframeStyles === void 0 ? '' : _ref$iframeStyles, _ref$visibleByDefault = _ref.visibleByDefault, visibleByDefault = _ref$visibleByDefault === void 0 ? false : _ref$visibleByDefault;
 
-      _this.container = container;
-      _this.iframeStyles = iframeStyles;
-      _this.visibleByDefault = visibleByDefault;
+                if (container instanceof HTMLElement) {
+                  _context.next = 5;
+                  break;
+                }
 
-      _this.appendChatIframe();
+                errorMessage = 'You must provide an HTMLElement as a "container" option to appendWidget() method';
+                utilsCommon_1.logEvent(_this.debug, errorMessage, {
+                  container: container,
+                  iframeStyles: iframeStyles
+                }, 'error');
+                return _context.abrupt("return");
 
-      _this.appendWidgetButton();
+              case 5:
+                _this.container = container;
+                _this.iframeStyles = iframeStyles;
+                _this.visibleByDefault = visibleByDefault;
+                _context.next = 10;
+                return _this.appendChatIframe();
 
-      _this.appendImagePreview();
+              case 10:
+                _this.appendWidgetButton();
 
-      if (_this.visibleByDefault) {
-        _this.toggleChatVisibility();
-      }
+                _this.appendImagePreview();
 
-      utilsCommon_1.logEvent(_this.debug, 'Appended ElixirChat default widget', {
-        container: container
-      });
-      return _this.widgetChatReactComponent;
-    };
+                if (_this.visibleByDefault) {
+                  _this.toggleChatVisibility();
+                }
+
+                utilsCommon_1.logEvent(_this.debug, 'Appended ElixirChat default widget', {
+                  container: container
+                });
+                return _context.abrupt("return", _this.widgetChatReactComponent);
+
+              case 15:
+              case "end":
+                return _context.stop();
+            }
+          }
+        }, _callee);
+      }));
+
+      return function (_x) {
+        return _ref2.apply(this, arguments);
+      };
+    }();
 
     return _this;
   }
@@ -11415,27 +11506,40 @@ function (_ElixirChat) {
   }, {
     key: "appendChatIframe",
     value: function appendChatIframe() {
-      var iframe = utilsWidget_1.insertElement('iframe', {
-        hidden: true,
-        className: 'elixirchat-widget-iframe'
-      }, this.container);
-      iframe.contentWindow.document.body.appendChild(utilsWidget_1.insertElement('main'));
+      var _this2 = this;
 
-      if (this.widgetChatIframe) {
-        this.widgetChatIframe.remove();
-      }
+      return new Promise(function (resolve) {
+        var iframe = document.createElement('iframe');
+        iframe.className = 'elixirchat-widget-iframe';
+        iframe.hidden = true;
 
-      this.widgetChatIframe = iframe;
-      var iframeContainer = iframe.contentWindow.document.querySelector('main');
-      this.widgetChatReactComponent = DefaultWidget_1.appendWidgetIframeContent(iframeContainer, this);
-      this.injectIframeStyles(this.iframeStyles);
-      this.injectIframeStyles(assets_1.iframeAssetUrlCssVars);
-      this.injectIframeStyles([utilsWidget_1.generateFontFaceRule('Graphik', 'normal', assets_1.assetsBase64.GraphikRegularWeb), utilsWidget_1.generateFontFaceRule('Graphik', 'bold', assets_1.assetsBase64.GraphikBoldWeb)].join('\n'));
+        iframe.onload = function () {
+          iframe.contentWindow.document.body.appendChild(utilsWidget_1.insertElement('main'));
+
+          if (_this2.widgetChatIframe) {
+            _this2.widgetChatIframe.remove();
+          }
+
+          _this2.widgetChatIframe = iframe;
+          var iframeContainer = iframe.contentWindow.document.querySelector('main');
+          _this2.widgetChatReactComponent = DefaultWidget_1.appendWidgetIframeContent(iframeContainer, _this2);
+
+          _this2.injectIframeStyles(_this2.iframeStyles);
+
+          _this2.injectIframeStyles(assets_1.iframeAssetUrlCssVars);
+
+          _this2.injectIframeStyles([utilsWidget_1.generateFontFaceRule('Graphik', 'normal', assets_1.assetsBase64.GraphikRegularWeb), utilsWidget_1.generateFontFaceRule('Graphik', 'bold', assets_1.assetsBase64.GraphikBoldWeb)].join('\n'));
+
+          resolve();
+        };
+
+        _this2.container.appendChild(iframe);
+      });
     }
   }, {
     key: "appendImagePreview",
     value: function appendImagePreview() {
-      var _this2 = this;
+      var _this3 = this;
 
       var container = utilsWidget_1.insertElement('div', {
         className: 'elixirchat-widget-image-preview'
@@ -11450,7 +11554,7 @@ function (_ElixirChat) {
       var imagePreviewImgClassNameError = 'elixirchat-widget-image-preview__img--error';
 
       container.onclick = function () {
-        return _this2.closeImagePreview();
+        return _this3.closeImagePreview();
       };
 
       img.onerror = function () {

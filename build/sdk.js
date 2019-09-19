@@ -6051,6 +6051,7 @@ function () {
     this.latestMessageHistoryCursorsCache = [];
     this.reachedBeginningOfMessageHistory = false;
     this.isBeforeUnload = false;
+    this.isCurrentlySubscribed = false;
     this.subscriptionQuery = GraphQLClient_1.gql(_templateObject());
     this.sendMessageQuery = GraphQLClient_1.gql(_templateObject2());
     this.messageHistoryQuery = GraphQLClient_1.gql(_templateObject3());
@@ -6065,6 +6066,9 @@ function () {
       _this.absintheSocket = AbsintheSocket.cancel(_this.absintheSocket, _this.notifier);
       _this.latestMessageHistoryCursorsCache = [];
       _this.reachedBeginningOfMessageHistory = false;
+      _this.isCurrentlySubscribed = false;
+
+      _this.onUnsubscribe();
     };
 
     this.sendMessage = function (_ref) {
@@ -6165,6 +6169,8 @@ function () {
 
     this.onSubscribeError = config.onSubscribeError || function () {};
 
+    this.onUnsubscribe = config.onUnsubscribe || function () {};
+
     this.onMessage = config.onMessage;
     this.initialize();
   }
@@ -6199,7 +6205,11 @@ function () {
         onStart: function onStart(notifier) {
           _this2.notifier = notifier;
 
-          _this2.onSubscribeSuccess(notifier);
+          if (!_this2.isCurrentlySubscribed) {
+            _this2.isCurrentlySubscribed = true;
+
+            _this2.onSubscribeSuccess(notifier);
+          }
         },
         onResult: function onResult(_ref2) {
           var data = _ref2.data;
@@ -6990,6 +7000,12 @@ function () {
 
           _this5.onMessageCallbacks.forEach(function (callback) {
             return callback(message);
+          });
+        },
+        onUnsubscribe: function onUnsubscribe() {
+          utilsCommon_1.logEvent(_this5.debug, 'Unsubscribed from messages', {
+            room: _this5.room,
+            client: _this5.client
           });
         }
       });
