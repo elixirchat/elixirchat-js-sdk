@@ -124,7 +124,7 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
   };
 
   onScreenShotClick = () => {
-    const { elixirChatWidget } = this.props;
+    const { elixirChatWidget, onChange, textareaText } = this.props;
     elixirChatWidget.toggleChatVisibility();
     elixirChatWidget.takeScreenshot().then(screenshot => {
       this.addAttachments([{
@@ -132,7 +132,11 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
         file: screenshot.file,
         isScreenshot: true,
       }]);
+
+      const updatedText = textareaText.trim() ? textareaText : 'Вот скриншот моего экрана';
+      onChange({ textareaText: updatedText });
       elixirChatWidget.toggleChatVisibility();
+
     }).catch(() => {
       elixirChatWidget.toggleChatVisibility();
     });
