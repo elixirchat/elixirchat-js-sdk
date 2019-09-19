@@ -12,6 +12,7 @@ export interface ISentMessage {
 export interface IMessagesSubscriptionConfig {
   apiUrl: string,
   socketUrl: string,
+  backendStaticUrl: string,
   token: string,
   currentClientId: string;
   onSubscribeSuccess?: (data: any) => void;
@@ -24,6 +25,7 @@ export class MessagesSubscription {
 
   public apiUrl: string;
   public socketUrl: string;
+  public backendStaticUrl: string;
   public token: string;
   public currentClientId: string;
   public onSubscribeSuccess?: (data: any) => void;
@@ -197,6 +199,7 @@ export class MessagesSubscription {
   constructor(config: IMessagesSubscriptionConfig) {
     this.apiUrl = config.apiUrl;
     this.socketUrl = config.socketUrl;
+    this.backendStaticUrl = config.backendStaticUrl;
     this.token = config.token;
     this.currentClientId = config.currentClientId;
     this.onSubscribeSuccess = config.onSubscribeSuccess || function () {};
@@ -241,7 +244,7 @@ export class MessagesSubscription {
       onResult: ({ data }) => {
         if (data && data.newMessage) {
           const message = serializeMessage(data.newMessage, {
-            apiUrl: this.apiUrl,
+            backendStaticUrl: this.backendStaticUrl,
             currentClientId: this.currentClientId,
           });
           this.onMessage(message);
@@ -281,7 +284,7 @@ export class MessagesSubscription {
         .then(data => {
           if (data && data.sendMessage) {
             const message = serializeMessage(data.sendMessage, {
-              apiUrl: this.apiUrl,
+              backendStaticUrl: this.backendStaticUrl,
               currentClientId: this.currentClientId,
             });
             resolve(message);
@@ -313,7 +316,7 @@ export class MessagesSubscription {
             const messages = <[IMessage]>simplifyGraphQLJSON(response.messages)
               .map(message => {
                 return serializeMessage(message, {
-                  apiUrl: this.apiUrl,
+                  backendStaticUrl: this.backendStaticUrl,
                   currentClientId: this.currentClientId,
                 });
               })

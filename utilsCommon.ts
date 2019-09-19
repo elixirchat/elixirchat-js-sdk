@@ -43,22 +43,6 @@ export function randomDigitStringId(idLength: number): string {
 }
 
 
-type TParseUrl = {
-  protocol: string;
-  host: string;
-  hostname: string;
-  pathname: string;
-  search: string;
-  hash: string;
-};
-
-export function parseUrl(url: string): TParseUrl {
-  const link = document.createElement('a');
-  link.href = url;
-  return link;
-}
-
-
 // Lodash-like _.get
 export function _get(object: any, path: string, defaultValue?: any): any {
   try {

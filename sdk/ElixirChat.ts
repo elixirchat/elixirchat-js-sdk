@@ -22,6 +22,7 @@ export interface IElixirChatUser {
 export interface IElixirChatConfig {
   apiUrl: string;
   socketUrl: string;
+  backendStaticUrl: string;
   companyId: string;
   room?: IElixirChatRoom;
   client?: IElixirChatUser;
@@ -35,6 +36,7 @@ export interface IElixirChatScreenshot extends IScreenshot {}
 export class ElixirChat {
   public apiUrl: string;
   public socketUrl: string;
+  public backendStaticUrl: string;
   public companyId: string;
   public room?: IElixirChatRoom;
   public client?: IElixirChatUser;
@@ -89,6 +91,7 @@ export class ElixirChat {
   constructor(config: IElixirChatConfig) {
     this.apiUrl = config.apiUrl;
     this.socketUrl = config.socketUrl;
+    this.backendStaticUrl = config.backendStaticUrl;
     this.companyId = config.companyId;
     this.debug = config.debug || false;
     this.room = config.room;
@@ -117,6 +120,7 @@ export class ElixirChat {
     logEvent(this.debug, 'Initializing ElixirChat', {
       apiUrl: this.apiUrl,
       socketUrl: this.socketUrl,
+      backendStaticUrl: this.backendStaticUrl,
       companyId: this.companyId,
       room: this.room,
       client: this.client,
@@ -276,8 +280,9 @@ export class ElixirChat {
 
   protected subscribeToNewMessages(): void {
     this.messagesSubscription = new MessagesSubscription({
-      socketUrl: this.socketUrl,
       apiUrl: this.apiUrl,
+      socketUrl: this.socketUrl,
+      backendStaticUrl: this.backendStaticUrl,
       token: this.authToken,
       currentClientId: this.client.id,
       onSubscribeSuccess: () => {

@@ -51,7 +51,8 @@ import ElixirChatWidget from 'elixirchat-js-sdk/widget';
 
 const elixirChatWidget = new ElixirChatWidget({
   apiUrl: 'https://elixirchat.yoursite.com/api', // API URL вашего ElixirChat
-  socketUrl: 'wss://elixirchat.yoursite.com/socket', // websocket URL вашего ElixirChat 
+  socketUrl: 'wss://elixirchat.yoursite.com/socket', // websocket URL вашего ElixirChat
+  backendStaticUrl: 'https://elixirchat.yoursite.com/api', // путь к папке (до "uploads/"), куда загружаются файлы вашего ElixirChat
   companyId: 'your-company-id-here', // вы получите companyId от команды ElixirChat
   
   // Также можете добавить здесь опциональные параметры "room" и "client"
@@ -74,7 +75,8 @@ elixirChatWidget.appendWidget({
 <script>
   const elixirChatWidget = new ElixirChatWidget({
     apiUrl: 'https://elixirchat.yoursite.com/api', // API URL вашего ElixirChat
-    socketUrl: 'wss://elixirchat.yoursite.com/socket', // websocket URL вашего ElixirChat 
+    socketUrl: 'wss://elixirchat.yoursite.com/socket', // websocket URL вашего ElixirChat
+    backendStaticUrl: 'https://elixirchat.yoursite.com/api', // путь к папке (до "uploads/"), куда загружаются файлы вашего ElixirChat 
     companyId: 'your-company-id-here', // вы получите companyId от команды ElixirChat
     
     // Также можете добавить здесь опциональные параметры "room" и "client"
@@ -113,7 +115,8 @@ import ElixirChat from 'elixirchat-js-sdk';
 
 const elixirChatWidget = new ElixirChatWidget({
   apiUrl: 'https://elixirchat.yoursite.com/api', // API URL вашего ElixirChat
-  socketUrl: 'wss://elixirchat.yoursite.com/socket', // websocket URL вашего ElixirChat 
+  socketUrl: 'wss://elixirchat.yoursite.com/socket', // websocket URL вашего ElixirChat
+  backendStaticUrl: 'https://elixirchat.yoursite.com/api', // путь к папке (до "uploads/"), куда загружаются файлы вашего ElixirChat 
   companyId: 'your-company-id-here', // вы получите companyId от команды ElixirChat
   
   // Также можете добавить здесь опциональные параметры "room" и "client"
@@ -201,7 +204,8 @@ document.querySelector('#screenshot-button').addEventListener('click', () => {
 // Пример:
 new ElixirChat({
   apiUrl: 'https://elixirchat.yoursite.com/api',
-  socketUrl: 'wss://elixirchat.yoursite.com/socket', 
+  socketUrl: 'wss://elixirchat.yoursite.com/socket',
+  backendStaticUrl: 'https://elixirchat.yoursite.com/api',
   companyId: 'ваш-company-id',
   
   room: {
@@ -233,6 +237,13 @@ GraphQL URL вашего бэкэнда ElixirChat (например, `https://e
 
 #### `socketUrl: string`
 WebSocket URL вашего бэкэнда ElixirChat, начинающийся с протокола `ws:`/`wss:` (например, `wss://elixirchat.yourcompany.com/socket`)
+
+
+<br/>
+<a id="config-backendStaticUrl"></a>
+
+#### `backendStaticUrl: string`
+Путь к папке (до "uploads/"), куда загружаются файлы вашего ElixirChat (например, 'https://elixirchat.yoursite.com/api')
 
 
 <br/>
@@ -573,6 +584,7 @@ elixirChat.onConnectError((error) => {
 
 - <a id="sdk-apiUrl"></a>`apiUrl: string` - То же, что было в [конфиге](#config-apiUrl)
 - <a id="sdk-socketUrl"></a>`socketUrl: string` - То же, что было в [конфиге](#config-socketUrl)
+- <a id="sdk-backendStaticUrl"></a>`backendStaticUrl: string` - То же, что было в [конфиге](#config-backendStaticUrl)
 - <a id="sdk-companyId"></a>`companyId: string` - То же, что было в [конфиге](#config-companyId)
 - <a id="sdk-room"></a>`room: object` - То же, что было в [конфиге](#config-room)
 - <a id="sdk-client"></a>`client: object` - То же, что было в [конфиге](#config-client)
