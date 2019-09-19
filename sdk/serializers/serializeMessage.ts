@@ -57,8 +57,8 @@ export function serializeMessage(message: any, options?: ISerializeMessageOption
 
   return {
     id: _get(message, 'id') || null,
-    text: _get(message, 'text', ''),
-    timestamp: _get(message, 'timestamp', ''),
+    text: _get(message, 'text') || '',
+    timestamp: _get(message, 'timestamp') || '',
     cursor: _get(message, 'cursor') || null,
     sender: serializedSender,
     responseToMessage: serializedResponseToMessage.id ? serializedResponseToMessage : null,

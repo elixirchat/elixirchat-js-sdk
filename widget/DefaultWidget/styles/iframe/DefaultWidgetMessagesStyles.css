@@ -114,9 +114,13 @@
   text-align: left;
 }
 
+.elixirchat-chat-messages__text + .elixirchat-chat-files {
+  padding-top: 8px;
+}
+
 .elixirchat-chat-files {
   list-style: none;
-  padding: 0 0 4px 0;
+  padding: 2px 0 3px 0;
   margin: 0;
 }
 
@@ -127,6 +131,11 @@
   padding: 0;
   cursor: default;
 }
+
+.elixirchat-chat-files__item:first-child {
+  margin-top: 0;
+}
+
 .elixirchat-chat-files__item:hover .elixirchat-chat-files__preview {
   background-color: #efefef;
 }

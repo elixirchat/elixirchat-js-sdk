@@ -135,6 +135,13 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
     elixirChatWidget.openImagePreview(imagePreviews[nextImagePreviewIndex]);
   };
 
+  shouldHideMessageBalloon = (message) => {
+    const hasText = message.text.trim();
+    const hasReply = message.responseToMessage;
+    const hasFiles = message.files && message.files.length;
+    return message.sender.isCurrentClient && !hasText && !hasReply && !hasFiles;
+  };
+
   onTakeScreenshotClick = () => {
     const { elixirChatWidget, onScreenshotRequestFulfilled } = this.props;
     elixirChatWidget.toggleChatVisibility();
@@ -174,50 +181,59 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
                 'elixirchat-chat-messages__item--by-operator': message.sender.isOperator,
               })}>
 
-                <div className="elixirchat-chat-messages__balloon" onDoubleClick={() => onReplyMessage(message.id)}>
-                  <div className="elixirchat-chat-messages__sender">
-                    {message.sender.isCurrentClient ? 'Я' : (message.sender.firstName || '') + ' ' + (message.sender.lastName || '')}
-                  </div>
-                  {Boolean(message.responseToMessage) && (
-                    <div className="elixirchat-chat-messages__reply-to">
-                      <i className="elixirchat-chat-messages__reply-to-icon"/>
-                      {message.responseToMessage.sender.firstName}&nbsp;
-                      {message.responseToMessage.sender.lastName}&nbsp;
-                      <span title={message.responseToMessage.text}>
-                          {message.responseToMessage.text.substr(0, 100)}
-                        </span>
-                    </div>
-                  )}
-                  <div className="elixirchat-chat-messages__text">{message.text}</div>
+                {!this.shouldHideMessageBalloon(message) && (
+                  <div className="elixirchat-chat-messages__balloon" onDoubleClick={() => onReplyMessage(message.id)}>
 
-                  {Boolean(message.files) && Boolean(message.files.length) && (
-                    <ul className="elixirchat-chat-files">
-                      {message.files.map(file => (
-                        <li key={file.id} className="elixirchat-chat-files__item">
-                          <a className={cn({
-                            ['elixirchat-chat-files__preview']: true,
-                            ['elixirchat-chat-files__preview-image']: file.thumbnailUrl,
-                            ['elixirchat-chat-files__preview-submitting']: message.isSubmitting,
-                          })}
-                            style={{ backgroundImage: `url(${file.thumbnailUrl})` }}
-                            href={file.url}
-                            target="_blank">
-                            {message.isSubmitting && (
-                              <i className="elixirchat-chat-files__preview-spinner"/>
-                            )}
-                          </a>
-                          <div className="elixirchat-chat-files__text">
-                            <a className="elixirchat-chat-files__text-link" href={file.url} target="_blank">{file.name}</a>
-                            <br/>
-                            <span className="elixirchat-chat-files__text-secondary">
-                                {message.isSubmitting ? 'Загрузка...' : getHumanReadableFileSize('ru-RU', file.bytesSize)}
-                              </span>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
+                    {!message.sender.isCurrentClient && (
+                      <div className="elixirchat-chat-messages__sender">
+                        {message.sender.firstName} {message.sender.lastName}
+                      </div>
+                    )}
+
+                    {Boolean(message.responseToMessage) && (
+                      <div className="elixirchat-chat-messages__reply-to">
+                        <i className="elixirchat-chat-messages__reply-to-icon"/>
+                        {message.responseToMessage.sender.firstName}&nbsp;
+                        {message.responseToMessage.sender.lastName}&nbsp;
+                        <span title={message.responseToMessage.text}>
+                            {message.responseToMessage.text.substr(0, 100)}
+                          </span>
+                      </div>
+                    )}
+
+                    {message.text && (
+                      <div className="elixirchat-chat-messages__text">{message.text}</div>
+                    )}
+
+                    {Boolean(message.files) && Boolean(message.files.length) && (
+                      <ul className="elixirchat-chat-files">
+                        {message.files.map(file => (
+                          <li key={file.id} className="elixirchat-chat-files__item">
+                            <a className={cn({
+                              ['elixirchat-chat-files__preview']: true,
+                              ['elixirchat-chat-files__preview-image']: file.thumbnailUrl,
+                              ['elixirchat-chat-files__preview-submitting']: message.isSubmitting,
+                            })}
+                              style={{ backgroundImage: `url(${file.thumbnailUrl})` }}
+                              href={file.url}
+                              target="_blank">
+                              {message.isSubmitting && (
+                                <i className="elixirchat-chat-files__preview-spinner"/>
+                              )}
+                            </a>
+                            <div className="elixirchat-chat-files__text">
+                              <a className="elixirchat-chat-files__text-link" href={file.url} target="_blank">{file.name}</a>
+                              <br/>
+                              <span className="elixirchat-chat-files__text-secondary">
+                                  {message.isSubmitting ? 'Загрузка...' : getHumanReadableFileSize('ru-RU', file.bytesSize)}
+                                </span>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
 
                 {Boolean(message.images) && Boolean(message.images.length) && (
                   <div className="elixirchat-chat-messages__balloon-">
