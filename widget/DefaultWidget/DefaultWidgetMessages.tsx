@@ -236,28 +236,26 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
                 )}
 
                 {Boolean(message.images) && Boolean(message.images.length) && (
-                  <div className="elixirchat-chat-messages__balloon-">
-                    <ul className="elixirchat-chat-images">
-                      {message.images.map(image => (
-                        <li key={image.id} className="elixirchat-chat-images__item">
+                  <ul className="elixirchat-chat-images">
+                    {message.images.map(image => (
+                      <li key={image.id} className="elixirchat-chat-images__item">
 
-                          <a className="elixirchat-chat-images__link"
-                            href={image.url}
-                            target="_blank"
-                            onClick={e => this.onImagePreviewClick(e, { ...image, sender: message.sender })}>
+                        <a className="elixirchat-chat-images__link"
+                          href={image.url}
+                          target="_blank"
+                          onClick={e => this.onImagePreviewClick(e, { ...image, sender: message.sender })}>
 
-                            <img className="elixirchat-chat-images__img"
-                              width={_round(image.thumbnailWidth, 2)}
-                              height={_round(image.thumbnailHeight)}
-                              src={image.thumbnailUrl}
-                              alt={image.name}
-                              data-error-message="Файл не найден"
-                              onError={e => e.target.parentNode.classList.add('elixirchat-chat-images__item-not-found')}/>
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                          <img className="elixirchat-chat-images__img"
+                            width={_round(image.thumbnailWidth, 2)}
+                            height={_round(image.thumbnailHeight)}
+                            src={image.thumbnailUrl}
+                            alt={image.name}
+                            data-error-message="Файл не найден"
+                            onError={e => e.target.parentNode.classList.add('elixirchat-chat-images__item-not-found')}/>
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
                 )}
 
                 <div className="elixirchat-chat-messages__bottom">
