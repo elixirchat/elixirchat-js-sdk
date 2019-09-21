@@ -180,6 +180,7 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
 
         {Boolean(currentlyTypingUsers.length) && (
           <div className="elixirchat-chat-typing">
+            <i className="elixirchat-chat-typing__icon icon-typing"/>
             {inflect('ru-RU', currentlyTypingUsers.length, ['человек пишет...', 'человека пишут...', 'человек пишут...'])}
           </div>
         )}
@@ -187,7 +188,7 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
         {Boolean(responseToMessage) && (
           <div className="elixirchat-chat-textarea__reply-to">
             <span className="elixirchat-chat-textarea__reply-to-text">
-              <i className="elixirchat-chat-textarea__reply-to-icon"/>
+              <i className="elixirchat-chat-textarea__reply-to-icon icon-reply-right"/>
               <span title={responseToMessage.text}>
                 {responseToMessage.text && responseToMessage.text.substr(0, 100)}
                 {!responseToMessage.text && (
@@ -195,7 +196,8 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
                 )}
               </span>
             </span>
-            <span className="elixirchat-chat-textarea__reply-to-remove" onClick={this.onRemoveReplyTo}/>
+            <span className="elixirchat-chat-textarea__reply-to-remove icon-close-thick"
+              onClick={this.onRemoveReplyTo}/>
           </div>
         )}
 
@@ -205,10 +207,15 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
         })}>
           <button className="elixirchat-chat-textarea__actions-screenshot"
             onClick={this.onScreenShotClick}
-            title="Сделать скриншот"/>
+            title="Сделать скриншот">
+            <i className="icon-screenshot"/>
+          </button>
 
           <span className="elixirchat-chat-textarea__actions-attach"
             title="Прикрепить файл">
+            <label className="elixirchat-chat-textarea__actions-attach-label" htmlFor="DefaultWidget-file-upload">
+              <i className="icon-file"/>
+            </label>
             <input
               className="elixirchat-chat-textarea__actions-attach-input"
               id="DefaultWidget-file-upload"
@@ -216,7 +223,6 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
               ref={this.inputFile}
               multiple={true}
               onChange={this.onInputFileChange}/>
-            <label className="elixirchat-chat-textarea__actions-attach-label" htmlFor="DefaultWidget-file-upload"/>
           </span>
         </div>
 
@@ -239,10 +245,11 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
               <li key={attachment.id} className="elixirchat-chat-attachment-item">
                 <i className={cn({
                   'elixirchat-chat-attachment-icon': true,
-                  'elixirchat-chat-attachment-icon--screenshot': attachment.isScreenshot,
+                  'icon-file': !attachment.isScreenshot,
+                  'icon-screenshot': attachment.isScreenshot,
                 })}/>
                 <span className="elixirchat-chat-attachment-filename">{attachment.name}</span>
-                <i className="elixirchat-chat-attachment-remove"
+                <i className="elixirchat-chat-attachment-remove icon-close-thick"
                   tabIndex={0}
                   onClick={() => this.removeAttachment(attachment.id)}>
                 </i>

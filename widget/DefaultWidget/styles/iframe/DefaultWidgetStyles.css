@@ -53,13 +53,15 @@ textarea {
   width: 53px;
   height: 53px;
   border: 0;
-  background: transparent var(--ElixirChatChatCloseIconBlack) no-repeat center;
-  background-size: 15px;
-  opacity: .22;
+  opacity: .25;
   position: absolute;
   top: 1px;
   right: 0;
   transition: opacity 200ms;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
 }
 
 .elixirchat-chat-header__close:hover {

@@ -11,3 +11,6 @@ export const DefaultWidgetGlobalStyles = fs.readFileSync(__dirname + '/DefaultWi
 export const DefaultWidgetStyles = fs.readFileSync(__dirname + '/iframe/DefaultWidgetStyles.css', 'utf8');
 export const DefaultWidgetMessagesStyles = fs.readFileSync(__dirname + '/iframe/DefaultWidgetMessagesStyles.css', 'utf8');
 export const DefaultWidgetTextareaStyles = fs.readFileSync(__dirname + '/iframe/DefaultWidgetTextareaStyles.css', 'utf8');
+
+// Styles both inside and outside the Chat iframe
+export const iconsStyles = fs.readFileSync(__dirname + '/icons.css', 'utf8');

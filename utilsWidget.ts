@@ -60,43 +60,12 @@ export function playNotificationSound(): void {
 }
 
 
-export function generateFontFaceRule(fontFamily: string, fontWeight: string, fontUrl: string): string {
+export function generateFontFaceRule(fontFamily: string, fontWeight: string | null, fontUrl: string): string {
   return `@font-face {
     font-family: "${fontFamily}";
-    font-weight: ${fontWeight};
+    ${fontWeight ? `font-weight: ${fontWeight};` : ''}
     src: url("${fontUrl}") format("woff");
   }`;
-}
-
-
-export function replaceCssVariables(cssCode: string, variables: object): string {
-  return cssCode.replace(/var\(--([a-z0-9_]+)\)/igm, (match, key) => {
-    return variables[key];
-  });
-}
-
-
-export function parseCssVariables(cssRuleCode: string): object {
-  const cssVariables = {};
-  cssRuleCode.trim()
-    .replace(/^.*{/gm, '')
-    .replace(/}$/, '')
-    .split('--')
-    .filter(line => /url\(/i.test(line))
-    .forEach(line => {
-      let [name, value] = line.trim().replace(/^([a-z0-9]+)\s*:\s*/i, '$1@@@').split('@@@');
-      name = name.trim();
-      value = value.trim().replace(/;$/, '');
-      cssVariables[name] = value;
-    });
-  return cssVariables;
-}
-
-
-export function areCssVariablesSupported(): boolean {
-  // Taken from Modernizr
-  const supportsFn = (window.CSS && window.CSS.supports.bind(window.CSS)) || (window.supportsCSS);
-  return !!supportsFn && (supportsFn('--f:0') || supportsFn('--f', 0));
 }
 
 

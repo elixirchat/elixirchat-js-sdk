@@ -1,16 +1,9 @@
 import 'babel-polyfill';
 import { logEvent } from '../utilsCommon';
-import {
-  insertElement,
-  parseCssVariables,
-  replaceCssVariables,
-  generateFontFaceRule,
-  areCssVariablesSupported,
-} from '../utilsWidget';
-
+import { insertElement, generateFontFaceRule } from '../utilsWidget';
 import { appendWidgetIframeContent } from './DefaultWidget/DefaultWidget';
-import { assetsBase64, globalAssetUrlCssVars, iframeAssetUrlCssVars } from './DefaultWidget/assets';
-import { DefaultWidgetGlobalStyles } from './DefaultWidget/styles';
+import { DefaultWidgetGlobalStyles, iconsStyles } from './DefaultWidget/styles';
+import { fontsBase64 } from './DefaultWidget/assets';
 
 let ElixirChat = window.ElixirChat;
 if (process.env.NODE_ENV === 'development') {
@@ -53,20 +46,12 @@ export class ElixirChatWidget extends ElixirChat {
   protected onToggleChatVisibilityCallbacks: Array<(isOpen: boolean) => void> = [];
 
   protected injectGlobalStyles(styles: string): void {
-    let cssCode = styles;
-    if (!areCssVariablesSupported()) {
-      cssCode = replaceCssVariables(styles, parseCssVariables(globalAssetUrlCssVars));
-    }
-    insertElement('style', { innerHTML: cssCode, type: 'text/css' }, this.container);
+    insertElement('style', { innerHTML: styles, type: 'text/css' }, this.container);
   }
 
   protected injectIframeStyles(styles: string): void {
     const iframeContainer = <HTMLElement>this.widgetChatIframe.contentWindow.document.querySelector('main');
-    let cssCode = styles;
-    if (!areCssVariablesSupported()) {
-      cssCode = replaceCssVariables(styles, parseCssVariables(iframeAssetUrlCssVars));
-    }
-    insertElement('style', { innerHTML: cssCode, type: 'text/css' }, iframeContainer);
+    insertElement('style', { innerHTML: styles, type: 'text/css' }, iframeContainer);
   }
 
   protected appendWidgetButton(): void {
@@ -76,11 +61,12 @@ export class ElixirChatWidget extends ElixirChat {
     button.addEventListener('click', this.toggleChatVisibility);
     this.widgetButton = button;
 
-    this.injectGlobalStyles(DefaultWidgetGlobalStyles, this.container);
-    this.injectGlobalStyles(globalAssetUrlCssVars, this.container);
     this.injectGlobalStyles([
-      generateFontFaceRule('Graphik', 'normal', assetsBase64.GraphikRegularWeb)
+      generateFontFaceRule('Graphik', 'normal', fontsBase64.GraphikRegularWeb),
+      generateFontFaceRule('elixirchat-icons', null, fontsBase64.elixirchatIcons),
     ].join('\n'));
+    this.injectGlobalStyles(DefaultWidgetGlobalStyles, this.container);
+    this.injectGlobalStyles(iconsStyles, this.container);
   }
 
   protected appendChatIframe(): void {
@@ -100,12 +86,13 @@ export class ElixirChatWidget extends ElixirChat {
         const iframeContainer = <HTMLElement>iframe.contentWindow.document.querySelector('main');
         this.widgetChatReactComponent = appendWidgetIframeContent(iframeContainer, this);
 
-        this.injectIframeStyles(this.iframeStyles);
-        this.injectIframeStyles(iframeAssetUrlCssVars);
         this.injectIframeStyles([
-          generateFontFaceRule('Graphik', 'normal', assetsBase64.GraphikRegularWeb),
-          generateFontFaceRule('Graphik', 'bold', assetsBase64.GraphikBoldWeb)
+          generateFontFaceRule('Graphik', 'normal', fontsBase64.GraphikRegularWeb),
+          generateFontFaceRule('Graphik', 'bold', fontsBase64.GraphikBoldWeb),
+          generateFontFaceRule('elixirchat-icons', null, fontsBase64.elixirchatIcons),
         ].join('\n'));
+        this.injectIframeStyles(this.iframeStyles);
+        this.injectIframeStyles(iconsStyles);
 
         resolve();
       };

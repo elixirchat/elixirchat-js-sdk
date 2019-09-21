@@ -192,7 +192,7 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
 
                     {Boolean(message.responseToMessage) && (
                       <div className="elixirchat-chat-messages__reply-to">
-                        <i className="elixirchat-chat-messages__reply-to-icon"/>
+                        <i className="elixirchat-chat-messages__reply-to-icon icon-reply-right"/>
                         {message.responseToMessage.sender.firstName}&nbsp;
                         {message.responseToMessage.sender.lastName}&nbsp;
                         <span title={message.responseToMessage.text}>
@@ -217,8 +217,12 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
                               style={{ backgroundImage: `url(${file.thumbnailUrl})` }}
                               href={file.url}
                               target="_blank">
+
+                              {(!file.thumbnailUrl && !message.isSubmitting) && (
+                                <i className="icon-file"/>
+                              )}
                               {message.isSubmitting && (
-                                <i className="elixirchat-chat-files__preview-spinner"/>
+                                <i className="elixirchat-chat-files__preview-spinner icon-spinner-xs"/>
                               )}
                             </a>
                             <div className="elixirchat-chat-files__text">

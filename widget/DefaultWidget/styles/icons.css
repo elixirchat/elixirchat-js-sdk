@@ -1,0 +1,55 @@
+[class^="icon-"], [class*=" icon-"] {
+  font-family: 'elixirchat-icons' !important;
+  speak: none;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-arrow-down:before {
+  content: "\e900";
+}
+
+.icon-close-thick:before {
+  content: "\e901";
+}
+
+.icon-close-thin:before {
+  content: "\e902";
+}
+
+.icon-file:before {
+  content: "\e903";
+}
+
+.icon-logo:before {
+  content: "\e904";
+}
+
+.icon-reply-left:before {
+  content: "\e905";
+}
+
+.icon-reply-right:before {
+  content: "\e906";
+}
+
+.icon-screenshot:before {
+  content: "\e907";
+}
+
+.icon-spinner-lg:before {
+  content: "\e908";
+}
+
+.icon-spinner-xs:before {
+  content: "\e909";
+}
+
+.icon-typing:before {
+  content: "\e90a";
+}
