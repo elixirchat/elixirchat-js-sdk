@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 import dayjsCalendar from 'dayjs/plugin/calendar'
 import 'dayjs/locale/ru'
 import { _get, _round } from '../../utilsCommon';
-import { isWebImage, getHumanReadableFileSize } from '../../utilsWidget';
+import { isWebImage, getHumanReadableFileSize, inflectDayJSWeekDays } from '../../utilsWidget';
 import { DefaultWidgetMessagesStyles } from './styles';
 
 export interface IDefaultWidgetMessagesProps {
@@ -295,15 +295,45 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
               })}>
                 <div className="elixirchat-chat-messages__balloon">
                   <div className="elixirchat-chat-messages__sender">
-                    {(message.sender.firstName || '') + ' ' + (message.sender.lastName || '')}
+                    {message.sender.firstName} {message.sender.lastName}
+                    {(!message.sender.firstName && !message.sender.lastName) && 'Служба поддержки'}
                   </div>
-                  <div className="elixirchat-chat-messages__text">
-                    Пожалуйста, пришлите скриншот вашего экрана.
-                  </div>
-                  <button className="elixirchat-chat-messages__take-screenshot"
-                    onClick={this.onTakeScreenshotClick}>
-                    Сделать скриншот
-                  </button>
+
+                  {message.systemData.type === 'SCREENSHOT_REQUESTED' && (
+                    <Fragment>
+                      <div className="elixirchat-chat-messages__text">
+                        Пожалуйста, пришлите скриншот вашего экрана.
+                      </div>
+                      <button className="elixirchat-chat-messages__take-screenshot"
+                        onClick={this.onTakeScreenshotClick}>
+                        Сделать скриншот
+                      </button>
+                    </Fragment>
+                  )}
+
+                  {/*
+                    TODO: replace ALL_OPERATORS_OFFLINE w/ actual message type
+                    TODO: replace message.systemData.workHoursStartAt w/ actual field
+                  */}
+                  {message.systemData.type === 'ALL_OPERATORS_OFFLINE' && (
+                    <Fragment>
+                      <div className="elixirchat-chat-messages__text">
+                        К сожалению, все операторы поддержки сейчас оффлайн
+                        {message.systemData.workHoursStartAt &&
+                          ', но будут снова в сети ' +
+                          inflectDayJSWeekDays('ru-RU', dayjs(message.systemData.workHoursStartAt).calendar(null, {
+                            nextWeek: '[в] dddd [в] H:mm',
+                            nextDay: '[завтра в] H:mm',
+                            sameDay: '[сегодня в] H:mm',
+                            lastDay: 'D MMMM [в] H:mm',
+                            lastWeek: 'D MMMM [в] H:mm',
+                            sameElse: 'D MMMM [в] H:mm',
+                          })
+                        )}.
+                      </div>
+                    </Fragment>
+                  )}
+
                 </div>
                 <div className="elixirchat-chat-messages__bottom">
                   {dayjs(message.timestamp).format('H:mm, D MMMM')}

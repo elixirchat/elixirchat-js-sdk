@@ -322,6 +322,7 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
       text: message.text,
       attachments: message.attachments.map(attachment => attachment.originalFileObject).filter(file => file),
       responseToMessageId: _get(message, 'responseToMessage.id'),
+      tempId: message.tempId,
     }).catch(() => {
       this.changeMessageById(message.id, {
         isSubmitting: false,

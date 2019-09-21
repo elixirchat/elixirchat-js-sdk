@@ -30,6 +30,28 @@ export function inflect(locale: 'en-US' | 'ru-RU', number: number, endings: [str
 }
 
 
+export function inflectDayJSWeekDays(locale: 'en-US' | 'ru-RU', formattedDateString: string): string {
+  if (locale === 'en-US') {
+    return formattedDateString;
+  }
+  let updatedFormattedDateString = formattedDateString;
+  const reDictRu = {
+    'в понедельник': 'в понедельник',
+    'в вторник': 'во вторник',
+    'в среда': 'в среду',
+    'в четверг': 'в четверг',
+    'в пятница': 'в пятницу',
+    'в суббота': 'в субботу',
+    'в воскресенье': 'в воскресенье',
+  };
+  for (let key in reDictRu) {
+    const regex = new RegExp(key, 'ig');
+    updatedFormattedDateString = updatedFormattedDateString.replace(regex, reDictRu[key]);
+  }
+  return updatedFormattedDateString;
+}
+
+
 export function playNotificationSound(): void {
   const context = new AudioContext();
   const filter = context.createBiquadFilter();
