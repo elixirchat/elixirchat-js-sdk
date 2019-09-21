@@ -12,6 +12,8 @@
   outline: none;
   z-index: 999999;
   transition: background-color 200ms;
+  color: #ffffff;
+  font-family: 'elixirchat-icons' !important;
 }
 
 .elixirchat-widget-button:hover {
@@ -27,8 +29,6 @@
   top: 0;
   left: 0;
   transition: opacity 300ms;
-  color: #ffffff;
-  font-family: 'elixirchat-icons' !important;
   display: flex;
   align-items: center;
   justify-content: center;
