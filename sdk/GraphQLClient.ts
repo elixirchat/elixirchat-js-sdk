@@ -32,11 +32,14 @@ export class GraphQLClient {
 
   protected makeFormData(query: string, variables: object): FormData {
     const formData = new FormData();
+
+    // TODO: remove hardcoded query variables
     const formVariables = {
       roomId: variables.roomId,
       text: variables.text,
       attachments: variables.attachments.map(file => file.name),
       responseToMessageId: variables.responseToMessageId,
+      tempId: variables.tempId,
     };
 
     formData.append('query', query);

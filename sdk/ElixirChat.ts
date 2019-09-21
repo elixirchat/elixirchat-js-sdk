@@ -316,9 +316,10 @@ export class ElixirChat {
       ? Array.from(params.attachments).filter(file => file)
       : [];
     const responseToMessageId = typeof params.responseToMessageId === 'string' ? params.responseToMessageId : null;
+    const tempId = params.tempId;
 
     if (text.trim() || attachments.length) {
-      return this.messagesSubscription.sendMessage({ text, attachments, responseToMessageId })
+      return this.messagesSubscription.sendMessage({ text, attachments, responseToMessageId, tempId })
         .then(message => {
           logEvent(this.debug, 'Sent message', {
             message,
@@ -327,6 +328,7 @@ export class ElixirChat {
               text,
               attachments,
               responseToMessageId,
+              tempId,
             }
           });
           this.typingStatusSubscription.dispatchTypedText(false);

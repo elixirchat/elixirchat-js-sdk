@@ -7,6 +7,7 @@ export interface ISentMessage {
   text?: string,
   attachments?: Array<File>,
   responseToMessageId?: string,
+  tempId?: string,
 }
 
 export interface IMessagesSubscriptionConfig {
@@ -46,6 +47,7 @@ export class MessagesSubscription {
     subscription {
       newMessage {
         id
+        tempId
         text
         timestamp
         system
@@ -92,9 +94,10 @@ export class MessagesSubscription {
   `;
 
   protected sendMessageQuery: string = gql`
-    mutation ($text: String!, $responseToMessageId: ID, $attachments: [Upload!]) {
-      sendMessage(text: $text, responseToMessageId: $responseToMessageId, attachments: $attachments) {
+    mutation ($text: String!, $responseToMessageId: ID, $attachments: [Upload!], $tempId: ID) {
+      sendMessage(text: $text, responseToMessageId: $responseToMessageId, attachments: $attachments, tempId: $tempId) {
         id
+        tempId
         text
         timestamp
         system
@@ -148,6 +151,7 @@ export class MessagesSubscription {
           cursor
           node {
             id
+            tempId
             text
             timestamp
             system
@@ -270,12 +274,13 @@ export class MessagesSubscription {
     this.onUnsubscribe();
   };
 
-  public sendMessage = ({ text, attachments, responseToMessageId }: ISentMessage): Promise<IMessage> => {
+  public sendMessage = ({ text, attachments, responseToMessageId, tempId }: ISentMessage): Promise<IMessage> => {
     const query = this.sendMessageQuery;
     const variables = {
       text,
       attachments,
       responseToMessageId,
+      tempId,
     };
 
     return new Promise((resolve, reject) => {

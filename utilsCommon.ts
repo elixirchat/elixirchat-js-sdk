@@ -91,16 +91,3 @@ export function _last(arr: Array): any {
 export function _round(num: number): number {
   return +num.toFixed(2);
 }
-
-// Similar to Lodash-like _.isEqual but doesn't perform deep comparison (unlike  _.isEqual in Lodash)
-export function _isEqualShallow(object1, object2) {
-  if (Object.keys(object1).length !== Object.keys(object2).length) {
-    return false;
-  }
-  for (let key in object1) {
-    if (object1[key] !== object2[key]) {
-      return false;
-    }
-  }
-  return true;
-}

@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import ReactDOM from 'react-dom';
-import { _get, _last, _isEqualShallow, randomDigitStringId } from '../../utilsCommon';
+import { _get, _last, randomDigitStringId } from '../../utilsCommon';
 import {
   playNotificationSound,
   getImageDimensions,
@@ -170,6 +170,7 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
         text: textareaText,
         responseToMessageId: textareaResponseToMessageId,
         attachments: textareaAttachments.map(attachment => attachment.file),
+        tempId: temporaryMessage.tempId,
       })
         .catch(() => {
           this.changeMessageById(temporaryMessage.id, {
@@ -201,7 +202,7 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
   replaceTemporaryMessageWithActualOne = (newMessage) => {
     const { messages } = this.state;
     const temporaryMessage = _last(messages.filter(message => {
-      return this.areMessagesEquivalent(message, newMessage);
+      return message.tempId === newMessage.tempId;
     }));
     if (temporaryMessage) {
       this.changeMessageById(temporaryMessage.id, newMessage);
@@ -211,22 +212,6 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
         messages: [...this.state.messages, newMessage]
       });
     }
-  };
-
-  areMessagesEquivalent = (message1, message2) => {
-    const normalizeMessage = (message) => {
-      const attachmentsHash = message.attachments.map(attachment => {
-        const originalFileName = _get(attachment, 'originalFileObject.name');
-        return originalFileName || attachment.name;
-      }).sort().join();
-
-      return {
-        text: message.text || '',
-        responseToMessageId: _get(message, 'responseToMessage.id') || null,
-        attachmentsHash,
-      }
-    };
-    return _isEqualShallow(normalizeMessage(message1), normalizeMessage(message2));
   };
 
   generateTemporaryMessage = ({ textareaText, textareaResponseToMessageId, textareaAttachments }) => {
@@ -259,6 +244,7 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
 
     return  {
       id: randomDigitStringId(6),
+      tempId: randomDigitStringId(6),
       text: textareaText.trim() || '',
       timestamp: new Date().toISOString(),
       sender: {
