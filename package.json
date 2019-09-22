@@ -1,6 +1,6 @@
 {
   "name": "elixirchat-js-sdk",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "JavaScript SDK for https://elixir.chat",
   "scripts": {
     "dev": "parcel dev.html --port 8001",
