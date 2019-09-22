@@ -126,6 +126,10 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
   onImagePreviewArrowNavigation = (delta) => {
     const { imagePreviews, currentImagePreview } = this.state;
     const { elixirChatWidget } = this.props;
+    if (!elixirChatWidget.widgetImagePreviewIsVisible) {
+      return false;
+    }
+
     const currentImagePreviewIndex = imagePreviews.map(preview => preview.id).indexOf(currentImagePreview.id);
 
     let nextImagePreviewIndex = currentImagePreviewIndex + delta;
