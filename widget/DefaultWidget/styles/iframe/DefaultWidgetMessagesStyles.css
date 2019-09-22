@@ -54,6 +54,7 @@
 
 .elixirchat-chat-messages__text {
   white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .elixirchat-chat-messages__text kbd {
@@ -98,6 +99,11 @@
   border-radius: 3px;
   background: #0033FF;
   color: #ffffff;
+}
+
+.elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__balloon a {
+  color: #ffffff;
+  text-decoration: underline;
 }
 
 .elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__sender {

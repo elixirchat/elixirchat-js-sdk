@@ -3,6 +3,7 @@ import cn from 'classnames';
 import dayjs from 'dayjs';
 import dayjsCalendar from 'dayjs/plugin/calendar'
 import 'dayjs/locale/ru'
+import AutoLinkText from 'react-autolink-text2';
 import { _get, _round } from '../../utilsCommon';
 import { isWebImage, getHumanReadableFileSize, inflectDayJSWeekDays } from '../../utilsWidget';
 import { getCompatibilityFallback } from '../../sdk/ScreenshotTaker';
@@ -242,7 +243,11 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
                     )}
 
                     {message.text && (
-                      <div className="elixirchat-chat-messages__text">{message.text}</div>
+                      <div className="elixirchat-chat-messages__text">
+                        <AutoLinkText
+                          linkProps={{ target: '_blank', rel: 'noopener noreferrer' }}
+                          text={message.text}/>
+                      </div>
                     )}
 
                     {Boolean(message.files) && Boolean(message.files.length) && (
