@@ -379,23 +379,16 @@ function _round(num) {
   return +num.toFixed(2);
 }
 
-exports._round = _round; // Similar to Lodash-like _.isEqual but doesn't perform deep comparison (unlike  _.isEqual in Lodash)
+exports._round = _round;
 
-function _isEqualShallow(object1, object2) {
-  if (Object.keys(object1).length !== Object.keys(object2).length) {
-    return false;
-  }
-
-  for (var key in object1) {
-    if (object1[key] !== object2[key]) {
-      return false;
-    }
-  }
-
-  return true;
+function detectPlatform() {
+  return {
+    isWindows: navigator.platform.indexOf('Win') > -1,
+    isMac: navigator.platform.indexOf('Mac') > -1
+  };
 }
 
-exports._isEqualShallow = _isEqualShallow;
+exports.detectPlatform = detectPlatform;
 },{}],"5qf4":[function(require,module,exports) {
 
 // https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
@@ -5830,6 +5823,7 @@ function serializeMessage(message, options) {
 
   return {
     id: utilsCommon_1._get(message, 'id') || null,
+    tempId: utilsCommon_1._get(message, 'tempId') || null,
     text: utilsCommon_1._get(message, 'text') || '',
     timestamp: utilsCommon_1._get(message, 'timestamp') || '',
     cursor: utilsCommon_1._get(message, 'cursor') || null,
@@ -5882,14 +5876,16 @@ function () {
   _createClass(GraphQLClient, [{
     key: "makeFormData",
     value: function makeFormData(query, variables) {
-      var formData = new FormData();
+      var formData = new FormData(); // TODO: remove hardcoded query variables
+
       var formVariables = {
         roomId: variables.roomId,
         text: variables.text,
         attachments: variables.attachments.map(function (file) {
           return file.name;
         }),
-        responseToMessageId: variables.responseToMessageId
+        responseToMessageId: variables.responseToMessageId,
+        tempId: variables.tempId
       };
       formData.append('query', query);
       formData.append('variables', JSON.stringify(formVariables));
@@ -5970,7 +5966,7 @@ function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.
 function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
 
 function _templateObject3() {
-  var data = _taggedTemplateLiteral(["\n    query ($beforeCursor: String, $limit: Int!) {\n      messages(before: $beforeCursor, last: $limit) {\n        edges {\n          cursor\n          node {\n            id\n            text\n            timestamp\n            system\n            attachments {\n              id\n              url\n              name\n              bytesSize\n              height\n              width\n              contentType\n              thumbnails { id url name bytesSize height width contentType thumbType }\n            }\n            data {\n              ... on NotSystemMessageData {\n                responseToMessage {\n                  id\n                  text\n                  sender {\n                    __typename\n                    ... on Client { id foreignId firstName lastName }\n                    ... on CompanyEmployee {\n                      employee { id firstName lastName }\n                    }\n                  }\n                }\n              }\n              ... on SystemMessageData {\n                type\n                author {\n                  employee { id firstName lastName }\n                }\n              }\n\n            }\n            sender {\n              __typename\n              ... on Client { id foreignId firstName lastName }\n              ... on CompanyEmployee {\n                employee { id firstName lastName }\n              }\n            }\n          }\n        }\n      }\n    }\n  "]);
+  var data = _taggedTemplateLiteral(["\n    query ($beforeCursor: String, $limit: Int!) {\n      messages(before: $beforeCursor, last: $limit) {\n        edges {\n          cursor\n          node {\n            id\n            tempId\n            text\n            timestamp\n            system\n            attachments {\n              id\n              url\n              name\n              bytesSize\n              height\n              width\n              contentType\n              thumbnails { id url name bytesSize height width contentType thumbType }\n            }\n            data {\n              ... on NotSystemMessageData {\n                responseToMessage {\n                  id\n                  text\n                  sender {\n                    __typename\n                    ... on Client { id foreignId firstName lastName }\n                    ... on CompanyEmployee {\n                      employee { id firstName lastName }\n                    }\n                  }\n                }\n              }\n              ... on SystemMessageData {\n                type\n                author {\n                  employee { id firstName lastName }\n                }\n              }\n\n            }\n            sender {\n              __typename\n              ... on Client { id foreignId firstName lastName }\n              ... on CompanyEmployee {\n                employee { id firstName lastName }\n              }\n            }\n          }\n        }\n      }\n    }\n  "]);
 
   _templateObject3 = function _templateObject3() {
     return data;
@@ -5980,7 +5976,7 @@ function _templateObject3() {
 }
 
 function _templateObject2() {
-  var data = _taggedTemplateLiteral(["\n    mutation ($text: String!, $responseToMessageId: ID, $attachments: [Upload!]) {\n      sendMessage(text: $text, responseToMessageId: $responseToMessageId, attachments: $attachments) {\n        id\n        text\n        timestamp\n        system\n        attachments {\n          id\n          url\n          name\n          bytesSize\n          height\n          width\n          contentType\n          thumbnails { id url name bytesSize height width contentType thumbType }\n        }\n        data {\n          ... on NotSystemMessageData {\n            responseToMessage {\n              id\n              text\n              sender {\n                __typename\n                ... on Client { id foreignId firstName lastName }\n                ... on CompanyEmployee {\n                  employee { id firstName lastName }\n                }\n              }\n            }\n          }\n          ... on SystemMessageData {\n            type\n            author {\n              employee { id firstName lastName }\n            }\n          }\n\n        }\n        sender {\n          __typename\n          ... on Client { id foreignId firstName lastName }\n          ... on CompanyEmployee {\n            employee { id firstName lastName }\n          }\n        }\n      }\n    }\n  "]);
+  var data = _taggedTemplateLiteral(["\n    mutation ($text: String!, $responseToMessageId: ID, $attachments: [Upload!], $tempId: ID) {\n      sendMessage(text: $text, responseToMessageId: $responseToMessageId, attachments: $attachments, tempId: $tempId) {\n        id\n        tempId\n        text\n        timestamp\n        system\n        attachments {\n          id\n          url\n          name\n          bytesSize\n          height\n          width\n          contentType\n          thumbnails { id url name bytesSize height width contentType thumbType }\n        }\n        data {\n          ... on NotSystemMessageData {\n            responseToMessage {\n              id\n              text\n              sender {\n                __typename\n                ... on Client { id foreignId firstName lastName }\n                ... on CompanyEmployee {\n                  employee { id firstName lastName }\n                }\n              }\n            }\n          }\n          ... on SystemMessageData {\n            type\n            author {\n              employee { id firstName lastName }\n            }\n          }\n\n        }\n        sender {\n          __typename\n          ... on Client { id foreignId firstName lastName }\n          ... on CompanyEmployee {\n            employee { id firstName lastName }\n          }\n        }\n      }\n    }\n  "]);
 
   _templateObject2 = function _templateObject2() {
     return data;
@@ -5990,7 +5986,7 @@ function _templateObject2() {
 }
 
 function _templateObject() {
-  var data = _taggedTemplateLiteral(["\n    subscription {\n      newMessage {\n        id\n        text\n        timestamp\n        system\n        attachments {\n          id\n          url\n          name\n          bytesSize\n          height\n          width\n          contentType\n          thumbnails { id url name bytesSize height width contentType thumbType }\n        }\n        data {\n          ... on NotSystemMessageData {\n            responseToMessage {\n              id\n              text\n              sender {\n                __typename\n                ... on Client { id foreignId firstName lastName }\n                ... on CompanyEmployee {\n                  employee { id firstName lastName }\n                }\n              }\n            }\n          }\n          ... on SystemMessageData {\n            type\n            author {\n              employee { id firstName lastName }\n            }\n          }\n        }\n        sender {\n          __typename\n          ... on Client { id foreignId firstName lastName }\n          ... on CompanyEmployee {\n            employee { id firstName lastName }\n          }\n        }\n      }\n    }\n  "]);
+  var data = _taggedTemplateLiteral(["\n    subscription {\n      newMessage {\n        id\n        tempId\n        text\n        timestamp\n        system\n        attachments {\n          id\n          url\n          name\n          bytesSize\n          height\n          width\n          contentType\n          thumbnails { id url name bytesSize height width contentType thumbType }\n        }\n        data {\n          ... on NotSystemMessageData {\n            responseToMessage {\n              id\n              text\n              sender {\n                __typename\n                ... on Client { id foreignId firstName lastName }\n                ... on CompanyEmployee {\n                  employee { id firstName lastName }\n                }\n              }\n            }\n          }\n          ... on SystemMessageData {\n            type\n            author {\n              employee { id firstName lastName }\n            }\n          }\n        }\n        sender {\n          __typename\n          ... on Client { id foreignId firstName lastName }\n          ... on CompanyEmployee {\n            employee { id firstName lastName }\n          }\n        }\n      }\n    }\n  "]);
 
   _templateObject = function _templateObject() {
     return data;
@@ -6063,12 +6059,14 @@ function () {
     this.sendMessage = function (_ref) {
       var text = _ref.text,
           attachments = _ref.attachments,
-          responseToMessageId = _ref.responseToMessageId;
+          responseToMessageId = _ref.responseToMessageId,
+          tempId = _ref.tempId;
       var query = _this.sendMessageQuery;
       var variables = {
         text: text,
         attachments: attachments,
-        responseToMessageId: responseToMessageId
+        responseToMessageId: responseToMessageId,
+        tempId: tempId
       };
       return new Promise(function (resolve, reject) {
         _this.graphQLClient.query(query, variables, {
@@ -6466,6 +6464,8 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
+var utilsCommon_1 = require("../utilsCommon");
+
 var ScreenshotTaker =
 /*#__PURE__*/
 function () {
@@ -6582,7 +6582,30 @@ function () {
 }();
 
 exports.ScreenshotTaker = ScreenshotTaker;
-},{}],"Pqo8":[function(require,module,exports) {
+
+exports.getCompatibilityFallback = function () {
+  if (navigator.mediaDevices.getDisplayMedia) {
+    return null;
+  } else {
+    var platform = utilsCommon_1.detectPlatform();
+
+    if (platform.isMac) {
+      return {
+        pressKey: 'Cmd+Control+Shift+3'
+      };
+    } else if (platform.isWindows) {
+      return {
+        pressKey: 'PrtSc',
+        pressKeySecondary: 'Fn+PrtSc'
+      };
+    } else {
+      return {
+        pressKey: null
+      };
+    }
+  }
+};
+},{"../utilsCommon":"EjGt"}],"Pqo8":[function(require,module,exports) {
 "use strict";
 
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
@@ -7013,12 +7036,14 @@ function () {
         return file;
       }) : [];
       var responseToMessageId = typeof params.responseToMessageId === 'string' ? params.responseToMessageId : null;
+      var tempId = params.tempId;
 
       if (text.trim() || attachments.length) {
         return this.messagesSubscription.sendMessage({
           text: text,
           attachments: attachments,
-          responseToMessageId: responseToMessageId
+          responseToMessageId: responseToMessageId,
+          tempId: tempId
         }).then(function (message) {
           utilsCommon_1.logEvent(_this6.debug, 'Sent message', {
             message: message,
@@ -7026,7 +7051,8 @@ function () {
             normalizedParams: {
               text: text,
               attachments: attachments,
-              responseToMessageId: responseToMessageId
+              responseToMessageId: responseToMessageId,
+              tempId: tempId
             }
           });
 

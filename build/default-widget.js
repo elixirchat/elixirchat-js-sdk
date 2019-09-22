@@ -8184,23 +8184,16 @@ function _round(num) {
   return +num.toFixed(2);
 }
 
-exports._round = _round; // Similar to Lodash-like _.isEqual but doesn't perform deep comparison (unlike  _.isEqual in Lodash)
+exports._round = _round;
 
-function _isEqualShallow(object1, object2) {
-  if (Object.keys(object1).length !== Object.keys(object2).length) {
-    return false;
-  }
-
-  for (var key in object1) {
-    if (object1[key] !== object2[key]) {
-      return false;
-    }
-  }
-
-  return true;
+function detectPlatform() {
+  return {
+    isWindows: navigator.platform.indexOf('Win') > -1,
+    isMac: navigator.platform.indexOf('Mac') > -1
+  };
 }
 
-exports._isEqualShallow = _isEqualShallow;
+exports.detectPlatform = detectPlatform;
 },{}],"4KO9":[function(require,module,exports) {
 "use strict";
 
@@ -8250,6 +8243,32 @@ function inflect(locale, number, endings, hideNumber) {
 }
 
 exports.inflect = inflect;
+
+function inflectDayJSWeekDays(locale, formattedDateString) {
+  if (locale === 'en-US') {
+    return formattedDateString;
+  }
+
+  var updatedFormattedDateString = formattedDateString;
+  var reDictRu = {
+    'в понедельник': 'в понедельник',
+    'в вторник': 'во вторник',
+    'в среда': 'в среду',
+    'в четверг': 'в четверг',
+    'в пятница': 'в пятницу',
+    'в суббота': 'в субботу',
+    'в воскресенье': 'в воскресенье'
+  };
+
+  for (var key in reDictRu) {
+    var regex = new RegExp(key, 'ig');
+    updatedFormattedDateString = updatedFormattedDateString.replace(regex, reDictRu[key]);
+  }
+
+  return updatedFormattedDateString;
+}
+
+exports.inflectDayJSWeekDays = inflectDayJSWeekDays;
 
 function playNotificationSound() {
   var context = new AudioContext();
@@ -9290,7 +9309,757 @@ var define;
 var define;
 !function(_,t){"object"==typeof exports&&"undefined"!=typeof module?module.exports=t(require("dayjs")):"function"==typeof define&&define.amd?define(["dayjs"],t):_.dayjs_locale_ru=t(_.dayjs)}(this,function(_){"use strict";_=_&&_.hasOwnProperty("default")?_.default:_;var t="января_февраля_марта_апреля_мая_июня_июля_августа_сентября_октября_ноября_декабря".split("_"),e="январь_февраль_март_апрель_май_июнь_июль_август_сентябрь_октябрь_ноябрь_декабрь".split("_"),n="янв._февр._мар._апр._мая_июня_июля_авг._сент._окт._нояб._дек.".split("_"),s="янв._февр._март_апр._май_июнь_июль_авг._сент._окт._нояб._дек.".split("_"),d=/D[oD]?(\[[^[\]]*\]|\s)+MMMM?/,o={name:"ru",weekdays:"воскресенье_понедельник_вторник_среда_четверг_пятница_суббота".split("_"),weekdaysShort:"вск_пнд_втр_срд_чтв_птн_сбт".split("_"),weekdaysMin:"вс_пн_вт_ср_чт_пт_сб".split("_"),months:function(_,n){return d.test(n)?t[_.month()]:e[_.month()]},monthsShort:function(_,t){return d.test(t)?n[_.month()]:s[_.month()]},weekStart:1,formats:{LT:"H:mm",LTS:"H:mm:ss",L:"DD.MM.YYYY",LL:"D MMMM YYYY г.",LLL:"D MMMM YYYY г., H:mm",LLLL:"dddd, D MMMM YYYY г., H:mm"},relativeTime:{future:"через %s",past:"%s назад",s:"несколько секунд",m:"минута",mm:"%d минут",h:"час",hh:"%d часов",d:"день",dd:"%d дней",M:"месяц",MM:"%d месяцев",y:"год",yy:"%d лет"},ordinal:function(_){return _}};return _.locale(o,null,!0),o});
 
-},{"dayjs":"3dZY"}],"70rD":[function(require,module,exports) {
+},{"dayjs":"3dZY"}],"Asjh":[function(require,module,exports) {
+/**
+ * Copyright (c) 2013-present, Facebook, Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+'use strict';
+
+var ReactPropTypesSecret = 'SECRET_DO_NOT_PASS_THIS_OR_YOU_WILL_BE_FIRED';
+
+module.exports = ReactPropTypesSecret;
+
+},{}],"wVGV":[function(require,module,exports) {
+/**
+ * Copyright (c) 2013-present, Facebook, Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+'use strict';
+
+var ReactPropTypesSecret = require('./lib/ReactPropTypesSecret');
+
+function emptyFunction() {}
+function emptyFunctionWithReset() {}
+emptyFunctionWithReset.resetWarningCache = emptyFunction;
+
+module.exports = function() {
+  function shim(props, propName, componentName, location, propFullName, secret) {
+    if (secret === ReactPropTypesSecret) {
+      // It is still safe when called from React.
+      return;
+    }
+    var err = new Error(
+      'Calling PropTypes validators directly is not supported by the `prop-types` package. ' +
+      'Use PropTypes.checkPropTypes() to call them. ' +
+      'Read more at http://fb.me/use-check-prop-types'
+    );
+    err.name = 'Invariant Violation';
+    throw err;
+  };
+  shim.isRequired = shim;
+  function getShim() {
+    return shim;
+  };
+  // Important!
+  // Keep this list in sync with production version in `./factoryWithTypeCheckers.js`.
+  var ReactPropTypes = {
+    array: shim,
+    bool: shim,
+    func: shim,
+    number: shim,
+    object: shim,
+    string: shim,
+    symbol: shim,
+
+    any: shim,
+    arrayOf: getShim,
+    element: shim,
+    elementType: shim,
+    instanceOf: getShim,
+    node: shim,
+    objectOf: getShim,
+    oneOf: getShim,
+    oneOfType: getShim,
+    shape: getShim,
+    exact: getShim,
+
+    checkPropTypes: emptyFunctionWithReset,
+    resetWarningCache: emptyFunction
+  };
+
+  ReactPropTypes.PropTypes = ReactPropTypes;
+
+  return ReactPropTypes;
+};
+
+},{"./lib/ReactPropTypesSecret":"Asjh"}],"5D9O":[function(require,module,exports) {
+/**
+ * Copyright (c) 2013-present, Facebook, Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+if ("production" !== 'production') {
+  var ReactIs = require('react-is'); // By explicitly using `prop-types` you are opting into new development behavior.
+  // http://fb.me/prop-types-in-prod
+
+
+  var throwOnDirectAccess = true;
+  module.exports = require('./factoryWithTypeCheckers')(ReactIs.isElement, throwOnDirectAccess);
+} else {
+  // By explicitly using `prop-types` you are opting into new production behavior.
+  // http://fb.me/prop-types-in-prod
+  module.exports = require('./factoryWithThrowingShims')();
+}
+},{"./factoryWithThrowingShims":"wVGV"}],"FpH/":[function(require,module,exports) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.isValidMatch = isValidMatch;
+var uriSchemeRegex = /^[A-Za-z][-.+A-Za-z0-9]+:/;
+var hasFullProtocolRegex = /^[A-Za-z][-.+A-Za-z0-9]+:\/\//;
+var hasWordCharAfterProtocolRegex = /:[^\s]*?[A-Za-z]/;
+var invalidProtocolRelMatchRegex = /^[\w]\/\//;
+
+/**
+ * Determines if a given match found by the match parser is valid.
+ * Will return `false` for:
+ *
+ * 1) URL matches which do not have at least have one period ('.') in the
+ *    domain name (effectively skipping over matches like "abc:def").
+ *    However, URL matches with a protocol will be allowed (ex: 'http://localhost')
+ * 2) URL matches which do not have at least one word character in the
+ *    domain name (effectively skipping over matches like "git:1.0").
+ * 3) A protocol-relative url match (a URL beginning with '//') whose
+ *    previous character is a word character (effectively skipping over
+ *    strings like "abc//google.com")
+ *
+ * Otherwise, returns `true`.
+ *
+ * @param {String} urlMatch The matched URL, if there was one. Will be an
+ *   empty string if the match is not a URL match.
+ * @param {String} protocolUrlMatch The match URL string for a protocol
+ *   match. Ex: 'http://yahoo.com'. This is used to match something like
+ *   'http://localhost', where we won't double check that the domain name
+ *   has at least one '.' in it.
+ * @param {String} protocolRelativeMatch The protocol-relative string for a
+ *   URL match (i.e. '//'), possibly with a preceding character (ex, a
+ *   space, such as: ' //', or a letter, such as: 'a//'). The match is
+ *   invalid if there is a word character preceding the '//'.
+ * @return {Boolean} `true` if the match given is valid and should be
+ *   processed, or `false` if the match is invalid and/or should just not be
+ *   processed.
+ */
+function isValidMatch(urlMatch, protocolUrlMatch, protocolRelativeMatch) {
+  if (protocolUrlMatch && !isValidUriScheme(protocolUrlMatch) || urlMatchDoesNotHaveProtocolOrDot(urlMatch, protocolUrlMatch) || // At least one period ('.') must exist in the URL match for us to consider it an actual URL, *unless* it was a full protocol match (like 'http://localhost')
+  urlMatchDoesNotHaveAtLeastOneWordChar(urlMatch, protocolUrlMatch) || // At least one letter character must exist in the domain name after a protocol match. Ex: skip over something like "git:1.0"
+  isInvalidProtocolRelativeMatch(protocolRelativeMatch) // A protocol-relative match which has a word character in front of it (so we can skip something like "abc//google.com")
+  ) {
+      return false;
+    }
+
+  return true;
+}
+
+/**
+ * Determines if the URI scheme is a valid scheme to be autolinked. Returns
+ * `false` if the scheme is 'javascript:' or 'vbscript:'
+ *
+ * @private
+ * @param {String} uriSchemeMatch The match URL string for a full URI scheme
+ *   match. Ex: 'http://yahoo.com' or 'mailto:a@a.com'.
+ * @return {Boolean} `true` if the scheme is a valid one, `false` otherwise.
+ */
+function isValidUriScheme(uriSchemeMatch) {
+  var uriScheme = uriSchemeMatch.match(uriSchemeRegex)[0].toLowerCase();
+
+  return uriScheme !== 'javascript:' && uriScheme !== 'vbscript:';
+}
+
+/**
+ * Determines if a URL match does not have either:
+ *
+ * a) a full protocol (i.e. 'http://'), or
+ * b) at least one dot ('.') in the domain name (for a non-full-protocol
+ *    match).
+ *
+ * Either situation is considered an invalid URL (ex: 'git:d' does not have
+ * either the '://' part, or at least one dot in the domain name. If the
+ * match was 'git:abc.com', we would consider this valid.)
+ *
+ * @private
+ * @param {String} urlMatch The matched URL, if there was one. Will be an
+ *   empty string if the match is not a URL match.
+ * @param {String} protocolUrlMatch The match URL string for a protocol
+ *   match. Ex: 'http://yahoo.com'. This is used to match something like
+ *   'http://localhost', where we won't double check that the domain name
+ *   has at least one '.' in it.
+ * @return {Boolean} `true` if the URL match does not have a full protocol,
+ *   or at least one dot ('.') in a non-full-protocol match.
+ */
+function urlMatchDoesNotHaveProtocolOrDot(urlMatch, protocolUrlMatch) {
+  return !!urlMatch && (!protocolUrlMatch || !hasFullProtocolRegex.test(protocolUrlMatch)) && urlMatch.indexOf('.') === -1;
+}
+
+/**
+ * Determines if a URL match does not have at least one word character after
+ * the protocol (i.e. in the domain name).
+ *
+ * At least one letter character must exist in the domain name after a
+ * protocol match. Ex: skip over something like "git:1.0"
+ *
+ * @private
+ * @param {String} urlMatch The matched URL, if there was one. Will be an
+ *   empty string if the match is not a URL match.
+ * @param {String} protocolUrlMatch The match URL string for a protocol
+ *   match. Ex: 'http://yahoo.com'. This is used to know whether or not we
+ *   have a protocol in the URL string, in order to check for a word
+ *   character after the protocol separator (':').
+ * @return {Boolean} `true` if the URL match does not have at least one word
+ *   character in it after the protocol, `false` otherwise.
+ */
+function urlMatchDoesNotHaveAtLeastOneWordChar(urlMatch, protocolUrlMatch) {
+  if (urlMatch && protocolUrlMatch) {
+    return !hasWordCharAfterProtocolRegex.test(urlMatch);
+  } else {
+    return false;
+  }
+}
+
+/**
+ * Determines if a protocol-relative match is an invalid one. This method
+ * returns `true` if there is a `protocolRelativeMatch`, and that match
+ * contains a word character before the '//' (i.e. it must contain
+ * whitespace or nothing before the '//' in order to be considered valid).
+ *
+ * @private
+ * @param {String} protocolRelativeMatch The protocol-relative string for a
+ *   URL match (i.e. '//'), possibly with a preceding character (ex, a
+ *   space, such as: ' //', or a letter, such as: 'a//'). The match is
+ *   invalid if there is a word character preceding the '//'.
+ * @return {Boolean} `true` if it is an invalid protocol-relative match,
+ *   `false` otherwise.
+ */
+function isInvalidProtocolRelativeMatch(protocolRelativeMatch) {
+  return !!protocolRelativeMatch && invalidProtocolRelMatchRegex.test(protocolRelativeMatch);
+}
+},{}],"iqWA":[function(require,module,exports) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/**
+ * A regular expression used to remove the 'http://' or 'https://' and/or the 'www.' from URLs.
+ */
+var URL_PREFIX_REGEX = /^(https?:\/\/)?(www\.)?/i;
+
+/**
+ * The regular expression used to remove the protocol-relative '//' from the {@link #url} string, for purposes
+ * of {@link #getAnchorText}. A protocol-relative URL is, for example, "//yahoo.com"
+ */
+var PROTOCOL_RELATIVE_REGEX = /^\/\//;
+
+/**
+ * @class Autolinker.match.Url
+ *
+ * Represents a Url match found in an input string which should be Autolinked.
+ */
+
+var URLMatch = function () {
+  function URLMatch(url, protocolUrlMatch, protocolRelativeMatch, position) {
+    _classCallCheck(this, URLMatch);
+
+    this._url = url;
+    this._protocolUrlMatch = protocolUrlMatch;
+    this._protocolRelativeMatch = protocolRelativeMatch;
+    this.position = position;
+
+    /**
+     * Will be set to `true` if the 'http://' protocol has been prepended to the {@link #url} (because the
+     * {@link #url} did not have a protocol)
+     */
+    this.protocolPrepended = false;
+  }
+
+  /**
+   * Returns the url that was matched, assuming the protocol to be 'http://' if the original
+   * match was missing a protocol.
+   *
+   * @return {String}
+   */
+
+
+  _createClass(URLMatch, [{
+    key: 'getUrl',
+    value: function getUrl() {
+      var url = this._url;
+
+      // if the url string doesn't begin with a protocol, assume 'http://'
+      if (!this._protocolRelativeMatch && !this._protocolUrlMatch && !this.protocolPrepended) {
+        url = this._url = 'http://' + url;
+
+        this.protocolPrepended = true;
+      }
+
+      return url;
+    }
+
+    /**
+     * Returns the anchor href that should be generated for the match.
+     *
+     * @return {String}
+     */
+
+  }, {
+    key: 'getAnchorHref',
+    value: function getAnchorHref() {
+      var url = this.getUrl();
+
+      return url.replace(/&amp;/g, '&'); // any &amp;'s in the URL should be converted back to '&' if they were displayed as &amp; in the source html
+    }
+
+    /**
+     * Returns the anchor text that should be generated for the match.
+     *
+     * @return {String}
+     */
+
+  }, {
+    key: 'getAnchorText',
+    value: function getAnchorText() {
+      var anchorText = this.getUrl();
+
+      if (this._protocolRelativeMatch) {
+        // Strip off any protocol-relative '//' from the anchor text
+        anchorText = this.stripProtocolRelativePrefix(anchorText);
+      }
+      anchorText = this.stripUrlPrefix(anchorText); // remove URL prefix
+      anchorText = this.removeTrailingSlash(anchorText); // remove trailing slash, if there is one
+
+      return anchorText;
+    }
+
+    // ---------------------------------------
+
+    // Utility Functionality
+
+    /**
+     * Strips the URL prefix (such as "http://" or "https://") from the given text.
+     *
+     * @private
+     * @param {String} text The text of the anchor that is being generated, for which to strip off the
+     *   url prefix (such as stripping off "http://")
+     * @return {String} The `anchorText`, with the prefix stripped.
+     */
+
+  }, {
+    key: 'stripUrlPrefix',
+    value: function stripUrlPrefix(text) {
+      return text.replace(URL_PREFIX_REGEX, '');
+    }
+
+    /**
+     * Strips any protocol-relative '//' from the anchor text.
+     *
+     * @private
+     * @param {String} text The text of the anchor that is being generated, for which to strip off the
+     *   protocol-relative prefix (such as stripping off "//")
+     * @return {String} The `anchorText`, with the protocol-relative prefix stripped.
+     */
+
+  }, {
+    key: 'stripProtocolRelativePrefix',
+    value: function stripProtocolRelativePrefix(text) {
+      return text.replace(PROTOCOL_RELATIVE_REGEX, '');
+    }
+
+    /**
+     * Removes any trailing slash from the given `anchorText`, in preparation for the text to be displayed.
+     *
+     * @private
+     * @param {String} anchorText The text of the anchor that is being generated, for which to remove any trailing
+     *   slash ('/') that may exist.
+     * @return {String} The `anchorText`, with the trailing slash removed.
+     */
+
+  }, {
+    key: 'removeTrailingSlash',
+    value: function removeTrailingSlash(anchorText) {
+      if (anchorText.charAt(anchorText.length - 1) === '/') {
+        anchorText = anchorText.slice(0, -1);
+      }
+      return anchorText;
+    }
+  }]);
+
+  return URLMatch;
+}();
+
+exports.default = URLMatch;
+},{}],"gYzK":[function(require,module,exports) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
+exports.default = function (text) {
+  var regex = new RegExp(urlRegex, 'gi');
+  var matches = [];
+
+  var match;
+  while ((match = regex.exec(text)) !== null) {
+    var _match = match,
+        _match2 = _slicedToArray(_match, 4),
+        matchedText = _match2[0],
+        protocolUrlMatch = _match2[1],
+        wwwProtocolRelativeMatch = _match2[2],
+        tldProtocolRelativeMatch = _match2[3];
+
+    var protocolRelativeMatch = wwwProtocolRelativeMatch || tldProtocolRelativeMatch;
+
+    // If it's a protocol-relative '//' match, remove the character
+    // before the '//' (which the matcherRegex needed to match due to
+    // the lack of a negative look-behind in JavaScript regular
+    // expressions)
+    if (protocolRelativeMatch) {
+      var charBeforeMatch = protocolRelativeMatch.match(charBeforeProtocolRelMatchRegex)[1] || '';
+
+      // fix up the `matchStr` if there was a preceding char before a protocol-relative match, which was needed to determine the match itself (since there are no look-behinds in JS regexes)
+      if (charBeforeMatch) {
+        matchedText = matchedText.slice(1); // remove the prefixed char from the match
+        match.index++;
+      }
+    }
+
+    if ((0, _match_validator.isValidMatch)(matchedText, protocolUrlMatch, protocolRelativeMatch)) {
+      var position = { start: match.index, end: regex.lastIndex };
+      matches.push(new _url_match2.default(matchedText, protocolUrlMatch, protocolRelativeMatch, position));
+    }
+  }
+
+  return matches;
+};
+
+var _match_validator = require('./match_validator');
+
+var _url_match = require('./url_match');
+
+var _url_match2 = _interopRequireDefault(_url_match);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// match protocol, allow in format "http://" or "mailto:". However, do not match
+// the first part of something like 'link:http://www.google.com' (i.e. don't match "link:").
+// Also, make sure we don't interpret 'google.com:8000' as if 'google.com' was a
+// protocol here (i.e. ignore a trailing port number in this regex)
+var protocolRegex = /(?:[A-Za-z][-.+A-Za-z0-9]+:(?![A-Za-z][-.+A-Za-z0-9]+:\/\/)(?!\d+\/?)(?:\/\/)?)/;
+
+// starting with 'www.'
+var wwwRegex = /(?:www\.)/;
+
+// anything looking at all like a domain, non-unicode domains, not ending in a period
+var domainNameRegex = /[A-Za-z0-9.-]*[A-Za-z0-9-]/;
+
+// match our known top level domains (TLDs)
+var tldRegex = /\.(?:international|construction|contractors|enterprises|photography|productions|foundation|immobilien|industries|management|properties|technology|christmas|community|directory|education|equipment|institute|marketing|solutions|vacations|bargains|boutique|builders|catering|cleaning|clothing|computer|democrat|diamonds|graphics|holdings|lighting|partners|plumbing|supplies|training|ventures|academy|careers|company|cruises|domains|exposed|flights|florist|gallery|guitars|holiday|kitchen|neustar|okinawa|recipes|rentals|reviews|shiksha|singles|support|systems|agency|berlin|camera|center|coffee|condos|dating|estate|events|expert|futbol|kaufen|luxury|maison|monash|museum|nagoya|photos|repair|report|social|supply|tattoo|tienda|travel|viajes|villas|vision|voting|voyage|actor|build|cards|cheap|codes|dance|email|glass|house|mango|ninja|parts|photo|shoes|solar|today|tokyo|tools|watch|works|aero|arpa|asia|best|bike|blue|buzz|camp|club|cool|coop|farm|fish|gift|guru|info|jobs|kiwi|kred|land|limo|link|menu|mobi|moda|name|pics|pink|post|qpon|rich|ruhr|sexy|tips|vote|voto|wang|wien|wiki|zone|bar|bid|biz|cab|cat|ceo|com|edu|gov|int|kim|mil|net|onl|org|pro|pub|red|tel|uno|wed|xxx|xyz|ac|ad|ae|af|ag|ai|al|am|an|ao|aq|ar|as|at|au|aw|ax|az|ba|bb|bd|be|bf|bg|bh|bi|bj|bm|bn|bo|br|bs|bt|bv|bw|by|bz|ca|cc|cd|cf|cg|ch|ci|ck|cl|cm|cn|co|cr|cu|cv|cw|cx|cy|cz|de|dj|dk|dm|do|dz|ec|ee|eg|er|es|et|eu|fi|fj|fk|fm|fo|fr|ga|gb|gd|ge|gf|gg|gh|gi|gl|gm|gn|gp|gq|gr|gs|gt|gu|gw|gy|hk|hm|hn|hr|ht|hu|id|ie|il|im|in|io|iq|ir|is|it|je|jm|jo|jp|ke|kg|kh|ki|km|kn|kp|kr|kw|ky|kz|la|lb|lc|li|lk|lr|ls|lt|lu|lv|ly|ma|mc|md|me|mg|mh|mk|ml|mm|mn|mo|mp|mq|mr|ms|mt|mu|mv|mw|mx|my|mz|na|nc|ne|nf|ng|ni|nl|no|np|nr|nu|nz|om|pa|pe|pf|pg|ph|pk|pl|pm|pn|pr|ps|pt|pw|py|qa|re|ro|rs|ru|rw|sa|sb|sc|sd|se|sg|sh|si|sj|sk|sl|sm|sn|so|sr|st|su|sv|sx|sy|sz|tc|td|tf|tg|th|tj|tk|tl|tm|tn|to|tp|tr|tt|tv|tw|tz|ua|ug|uk|us|uy|uz|va|vc|ve|vg|vi|vn|vu|wf|ws|ye|yt|za|zm|zw)\b/;
+
+// Allow optional path, query string, and hash anchor, not ending in the following characters: "?!:,.;"
+// http://blog.codinghorror.com/the-problem-with-urls/
+var urlSuffixRegex = /[-A-Za-z0-9+&@#/%=~_()|'$*[\]?!:,.;]*[-A-Za-z0-9+&@#/%=~_()|'$*[\]]/;
+
+var charBeforeProtocolRelMatchRegex = /^(.)?\/\//;
+
+/* eslint-disable indent */
+var urlRegex = ['(?:', // parens to cover match for protocol (optional), and domain
+'(', // *** Capturing group $1, for a protocol-prefixed url (ex: http://google.com)
+protocolRegex.source, domainNameRegex.source, ')', '|', '(?:', // non-capturing paren for a 'www.' prefixed url (ex: www.google.com)
+'(.?//)?', // *** Capturing group $2 for an optional protocol-relative URL. Must be at the beginning of the string or start with a non-word character
+wwwRegex.source, domainNameRegex.source, ')', '|', '(?:', // non-capturing paren for known a TLD url (ex: google.com)
+'(.?//)?', // *** Capturing group $3 for an optional protocol-relative URL. Must be at the beginning of the string or start with a non-word character
+domainNameRegex.source, tldRegex.source, ')', ')', '(?:' + urlSuffixRegex.source + ')?'].join('');
+/* eslint-enable indent */
+},{"./match_validator":"FpH/","./url_match":"iqWA"}],"7BCM":[function(require,module,exports) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _propTypes = require('prop-types');
+
+var _propTypes2 = _interopRequireDefault(_propTypes);
+
+var _match_parser = require('./match_parser');
+
+var _match_parser2 = _interopRequireDefault(_match_parser);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var AutoLinkText = function (_PureComponent) {
+  _inherits(AutoLinkText, _PureComponent);
+
+  function AutoLinkText() {
+    _classCallCheck(this, AutoLinkText);
+
+    return _possibleConstructorReturn(this, (AutoLinkText.__proto__ || Object.getPrototypeOf(AutoLinkText)).apply(this, arguments));
+  }
+
+  _createClass(AutoLinkText, [{
+    key: 'prepareElements',
+    value: function prepareElements(matches, text) {
+      var _this2 = this;
+
+      var elements = [];
+      var lastIndex = 0;
+
+      matches.forEach(function (match) {
+        if (match.position.start !== 0) {
+          elements.push(_react2.default.createElement('span', {}, text.slice(lastIndex, match.position.start)));
+        }
+        elements.push(_react2.default.createElement('a', Object.assign({}, { href: match.getAnchorHref() }, _this2.props.linkProps), match.getAnchorText()));
+        lastIndex = match.position.end;
+      });
+
+      if (lastIndex < text.length) {
+        elements.push(_react2.default.createElement('span', {}, text.slice(lastIndex)));
+      }
+
+      return elements;
+    }
+  }, {
+    key: 'truncate',
+    value: function truncate(items) {
+      var _this3 = this;
+
+      if (!this.props.maxLength) return items;
+
+      var elements = [];
+      var length = 0;
+
+      items.some(function (el) {
+        length += el.props.children.length;
+
+        if (length > _this3.props.maxLength) {
+          var truncatedText = el.props.children.slice(0, -(length - _this3.props.maxLength));
+          elements.push(_react2.default.cloneElement(el, {}, truncatedText));
+          return true; // stop iterating through the elements
+        }
+
+        elements.push(el);
+      });
+
+      return elements;
+    }
+
+    /*
+     * Generate unique keys for each of the elements.
+     * The key will be based on the index of the element.
+     */
+
+  }, {
+    key: 'keyElements',
+    value: function keyElements(elements) {
+      return elements.map(function (el, index) {
+        return _react2.default.cloneElement(el, { key: index });
+      });
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      var text = this.props.text || '';
+
+      var keyedElements = this.keyElements(this.truncate(this.prepareElements((0, _match_parser2.default)(text), text)));
+
+      return _react2.default.createElement('span', {}, keyedElements);
+    }
+  }]);
+
+  return AutoLinkText;
+}(_react.PureComponent);
+
+exports.default = AutoLinkText;
+
+
+AutoLinkText.propTypes = {
+  text: _propTypes2.default.string,
+  linkProps: _propTypes2.default.object,
+  maxLength: _propTypes2.default.oneOfType([_propTypes2.default.number, _propTypes2.default.string])
+};
+},{"react":"1n8/","prop-types":"5D9O","./match_parser":"gYzK"}],"CLsL":[function(require,module,exports) {
+"use strict";
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var utilsCommon_1 = require("../utilsCommon");
+
+var ScreenshotTaker =
+/*#__PURE__*/
+function () {
+  function ScreenshotTaker() {
+    var _this = this;
+
+    _classCallCheck(this, ScreenshotTaker);
+
+    this.mediaOptions = {};
+    this.width = 0;
+    this.height = 0;
+
+    this.takeScreenshot = function () {
+      return new Promise(function (resolve, reject) {
+        _this.getMediaStream().then(function (stream) {
+          _this.stream = stream;
+          _this.video.srcObject = _this.stream;
+
+          _this.video.oncanplay = function () {
+            _this.setVideoCanvasSize();
+
+            setTimeout(function () {
+              var screenshot = _this.captureVideoFrame();
+
+              _this.stopMediaStream();
+
+              resolve(screenshot);
+            }, 500);
+          };
+
+          _this.video.play();
+        }).catch(reject);
+      });
+    };
+
+    this.initialize();
+  }
+
+  _createClass(ScreenshotTaker, [{
+    key: "initialize",
+    value: function initialize() {
+      this.width = screen.width;
+      this.canvas = document.createElement('canvas');
+      this.video = document.createElement('video');
+    }
+  }, {
+    key: "setVideoCanvasSize",
+    value: function setVideoCanvasSize() {
+      var video = this.video,
+          canvas = this.canvas,
+          width = this.width;
+      this.height = video.videoHeight / (video.videoWidth / width);
+      video.width = width;
+      video.height = this.height;
+      canvas.width = width;
+      canvas.height = this.height;
+    }
+  }, {
+    key: "captureVideoFrame",
+    value: function captureVideoFrame() {
+      var canvas = this.canvas,
+          width = this.width,
+          height = this.height,
+          video = this.video;
+      var context = canvas.getContext('2d');
+      context.drawImage(video, 0, 0, width, height);
+      var dataUrl = canvas.toDataURL('image/png');
+      var file = this.base64ToFile(dataUrl);
+      return {
+        dataUrl: dataUrl,
+        file: file
+      };
+    }
+  }, {
+    key: "stopMediaStream",
+    value: function stopMediaStream() {
+      this.stream.getTracks()[0].stop();
+    }
+  }, {
+    key: "getMediaStream",
+    value: function getMediaStream() {
+      var _this2 = this;
+
+      return new Promise(function (resolve, reject) {
+        try {
+          var mediaDevices = navigator.mediaDevices;
+          mediaDevices.getDisplayMedia(_this2.mediaOptions).then(resolve).catch(reject);
+        } catch (e) {
+          reject({
+            message: 'MediaDevices.getDisplayMedia is not supported in this browser'
+          });
+        }
+      });
+    }
+  }, {
+    key: "base64ToFile",
+    value: function base64ToFile(dataUrl) {
+      var blobBin = atob(dataUrl.split(',')[1]);
+      var blobArray = [];
+
+      for (var i = 0; i < blobBin.length; i++) {
+        blobArray.push(blobBin.charCodeAt(i));
+      }
+
+      var blob = new Blob([new Uint8Array(blobArray)]);
+      var fileName = "Screenshot ".concat(new Date().toLocaleString(), ".png");
+      return new File([blob], fileName, {
+        type: 'image/png'
+      });
+    }
+  }]);
+
+  return ScreenshotTaker;
+}();
+
+exports.ScreenshotTaker = ScreenshotTaker;
+
+exports.getCompatibilityFallback = function () {
+  if (navigator.mediaDevices.getDisplayMedia) {
+    return null;
+  } else {
+    var platform = utilsCommon_1.detectPlatform();
+
+    if (platform.isMac) {
+      return {
+        pressKey: 'Cmd+Control+Shift+3'
+      };
+    } else if (platform.isWindows) {
+      return {
+        pressKey: 'PrtSc',
+        pressKeySecondary: 'Fn+PrtSc'
+      };
+    } else {
+      return {
+        pressKey: null
+      };
+    }
+  }
+};
+},{"../utilsCommon":"EjGt"}],"70rD":[function(require,module,exports) {
 
 },{}],"xqZa":[function(require,module,exports) {
 "use strict";
@@ -9308,8 +10077,8 @@ var fs = require('fs'); // Styles outside the Chat iframe
 
 exports.DefaultWidgetGlobalStyles = ".elixirchat-widget-button {\n  position: fixed;\n  bottom: 30px;\n  right: 30px;\n  width: 60px;\n  height: 60px;\n  border: 0;\n  cursor: pointer;\n  border-radius: 100%;\n  background-color: #FF006E;\n  box-shadow: 0 0 25px rgba(0,0,0,.15);\n  outline: none;\n  z-index: 999999;\n  transition: background-color 200ms;\n  color: #ffffff;\n  font-family: 'elixirchat-icons' !important;\n}\n\n.elixirchat-widget-button:hover {\n  background-color: #e6025f;\n}\n\n/* TODO: replace w/ <i class\"icon...\"> element when button is rewritten as a React component */\n.elixirchat-widget-button:after,\n.elixirchat-widget-button:before {\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  top: 0;\n  left: 0;\n  transition: opacity 300ms;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  box-sizing: border-box;\n}\n\n/* TODO: replace w/ <i class\"icon...\"> element when button is rewritten as a React component */\n.elixirchat-widget-button:after {\n  content: \"\\e904\"; /* .icon-logo */\n  font-size: 28px;\n  padding-top: 5px;\n  -webkit-font-smoothing: antialiased;\n  -moz-osx-font-smoothing: grayscale;\n}\n\n/* TODO: replace w/ <i class\"icon...\"> element when button is rewritten as a React component */\n.elixirchat-widget-button:before {\n  content: \"\\e902\"; /* .icon-close-thin */\n  font-size: 21px;\n}\n\n.elixirchat-widget-button:before {\n  opacity: 0;\n}\n\n.elixirchat-widget-button--visible:after {\n  opacity: 0;\n}\n\n.elixirchat-widget-button--visible:before {\n  opacity: 1;\n}\n\n.elixirchat-widget-button-counter {\n  display: none;\n  position: absolute;\n  padding: 0 5px;\n  min-width: 10px;\n  height: 20px;\n  font: 13px/20px Graphik, 'Helvetica Neue', sans-serif;\n  text-align: center;\n  border-radius: 100%;\n  background: #FF006E;\n  color: #ffffff;\n  box-shadow: 0 3px 7px rgba(0,0,0,0.2);\n  z-index: 2;\n  right: 0;\n  top: 0;\n}\n\n.elixirchat-widget-button-counter--has-unread {\n  display: block;\n}\n\n.elixirchat-widget-iframe {\n  border-radius: 8px;\n  background: #ffffff;\n  position: fixed;\n  max-height: 600px;\n  height: calc(100vh - 130px);\n  width: 380px;\n  bottom: 100px;\n  right: 30px;\n  border: 0;\n  box-shadow: 0 0 60px rgba(0,0,0,.15);\n  z-index: 999998;\n  transition: all 200ms;\n  opacity: 1;\n  transform: none;\n  transform-origin: bottom right;\n  display: none;\n}\n\n.elixirchat-widget-iframe--opening {\n  opacity: 0;\n  transform: translateY(15px) scale(0.9);\n}\n\n.elixirchat-widget-iframe--visible {\n  display: block;\n}\n\n.elixirchat-widget-image-preview {\n  position: fixed;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  top: 0;\n  z-index: 9999999;\n  background: rgba(0,0,0,.8);\n  overflow-y: auto;\n  overflow-x: hidden;\n  padding: 40px 50px 0 50px;\n  text-align: center;\n  display: none;\n}\n\n.elixirchat-widget-image-preview--visible {\n  display: block;\n}\n\n.elixirchat-widget-image-preview__inner {\n  display: inline-block;\n}\n\n.elixirchat-widget-image-preview__img {\n  position: relative;\n  z-index: 2;\n  box-shadow: 0 4px 8px rgba(0,0,0,.15);\n  margin-bottom: 40px;\n}\n\n.elixirchat-widget-image-preview__img--loading {\n  display: none;\n}\n\n@media (max-width: 480px) {\n  .elixirchat-widget-iframe {\n    bottom: 0;\n    right: 0;\n    left: 0;\n    top: 0;\n    width: 100%;\n    height: 100%;\n    max-height: 100%;\n    z-index: 9999999;\n    border-radius: 0;\n  }\n\n  .elixirchat-widget-button {\n    right: 20px;\n    bottom: 20px;\n  }\n}\n"; // Styles inside the Chat iframe
 
-exports.DefaultWidgetStyles = "body {\n  margin: 0;\n  padding: 0;\n}\n\nbody,\ninput,\nbutton,\ntextarea {\n  font: 14px/18px Graphik, 'Helvetica Neue', sans-serif;\n  outline: none;\n  color: #151319;\n  -webkit-font-smoothing: antialiased;\n  -moz-osx-font-smoothing: grayscale;\n}\n\n.elixirchat-chat-container {\n  position: absolute;\n  top: 0;\n  bottom: 0;\n  right: 0;\n  left: 0;\n}\n\n.elixirchat-chat-header {\n  margin: 0;\n  font-size: 16px;\n  height: 53px;\n  box-sizing: border-box;\n  box-shadow: 0 1px 0 rgba(0,0,0,.15);\n  padding: 19px 0 0 30px;\n  position: fixed;\n  top: 0;\n  left: 0;\n  right: 0;\n  z-index: 2;\n  border-radius: 8px 8px 0 0;\n  background: #ffffff;\n}\n\n.elixirchat-chat-header__indicator {\n  display: inline-block;\n  width: 10px;\n  height: 10px;\n  border-radius: 100%;\n  background: #50C900;\n  vertical-align: middle;\n  margin-right: 8px;\n  margin-top: -2px;\n}\n\n.elixirchat-chat-header__close {\n  width: 53px;\n  height: 53px;\n  border: 0;\n  opacity: .25;\n  position: absolute;\n  top: 1px;\n  right: 0;\n  transition: opacity 200ms;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  font-size: 15px;\n}\n\n.elixirchat-chat-header__close:hover {\n  opacity: .4;\n}\n\n.elixirchat-chat-scroll {\n  position: fixed;\n  top: 53px;\n  left: 0;\n  right: 0;\n  bottom: 110px;\n  overflow-x: hidden;\n  overflow-y: auto;\n  padding: 20px 30px;\n}\n\n@keyframes spinner {\n  to {\n    transform: rotate(360deg);\n  }\n}\n\n.elixirchat-chat-spinner {\n  position: fixed;\n  top: 50%;\n  margin: -45px 0 0 -45px;\n  left: 50%;\n  display: block;\n  width: 90px;\n  height: 90px;\n  border-radius: 100%;\n  border: 1px solid #E2E2E2;\n  animation: spinner 1s linear infinite;\n}\n\n.elixirchat-chat-spinner:after {\n  content: '';\n  background: #ffffff;\n  width: 5px;\n  height: 30px;\n  position: absolute;\n  top: 50%;\n  margin: -15px 0 0 0;\n  left: -2px;\n}\n\n.elixirchat-chat-fatal-error {\n  position: fixed;\n  top: 50%;\n  transform: translateY(-50%);\n  left: 0;\n  right: 0;\n  display: block;\n  padding: 0 50px;\n  color: #999999;\n  line-height: 22px;\n  text-align: center;\n}\n\n.elixirchat-chat-fatal-error--nowrap {\n  white-space: nowrap;\n}\n";
-exports.DefaultWidgetMessagesStyles = ".elixirchat-chat-messages {\n  display: flex;\n  flex-direction: column;\n  align-items: flex-end;\n}\n\n.elixirchat-chat-messages a {\n  color: #0033FF;\n  text-decoration: none;\n  outline: none;\n}\n\n.elixirchat-chat-messages__date-title {\n  text-transform: uppercase;\n  font-size: 12px;\n  font-weight: bold;\n  border-bottom: 1px solid #151319;\n  line-height: 21px;\n  margin-bottom: 15px;\n  width: 100%;\n}\n\n.elixirchat-chat-messages__item {\n  max-width: 80%;\n  min-width: 50%;\n  margin-bottom: 15px;\n}\n\n.elixirchat-chat-messages__sender {\n  color: #0033FF;\n  font-weight: bold;\n  padding-bottom: 1px;\n}\n\n.elixirchat-chat-messages__balloon + .elixirchat-chat-messages__balloon {\n  margin-top: 10px;\n}\n\n.elixirchat-chat-messages__reply-to {\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  color: #999999;\n  margin: 2px 0 4px 0;\n}\n\n.elixirchat-chat-messages__reply-to-icon {\n  margin-right: 7px;\n  opacity: .9;\n  vertical-align: text-bottom;\n}\n\n.elixirchat-chat-messages__text {\n  white-space: pre-wrap;\n}\n\n.elixirchat-chat-messages__bottom {\n  text-align: right;\n  color: #999999;\n  padding-top: 4px;\n  white-space: nowrap;\n}\n\n.elixirchat-chat-messages__submission-error {\n  color: #ff006e;\n  cursor: pointer;\n}\n\n.elixirchat-chat-messages__reply {\n  margin-left: 10px;\n  cursor: default;\n}\n\n.elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__reply {\n  margin-left: 0;\n  margin-right: 10px;\n}\n\n.elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__reply-to {\n  color: rgba(255,255,255,.65);\n}\n\n.elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__balloon {\n  padding: 9px 10px 7px 10px;\n  border-radius: 3px;\n  background: #0033FF;\n  color: #ffffff;\n}\n\n.elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__sender {\n  color: #ffffff;\n}\n\n.elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__text + .elixirchat-chat-files {\n  padding-top: 8px;\n}\n\n.elixirchat-chat-messages__item--by-operator {\n  align-self: flex-start;\n}\n\n.elixirchat-chat-messages__item--by-operator .elixirchat-chat-messages__sender {\n  color: #FF006E;\n}\n\n.elixirchat-chat-messages__item--by-operator .elixirchat-chat-messages__bottom {\n  text-align: left;\n}\n\n.elixirchat-chat-files {\n  list-style: none;\n  padding: 6px 0 3px 0;\n  margin: 0;\n}\n\n.elixirchat-chat-files__item {\n  display: flex;\n  line-height: 21px;\n  margin-top: 10px;\n  padding: 0;\n  cursor: default;\n}\n\n.elixirchat-chat-files__item:first-child {\n  margin-top: 0;\n}\n\n.elixirchat-chat-files__item:hover .elixirchat-chat-files__preview {\n  background-color: #efefef;\n}\n\n.elixirchat-chat-files__item:hover .elixirchat-chat-files__preview-image:after {\n  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);\n}\n\n.elixirchat-chat-files__preview {\n  width: 50px;\n  height: 50px;\n  flex-basis: 50px;\n  flex-shrink: 0;\n  border-radius: 3px;\n  background: #F4F4F4;\n  transition: all 200ms;\n  position: relative;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  color: #a8a8a8 !important;\n}\n\n.elixirchat-chat-files__preview-image {\n  background-size: cover;\n}\n\n.elixirchat-chat-files__preview-image:after {\n  content: \"\";\n  position: absolute;\n  border-radius: 3px;\n  top: 0;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);\n  pointer-events: none;\n  transition: all 200ms;\n}\n\n.elixirchat-chat-files__preview-submitting {\n  background-image: none;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n\n.elixirchat-chat-files__text {\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  padding: 6px 0 0 9px;\n}\n\n.elixirchat-chat-files__text-link {\n  margin-left: -15px;\n  padding-left: 15px;\n}\n\n.elixirchat-chat-files__text-secondary {\n  color: rgba(0, 0, 0, 0.25);\n}\n\n.elixirchat-chat-messages__take-screenshot {\n  background: #FF006E;\n  color: #ffffff;\n  border: 0;\n  border-radius: 4px;\n  padding: 1px 11px 0 11px;\n  height: 31px;\n  line-height: 31px;\n  margin: 6px 0 3px 0;\n  transition: background-color 300ms;\n}\n\n.elixirchat-chat-messages__take-screenshot:hover {\n  background: #e6025f;\n}\n\n@keyframes elixirchat-chat-spinner {\n  to {\n    transform: rotate(360deg);\n  }\n}\n\n.elixirchat-chat-files__preview-spinner {\n  display: block;\n  width: 22px;\n  height: 22px;\n  font-size: 22.4px;\n  animation: elixirchat-chat-spinner 1s linear infinite;\n}\n\n.elixirchat-chat-images {\n  list-style: none;\n  padding: 0 0 0 0;\n  margin: 6px 0 2px 0;\n}\n\n.elixirchat-chat-images__item {\n  padding: 0;\n  margin-top: 6px;\n}\n\n.elixirchat-chat-images__item:first-child {\n  margin-top: 2px;\n}\n\n.elixirchat-chat-images__link {\n  display: inline-block;\n  vertical-align: bottom;\n  position: relative;\n}\n\n.elixirchat-chat-images__link:after {\n  content: \"\";\n  position: absolute;\n  border-radius: 3px;\n  top: 0;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);\n  pointer-events: none;\n}\n\n.elixirchat-chat-images__img {\n  max-width: 256px;\n  max-height: 256px;\n  border-radius: 3px;\n  display: block;\n}\n\n.elixirchat-chat-images__item-not-found > img {\n  position: relative;\n  min-width: 180px;\n  pointer-events: none;\n  cursor: default;\n}\n\n.elixirchat-chat-images__item-not-found > img:after {\n  content: \"(\" attr(alt) \")\";\n  color: rgba(0, 0, 0, 0.2);\n  display: block;\n  margin: 8px 0 0 20px;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  position: absolute;\n  top: 50%;\n  transform: translateY(-50%);\n  width: calc(100% - 40px);\n  text-align: center;\n}\n\n.elixirchat-chat-images__item-not-found > img:before {\n  content: attr(data-error-message);\n  color: rgba(0, 0, 0, 0.2);\n  position: absolute;\n  top: 0;\n  bottom: 0;\n  left: 0;\n  right: 0;\n  background: #fff;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  padding-bottom: 25px;\n}\n\n.elixirchat-chat-messages__item--by-me .elixirchat-chat-images__item {\n  text-align: right;\n}\n\n.elixirchat-chat-messages__item--by-me .elixirchat-chat-files {\n  padding-top: 2px;\n}\n\n.elixirchat-chat-messages__item--by-me .elixirchat-chat-files__text-link {\n  color: #ffffff;\n}\n\n.elixirchat-chat-messages__item--by-me .elixirchat-chat-files__text-secondary {\n  color: rgba(255,255,255,.5);\n}\n";
+exports.DefaultWidgetStyles = "body {\n  margin: 0;\n  padding: 0;\n}\n\nbody,\ninput,\nbutton,\ntextarea {\n  font: 14px/18px Graphik, 'Helvetica Neue', sans-serif;\n  outline: none;\n  color: #151319;\n  -webkit-font-smoothing: antialiased;\n  -moz-osx-font-smoothing: grayscale;\n}\n\n.elixirchat-chat-container {\n  position: absolute;\n  top: 0;\n  bottom: 0;\n  right: 0;\n  left: 0;\n}\n\n.elixirchat-chat-header {\n  margin: 0;\n  font-size: 16px;\n  height: 53px;\n  box-sizing: border-box;\n  box-shadow: 0 1px 0 rgba(0,0,0,.15);\n  padding: 19px 0 0 30px;\n  position: fixed;\n  top: 0;\n  left: 0;\n  right: 0;\n  z-index: 2;\n  border-radius: 8px 8px 0 0;\n  background: #ffffff;\n}\n\n.elixirchat-chat-header__indicator {\n  display: inline-block;\n  width: 10px;\n  height: 10px;\n  border-radius: 100%;\n  background: #50C900;\n  vertical-align: middle;\n  margin-right: 8px;\n  margin-top: -2px;\n}\n\n.elixirchat-chat-header__close {\n  width: 53px;\n  height: 53px;\n  border: 0;\n  opacity: .25;\n  position: absolute;\n  top: 1px;\n  right: 0;\n  transition: opacity 200ms;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  font-size: 15px;\n  background: none;\n}\n\n.elixirchat-chat-header__close:hover {\n  opacity: .4;\n}\n\n.elixirchat-chat-scroll {\n  position: fixed;\n  top: 53px;\n  left: 0;\n  right: 0;\n  bottom: 110px;\n  overflow-x: hidden;\n  overflow-y: auto;\n  padding: 20px 30px;\n}\n\n@keyframes spinner {\n  to {\n    transform: rotate(360deg);\n  }\n}\n\n.elixirchat-chat-spinner {\n  position: fixed;\n  top: 50%;\n  margin: -45px 0 0 -45px;\n  left: 50%;\n  display: block;\n  width: 90px;\n  height: 90px;\n  border-radius: 100%;\n  border: 1px solid #E2E2E2;\n  animation: spinner 1s linear infinite;\n}\n\n.elixirchat-chat-spinner:after {\n  content: '';\n  background: #ffffff;\n  width: 5px;\n  height: 30px;\n  position: absolute;\n  top: 50%;\n  margin: -15px 0 0 0;\n  left: -2px;\n}\n\n.elixirchat-chat-fatal-error {\n  position: fixed;\n  top: 50%;\n  transform: translateY(-50%);\n  left: 0;\n  right: 0;\n  display: block;\n  padding: 0 50px;\n  color: #999999;\n  line-height: 22px;\n  text-align: center;\n}\n\n.elixirchat-chat-fatal-error--nowrap {\n  white-space: nowrap;\n}\n";
+exports.DefaultWidgetMessagesStyles = ".elixirchat-chat-messages {\n  display: flex;\n  flex-direction: column;\n  align-items: flex-end;\n}\n\n.elixirchat-chat-messages a {\n  color: #0033FF;\n  text-decoration: none;\n  outline: none;\n}\n\n.elixirchat-chat-messages__date-title {\n  text-transform: uppercase;\n  font-size: 12px;\n  font-weight: bold;\n  border-bottom: 1px solid #151319;\n  line-height: 21px;\n  margin-bottom: 15px;\n  width: 100%;\n}\n\n.elixirchat-chat-messages__item {\n  max-width: 80%;\n  min-width: 50%;\n  margin-bottom: 15px;\n  transition: background-color 500ms;\n}\n\n.elixirchat-chat-messages__sender {\n  color: #0033FF;\n  font-weight: bold;\n  padding-bottom: 1px;\n}\n\n.elixirchat-chat-messages__balloon + .elixirchat-chat-messages__balloon {\n  margin-top: 10px;\n}\n\n.elixirchat-chat-messages__reply-to {\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  color: #999999;\n  margin: 2px 0 4px 0;\n  cursor: default;\n}\n\n.elixirchat-chat-messages__reply-to-icon {\n  margin-right: 7px;\n  opacity: .9;\n  vertical-align: text-bottom;\n}\n\n.elixirchat-chat-messages__text {\n  white-space: pre-wrap;\n  word-break: break-word;\n}\n\n.elixirchat-chat-messages__text kbd {\n  font: 13px/17px Graphik, 'Helvetica Neue', sans-serif;\n  background: rgba(0,0,0,.05);\n  border: 1px solid rgba(0,0,0,.1);\n  border-bottom-width: 2px;\n  border-radius: 2px;\n  padding: 1px 2px;\n  display: inline-block;\n  margin: 0 1px;\n}\n\n.elixirchat-chat-messages__bottom {\n  text-align: right;\n  color: #999999;\n  padding-top: 4px;\n  white-space: nowrap;\n}\n\n.elixirchat-chat-messages__submission-error {\n  color: #ff006e;\n  cursor: pointer;\n}\n\n.elixirchat-chat-messages__reply {\n  margin-left: 10px;\n  cursor: default;\n}\n\n.elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__reply {\n  margin-left: 0;\n  margin-right: 10px;\n}\n\n.elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__reply-to {\n  color: rgba(255,255,255,.65);\n}\n\n.elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__balloon {\n  padding: 9px 10px 7px 10px;\n  border-radius: 3px;\n  background: #0033FF;\n  color: #ffffff;\n}\n\n.elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__balloon a {\n  color: #ffffff;\n  text-decoration: underline;\n}\n\n.elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__sender {\n  color: #ffffff;\n}\n\n.elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__text + .elixirchat-chat-files {\n  padding-top: 8px;\n}\n\n.elixirchat-chat-messages__item--by-operator {\n  align-self: flex-start;\n}\n\n.elixirchat-chat-messages__item--by-operator .elixirchat-chat-messages__sender {\n  color: #FF006E;\n}\n\n.elixirchat-chat-messages__item--by-operator .elixirchat-chat-messages__bottom {\n  text-align: left;\n}\n\n.elixirchat-chat-messages__item--highlighted {\n  /*background: rgba(255, 0, 102, 0.05);*/\n  /*TODO: come up w/ highlighting style*/\n}\n\n.elixirchat-chat-files {\n  list-style: none;\n  padding: 6px 0 3px 0;\n  margin: 0;\n}\n\n.elixirchat-chat-files__item {\n  display: flex;\n  line-height: 21px;\n  margin-top: 10px;\n  padding: 0;\n  cursor: default;\n}\n\n.elixirchat-chat-files__item:first-child {\n  margin-top: 0;\n}\n\n.elixirchat-chat-files__item:hover .elixirchat-chat-files__preview {\n  background-color: #efefef;\n}\n\n.elixirchat-chat-files__item:hover .elixirchat-chat-files__preview-image:after {\n  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);\n}\n\n.elixirchat-chat-files__preview {\n  width: 50px;\n  height: 50px;\n  flex-basis: 50px;\n  flex-shrink: 0;\n  border-radius: 3px;\n  background: #F4F4F4;\n  transition: all 200ms;\n  position: relative;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  color: #a8a8a8 !important;\n}\n\n.elixirchat-chat-files__preview-image {\n  background-size: cover;\n}\n\n.elixirchat-chat-files__preview-image:after {\n  content: \"\";\n  position: absolute;\n  border-radius: 3px;\n  top: 0;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);\n  pointer-events: none;\n  transition: all 200ms;\n}\n\n.elixirchat-chat-files__preview-submitting {\n  background-image: none;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n\n.elixirchat-chat-files__text {\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  padding: 6px 0 0 9px;\n}\n\n.elixirchat-chat-files__text-link {\n  margin-left: -15px;\n  padding-left: 15px;\n}\n\n.elixirchat-chat-files__text-secondary {\n  color: rgba(0, 0, 0, 0.25);\n}\n\n.elixirchat-chat-messages__take-screenshot {\n  background: #FF006E;\n  color: #ffffff;\n  border: 0;\n  border-radius: 4px;\n  padding: 1px 11px 0 11px;\n  height: 31px;\n  line-height: 31px;\n  margin: 6px 0 3px 0;\n  transition: background-color 300ms;\n}\n\n.elixirchat-chat-messages__take-screenshot:hover {\n  background: #e6025f;\n}\n\n@keyframes elixirchat-chat-spinner {\n  to {\n    transform: rotate(360deg);\n  }\n}\n\n.elixirchat-chat-files__preview-spinner {\n  display: block;\n  width: 22px;\n  height: 22px;\n  font-size: 22.4px;\n  animation: elixirchat-chat-spinner 1s linear infinite;\n}\n\n.elixirchat-chat-images {\n  list-style: none;\n  padding: 0 0 0 0;\n  margin: 6px 0 2px 0;\n}\n\n.elixirchat-chat-images__item {\n  padding: 0;\n  margin-top: 6px;\n}\n\n.elixirchat-chat-images__item:first-child {\n  margin-top: 2px;\n}\n\n.elixirchat-chat-images__link {\n  display: inline-block;\n  vertical-align: bottom;\n  position: relative;\n}\n\n.elixirchat-chat-images__link:after {\n  content: \"\";\n  position: absolute;\n  border-radius: 3px;\n  top: 0;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);\n  pointer-events: none;\n}\n\n.elixirchat-chat-images__img {\n  max-width: 256px;\n  max-height: 256px;\n  border-radius: 3px;\n  display: block;\n}\n\n.elixirchat-chat-images__item-not-found > img {\n  position: relative;\n  min-width: 180px;\n  pointer-events: none;\n  cursor: default;\n}\n\n.elixirchat-chat-images__item-not-found > img:after {\n  content: \"(\" attr(alt) \")\";\n  color: rgba(0, 0, 0, 0.2);\n  display: block;\n  margin: 8px 0 0 20px;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  position: absolute;\n  top: 50%;\n  transform: translateY(-50%);\n  width: calc(100% - 40px);\n  text-align: center;\n}\n\n.elixirchat-chat-images__item-not-found > img:before {\n  content: attr(data-error-message);\n  color: rgba(0, 0, 0, 0.2);\n  position: absolute;\n  top: 0;\n  bottom: 0;\n  left: 0;\n  right: 0;\n  background: #fff;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  padding-bottom: 25px;\n}\n\n.elixirchat-chat-messages__item--by-me .elixirchat-chat-images__item {\n  text-align: right;\n}\n\n.elixirchat-chat-messages__item--by-me .elixirchat-chat-files {\n  padding-top: 2px;\n}\n\n.elixirchat-chat-messages__item--by-me .elixirchat-chat-files__text-link {\n  color: #ffffff;\n}\n\n.elixirchat-chat-messages__item--by-me .elixirchat-chat-files__text-secondary {\n  color: rgba(255,255,255,.5);\n}\n";
 exports.DefaultWidgetTextareaStyles = ".elixirchat-chat-textarea {\n  position: fixed;\n  bottom: 0;\n  left: 0;\n  right: 0;\n  background: #ffffff;\n  z-index: 3;\n  box-shadow: 0 -1px 0 rgba(0,0,0,.15);\n  border-radius: 0 0 8px 8px;\n}\n\n.elixirchat-chat-typing {\n  position: absolute;\n  background: #ffffff;\n  left: 0;\n  right: 0;\n  bottom: 100%;\n  font-weight: bold;\n  color: #D5D5D5;\n  padding: 0 30px 18px 54px;\n  box-shadow: 0 -15px 15px 6px rgba(255,255,255,.99), inset 0 -1px 0 rgba(0,0,0,.15);\n}\n\n.elixirchat-chat-typing__icon {\n  position: absolute;\n  left: 30px;\n  top: 3px;\n  font-size: 11px;\n  color: #cbcbcb;\n  z-index: 2;\n}\n\n.elixirchat-chat-textarea__reply-to {\n  color: #0033FF;\n  margin: 18px 0 -8px 30px;\n  position: relative;\n  z-index: 1;\n}\n\n.elixirchat-chat-textarea__reply-to-text {\n  display: inline-block;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 139px);\n}\n\n.elixirchat-chat-textarea__reply-to-icon {\n  margin-right: 4px;\n  vertical-align: text-top;\n}\n\n.elixirchat-chat-textarea__reply-to-remove {\n  vertical-align: text-top;\n  margin-left: 6px;\n  font-size: 11px;\n  line-height: 6px;\n}\n\n.elixirchat-chat-textarea__actions {\n  position: absolute;\n  right: 20px;\n  bottom: 20px;\n  z-index: 2;\n  transition: transform 200ms;\n}\n\n.elixirchat-chat-textarea__actions--collapsed {\n  transform: translateY(9px);\n}\n\n.elixirchat-chat-textarea__actions-screenshot,\n.elixirchat-chat-textarea__actions-attach {\n  width: 38px;\n  height: 31px;\n  border: 1px solid #D5D5D5;\n  border-radius: 7px;\n  position: relative;\n  margin-left: 10px;\n  display: inline-block;\n  vertical-align: top;\n  box-sizing: border-box;\n  overflow: hidden;\n  transition: background-color 200ms;\n  background: #ffffff;\n  color: rgba(0, 0, 0, 0.32);\n  padding-top: 4px;\n}\n\n.elixirchat-chat-textarea__actions-attach-input {\n  position: absolute;\n  z-index: 1;\n  opacity: 0;\n}\n\n.elixirchat-chat-textarea__actions-attach-label {\n  position: absolute;\n  z-index: 2;\n  left: 0;\n  right: 0;\n  top: 0;\n  bottom: 0;\n  padding-top: 8px;\n  text-align: center;\n}\n\n.elixirchat-chat-textarea__actions-screenshot:hover,\n.elixirchat-chat-textarea__actions-attach-label:hover {\n  background-color: #f5f5f5;\n}\n\n.elixirchat-chat-textarea__textarea {\n  border: 0;\n  position: relative;\n  left: 0;\n  top: 0;\n  bottom: 0;\n  right: 0;\n  padding: 17px 0 0 30px;\n  margin-bottom: 17px;\n  resize: none;\n  width: calc(100% - 120px);\n}\n\n.elixirchat-chat-attachment-list {\n  padding: 0;\n  margin: -2px 0 15px 30px;\n  list-style: none;\n  line-height: 22px;\n  color: #0033FF;\n}\n\n.elixirchat-chat-attachment-item {\n  margin: 0;\n  white-space: nowrap;\n}\n\n.elixirchat-chat-attachment-icon {\n  margin-right: 8px;\n  vertical-align: middle;\n}\n\n.elixirchat-chat-attachment-icon.icon-screenshot {\n  font-size: 12px;\n  margin-left: -1px;\n}\n\n.elixirchat-chat-attachment-filename {\n  max-width: calc(100% - 165px);\n  display: inline-block;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  vertical-align: middle;\n}\n\n.elixirchat-chat-attachment-remove {\n  font-size: 11px;\n  margin-left: 7px;\n  vertical-align: middle;\n}\n"; // Styles both inside and outside the Chat iframe
 
 exports.iconsStyles = "[class^=\"icon-\"], [class*=\" icon-\"] {\n  font-family: 'elixirchat-icons' !important;\n  speak: none;\n  font-style: normal;\n  font-weight: normal;\n  font-variant: normal;\n  text-transform: none;\n  line-height: 1;\n  -webkit-font-smoothing: antialiased;\n  -moz-osx-font-smoothing: grayscale;\n}\n\n.icon-arrow-down:before {\n  content: \"\\e900\";\n}\n\n.icon-close-thick:before {\n  content: \"\\e901\";\n}\n\n.icon-close-thin:before {\n  content: \"\\e902\";\n}\n\n.icon-file:before {\n  content: \"\\e903\";\n}\n\n.icon-logo:before {\n  content: \"\\e904\";\n}\n\n.icon-reply-left:before {\n  content: \"\\e905\";\n}\n\n.icon-reply-right:before {\n  content: \"\\e906\";\n}\n\n.icon-screenshot:before {\n  content: \"\\e907\";\n}\n\n.icon-spinner-lg:before {\n  content: \"\\e908\";\n}\n\n.icon-spinner-xs:before {\n  content: \"\\e909\";\n}\n\n.icon-typing:before {\n  content: \"\\e90a\";\n}\n";
@@ -9366,9 +10135,13 @@ var calendar_1 = __importDefault(require("dayjs/plugin/calendar"));
 
 require("dayjs/locale/ru");
 
+var react_autolink_text2_1 = __importDefault(require("react-autolink-text2"));
+
 var utilsCommon_1 = require("../../utilsCommon");
 
 var utilsWidget_1 = require("../../utilsWidget");
+
+var ScreenshotTaker_1 = require("../../sdk/ScreenshotTaker");
 
 var styles_1 = require("./styles");
 
@@ -9386,7 +10159,8 @@ function (_react_1$Component) {
     _this.state = {
       processedMessages: [],
       currentImagePreview: {},
-      imagePreviews: []
+      imagePreviews: [],
+      screenshotFallback: null
     };
     _this.maxThumbnailSize = 256;
 
@@ -9486,6 +10260,11 @@ function (_react_1$Component) {
           imagePreviews = _this$state.imagePreviews,
           currentImagePreview = _this$state.currentImagePreview;
       var elixirChatWidget = _this.props.elixirChatWidget;
+
+      if (!elixirChatWidget.widgetImagePreviewIsVisible) {
+        return false;
+      }
+
       var currentImagePreviewIndex = imagePreviews.map(function (preview) {
         return preview.id;
       }).indexOf(currentImagePreview.id);
@@ -9511,6 +10290,23 @@ function (_react_1$Component) {
       return message.sender.isCurrentClient && !hasText && !hasReply && !hasFiles;
     };
 
+    _this.scrollToMessage = function (message) {
+      var highlightedClassName = 'elixirchat-chat-messages__item--highlighted';
+
+      var messageDOMElement = _this.refs["message-".concat(message.id)];
+
+      if (messageDOMElement) {
+        messageDOMElement.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
+        messageDOMElement.classList.add(highlightedClassName);
+        setTimeout(function () {
+          messageDOMElement.classList.remove(highlightedClassName);
+        }, 1000);
+      }
+    };
+
     _this.onTakeScreenshotClick = function () {
       var _this$props = _this.props,
           elixirChatWidget = _this$props.elixirChatWidget,
@@ -9522,6 +10318,14 @@ function (_react_1$Component) {
       }).catch(function () {
         elixirChatWidget.toggleChatVisibility();
       });
+    };
+
+    _this.renderKeyShortcut = function (keySequence) {
+      return react_1.default.createElement(react_1.Fragment, null, keySequence.split(/\+/).map(function (key, index) {
+        return react_1.default.createElement(react_1.Fragment, {
+          key: index
+        }, !!index && '+', react_1.default.createElement("kbd", null, key));
+      }));
     };
 
     return _this;
@@ -9538,6 +10342,9 @@ function (_react_1$Component) {
       elixirChatWidget.widgetChatIframe.contentDocument.addEventListener('keyup', this.onIframeBodyKeyup);
       elixirChatWidget.injectIframeStyles(styles_1.DefaultWidgetMessagesStyles);
       this.setProcessedMessages(messages);
+      this.setState({
+        screenshotFallback: ScreenshotTaker_1.getCompatibilityFallback()
+      });
     }
   }, {
     key: "componentDidUpdate",
@@ -9553,7 +10360,9 @@ function (_react_1$Component) {
     value: function render() {
       var _this2 = this;
 
-      var processedMessages = this.state.processedMessages;
+      var _this$state2 = this.state,
+          processedMessages = _this$state2.processedMessages,
+          screenshotFallback = _this$state2.screenshotFallback;
       var _this$props3 = this.props,
           onReplyMessage = _this$props3.onReplyMessage,
           onSubmitRetry = _this$props3.onSubmitRetry;
@@ -9570,6 +10379,7 @@ function (_react_1$Component) {
           lastWeek: 'D MMMM',
           sameElse: 'D MMMM'
         })), !message.isSystem && react_1.default.createElement("div", {
+          ref: "message-".concat(message.id),
           className: classnames_1.default({
             'elixirchat-chat-messages__item': true,
             'elixirchat-chat-messages__item--by-me': message.sender.isCurrentClient,
@@ -9583,14 +10393,23 @@ function (_react_1$Component) {
         }, !message.sender.isCurrentClient && react_1.default.createElement("div", {
           className: "elixirchat-chat-messages__sender"
         }, message.sender.firstName, " ", message.sender.lastName), Boolean(message.responseToMessage) && react_1.default.createElement("div", {
-          className: "elixirchat-chat-messages__reply-to"
+          className: "elixirchat-chat-messages__reply-to",
+          onClick: function onClick() {
+            return _this2.scrollToMessage(message.responseToMessage);
+          }
         }, react_1.default.createElement("i", {
           className: "elixirchat-chat-messages__reply-to-icon icon-reply-right"
         }), message.responseToMessage.sender.firstName, "\xA0", message.responseToMessage.sender.lastName, "\xA0", react_1.default.createElement("span", {
           title: message.responseToMessage.text
         }, message.responseToMessage.text.substr(0, 100))), message.text && react_1.default.createElement("div", {
           className: "elixirchat-chat-messages__text"
-        }, message.text), Boolean(message.files) && Boolean(message.files.length) && react_1.default.createElement("ul", {
+        }, react_1.default.createElement(react_autolink_text2_1.default, {
+          linkProps: {
+            target: '_blank',
+            rel: 'noopener noreferrer'
+          },
+          text: message.text
+        })), Boolean(message.files) && Boolean(message.files.length) && react_1.default.createElement("ul", {
           className: "elixirchat-chat-files"
         }, message.files.map(function (file) {
           var _classnames_1$default;
@@ -9668,14 +10487,23 @@ function (_react_1$Component) {
           className: "elixirchat-chat-messages__balloon"
         }, react_1.default.createElement("div", {
           className: "elixirchat-chat-messages__sender"
-        }, (message.sender.firstName || '') + ' ' + (message.sender.lastName || '')), react_1.default.createElement("div", {
+        }, message.sender.firstName, " ", message.sender.lastName, !message.sender.firstName && !message.sender.lastName && 'Служба поддержки'), message.systemData.type === 'SCREENSHOT_REQUESTED' && react_1.default.createElement(react_1.Fragment, null, react_1.default.createElement("div", {
           className: "elixirchat-chat-messages__text"
-        }, "\u041F\u043E\u0436\u0430\u043B\u0443\u0439\u0441\u0442\u0430, \u043F\u0440\u0438\u0448\u043B\u0438\u0442\u0435 \u0441\u043A\u0440\u0438\u043D\u0448\u043E\u0442 \u0432\u0430\u0448\u0435\u0433\u043E \u044D\u043A\u0440\u0430\u043D\u0430."), react_1.default.createElement("button", {
+        }, "\u041F\u043E\u0436\u0430\u043B\u0443\u0439\u0441\u0442\u0430, \u043F\u0440\u0438\u0448\u043B\u0438\u0442\u0435 \u0441\u043A\u0440\u0438\u043D\u0448\u043E\u0442 \u0432\u0430\u0448\u0435\u0433\u043E \u044D\u043A\u0440\u0430\u043D\u0430.", Boolean(screenshotFallback) && Boolean(screenshotFallback.pressKey) && react_1.default.createElement(react_1.Fragment, null, "\xA0\u0414\u043B\u044F \u044D\u0442\u043E\u0433\u043E \u043D\u0430\u0436\u043C\u0438\u0442\u0435 ", _this2.renderKeyShortcut(screenshotFallback.pressKey), screenshotFallback.pressKeySecondary && react_1.default.createElement(react_1.Fragment, null, "\xA0(", _this2.renderKeyShortcut(screenshotFallback.pressKeySecondary), ")"), ", \u0430 \u0437\u0430\u0442\u0435\u043C \u0432\u0441\u0442\u0430\u0432\u044C\u0442\u0435 \u0440\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442 \u0432 \u0442\u0435\u043A\u0441\u0442\u043E\u0432\u043E\u0435 \u043F\u043E\u043B\u0435.")), !Boolean(screenshotFallback) && react_1.default.createElement("button", {
           className: "elixirchat-chat-messages__take-screenshot",
           onClick: _this2.onTakeScreenshotClick
-        }, "\u0421\u0434\u0435\u043B\u0430\u0442\u044C \u0441\u043A\u0440\u0438\u043D\u0448\u043E\u0442")), react_1.default.createElement("div", {
+        }, "\u0421\u0434\u0435\u043B\u0430\u0442\u044C \u0441\u043A\u0440\u0438\u043D\u0448\u043E\u0442")), message.systemData.type === 'ALL_OPERATORS_OFFLINE' && react_1.default.createElement(react_1.Fragment, null, react_1.default.createElement("div", {
+          className: "elixirchat-chat-messages__text"
+        }, "\u041A \u0441\u043E\u0436\u0430\u043B\u0435\u043D\u0438\u044E, \u0432\u0441\u0435 \u043E\u043F\u0435\u0440\u0430\u0442\u043E\u0440\u044B \u043F\u043E\u0434\u0434\u0435\u0440\u0436\u043A\u0438 \u0441\u0435\u0439\u0447\u0430\u0441 \u043E\u0444\u0444\u043B\u0430\u0439\u043D", message.systemData.workHoursStartAt && ', но будут снова в сети ' + utilsWidget_1.inflectDayJSWeekDays('ru-RU', dayjs_1.default(message.systemData.workHoursStartAt).calendar(null, {
+          nextWeek: '[в] dddd [в] H:mm',
+          nextDay: '[завтра в] H:mm',
+          sameDay: '[сегодня в] H:mm',
+          lastDay: 'D MMMM [в] H:mm',
+          lastWeek: 'D MMMM [в] H:mm',
+          sameElse: 'D MMMM [в] H:mm'
+        })), "."))), react_1.default.createElement("div", {
           className: "elixirchat-chat-messages__bottom"
-        }, dayjs_1.default(message.timestamp).format('H:mm, D MMMM'))));
+        }, dayjs_1.default(message.timestamp).format('H:mm'))));
       }));
     }
   }]);
@@ -9684,7 +10512,7 @@ function (_react_1$Component) {
 }(react_1.Component);
 
 exports.DefaultWidgetMessages = DefaultWidgetMessages;
-},{"react":"1n8/","classnames":"9qb7","dayjs":"3dZY","dayjs/plugin/calendar":"B5kD","dayjs/locale/ru":"7ZQM","../../utilsCommon":"EjGt","../../utilsWidget":"4KO9","./styles":"xqZa"}],"SpjQ":[function(require,module,exports) {
+},{"react":"1n8/","classnames":"9qb7","dayjs":"3dZY","dayjs/plugin/calendar":"B5kD","dayjs/locale/ru":"7ZQM","react-autolink-text2":"7BCM","../../utilsCommon":"EjGt","../../utilsWidget":"4KO9","../../sdk/ScreenshotTaker":"CLsL","./styles":"xqZa"}],"SpjQ":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -9759,106 +10587,7 @@ function _assertThisInitialized(self) {
 
   return self;
 }
-},{}],"Asjh":[function(require,module,exports) {
-/**
- * Copyright (c) 2013-present, Facebook, Inc.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
-'use strict';
-
-var ReactPropTypesSecret = 'SECRET_DO_NOT_PASS_THIS_OR_YOU_WILL_BE_FIRED';
-
-module.exports = ReactPropTypesSecret;
-
-},{}],"wVGV":[function(require,module,exports) {
-/**
- * Copyright (c) 2013-present, Facebook, Inc.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
-'use strict';
-
-var ReactPropTypesSecret = require('./lib/ReactPropTypesSecret');
-
-function emptyFunction() {}
-function emptyFunctionWithReset() {}
-emptyFunctionWithReset.resetWarningCache = emptyFunction;
-
-module.exports = function() {
-  function shim(props, propName, componentName, location, propFullName, secret) {
-    if (secret === ReactPropTypesSecret) {
-      // It is still safe when called from React.
-      return;
-    }
-    var err = new Error(
-      'Calling PropTypes validators directly is not supported by the `prop-types` package. ' +
-      'Use PropTypes.checkPropTypes() to call them. ' +
-      'Read more at http://fb.me/use-check-prop-types'
-    );
-    err.name = 'Invariant Violation';
-    throw err;
-  };
-  shim.isRequired = shim;
-  function getShim() {
-    return shim;
-  };
-  // Important!
-  // Keep this list in sync with production version in `./factoryWithTypeCheckers.js`.
-  var ReactPropTypes = {
-    array: shim,
-    bool: shim,
-    func: shim,
-    number: shim,
-    object: shim,
-    string: shim,
-    symbol: shim,
-
-    any: shim,
-    arrayOf: getShim,
-    element: shim,
-    elementType: shim,
-    instanceOf: getShim,
-    node: shim,
-    objectOf: getShim,
-    oneOf: getShim,
-    oneOfType: getShim,
-    shape: getShim,
-    exact: getShim,
-
-    checkPropTypes: emptyFunctionWithReset,
-    resetWarningCache: emptyFunction
-  };
-
-  ReactPropTypes.PropTypes = ReactPropTypes;
-
-  return ReactPropTypes;
-};
-
-},{"./lib/ReactPropTypesSecret":"Asjh"}],"5D9O":[function(require,module,exports) {
-/**
- * Copyright (c) 2013-present, Facebook, Inc.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-if ("production" !== 'production') {
-  var ReactIs = require('react-is'); // By explicitly using `prop-types` you are opting into new development behavior.
-  // http://fb.me/prop-types-in-prod
-
-
-  var throwOnDirectAccess = true;
-  module.exports = require('./factoryWithTypeCheckers')(ReactIs.isElement, throwOnDirectAccess);
-} else {
-  // By explicitly using `prop-types` you are opting into new production behavior.
-  // http://fb.me/prop-types-in-prod
-  module.exports = require('./factoryWithThrowingShims')();
-}
-},{"./factoryWithThrowingShims":"wVGV"}],"0Ldd":[function(require,module,exports) {
+},{}],"0Ldd":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -10270,6 +10999,8 @@ var utilsCommon_1 = require("../../utilsCommon");
 
 var utilsWidget_1 = require("../../utilsWidget");
 
+var ScreenshotTaker_1 = require("../../sdk/ScreenshotTaker");
+
 var styles_1 = require("./styles");
 
 var DefaultWidgetTextarea =
@@ -10287,7 +11018,8 @@ function (_react_1$Component) {
     _this.inputFile = react_1.default.createRef();
     _this.textarea = null;
     _this.state = {
-      areTextareaActionsCollapsed: false
+      areTextareaActionsCollapsed: false,
+      screenshotFallback: null
     };
 
     _this.onTextareaChange = function (e) {
@@ -10428,7 +11160,7 @@ function (_react_1$Component) {
     };
 
     _this.handleAttachmentPaste = function (e) {
-      var clipboardItem = (event.clipboardData || event.originalEvent.clipboardData).items[0];
+      var clipboardItem = (e.clipboardData || e.originalEvent.clipboardData || window.clipboardData).items[0];
 
       if (clipboardItem.kind === 'file') {
         e.preventDefault();
@@ -10510,6 +11242,9 @@ function (_react_1$Component) {
           _this2.textarea.focus();
         }
       });
+      this.setState({
+        screenshotFallback: ScreenshotTaker_1.getCompatibilityFallback()
+      });
     }
   }, {
     key: "componentDidUpdate",
@@ -10530,7 +11265,9 @@ function (_react_1$Component) {
     value: function render() {
       var _this3 = this;
 
-      var areTextareaActionsCollapsed = this.state.areTextareaActionsCollapsed;
+      var _this$state = this.state,
+          areTextareaActionsCollapsed = _this$state.areTextareaActionsCollapsed,
+          screenshotFallback = _this$state.screenshotFallback;
       var _this$props7 = this.props,
           messages = _this$props7.messages,
           textareaText = _this$props7.textareaText,
@@ -10563,7 +11300,7 @@ function (_react_1$Component) {
           'elixirchat-chat-textarea__actions': true,
           'elixirchat-chat-textarea__actions--collapsed': areTextareaActionsCollapsed
         })
-      }, react_1.default.createElement("button", {
+      }, !Boolean(screenshotFallback) && react_1.default.createElement("button", {
         className: "elixirchat-chat-textarea__actions-screenshot",
         onClick: this.onScreenShotClick,
         title: "\u0421\u0434\u0435\u043B\u0430\u0442\u044C \u0441\u043A\u0440\u0438\u043D\u0448\u043E\u0442"
@@ -10626,7 +11363,7 @@ function (_react_1$Component) {
 }(react_1.Component);
 
 exports.DefaultWidgetTextarea = DefaultWidgetTextarea;
-},{"react":"1n8/","classnames":"9qb7","react-textarea-autosize":"0Ldd","../../utilsCommon":"EjGt","../../utilsWidget":"4KO9","./styles":"xqZa"}],"Fn99":[function(require,module,exports) {
+},{"react":"1n8/","classnames":"9qb7","react-textarea-autosize":"0Ldd","../../utilsCommon":"EjGt","../../utilsWidget":"4KO9","../../sdk/ScreenshotTaker":"CLsL","./styles":"xqZa"}],"Fn99":[function(require,module,exports) {
 "use strict";
 
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -10818,7 +11555,8 @@ function (_react_1$Component) {
                 responseToMessageId: textareaResponseToMessageId,
                 attachments: textareaAttachments.map(function (attachment) {
                   return attachment.file;
-                })
+                }),
+                tempId: temporaryMessage.tempId
               }).catch(function () {
                 _this.changeMessageById(temporaryMessage.id, {
                   isSubmitting: false,
@@ -10861,7 +11599,7 @@ function (_react_1$Component) {
       var messages = _this.state.messages;
 
       var temporaryMessage = utilsCommon_1._last(messages.filter(function (message) {
-        return _this.areMessagesEquivalent(message, newMessage);
+        return message.tempId === newMessage.tempId;
       }));
 
       if (temporaryMessage) {
@@ -10871,23 +11609,6 @@ function (_react_1$Component) {
           messages: [].concat(_toConsumableArray(_this.state.messages), [newMessage])
         });
       }
-    };
-
-    _this.areMessagesEquivalent = function (message1, message2) {
-      var normalizeMessage = function normalizeMessage(message) {
-        var attachmentsHash = message.attachments.map(function (attachment) {
-          var originalFileName = utilsCommon_1._get(attachment, 'originalFileObject.name');
-
-          return originalFileName || attachment.name;
-        }).sort().join();
-        return {
-          text: message.text || '',
-          responseToMessageId: utilsCommon_1._get(message, 'responseToMessage.id') || null,
-          attachmentsHash: attachmentsHash
-        };
-      };
-
-      return utilsCommon_1._isEqualShallow(normalizeMessage(message1), normalizeMessage(message2));
     };
 
     _this.generateTemporaryMessage = function (_ref2) {
@@ -10926,6 +11647,7 @@ function (_react_1$Component) {
       });
       return {
         id: utilsCommon_1.randomDigitStringId(6),
+        tempId: utilsCommon_1.randomDigitStringId(6),
         text: textareaText.trim() || '',
         timestamp: new Date().toISOString(),
         sender: {
@@ -11044,7 +11766,8 @@ function (_react_1$Component) {
                   }).filter(function (file) {
                     return file;
                   }),
-                  responseToMessageId: utilsCommon_1._get(message, 'responseToMessage.id')
+                  responseToMessageId: utilsCommon_1._get(message, 'responseToMessage.id'),
+                  tempId: message.tempId
                 }).catch(function () {
                   _this.changeMessageById(message.id, {
                     isSubmitting: false,
