@@ -152,6 +152,21 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
     return message.sender.isCurrentClient && !hasText && !hasReply && !hasFiles;
   };
 
+  scrollToMessage = (message) => {
+    const highlightedClassName = 'elixirchat-chat-messages__item--highlighted';
+    const messageDOMElement = this.refs[`message-${message.id}`];
+    if (messageDOMElement) {
+      messageDOMElement.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
+      messageDOMElement.classList.add(highlightedClassName);
+      setTimeout(() => {
+        messageDOMElement.classList.remove(highlightedClassName);
+      }, 1000);
+    }
+  };
+
   onTakeScreenshotClick = () => {
     const { elixirChatWidget, onScreenshotRequestFulfilled } = this.props;
     elixirChatWidget.toggleChatVisibility();
@@ -184,7 +199,6 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
     return (
       <div className="elixirchat-chat-messages">
         {processedMessages.map(message => (
-
           <Fragment key={message.id}>
 
             {message.prependDateTitle && (
@@ -199,7 +213,7 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
             )}
 
             {!message.isSystem && (
-              <div className={cn({
+              <div ref={`message-${message.id}`} className={cn({
                 'elixirchat-chat-messages__item': true,
                 'elixirchat-chat-messages__item--by-me': message.sender.isCurrentClient,
                 'elixirchat-chat-messages__item--by-operator': message.sender.isOperator,
@@ -215,7 +229,9 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
                     )}
 
                     {Boolean(message.responseToMessage) && (
-                      <div className="elixirchat-chat-messages__reply-to">
+                      <div className="elixirchat-chat-messages__reply-to"
+                        onClick={() => this.scrollToMessage(message.responseToMessage)}>
+
                         <i className="elixirchat-chat-messages__reply-to-icon icon-reply-right"/>
                         {message.responseToMessage.sender.firstName}&nbsp;
                         {message.responseToMessage.sender.lastName}&nbsp;

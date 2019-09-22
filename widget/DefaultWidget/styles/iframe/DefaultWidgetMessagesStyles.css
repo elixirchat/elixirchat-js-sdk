@@ -24,6 +24,7 @@
   max-width: 80%;
   min-width: 50%;
   margin-bottom: 15px;
+  transition: background-color 500ms;
 }
 
 .elixirchat-chat-messages__sender {
@@ -42,6 +43,7 @@
   text-overflow: ellipsis;
   color: #999999;
   margin: 2px 0 4px 0;
+  cursor: default;
 }
 
 .elixirchat-chat-messages__reply-to-icon {
@@ -116,6 +118,11 @@
 
 .elixirchat-chat-messages__item--by-operator .elixirchat-chat-messages__bottom {
   text-align: left;
+}
+
+.elixirchat-chat-messages__item--highlighted {
+  /*background: rgba(255, 0, 102, 0.05);*/
+  /*TODO: come up w/ highlighting style*/
 }
 
 .elixirchat-chat-files {
