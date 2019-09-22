@@ -1,3 +1,5 @@
+import { detectPlatform } from '../utilsCommon';
+
 export interface IScreenshot {
   dataUrl: string,
   file: File,
@@ -93,3 +95,34 @@ export class ScreenshotTaker {
     });
   }
 }
+
+
+export interface IGetCompatibilityFallback {
+  (): null | { pressKey: null | string }
+}
+
+export const getCompatibilityFallback: IGetCompatibilityFallback = () => {
+  if (navigator.mediaDevices.getDisplayMedia) {
+    return null;
+  }
+  else {
+    const platform = detectPlatform();
+
+    if (platform.isMac) {
+      return {
+        pressKey: 'Cmd+Control+Shift+3',
+      }
+    }
+    else if (platform.isWindows) {
+      return {
+        pressKey: 'PrtSc',
+        pressKeySecondary: 'Fn+PrtSc'
+      }
+    }
+    else {
+      return {
+        pressKey: null,
+      };
+    }
+  }
+};

@@ -91,3 +91,11 @@ export function _last(arr: Array): any {
 export function _round(num: number): number {
   return +num.toFixed(2);
 }
+
+
+export function detectPlatform(): { isWindows: boolean, isMac: boolean } {
+  return {
+    isWindows: navigator.platform.indexOf('Win') > -1,
+    isMac: navigator.platform.indexOf('Mac') > -1,
+  };
+}

@@ -54,6 +54,17 @@
   white-space: pre-wrap;
 }
 
+.elixirchat-chat-messages__text kbd {
+  font: 13px/17px Graphik, 'Helvetica Neue', sans-serif;
+  background: rgba(0,0,0,.05);
+  border: 1px solid rgba(0,0,0,.1);
+  border-bottom-width: 2px;
+  border-radius: 2px;
+  padding: 1px 2px;
+  display: inline-block;
+  margin: 0 1px;
+}
+
 .elixirchat-chat-messages__bottom {
   text-align: right;
   color: #999999;

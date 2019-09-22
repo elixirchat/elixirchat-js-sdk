@@ -3,6 +3,7 @@ import cn from 'classnames';
 import TextareaAutosize from 'react-textarea-autosize';
 import { randomDigitStringId } from '../../utilsCommon';
 import { inflect, getImageDimensions } from '../../utilsWidget';
+import { getCompatibilityFallback } from '../../sdk/ScreenshotTaker';
 import { DefaultWidgetTextareaStyles } from './styles';
 
 export interface IDefaultWidgetTextareaProps {
@@ -23,6 +24,7 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
 
   state = {
     areTextareaActionsCollapsed: false,
+    screenshotFallback: null,
   };
 
   componentDidMount(): void {
@@ -33,6 +35,9 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
         this.updateVerticalHeight({ forceScrollToBottom: true });
         this.textarea.focus();
       }
+    });
+    this.setState({
+      screenshotFallback: getCompatibilityFallback(),
     });
   }
 
@@ -110,7 +115,7 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
   };
 
   handleAttachmentPaste = e => {
-    const clipboardItem = (event.clipboardData || event.originalEvent.clipboardData).items[0];
+    const clipboardItem = (e.clipboardData || e.originalEvent.clipboardData || window.clipboardData).items[0];
     if (clipboardItem.kind === 'file') {
       e.preventDefault();
       const file = clipboardItem.getAsFile();
@@ -162,7 +167,7 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
   };
 
   render(): void {
-    const { areTextareaActionsCollapsed } = this.state;
+    const { areTextareaActionsCollapsed, screenshotFallback } = this.state;
     const {
       messages,
       textareaText,
@@ -205,12 +210,13 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
           'elixirchat-chat-textarea__actions': true,
           'elixirchat-chat-textarea__actions--collapsed': areTextareaActionsCollapsed,
         })}>
-          <button className="elixirchat-chat-textarea__actions-screenshot"
-            onClick={this.onScreenShotClick}
-            title="Сделать скриншот">
-            <i className="icon-screenshot"/>
-          </button>
-
+          {!Boolean(screenshotFallback) && (
+            <button className="elixirchat-chat-textarea__actions-screenshot"
+              onClick={this.onScreenShotClick}
+              title="Сделать скриншот">
+              <i className="icon-screenshot"/>
+            </button>
+          )}
           <span className="elixirchat-chat-textarea__actions-attach"
             title="Прикрепить файл">
             <label className="elixirchat-chat-textarea__actions-attach-label" htmlFor="DefaultWidget-file-upload">

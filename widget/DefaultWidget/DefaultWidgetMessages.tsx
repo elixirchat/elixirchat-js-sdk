@@ -5,6 +5,7 @@ import dayjsCalendar from 'dayjs/plugin/calendar'
 import 'dayjs/locale/ru'
 import { _get, _round } from '../../utilsCommon';
 import { isWebImage, getHumanReadableFileSize, inflectDayJSWeekDays } from '../../utilsWidget';
+import { getCompatibilityFallback } from '../../sdk/ScreenshotTaker';
 import { DefaultWidgetMessagesStyles } from './styles';
 
 export interface IDefaultWidgetMessagesProps {
@@ -23,6 +24,7 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
     processedMessages: [],
     currentImagePreview: {},
     imagePreviews: [],
+    screenshotFallback: null,
   };
 
   maxThumbnailSize = 256;
@@ -35,6 +37,10 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
     elixirChatWidget.widgetChatIframe.contentDocument.addEventListener('keyup', this.onIframeBodyKeyup);
     elixirChatWidget.injectIframeStyles(DefaultWidgetMessagesStyles);
     this.setProcessedMessages(messages);
+
+    this.setState({
+      screenshotFallback: getCompatibilityFallback(),
+    });
   }
 
   componentDidUpdate(prevProps): void {
@@ -153,8 +159,22 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
     });
   };
 
+  renderKeyShortcut = (keySequence) => {
+    return (
+      <Fragment>
+        {keySequence.split(/\+/).map((key, index) => {
+          return (
+            <Fragment key={index}>
+              {!!index && '+'}<kbd>{key}</kbd>
+            </Fragment>
+          )
+        })}
+      </Fragment>
+    );
+  };
+
   render(): void {
-    const { processedMessages } = this.state;
+    const { processedMessages, screenshotFallback } = this.state;
     const { onReplyMessage, onSubmitRetry } = this.props;
 
     return (
@@ -303,11 +323,22 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
                     <Fragment>
                       <div className="elixirchat-chat-messages__text">
                         Пожалуйста, пришлите скриншот вашего экрана.
+                        {(Boolean(screenshotFallback) && Boolean(screenshotFallback.pressKey)) && (
+                          <Fragment>
+                            &nbsp;Для этого нажмите {this.renderKeyShortcut(screenshotFallback.pressKey)}
+                            {screenshotFallback.pressKeySecondary && (
+                              <Fragment>&nbsp;({this.renderKeyShortcut(screenshotFallback.pressKeySecondary)})</Fragment>
+                            )},
+                            а затем вставьте результат в текстовое поле.
+                          </Fragment>
+                        )}
                       </div>
-                      <button className="elixirchat-chat-messages__take-screenshot"
-                        onClick={this.onTakeScreenshotClick}>
-                        Сделать скриншот
-                      </button>
+                      {!Boolean(screenshotFallback) && (
+                        <button className="elixirchat-chat-messages__take-screenshot"
+                          onClick={this.onTakeScreenshotClick}>
+                          Сделать скриншот
+                        </button>
+                      )}
                     </Fragment>
                   )}
 
@@ -336,7 +367,7 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
 
                 </div>
                 <div className="elixirchat-chat-messages__bottom">
-                  {dayjs(message.timestamp).format('H:mm, D MMMM')}
+                  {dayjs(message.timestamp).format('H:mm')}
                 </div>
               </div>
             )}
