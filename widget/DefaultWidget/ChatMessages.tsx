@@ -7,7 +7,7 @@ import AutoLinkText from 'react-autolink-text2';
 import { _get, _round } from '../../utilsCommon';
 import { isWebImage, getHumanReadableFileSize, inflectDayJSWeekDays } from '../../utilsWidget';
 import { getCompatibilityFallback } from '../../sdk/ScreenshotTaker';
-import { DefaultWidgetMessagesStyles } from './styles';
+import styles from './styles';
 
 export interface IDefaultWidgetMessagesProps {
   elixirChatWidget: any;
@@ -19,7 +19,7 @@ export interface IDefaultWidgetMessagesState {
   messages: Array<any>;
 }
 
-export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps, IDefaultWidgetMessagesState> {
+export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaultWidgetMessagesState> {
 
   state = {
     processedMessages: [],
@@ -36,7 +36,7 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
     dayjs.extend(dayjsCalendar);
 
     elixirChatWidget.widgetChatIframe.contentDocument.addEventListener('keyup', this.onIframeBodyKeyup);
-    elixirChatWidget.injectIframeStyles(DefaultWidgetMessagesStyles);
+    elixirChatWidget.injectIframeStyles(styles.ChatMessages);
     this.setProcessedMessages(messages);
 
     this.setState({
@@ -230,10 +230,10 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
                     )}
 
                     {Boolean(message.responseToMessage) && (
-                      <div className="elixirchat-chat-messages__reply-to"
+                      <div className="elixirchat-chat-messages__reply-message"
                         onClick={() => this.scrollToMessage(message.responseToMessage)}>
 
-                        <i className="elixirchat-chat-messages__reply-to-icon icon-reply-right"/>
+                        <i className="elixirchat-chat-messages__reply-message-icon icon-reply-right"/>
                         {message.responseToMessage.sender.firstName}&nbsp;
                         {message.responseToMessage.sender.lastName}&nbsp;
                         <span title={message.responseToMessage.text}>
@@ -319,7 +319,7 @@ export class DefaultWidgetMessages extends Component<IDefaultWidgetMessagesProps
                     <Fragment>
                       {!message.sender.isCurrentClient && dayjs(message.timestamp).format('H:mm')}
                       {!message.isSystem && (
-                        <span className="elixirchat-chat-messages__reply"
+                        <span className="elixirchat-chat-messages__reply-button"
                           title="Для ответа также можно дважды кликнуть сообщение"
                           onClick={() => onReplyMessage(message.id)}>
                           Ответить

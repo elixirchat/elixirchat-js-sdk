@@ -4,7 +4,7 @@ import TextareaAutosize from 'react-textarea-autosize';
 import { randomDigitStringId } from '../../utilsCommon';
 import { inflect, getImageDimensions } from '../../utilsWidget';
 import { getCompatibilityFallback } from '../../sdk/ScreenshotTaker';
-import { DefaultWidgetTextareaStyles } from './styles';
+import styles from './styles';
 
 export interface IDefaultWidgetTextareaProps {
   elixirChatWidget: any;
@@ -16,7 +16,7 @@ export interface IDefaultWidgetTextareaState {
   areTextareaActionsCollapsed: boolean;
 }
 
-export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps, IDefaultWidgetTextareaState> {
+export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaultWidgetTextareaState> {
 
   container = React.createRef();
   inputFile = React.createRef();
@@ -29,7 +29,7 @@ export class DefaultWidgetTextarea extends Component<IDefaultWidgetTextareaProps
 
   componentDidMount(): void {
     const { elixirChatWidget } = this.props;
-    elixirChatWidget.injectIframeStyles(DefaultWidgetTextareaStyles);
+    elixirChatWidget.injectIframeStyles(styles.ChatTextarea);
     elixirChatWidget.onToggleChatVisibility((isOpen) => {
       if (isOpen) {
         this.updateVerticalHeight({ forceScrollToBottom: true });

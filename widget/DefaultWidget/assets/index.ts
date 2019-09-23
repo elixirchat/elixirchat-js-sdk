@@ -4,10 +4,12 @@
  */
 
 const fs = require('fs');
-const dataUrlPrefix = 'data:font/woff;base64,';
+const woffDataUrlPrefix = 'data:font/woff;base64,';
+const mp3DataUrlPrefix = 'data:audio/mpeg;base64,';
 
-export const fontsBase64 = {
-  GraphikBoldWeb:     dataUrlPrefix + fs.readFileSync(__dirname + '/fonts/Graphik-Bold-Web.woff', { encoding: 'base64' }),
-  GraphikRegularWeb:  dataUrlPrefix + fs.readFileSync(__dirname + '/fonts/Graphik-Regular-Web.woff', { encoding: 'base64' }),
-  elixirchatIcons:    dataUrlPrefix + fs.readFileSync(__dirname + '/fonts/elixirchat-icons.woff', { encoding: 'base64' }),
+export default {
+  fontGraphikBoldWeb:     woffDataUrlPrefix + fs.readFileSync(__dirname + '/fonts/Graphik-Bold-Web.woff', { encoding: 'base64' }),
+  fontGraphikRegularWeb:  woffDataUrlPrefix + fs.readFileSync(__dirname + '/fonts/Graphik-Regular-Web.woff', { encoding: 'base64' }),
+  fontElixirchatIcons:    woffDataUrlPrefix + fs.readFileSync(__dirname + '/fonts/elixirchat-icons.woff', { encoding: 'base64' }),
+  notificationSound:      mp3DataUrlPrefix + fs.readFileSync(__dirname + '/audio/notification.mp3', { encoding: 'base64' }),
 };

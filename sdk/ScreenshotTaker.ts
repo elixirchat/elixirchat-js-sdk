@@ -117,7 +117,7 @@ export const getCompatibilityFallback: IGetCompatibilityFallback = () => {
       return {
         pressKey: 'PrtSc',
         pressKeySecondary: 'Fn+PrtSc'
-      }
+      };
     }
     else {
       return {

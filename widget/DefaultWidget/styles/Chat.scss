@@ -1,3 +1,6 @@
+@import "./variables";
+@import "./mixins";
+
 body {
   margin: 0;
   padding: 0;
@@ -7,9 +10,9 @@ body,
 input,
 button,
 textarea {
-  font: 14px/18px Graphik, 'Helvetica Neue', sans-serif;
+  font: 14px/18px $font-family-text;
   outline: none;
-  color: #151319;
+  color: $color-black;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -35,7 +38,7 @@ textarea {
   right: 0;
   z-index: 2;
   border-radius: 8px 8px 0 0;
-  background: #ffffff;
+  background: $color-white;
 }
 
 .elixirchat-chat-header__indicator {
@@ -43,7 +46,7 @@ textarea {
   width: 10px;
   height: 10px;
   border-radius: 100%;
-  background: #50C900;
+  background: $color-green;
   vertical-align: middle;
   margin-right: 8px;
   margin-top: -2px;
@@ -63,10 +66,10 @@ textarea {
   justify-content: center;
   font-size: 15px;
   background: none;
-}
 
-.elixirchat-chat-header__close:hover {
-  opacity: .4;
+  &:hover {
+    opacity: .4;
+  }
 }
 
 .elixirchat-chat-scroll {
@@ -80,12 +83,6 @@ textarea {
   padding: 20px 30px;
 }
 
-@keyframes spinner {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 .elixirchat-chat-spinner {
   position: fixed;
   top: 50%;
@@ -95,19 +92,19 @@ textarea {
   width: 90px;
   height: 90px;
   border-radius: 100%;
-  border: 1px solid #E2E2E2;
-  animation: spinner 1s linear infinite;
-}
+  border: 1px solid $color-gray-light;
+  @include elixir-animation-spinner(1s);
 
-.elixirchat-chat-spinner:after {
-  content: '';
-  background: #ffffff;
-  width: 5px;
-  height: 30px;
-  position: absolute;
-  top: 50%;
-  margin: -15px 0 0 0;
-  left: -2px;
+  &:after {
+    content: '';
+    background: $color-white;
+    width: 5px;
+    height: 30px;
+    position: absolute;
+    top: 50%;
+    margin: -15px 0 0 0;
+    left: -2px;
+  }
 }
 
 .elixirchat-chat-fatal-error {
@@ -118,11 +115,11 @@ textarea {
   right: 0;
   display: block;
   padding: 0 50px;
-  color: #999999;
+  color: $color-gray-dark;
   line-height: 22px;
   text-align: center;
-}
 
-.elixirchat-chat-fatal-error--nowrap {
-  white-space: nowrap;
+  &--nowrap {
+    white-space: nowrap;
+  }
 }

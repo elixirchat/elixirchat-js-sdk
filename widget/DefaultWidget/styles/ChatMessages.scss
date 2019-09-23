@@ -1,0 +1,342 @@
+@import "./variables";
+@import "./mixins";
+
+.elixirchat-chat-messages {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.elixirchat-chat-messages__date-title {
+  text-transform: uppercase;
+  font-size: 12px;
+  font-weight: bold;
+  border-bottom: 1px solid $color-black;
+  line-height: 21px;
+  margin-bottom: 15px;
+  width: 100%;
+}
+
+.elixirchat-chat-messages__item {
+  max-width: 80%;
+  min-width: 50%;
+  margin-bottom: 15px;
+  transition: background-color 500ms;
+
+  &--by-operator {
+    align-self: flex-start;
+  }
+
+  &--highlighted {
+    //background: rgba(255, 0, 102, 0.05);
+    //TODO: come up w/ highlighting style
+    border: 4px solid red;
+  }
+}
+
+.elixirchat-chat-messages__sender {
+  color: $color-blue;
+  font-weight: bold;
+  padding-bottom: 1px;
+
+  .elixirchat-chat-messages__item--by-me & {
+    color: $color-white;
+  }
+
+  .elixirchat-chat-messages__item--by-operator & {
+    color: $color-pink-dark;
+  }
+}
+
+.elixirchat-chat-messages__balloon {
+  & + .elixirchat-chat-messages__balloon {
+    margin-top: 10px;
+  }
+  .elixirchat-chat-messages__item--by-me & {
+    padding: 9px 10px 7px 10px;
+    border-radius: 3px;
+    background: $color-blue;
+    color: $color-white;
+  }
+}
+
+.elixirchat-chat-messages__reply-message {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: $color-gray-dark;
+  margin: 2px 0 4px 0;
+  cursor: default;
+
+  .elixirchat-chat-messages__item--by-me & {
+    color: rgba(255,255,255,.65);
+  }
+}
+
+.elixirchat-chat-messages__reply-message-icon {
+  margin-right: 7px;
+  opacity: .9;
+  vertical-align: text-bottom;
+}
+
+.elixirchat-chat-messages__text {
+  white-space: pre-wrap;
+  word-break: break-word;
+
+  kbd {
+    font: 13px/17px $font-family-text;
+    background: rgba(0,0,0,.05);
+    border: 1px solid rgba(0,0,0,.1);
+    border-bottom-width: 2px;
+    border-radius: 2px;
+    padding: 1px 2px;
+    display: inline-block;
+    margin: 0 1px;
+  }
+
+  a {
+    text-decoration: none;
+    outline: none;
+  }
+
+  .elixirchat-chat-messages__item--by-operator & {
+    a {
+      color: $color-blue;
+    }
+  }
+
+  .elixirchat-chat-messages__item--by-me & {
+    a {
+      text-decoration: underline;
+    }
+    & + .elixirchat-chat-files {
+      padding-top: 8px;
+    }
+  }
+}
+
+.elixirchat-chat-messages__bottom {
+  text-align: right;
+  color: $color-gray-dark;
+  padding-top: 4px;
+  white-space: nowrap;
+
+  .elixirchat-chat-messages__item--by-operator & {
+    text-align: left;
+  }
+}
+
+.elixirchat-chat-messages__submission-error {
+  color: $color-pink-dark;
+  cursor: pointer;
+}
+
+.elixirchat-chat-messages__reply-button {
+  margin-left: 10px;
+  cursor: default;
+
+  .elixirchat-chat-messages__item--by-me & {
+    margin-left: 0;
+    margin-right: 10px;
+  }
+}
+
+.elixirchat-chat-files {
+  list-style: none;
+  padding: 6px 0 3px 0;
+  margin: 0;
+
+  .elixirchat-chat-messages__item--by-me & {
+    padding-top: 2px;
+  }
+}
+
+.elixirchat-chat-files__item {
+  display: flex;
+  line-height: 21px;
+  margin-top: 10px;
+  padding: 0;
+  cursor: default;
+
+  &:first-child {
+    margin-top: 0;
+  }
+
+  &:hover {
+    & .elixirchat-chat-files__preview {
+      background-color: #efefef;
+    }
+
+    & .elixirchat-chat-files__preview-image:after {
+      box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+    }
+  }
+}
+
+.elixirchat-chat-files__preview {
+  width: 50px;
+  height: 50px;
+  flex-basis: 50px;
+  flex-shrink: 0;
+  border-radius: 3px;
+  background: #F4F4F4;
+  transition: all 200ms;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: lighten($color-gray-dark, 5) !important;
+}
+
+.elixirchat-chat-files__preview-image {
+  background-size: cover;
+
+  &:after {
+    content: "";
+    position: absolute;
+    border-radius: 3px;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+    pointer-events: none;
+    transition: all 200ms;
+  }
+}
+
+.elixirchat-chat-files__preview-submitting {
+  background-image: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.elixirchat-chat-files__text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 6px 0 0 9px;
+}
+
+.elixirchat-chat-files__text-link {
+  margin-left: -15px;
+  padding-left: 15px;
+
+  .elixirchat-chat-messages__item--by-me & {
+    color: $color-white;
+  }
+}
+
+.elixirchat-chat-files__text-secondary {
+  color: rgba(0, 0, 0, 0.25);
+
+  .elixirchat-chat-messages__item--by-me & {
+    color: rgba(255, 255, 255, .5);
+  }
+}
+
+.elixirchat-chat-messages__take-screenshot {
+  background: $color-pink-dark;
+  color: $color-white;
+  border: 0;
+  border-radius: 4px;
+  padding: 1px 11px 0 11px;
+  height: 31px;
+  line-height: 31px;
+  margin: 6px 0 3px 0;
+  transition: background-color 300ms;
+
+  &:hover {
+    background: darken($color-pink-dark, 6);
+  }
+}
+
+.elixirchat-chat-files__preview-spinner {
+  display: block;
+  width: 22px;
+  height: 22px;
+  font-size: 22.4px;
+  @include elixir-animation-spinner(1s);
+}
+
+.elixirchat-chat-images {
+  list-style: none;
+  padding: 0 0 0 0;
+  margin: 6px 0 2px 0;
+}
+
+.elixirchat-chat-images__item {
+  padding: 0;
+  margin-top: 6px;
+
+  &:first-child {
+    margin-top: 2px;
+  }
+
+  .elixirchat-chat-messages__item--by-me & {
+    text-align: right;
+  }
+}
+
+.elixirchat-chat-images__link {
+  display: inline-block;
+  vertical-align: bottom;
+  position: relative;
+
+  &:after {
+    content: "";
+    position: absolute;
+    border-radius: 3px;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);
+    pointer-events: none;
+  }
+}
+
+.elixirchat-chat-images__img {
+  max-width: 256px;
+  max-height: 256px;
+  border-radius: 3px;
+  display: block;
+}
+
+.elixirchat-chat-images__item-not-found > img {
+  position: relative;
+  min-width: 180px;
+  pointer-events: none;
+  cursor: default;
+
+  &:after {
+    content: "(" attr(alt) ")";
+    color: rgba(0, 0, 0, 0.2);
+    display: block;
+    margin: 8px 0 0 20px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: calc(100% - 40px);
+    text-align: center;
+  }
+
+  &:before {
+    content: attr(data-error-message);
+    color: rgba(0, 0, 0, 0.2);
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-bottom: 25px;
+  }
+}

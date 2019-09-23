@@ -1,9 +1,9 @@
 import 'babel-polyfill';
 import { logEvent } from '../utilsCommon';
 import { insertElement, generateFontFaceRule } from '../utilsWidget';
-import { appendWidgetIframeContent } from './DefaultWidget/DefaultWidget';
-import { DefaultWidgetGlobalStyles, iconsStyles } from './DefaultWidget/styles';
-import { fontsBase64 } from './DefaultWidget/assets';
+import { appendWidgetIframeContent } from './DefaultWidget/Chat';
+import styles from './DefaultWidget/styles';
+import assets from './DefaultWidget/assets';
 
 let ElixirChat = window.ElixirChat;
 if (process.env.NODE_ENV === 'development') {
@@ -62,11 +62,11 @@ export class ElixirChatWidget extends ElixirChat {
     this.widgetButton = button;
 
     this.injectGlobalStyles([
-      generateFontFaceRule('Graphik', 'normal', fontsBase64.GraphikRegularWeb),
-      generateFontFaceRule('elixirchat-icons', null, fontsBase64.elixirchatIcons),
+      generateFontFaceRule('Graphik', 'normal', assets.fontGraphikRegularWeb),
+      generateFontFaceRule('elixirchat-icons', null, assets.fontElixirchatIcons),
     ].join('\n'));
-    this.injectGlobalStyles(DefaultWidgetGlobalStyles, this.container);
-    this.injectGlobalStyles(iconsStyles, this.container);
+    this.injectGlobalStyles(styles.Button, this.container);
+    this.injectGlobalStyles(styles.icons, this.container);
   }
 
   protected appendChatIframe(): void {
@@ -87,12 +87,12 @@ export class ElixirChatWidget extends ElixirChat {
         this.widgetChatReactComponent = appendWidgetIframeContent(iframeContainer, this);
 
         this.injectIframeStyles([
-          generateFontFaceRule('Graphik', 'normal', fontsBase64.GraphikRegularWeb),
-          generateFontFaceRule('Graphik', 'bold', fontsBase64.GraphikBoldWeb),
-          generateFontFaceRule('elixirchat-icons', null, fontsBase64.elixirchatIcons),
+          generateFontFaceRule('Graphik', 'normal', assets.fontGraphikRegularWeb),
+          generateFontFaceRule('Graphik', 'bold', assets.fontGraphikBoldWeb),
+          generateFontFaceRule('elixirchat-icons', null, assets.fontElixirchatIcons),
         ].join('\n'));
         this.injectIframeStyles(this.iframeStyles);
-        this.injectIframeStyles(iconsStyles);
+        this.injectIframeStyles(styles.icons);
 
         resolve();
       };

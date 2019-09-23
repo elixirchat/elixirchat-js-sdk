@@ -7,9 +7,9 @@ import {
   isWebImage,
 } from '../../utilsWidget';
 import { IMessage } from '../../sdk/serializers/serializeMessage';
-import { DefaultWidgetMessages } from './DefaultWidgetMessages';
-import { DefaultWidgetTextarea } from './DefaultWidgetTextarea';
-import { DefaultWidgetStyles } from './styles';
+import { ChatMessages } from './ChatMessages';
+import { ChatTextarea } from './ChatTextarea';
+import styles from './styles';
 
 export interface IDefaultWidgetProps {
   elixirChatWidget: any;
@@ -28,7 +28,7 @@ export interface IDefaultWidgetState {
   isLoadingPreviousMessages: boolean;
 }
 
-export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
+export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
 
   container: { current: HTMLElement } = React.createRef();
   scrollBlock: { current: HTMLElement } = React.createRef();
@@ -49,7 +49,7 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
 
   componentDidMount(): void {
     const { elixirChatWidget } = this.props;
-    elixirChatWidget.injectIframeStyles(DefaultWidgetStyles);
+    elixirChatWidget.injectIframeStyles(styles.Chat);
 
     elixirChatWidget.onConnectSuccess(() => {
       elixirChatWidget.fetchMessageHistory(this.messageChunkSize)
@@ -372,7 +372,7 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
         {(!isLoading && !isLoadingError) && (
           <Fragment>
             <div className="elixirchat-chat-scroll" ref={this.scrollBlock} onScroll={this.onMessagesScroll}>
-              <DefaultWidgetMessages
+              <ChatMessages
                 onLoadPreviousMessages={this.loadPreviousMessages}
                 onScreenshotRequestFulfilled={this.onScreenshotRequestFulfilled}
                 onReplyMessage={this.onReplyMessage}
@@ -381,7 +381,7 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
                 messages={messages}/>
             </div>
 
-            <DefaultWidgetTextarea
+            <ChatTextarea
               onMessageSubmit={this.onMessageSubmit}
               onChange={this.onTextareaChange}
               messages={messages}
@@ -401,7 +401,7 @@ export class DefaultWidget extends Component<IDefaultWidgetProps, IDefaultWidget
 export function appendWidgetIframeContent(container, elixirChatWidget) {
   let component;
   ReactDOM.render((
-    <DefaultWidget ref={(widget) => {component = widget}} elixirChatWidget={elixirChatWidget} />
+    <Chat ref={(widget) => {component = widget}} elixirChatWidget={elixirChatWidget} />
   ), container);
   return component;
 }

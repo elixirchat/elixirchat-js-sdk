@@ -1,5 +1,7 @@
+@import "./variables";
+
 [class^="icon-"], [class*=" icon-"] {
-  font-family: 'elixirchat-icons' !important;
+  font-family: $font-family-icons !important;
   speak: none;
   font-style: normal;
   font-weight: normal;
