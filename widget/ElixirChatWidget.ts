@@ -1,7 +1,8 @@
 import 'babel-polyfill';
 import { logEvent } from '../utilsCommon';
 import { insertElement, generateFontFaceRule } from '../utilsWidget';
-import { appendWidgetIframeContent } from './DefaultWidget/Chat';
+// import { appendWidgetIframeContent } from './DefaultWidget/Chat';
+import { renderWidget, renderIframeContent } from './DefaultWidget/Widget';
 import styles from './DefaultWidget/styles';
 import assets from './DefaultWidget/assets';
 
@@ -67,7 +68,7 @@ export class ElixirChatWidget extends ElixirChat {
       generateFontFaceRule('Graphik', 'normal', assets.fontGraphikRegularWeb),
       generateFontFaceRule('elixirchat-icons', null, assets.fontElixirchatIcons),
     ].join('\n'));
-    this.injectGlobalStyles(styles.Button, this.container);
+    this.injectGlobalStyles(styles.Widget, this.container);
     this.injectGlobalStyles(styles.icons, this.container);
   }
 
@@ -210,13 +211,17 @@ export class ElixirChatWidget extends ElixirChat {
     this.iframeStyles = iframeStyles;
     this.visibleByDefault = visibleByDefault;
 
-    await this.appendChatIframe();
-    this.appendWidgetButton();
-    this.appendImagePreview();
+    this.widgetChatReactComponent = renderWidget(this.container, this);
 
-    if (this.visibleByDefault) {
-      this.toggleChatVisibility();
-    }
+    // await this.appendChatIframe();
+    // this.appendWidgetButton();
+    // this.appendImagePreview();
+
+    // if (this.visibleByDefault) {
+    //   this.toggleChatVisibility();
+    // }
+
+    window.__this = this;
 
     logEvent(this.debug, 'Appended ElixirChat default widget', { container });
     return this.widgetChatReactComponent;

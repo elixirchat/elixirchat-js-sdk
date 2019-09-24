@@ -8,7 +8,7 @@ const fs = require('fs');
 
 export default {
   icons:        fs.readFileSync('dist/styles/icons.css', 'utf8'),
-  Button:       fs.readFileSync('dist/styles/Button.css', 'utf8'),
+  Widget:       fs.readFileSync('dist/styles/Widget.css', 'utf8'),
   Chat:         fs.readFileSync('dist/styles/Chat.css', 'utf8'),
   ChatMessages: fs.readFileSync('dist/styles/ChatMessages.css', 'utf8'),
   ChatTextarea: fs.readFileSync('dist/styles/ChatTextarea.css', 'utf8'),

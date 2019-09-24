@@ -35,8 +35,8 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     dayjs.locale('ru');
     dayjs.extend(dayjsCalendar);
 
-    elixirChatWidget.widgetChatIframe.contentDocument.addEventListener('keyup', this.onIframeBodyKeyup);
-    elixirChatWidget.injectIframeStyles(styles.ChatMessages);
+    // elixirChatWidget.widgetChatIframe.contentDocument.addEventListener('keyup', this.onIframeBodyKeyup);
+    // elixirChatWidget.injectIframeStyles(styles.ChatMessages);
     this.setProcessedMessages(messages);
 
     this.setState({

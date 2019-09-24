@@ -49,7 +49,7 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
 
   componentDidMount(): void {
     const { elixirChatWidget } = this.props;
-    elixirChatWidget.injectIframeStyles(styles.Chat);
+    // elixirChatWidget.injectIframeStyles(styles.Chat);
 
     elixirChatWidget.onConnectSuccess(() => {
       elixirChatWidget.fetchMessageHistory(this.messageChunkSize)
