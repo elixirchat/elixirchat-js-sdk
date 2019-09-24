@@ -61,7 +61,7 @@
     }
   }
 
-  @include elixir-media-query(0, 480) {
+  @include elixir-media-query(0px, 480px) {
     right: 20px;
     bottom: 20px;
   }
@@ -115,7 +115,7 @@
     display: block;
   }
 
-  @include elixir-media-query(0, 480) {
+  @include elixir-media-query(0px, 480px) {
     bottom: 0;
     right: 0;
     left: 0;

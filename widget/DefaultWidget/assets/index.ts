@@ -1,6 +1,6 @@
 /**
  * Styles are imported as base64-strings via fs.readFileSync() in order to include
- * them into a single bundle JS file, not copy to /dist folder as separate files
+ * them into a single bundle JS file, not simply copy to /dist folder as separate files
  */
 
 const fs = require('fs');

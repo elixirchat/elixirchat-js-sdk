@@ -1,8 +1,8 @@
 import React, { Component, Fragment } from 'react';
 import cn from 'classnames';
 import dayjs from 'dayjs';
-import dayjsCalendar from 'dayjs/plugin/calendar'
-import 'dayjs/locale/ru'
+import dayjsCalendar from 'dayjs/plugin/calendar';
+import 'dayjs/locale/ru';
 import AutoLinkText from 'react-autolink-text2';
 import { _get, _round } from '../../utilsCommon';
 import { isWebImage, getHumanReadableFileSize, inflectDayJSWeekDays } from '../../utilsWidget';

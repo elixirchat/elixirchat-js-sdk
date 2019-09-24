@@ -5,6 +5,8 @@ import { appendWidgetIframeContent } from './DefaultWidget/Chat';
 import styles from './DefaultWidget/styles';
 import assets from './DefaultWidget/assets';
 
+console.log('___ styles', styles);
+
 let ElixirChat = window.ElixirChat;
 if (process.env.NODE_ENV === 'development') {
   ElixirChat = require('../sdk').default;
