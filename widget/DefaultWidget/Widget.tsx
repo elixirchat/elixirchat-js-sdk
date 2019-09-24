@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
-import ReactDOM from 'react-dom';
+import ReactDOM, { createPortal } from 'react-dom';
 import { Chat } from './Chat';
+import { Frame } from './Frame';
 
 export interface IWidgetProps {
 }
@@ -19,11 +20,11 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
   componentDidMount(): void {
     console.log('___ mount');
 
-    this.iframe.current.onload = () => {
-      console.log('___ onload event 1', this.iframe.current);
-    };
+    // this.iframe.current.onload = () => {
+    //   console.log('___ onload event 1', this.iframe.current);
+    // };
 
-    this.renderIframeContent();
+    // this.renderIframeContent();
   }
 
   componentDidUpdate(prevProps) {
@@ -63,7 +64,8 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
 
     return (
       <div>
-        <iframe onLoadCapture={this.onIframeReady} ref={this.iframe} src="" hidden={!isIFrameOpen}/>
+        {/*<iframe onLoadCapture={this.onIframeReady} ref={this.iframe} src="" hidden={!isIFrameOpen}/>*/}
+        <Frame><h1>Hello Content!</h1></Frame>
         <button onClick={this.onButtonClick}>Button</button>
       </div>
     );
