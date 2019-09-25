@@ -9,7 +9,6 @@ import {
 import { IMessage } from '../../sdk/serializers/serializeMessage';
 import { ChatMessages } from './ChatMessages';
 import { ChatTextarea } from './ChatTextarea';
-import styles from './styles';
 
 export interface IDefaultWidgetProps {
   elixirChatWidget: any;
@@ -51,14 +50,20 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
     const { elixirChatWidget } = this.props;
     // elixirChatWidget.injectIframeStyles(styles.Chat);
 
+    console.log('___ 1');
+
     elixirChatWidget.onConnectSuccess(() => {
+      console.log('___ 2');
+
       elixirChatWidget.fetchMessageHistory(this.messageChunkSize)
         .then(messages => {
           this.setState({ messages, isLoading: false });
           this.scrollToBottom();
           this.updateUnseenRepliesToCurrentClient();
         })
-        .catch(() => {
+        .catch((e) => {
+          console.log('___ 2.5', e);
+
           this.setState({
             isLoading: false,
             isLoadingError: true,
@@ -67,6 +72,8 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
     });
 
     elixirChatWidget.onConnectError(() => {
+      console.log('___ 3');
+
       this.setState({
         isLoading: false,
         isLoadingError: true,

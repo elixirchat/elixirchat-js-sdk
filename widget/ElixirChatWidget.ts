@@ -1,12 +1,11 @@
 import 'babel-polyfill';
 import { logEvent } from '../utilsCommon';
 import { insertElement, generateFontFaceRule } from '../utilsWidget';
-// import { appendWidgetIframeContent } from './DefaultWidget/Chat';
-import { renderWidgetReactComponent, renderIframeContent } from './DefaultWidget/Widget';
+import { renderWidgetReactComponent } from './DefaultWidget/Widget';
 import styles from './DefaultWidget/styles';
 import assets from './DefaultWidget/assets';
 
-console.log('___ styles', styles);
+window.__assets = assets;
 
 let ElixirChat = window.ElixirChat;
 if (process.env.NODE_ENV === 'development') {
@@ -33,76 +32,77 @@ export class ElixirChatWidget extends ElixirChat {
   public container: HTMLElement;
   public iframeStyles: string;
   public visibleByDefault: boolean;
-  public imagePreviewHorizontalPaddings: number = 100;
-  public imagePreviewVerticalPaddings: number = 120;
+  public imagePreviewHorizontalPaddings: number = 100;  // TODO: ???
+  public imagePreviewVerticalPaddings: number = 120;  // TODO: ???
 
   public widgetUnreadCount: number;
   public widgetIsVisible: boolean = false;
-  public widgetImagePreviewIsVisible: boolean = false;
+  public widgetImagePreviewIsVisible: boolean = false; // TODO: ???
 
   public widgetChatReactComponent: any = {};
-  public widgetChatIframe: HTMLIFrameElement;
-  public widgetButton: HTMLElement;
-  public widgetImagePreview: HTMLElement;
-  public widgetImagePreviewImg: HTMLImageElement;
+  public widgetChatIframe: HTMLIFrameElement; // TODO: ???
+  public widgetButton: HTMLElement; // TODO: ???
+  public widgetImagePreview: HTMLElement; // TODO: ???
+  public widgetImagePreviewImg: HTMLImageElement; // TODO: ???
 
   protected onToggleChatVisibilityCallbacks: Array<(isOpen: boolean) => void> = [];
+  protected onSetUnreadCountCallbacks: Array<(count: boolean) => void> = [];
 
-  protected injectGlobalStyles(styles: string): void {
-    insertElement('style', { innerHTML: styles, type: 'text/css' }, this.container);
-  }
+  // protected injectGlobalStyles(styles: string): void {
+  //   insertElement('style', { innerHTML: styles, type: 'text/css' }, this.container);
+  // }
 
-  protected injectIframeStyles(styles: string): void {
-    const iframeContainer = <HTMLElement>this.widgetChatIframe.contentWindow.document.querySelector('main');
-    insertElement('style', { innerHTML: styles, type: 'text/css' }, iframeContainer);
-  }
+  // protected injectIframeStyles(styles: string): void {
+  //   const iframeContainer = <HTMLElement>this.widgetChatIframe.contentWindow.document.querySelector('main');
+  //   insertElement('style', { innerHTML: styles, type: 'text/css' }, iframeContainer);
+  // }
 
-  protected appendWidgetButton(): void {
-    const button = insertElement('button', { className: 'elixirchat-widget-button' }, this.container);
-    insertElement('span', { className: 'elixirchat-widget-button-counter' }, button);
+  // protected appendWidgetButton(): void {
+  //   const button = insertElement('button', { className: 'elixirchat-widget-button' }, this.container);
+  //   insertElement('span', { className: 'elixirchat-widget-button-counter' }, button);
+  //
+  //   button.addEventListener('click', this.toggleChatVisibility);
+  //   this.widgetButton = button;
+  //
+  //   this.injectGlobalStyles([
+  //     generateFontFaceRule('Graphik', 'normal', assets.fontGraphikRegularWeb),
+  //     generateFontFaceRule('elixirchat-icons', null, assets.fontElixirchatIcons),
+  //   ].join('\n'));
+  //   this.injectGlobalStyles(styles.Widget, this.container);
+  //   this.injectGlobalStyles(styles.icons, this.container);
+  // }
 
-    button.addEventListener('click', this.toggleChatVisibility);
-    this.widgetButton = button;
-
-    this.injectGlobalStyles([
-      generateFontFaceRule('Graphik', 'normal', assets.fontGraphikRegularWeb),
-      generateFontFaceRule('elixirchat-icons', null, assets.fontElixirchatIcons),
-    ].join('\n'));
-    this.injectGlobalStyles(styles.Widget, this.container);
-    this.injectGlobalStyles(styles.icons, this.container);
-  }
-
-  protected appendChatIframe(): void {
-    return new Promise((resolve) => {
-
-      const iframe = <HTMLIFrameElement>document.createElement('iframe');
-      iframe.className = 'elixirchat-widget-iframe';
-      iframe.hidden = true;
-
-      iframe.onload = () => {
-        iframe.contentWindow.document.body.appendChild(insertElement('main'));
-        if (this.widgetChatIframe) {
-          this.widgetChatIframe.remove();
-        }
-        this.widgetChatIframe = iframe;
-
-        const iframeContainer = <HTMLElement>iframe.contentWindow.document.querySelector('main');
-        this.widgetChatReactComponent = appendWidgetIframeContent(iframeContainer, this);
-
-        this.injectIframeStyles([
-          generateFontFaceRule('Graphik', 'normal', assets.fontGraphikRegularWeb),
-          generateFontFaceRule('Graphik', 'bold', assets.fontGraphikBoldWeb),
-          generateFontFaceRule('elixirchat-icons', null, assets.fontElixirchatIcons),
-        ].join('\n'));
-        this.injectIframeStyles(this.iframeStyles);
-        this.injectIframeStyles(styles.icons);
-
-        resolve();
-      };
-
-      this.container.appendChild(iframe);
-    });
-  }
+  // protected appendChatIframe(): void {
+  //   return new Promise((resolve) => {
+  //
+  //     const iframe = <HTMLIFrameElement>document.createElement('iframe');
+  //     iframe.className = 'elixirchat-widget-iframe';
+  //     // iframe.hidden = true;
+  //
+  //     iframe.onload = () => {
+  //       iframe.contentWindow.document.body.appendChild(insertElement('main'));
+  //       if (this.widgetChatIframe) {
+  //         this.widgetChatIframe.remove();
+  //       }
+  //       this.widgetChatIframe = iframe;
+  //
+  //       const iframeContainer = <HTMLElement>iframe.contentWindow.document.querySelector('main');
+  //       this.widgetChatReactComponent = appendWidgetIframeContent(iframeContainer, this);
+  //
+  //       this.injectIframeStyles([
+  //         generateFontFaceRule('Graphik', 'normal', assets.fontGraphikRegularWeb),
+  //         generateFontFaceRule('Graphik', 'bold', assets.fontGraphikBoldWeb),
+  //         generateFontFaceRule('elixirchat-icons', null, assets.fontElixirchatIcons),
+  //       ].join('\n'));
+  //       this.injectIframeStyles(this.iframeStyles);
+  //       this.injectIframeStyles(styles.icons);
+  //
+  //       resolve();
+  //     };
+  //
+  //     this.container.appendChild(iframe);
+  //   });
+  // }
 
   protected appendImagePreview(): void {
     const container = insertElement('div', { className: 'elixirchat-widget-image-preview' }, this.container);
@@ -162,38 +162,47 @@ export class ElixirChatWidget extends ElixirChat {
   }
 
   public setUnreadCount = (count: number): void => {
-    const counter: HTMLElement = this.widgetButton.querySelector('.elixirchat-widget-button-counter');
-    const classNameHasUnread = 'elixirchat-widget-button-counter--has-unread';
     this.widgetUnreadCount = +count || 0;
+    this.onSetUnreadCountCallbacks.forEach(callback => callback(this.widgetUnreadCount));
 
-    if (count) {
-      counter.classList.add(classNameHasUnread);
-      counter.innerText = count;
-    }
-    else {
-      counter.classList.remove(classNameHasUnread);
-      counter.innerText = '';
-    }
+    // const counter: HTMLElement = this.widgetButton.querySelector('.elixirchat-widget-button-counter');
+    // const classNameHasUnread = 'elixirchat-widget-button-counter--has-unread';
+    // if (count) {
+    //   counter.classList.add(classNameHasUnread);
+    //   counter.innerText = count;
+    // }
+    // else {
+    //   counter.classList.remove(classNameHasUnread);
+    //   counter.innerText = '';
+    // }
   };
 
-  public toggleChatVisibility = (): void => {
-    const iframeClassNameOpening = 'elixirchat-widget-iframe--opening';
-    const iframeClassNameVisible = 'elixirchat-widget-iframe--visible';
-    const buttonClassNameVisible = 'elixirchat-widget-button--visible';
+  public onSetUnreadCount = (callback) => {
+    this.onSetUnreadCountCallbacks.push(callback);
+  };
 
+  public toggleChatVisibility = (params: { noCallback: boolean } = {}): void => {
     this.widgetIsVisible = !this.widgetIsVisible;
-    if (this.widgetIsVisible) {
-      this.widgetButton.classList.add(buttonClassNameVisible);
-      this.widgetChatIframe.classList.add(iframeClassNameOpening, iframeClassNameVisible);
-      setTimeout(() => {
-        this.widgetChatIframe.classList.remove(iframeClassNameOpening);
-      }, 0);
+    if (!params.noCallback) {
+      this.onToggleChatVisibilityCallbacks.forEach(callback => callback(this.widgetIsVisible));
     }
-    else {
-      this.widgetButton.classList.remove(buttonClassNameVisible);
-      this.widgetChatIframe.classList.remove(iframeClassNameVisible);
-    }
-    this.onToggleChatVisibilityCallbacks.forEach(callback => callback(this.widgetIsVisible));
+
+    // const iframeClassNameOpening = 'elixirchat-widget-iframe--opening';
+    // const iframeClassNameVisible = 'elixirchat-widget-iframe--visible';
+    // const buttonClassNameVisible = 'elixirchat-widget-button--visible';
+    //
+    // if (this.widgetIsVisible) {
+    //   this.widgetButton.classList.add(buttonClassNameVisible);
+    //   this.widgetChatIframe.classList.add(iframeClassNameOpening, iframeClassNameVisible);
+    //   setTimeout(() => {
+    //     this.widgetChatIframe.classList.remove(iframeClassNameOpening);
+    //   }, 0);
+    // }
+    // else {
+    //   this.widgetButton.classList.remove(buttonClassNameVisible);
+    //   this.widgetChatIframe.classList.remove(iframeClassNameVisible);
+    // }
+    // this.onToggleChatVisibilityCallbacks.forEach(callback => callback(this.widgetIsVisible));
   };
 
   public onToggleChatVisibility = (callback) => {
@@ -201,6 +210,7 @@ export class ElixirChatWidget extends ElixirChat {
   };
 
   public appendWidget = async ({ container, iframeStyles = '', visibleByDefault = false }: IElixirChatWidgetAppendWidgetConfig): void => {
+
     if (!(container instanceof HTMLElement)) {
       const errorMessage = 'You must provide an HTMLElement as a "container" option to appendWidget() method';
       logEvent(this.debug, errorMessage, { container, iframeStyles }, 'error');
@@ -208,18 +218,18 @@ export class ElixirChatWidget extends ElixirChat {
     }
 
     this.container = container;
-    this.iframeStyles = iframeStyles;
     this.visibleByDefault = visibleByDefault;
-
     this.widgetChatReactComponent = renderWidgetReactComponent(this.container, this);
+    this.iframeStyles = iframeStyles || '';
+
 
     // await this.appendChatIframe();
     // this.appendWidgetButton();
     // this.appendImagePreview();
 
-    // if (this.visibleByDefault) {
-    //   this.toggleChatVisibility();
-    // }
+    if (this.visibleByDefault) {
+      this.toggleChatVisibility();
+    }
 
     window.__this = this;
 
