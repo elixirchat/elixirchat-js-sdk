@@ -1,12 +1,14 @@
 import React, { Component } from 'react';
-import ReactDOM, { createPortal } from 'react-dom';
+import ReactDOM from 'react-dom';
 import { Chat } from './Chat';
 import { Frame } from './Frame';
 
 export interface IWidgetProps {
+  elixirChatWidget: any;
 }
 
 export interface IWidgetState {
+  isIFrameOpen: boolean;
 }
 
 export class Widget extends Component<IWidgetProps, IWidgetState> {
@@ -15,39 +17,13 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
     isIFrameOpen: false,
   };
 
-  iframe = React.createRef();
-
-  componentDidMount(): void {
+  componentDidMount() {
     console.log('___ mount');
-
-    // this.iframe.current.onload = () => {
-    //   console.log('___ onload event 1', this.iframe.current);
-    // };
-
-    // this.renderIframeContent();
   }
 
   componentDidUpdate(prevProps) {
     console.log('___ update');
   }
-
-  renderIframeContent = () => {
-    const { elixirChatWidget } = this.props;
-    // const iframeBody = this.iframe.current.contentWindow.document.querySelector('body');
-    const iframeDocument = this.iframe.current.contentWindow.document;
-    const container = iframeDocument.createElement('main');
-    iframeDocument.body.appendChild(container);
-
-    console.log('___ iframeBody', iframeDocument, container);
-    window.__container = container;
-
-    let component;
-
-    ReactDOM.render((
-      <Chat ref={(chat) => {component = chat}} elixirChatWidget={elixirChatWidget} />
-    ), container);
-
-  };
 
   onButtonClick = () => {
     this.setState({
@@ -55,17 +31,15 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
     });
   };
 
-  onIframeReady = () => {
-    console.log('___ onload event @@@', this.iframe.current);
-  };
-
   render(): void {
+    const { elixirChatWidget } = this.props;
     const { isIFrameOpen } = this.state;
 
     return (
       <div>
-        {/*<iframe onLoadCapture={this.onIframeReady} ref={this.iframe} src="" hidden={!isIFrameOpen}/>*/}
-        <Frame><h1>Hello Content!</h1></Frame>
+        <Frame hidden={!isIFrameOpen}>
+          <Chat elixirChatWidget={elixirChatWidget} />
+        </Frame>
         <button onClick={this.onButtonClick}>Button</button>
       </div>
     );
@@ -73,19 +47,10 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
 }
 
 
-export function renderWidget(container, elixirChatWidget) {
+export function renderWidgetReactComponent(container, elixirChatWidget) {
   let component;
   ReactDOM.render((
     <Widget ref={(widget) => {component = widget}} elixirChatWidget={elixirChatWidget} />
   ), container);
   return component;
 }
-
-
-// export function renderIframeContent(container, elixirChatWidget) {
-//   let component;
-//   ReactDOM.render((
-//     <Chat ref={(chat) => {component = chat}} elixirChatWidget={elixirChatWidget} />
-//   ), container);
-//   return component;
-// }

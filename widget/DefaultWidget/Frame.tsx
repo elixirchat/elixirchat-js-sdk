@@ -1,116 +1,48 @@
-import React, { Component } from 'react'
-import { createPortal } from 'react-dom'
+import React, { Component } from 'react';
+import { createPortal } from 'react-dom';
 
 export class Frame extends Component {
 
-  contentRef = null;
+  iframeContentContainer = null;
   iframe = React.createRef();
 
-  async componentDidMount(){
-    console.log('___ frame mount');
-
-    this.waitUntilIframeIsReady();
-
-  }
-
-  waitUntilIframeIsReady = () => {
-
-
-    const iframeElement = this.iframe.current;
-    const iframeDocument = iframeElement.contentWindow.document;
-
-    console.log('___ iframe', this.iframe, iframeDocument.readyState);
-
-    if (iframeDocument.readyState !== 'complete') {
-      console.error('___ not complete 222');
-
-      iframeElement.onload = () => {
-
-        console.log('%c___ on load', 'color: green;');
-
-
-        const iframeContentContainer = iframeDocument.createElement('main');
-        iframeDocument.body.appendChild(iframeContentContainer);
-        iframeContentContainer.innerText = 'yo';
-        this.iframeContentContainer = iframeContentContainer;
-
-      };
-    }
-
-    else {
-      const iframeContentContainer = iframeDocument.createElement('main');
-      iframeDocument.body.appendChild(iframeContentContainer);
-      iframeContentContainer.innerText = 'yo 0';
-      this.iframeContentContainer = iframeContentContainer;
-    }
-
+  state = {
+    isIframeReady: false,
   };
 
-  componentDidUpdate(){
-    console.log('___ frame update');
+  componentDidMount(){
+    this.onIframeReady().then(iframeDocument => {
+      this.iframeContentContainer = iframeDocument.createElement('main');
+      iframeDocument.body.appendChild(this.iframeContentContainer);
+      this.setState({ isIframeReady: true });
+    });
   }
 
-  // setContentRef = (node) => {
-  //   this.contentRef = node.contentWindow.document.body;
-  //   console.log('___ frame set ref', node, '-', this.contentRef);
-  // };
+  onIframeReady = () => {
+    return new Promise((resolve) => {
+      let iframeElement = this.iframe.current;
+      let iframeDocument = iframeElement.contentWindow.document;
 
-  setIframeRef = (iframeElement) => {
-
-    iframeElement.onload = () => {
-      console.warn('___ frame on load');
-    };
-
-    const iframeDocument = iframeElement.contentWindow.document;
-
-    if (iframeDocument.readyState !== 'complete') {
-      console.error('___ not complete');
-    }
-
-
-    const iframeContentContainer = iframeDocument.createElement('main');
-    iframeDocument.body.appendChild(iframeContentContainer);
-    iframeContentContainer.innerText = 'yo';
-    this.iframeContentContainer = iframeContentContainer;
-
-    console.log('___ iframeElement', iframeElement, iframeDocument, '///', iframeContentContainer, iframeDocument.readyState);
-
-  };
-
-  onIframeLoad = (e) => {
-
-    const iframeDocument = e.target.contentWindow.document;
-
-    console.log('%c___ frame load', 'color: green;', e.target, '>>>', iframeDocument.readyState);
-
-
-
-
-    const iframeContentContainer = iframeDocument.createElement('main');
-    iframeDocument.body.appendChild(iframeContentContainer);
-    iframeContentContainer.innerText = 'yo 1';
-    this.iframeContentContainer = iframeContentContainer;
+      if (iframeDocument.readyState === 'complete') {
+        resolve(iframeDocument);
+      }
+      else {
+        iframeElement.addEventListener('load', (e) => {
+          iframeElement = e.target;
+          iframeDocument = e.target.contentWindow.document;
+          resolve(iframeDocument);
+        });
+      }
+    });
   };
 
   render() {
     const { children, ...props } = this.props;
-
-    window.__zz = React.Children.only(children);
-    window.__this1 = this;
-    window.__React = React;
-
-    // console.log('___ iframeBody', this.iframe);
-
-    // if (!this.iframe.current) {
-    //   return null;
-    // }
-    // const iframeBody = this.iframe.current.contentWindow.document.body;
-
-    // {this.contentRef && createPortal(React.Children.only(children), this.contentRef)}
+    const { isIframeReady } = this.state;
 
     return (
       <iframe {...props} ref={this.iframe}>
-        {/*{createPortal(React.Children.only(children), iframeBody)}*/}
+        {isIframeReady && createPortal(React.Children.only(children), this.iframeContentContainer)}
       </iframe>
     )
   }

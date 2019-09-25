@@ -2,7 +2,7 @@ import 'babel-polyfill';
 import { logEvent } from '../utilsCommon';
 import { insertElement, generateFontFaceRule } from '../utilsWidget';
 // import { appendWidgetIframeContent } from './DefaultWidget/Chat';
-import { renderWidget, renderIframeContent } from './DefaultWidget/Widget';
+import { renderWidgetReactComponent, renderIframeContent } from './DefaultWidget/Widget';
 import styles from './DefaultWidget/styles';
 import assets from './DefaultWidget/assets';
 
@@ -211,7 +211,7 @@ export class ElixirChatWidget extends ElixirChat {
     this.iframeStyles = iframeStyles;
     this.visibleByDefault = visibleByDefault;
 
-    this.widgetChatReactComponent = renderWidget(this.container, this);
+    this.widgetChatReactComponent = renderWidgetReactComponent(this.container, this);
 
     // await this.appendChatIframe();
     // this.appendWidgetButton();
