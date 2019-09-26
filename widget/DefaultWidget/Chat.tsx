@@ -1,10 +1,16 @@
 import React, { Component, Fragment } from 'react';
-import ReactDOM from 'react-dom';
 import { _get, _last, randomDigitStringId } from '../../utilsCommon';
-import { playNotificationSound, getImageDimensions, isWebImage } from '../../utilsWidget';
+import {
+  unlockNotificationSoundAutoplay,
+  playNotificationSound,
+  getImageDimensions,
+  isWebImage,
+} from '../../utilsWidget';
+
 import { IMessage } from '../../sdk/serializers/serializeMessage';
 import { ChatMessages } from './ChatMessages';
 import { ChatTextarea } from './ChatTextarea';
+import assets from './assets';
 
 export interface IDefaultWidgetProps {
   elixirChatWidget: any;
@@ -44,6 +50,8 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
 
   componentDidMount(): void {
     const { elixirChatWidget } = this.props;
+
+    elixirChatWidget.widgetIFrameDocument.body.addEventListener('click', unlockNotificationSoundAutoplay);
 
     elixirChatWidget.onConnectSuccess(() => {
       elixirChatWidget.fetchMessageHistory(this.messageChunkSize)
@@ -391,12 +399,4 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
       </div>
     );
   }
-}
-
-export function appendWidgetIframeContent(container, elixirChatWidget) {
-  let component;
-  ReactDOM.render((
-    <Chat ref={(widget) => {component = widget}} elixirChatWidget={elixirChatWidget} />
-  ), container);
-  return component;
 }
