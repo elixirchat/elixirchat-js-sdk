@@ -29,7 +29,6 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
 
   componentDidMount(): void {
     const { elixirChatWidget } = this.props;
-    // elixirChatWidget.injectIframeStyles(styles.ChatTextarea);
     elixirChatWidget.onToggleChatVisibility((isOpen) => {
       if (isOpen) {
         this.updateVerticalHeight({ forceScrollToBottom: true });
@@ -157,8 +156,6 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
   };
 
   updateVerticalHeight = (options: { forceScrollToBottom: boolean }) => {
-    return; // todo: remove
-
     setTimeout(() => {
       const newHeight = this.container.current.offsetHeight;
       this.setState({

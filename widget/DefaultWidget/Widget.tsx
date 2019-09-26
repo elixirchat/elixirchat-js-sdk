@@ -40,12 +40,16 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
       insideIframeStyles,
     });
 
-    elixirChatWidget.onToggleChatVisibility(this.onButtonClick);
+    elixirChatWidget.onToggleChatVisibility((isOpen, isSilent) => {
+      if (!isSilent) {
+        this.onButtonClick();
+      }
+    });
     elixirChatWidget.onSetUnreadCount((unreadCount) => this.setState({ unreadCount }));
   }
 
   componentDidUpdate(prevProps) {
-    console.log('___ update');
+
   }
 
   generateStyles = () => {
@@ -81,7 +85,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
 
   onButtonClick = () => {
     const { elixirChatWidget } = this.props;
-    elixirChatWidget.toggleChatVisibility({ noCallback: true });
+    elixirChatWidget.toggleChatVisibility({ isSilent: true });
 
     this.setState({
       isIFrameOpen: !this.state.isIFrameOpen,

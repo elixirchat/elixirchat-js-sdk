@@ -1,11 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import ReactDOM from 'react-dom';
 import { _get, _last, randomDigitStringId } from '../../utilsCommon';
-import {
-  playNotificationSound,
-  getImageDimensions,
-  isWebImage,
-} from '../../utilsWidget';
+import { playNotificationSound, getImageDimensions, isWebImage } from '../../utilsWidget';
 import { IMessage } from '../../sdk/serializers/serializeMessage';
 import { ChatMessages } from './ChatMessages';
 import { ChatTextarea } from './ChatTextarea';
@@ -48,13 +44,8 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
 
   componentDidMount(): void {
     const { elixirChatWidget } = this.props;
-    // elixirChatWidget.injectIframeStyles(styles.Chat);
-
-    console.log('___ 1');
 
     elixirChatWidget.onConnectSuccess(() => {
-      console.log('___ 2');
-
       elixirChatWidget.fetchMessageHistory(this.messageChunkSize)
         .then(messages => {
           this.setState({ messages, isLoading: false });
@@ -62,8 +53,6 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
           this.updateUnseenRepliesToCurrentClient();
         })
         .catch((e) => {
-          console.log('___ 2.5', e);
-
           this.setState({
             isLoading: false,
             isLoadingError: true,
@@ -72,8 +61,6 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
     });
 
     elixirChatWidget.onConnectError(() => {
-      console.log('___ 3');
-
       this.setState({
         isLoading: false,
         isLoadingError: true,
@@ -265,6 +252,10 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
   };
 
   updateUnseenRepliesToCurrentClient = () => {
+
+    console.log('%c___ updateUnseenRepliesToCurrentClient', 'color: green;');
+
+
     const { messages } = this.state;
     const { elixirChatWidget } = this.props;
 
