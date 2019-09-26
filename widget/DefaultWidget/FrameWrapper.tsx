@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { createPortal } from 'react-dom';
 
-export class Frame extends Component {
+export class FrameWrapper extends Component {
 
   iframeContentContainer = null;
   iframe = React.createRef();
@@ -11,10 +11,12 @@ export class Frame extends Component {
   };
 
   componentDidMount(){
+    const { onFrameReady } = this.props;
     this.onIframeReady().then(iframeDocument => {
       this.iframeContentContainer = iframeDocument.createElement('main');
       iframeDocument.body.appendChild(this.iframeContentContainer);
       this.setState({ isIframeReady: true });
+      onFrameReady(iframeDocument);
     });
   }
 
@@ -37,11 +39,11 @@ export class Frame extends Component {
   };
 
   render() {
-    const { children, ...props } = this.props;
+    const { children, className } = this.props;
     const { isIframeReady } = this.state;
 
     return (
-      <iframe {...props} ref={this.iframe}>
+      <iframe className={className} ref={this.iframe}>
         {isIframeReady && createPortal(React.Children.only(children), this.iframeContentContainer)}
       </iframe>
     )

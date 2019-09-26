@@ -252,10 +252,6 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
   };
 
   updateUnseenRepliesToCurrentClient = () => {
-
-    console.log('%c___ updateUnseenRepliesToCurrentClient', 'color: green;');
-
-
     const { messages } = this.state;
     const { elixirChatWidget } = this.props;
 
@@ -339,7 +335,7 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
       isLoading,
       isLoadingError,
     } = this.state;
-    const { elixirChatWidget } = this.props;
+    const { elixirChatWidget, onImagePreviewOpen } = this.props;
 
     return (
       <div className="elixirchat-chat-container" ref={this.container}>
@@ -350,7 +346,7 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
           <button className="elixirchat-chat-header__close"
             title="Закрыть чат"
             onClick={elixirChatWidget.toggleChatVisibility}>
-            <i className="icon-close-thin"></i>
+            <i className="icon-close-thin"/>
           </button>
         </h2>
 
@@ -373,6 +369,7 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
               <ChatMessages
                 onLoadPreviousMessages={this.loadPreviousMessages}
                 onScreenshotRequestFulfilled={this.onScreenshotRequestFulfilled}
+                onImagePreviewOpen={onImagePreviewOpen}
                 onReplyMessage={this.onReplyMessage}
                 onSubmitRetry={this.onSubmitRetry}
                 elixirChatWidget={elixirChatWidget}

@@ -1,17 +1,3 @@
-export function insertElement(tagName: string, attributes?: any, elementToAppendTo?: HTMLElement): HTMLElement {
-  const element = document.createElement(tagName);
-  if (typeof attributes === 'object') {
-    for (let key in attributes) {
-      element[key] = attributes[key];
-    }
-  }
-  if (elementToAppendTo) {
-    elementToAppendTo.appendChild(element);
-  }
-  return element;
-}
-
-
 export function inflect(locale: 'en-US' | 'ru-RU', number: number, endings: [string], hideNumber?: boolean): string {
   const getEnding = {};
 

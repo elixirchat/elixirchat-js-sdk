@@ -1,11 +1,6 @@
 import 'babel-polyfill';
 import { logEvent } from '../utilsCommon';
-import { insertElement } from '../utilsWidget';
 import { renderWidgetReactComponent } from './DefaultWidget/Widget';
-import styles from './DefaultWidget/styles';
-import assets from './DefaultWidget/assets';
-
-window.__assets = assets;
 
 let ElixirChat = window.ElixirChat;
 if (process.env.NODE_ENV === 'development') {
@@ -32,78 +27,15 @@ export class ElixirChatWidget extends ElixirChat {
   public container: HTMLElement;
   public iframeStyles: string;
   public visibleByDefault: boolean;
-  public imagePreviewHorizontalPaddings: number = 100;  // TODO: ???
-  public imagePreviewVerticalPaddings: number = 120;  // TODO: ???
 
   public widgetUnreadCount: number;
   public widgetIsVisible: boolean = false;
-  public widgetImagePreviewIsVisible: boolean = false; // TODO: ???
 
   public widgetChatReactComponent: any = {};
-  public widgetChatIframe: HTMLIFrameElement; // TODO: ???
-  public widgetButton: HTMLElement; // TODO: ???
-  public widgetImagePreview: HTMLElement; // TODO: ???
-  public widgetImagePreviewImg: HTMLImageElement; // TODO: ???
+  public widgetIFrameDocument: Document = {};
 
   protected onToggleChatVisibilityCallbacks: Array<(isOpen: boolean) => void> = [];
   protected onSetUnreadCountCallbacks: Array<(count: boolean) => void> = [];
-
-  protected appendImagePreview(): void {
-    const container = insertElement('div', { className: 'elixirchat-widget-image-preview' }, this.container);
-    const inner = insertElement('div', { className: 'elixirchat-widget-image-preview__inner' }, container);
-    const img = insertElement('img', { className: 'elixirchat-widget-image-preview__img' }, inner);
-
-    const imagePreviewImgClassNameLoading = 'elixirchat-widget-image-preview__img--loading';
-
-    container.onclick = () => this.closeImagePreview();
-    img.onload = () => {
-      img.classList.remove(imagePreviewImgClassNameLoading);
-    };
-    this.widgetImagePreview = container;
-    this.widgetImagePreviewImg = img;
-  }
-
-  protected calculateImagePreviewSize(imageNativeWidth, imageNativeHeight): { width: number, height: number } {
-    const maxImageWidth = window.innerWidth - this.imagePreviewHorizontalPaddings; // window viewport width minus horizontal paddings
-    let width = imageNativeWidth;
-    let height = imageNativeHeight;
-    if (imageNativeWidth > maxImageWidth) {
-      const ratio = maxImageWidth / imageNativeWidth;
-      width = maxImageWidth;
-      height = Math.round(imageNativeHeight * ratio);
-    }
-    return { width, height };
-  }
-
-  protected calculateImagePreviewTopMargin(imageDisplayHeight): number {
-    const availableVerticalSpace = window.innerHeight - this.imagePreviewVerticalPaddings;
-    if (availableVerticalSpace < imageDisplayHeight) {
-      return 0;
-    }
-    else {
-      return (availableVerticalSpace - imageDisplayHeight) / 2;
-    }
-  }
-
-  protected openImagePreview(previewData): void {
-    const { width, height, url, name } = previewData;
-    const displaySize = this.calculateImagePreviewSize(width, height);
-
-    this.widgetImagePreviewImg.style.marginTop = this.calculateImagePreviewTopMargin(displaySize.height) + 'px';
-    this.widgetImagePreviewImg.width = displaySize.width;
-    this.widgetImagePreviewImg.height = displaySize.height;
-    this.widgetImagePreviewImg.src = url;
-    this.widgetImagePreviewImg.alt = name;
-    this.widgetImagePreviewImg.classList.add('elixirchat-widget-image-preview__img--loading');
-
-    this.widgetImagePreviewIsVisible = true;
-    this.widgetImagePreview.classList.add('elixirchat-widget-image-preview--visible');
-  }
-
-  protected closeImagePreview(): void {
-    this.widgetImagePreviewIsVisible = false;
-    this.widgetImagePreview.classList.remove('elixirchat-widget-image-preview--visible');
-  }
 
   public setUnreadCount = (count: number): void => {
     this.widgetUnreadCount = +count || 0;
@@ -124,7 +56,6 @@ export class ElixirChatWidget extends ElixirChat {
   };
 
   public appendWidget = async ({ container, iframeStyles = '', visibleByDefault = false }: IElixirChatWidgetAppendWidgetConfig): void => {
-
     if (!(container instanceof HTMLElement)) {
       const errorMessage = 'You must provide an HTMLElement as a "container" option to appendWidget() method';
       logEvent(this.debug, errorMessage, { container, iframeStyles }, 'error');
@@ -136,16 +67,9 @@ export class ElixirChatWidget extends ElixirChat {
     this.widgetChatReactComponent = renderWidgetReactComponent(this.container, this);
     this.iframeStyles = iframeStyles || '';
 
-
-    // await this.appendChatIframe();
-    // this.appendWidgetButton();
-    // this.appendImagePreview();
-
     if (this.visibleByDefault) {
       this.toggleChatVisibility();
     }
-
-    window.__this = this;
 
     logEvent(this.debug, 'Appended ElixirChat default widget', { container });
     return this.widgetChatReactComponent;

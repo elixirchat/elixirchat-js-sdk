@@ -3,7 +3,8 @@ import ReactDOM from 'react-dom';
 import cn from 'classnames';
 import { generateFontFaceRule } from '../../utilsWidget';
 import { Chat } from './Chat';
-import { Frame } from './Frame';
+import { FrameWrapper } from './FrameWrapper';
+import { ImagePreview } from './ImagePreview';
 import styles from './styles';
 import assets from './assets';
 
@@ -13,25 +14,29 @@ export interface IWidgetProps {
 
 export interface IWidgetState {
   isIFrameOpen: boolean;
+  isIFrameReady: boolean;
   isIFrameOpeningAnimation: boolean;
   outsideIframeStyles: null | string;
   insideIframeStyles: null | string;
   unreadCount: number;
+  currentImagePreview: any,
+  imagePreviewGallery: Array<any>,
 }
 
 export class Widget extends Component<IWidgetProps, IWidgetState> {
 
   state = {
+    isIFrameReady: false,
     isIFrameOpen: false,
     isIFrameOpeningAnimation: false,
     outsideIframeStyles: null,
     insideIframeStyles: null,
     unreadCount: 0,
+    currentImagePreview: {},
+    imagePreviewGallery: [],
   };
 
   componentDidMount() {
-    console.log('___ mount');
-
     const { elixirChatWidget } = this.props;
     const { outsideIframeStyles, insideIframeStyles } = this.generateStyles();
 
@@ -46,10 +51,6 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
       }
     });
     elixirChatWidget.onSetUnreadCount((unreadCount) => this.setState({ unreadCount }));
-  }
-
-  componentDidUpdate(prevProps) {
-
   }
 
   generateStyles = () => {
@@ -96,14 +97,37 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
     });
   };
 
-  render(): void {
+  onImagePreviewOpen = (currentImagePreview, imagePreviewGallery) => {
+    this.setState({
+      currentImagePreview,
+      imagePreviewGallery,
+    });
+  };
+
+  onImagePreviewClose = () => {
+    this.setState({
+      currentImagePreview: {},
+      imagePreviewGallery: [],
+    });
+  };
+
+  onFrameReady = (iframeDocument) => {
+    const { elixirChatWidget } = this.props;
+    elixirChatWidget.widgetIFrameDocument = iframeDocument;
+    this.setState({ isIFrameReady: true });
+  };
+
+  render() {
     const { elixirChatWidget } = this.props;
     const {
+      isIFrameReady,
       isIFrameOpen,
       isIFrameOpeningAnimation,
       outsideIframeStyles,
       insideIframeStyles,
       unreadCount,
+      currentImagePreview,
+      imagePreviewGallery,
     } = this.state;
 
     return (
@@ -116,16 +140,25 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
           })}>{Boolean(unreadCount) && unreadCount}</span>
         </button>
 
-        <Frame className={cn({
+        {isIFrameReady && (
+          <ImagePreview
+            elixirChatWidget={elixirChatWidget}
+            preview={currentImagePreview}
+            gallery={imagePreviewGallery}
+            onClose={this.onImagePreviewClose}/>
+        )}
+
+        <FrameWrapper className={cn({
           'elixirchat-widget-iframe': true,
           'elixirchat-widget-iframe--visible': isIFrameOpen,
           'elixirchat-widget-iframe--opening': isIFrameOpeningAnimation,
-        })}>
+        })}
+          onFrameReady={this.onFrameReady}>
           <Fragment>
             <style dangerouslySetInnerHTML={{ __html: insideIframeStyles }}/>
-            <Chat elixirChatWidget={elixirChatWidget} />
+            <Chat elixirChatWidget={elixirChatWidget} onImagePreviewOpen={this.onImagePreviewOpen} />
           </Fragment>
-        </Frame>
+        </FrameWrapper>
       </Fragment>
     );
   }

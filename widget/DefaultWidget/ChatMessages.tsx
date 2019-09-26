@@ -31,14 +31,11 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
   maxThumbnailSize = 256;
 
   componentDidMount(): void {
-    const { messages, elixirChatWidget } = this.props;
+    const { messages } = this.props;
     dayjs.locale('ru');
     dayjs.extend(dayjsCalendar);
 
-    // elixirChatWidget.widgetChatIframe.contentDocument.addEventListener('keyup', this.onIframeBodyKeyup);
-    // elixirChatWidget.injectIframeStyles(styles.ChatMessages);
     this.setProcessedMessages(messages);
-
     this.setState({
       screenshotFallback: getCompatibilityFallback(),
     });
@@ -104,46 +101,12 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     return { images, files };
   };
 
-  onIframeBodyKeyup = (e) => {
-    const { elixirChatWidget } = this.props;
-    if (e.which === 27 /* Esc */) {
-      elixirChatWidget.closeImagePreview();
-    }
-    else if (e.which === 37 /* Arrow left */) {
-      this.onImagePreviewArrowNavigation(-1);
-    }
-    else if (e.which === 39 /* Arrow right */) {
-      this.onImagePreviewArrowNavigation(1);
-    }
-  };
-
   onImagePreviewClick = (e, preview) => {
-    const { elixirChatWidget } = this.props;
+    const { onImagePreviewOpen } = this.props;
+    const { imagePreviews } = this.state;
     this.setState({ currentImagePreview: preview });
-    elixirChatWidget.openImagePreview(preview);
+    onImagePreviewOpen(preview, imagePreviews);
     e.preventDefault();
-  };
-
-  onImagePreviewArrowNavigation = (delta) => {
-    const { imagePreviews, currentImagePreview } = this.state;
-    const { elixirChatWidget } = this.props;
-    if (!elixirChatWidget.widgetImagePreviewIsVisible) {
-      return false;
-    }
-
-    const currentImagePreviewIndex = imagePreviews.map(preview => preview.id).indexOf(currentImagePreview.id);
-
-    let nextImagePreviewIndex = currentImagePreviewIndex + delta;
-    if (nextImagePreviewIndex < 0) {
-      nextImagePreviewIndex = imagePreviews.length - 1;
-    }
-    else if (nextImagePreviewIndex >= imagePreviews.length) {
-      nextImagePreviewIndex = 0;
-    }
-    this.setState({
-      currentImagePreview: imagePreviews[nextImagePreviewIndex]
-    });
-    elixirChatWidget.openImagePreview(imagePreviews[nextImagePreviewIndex]);
   };
 
   shouldHideMessageBalloon = (message) => {

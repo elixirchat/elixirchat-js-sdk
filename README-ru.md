@@ -695,9 +695,8 @@ elixirChatWidget.appendWidget({
 - <a id="widget-iframeStyles"></a>`iframeStyles: string` - То же, что передано в [`appendWidget()`](#widget-appendWidget)
 - <a id="widget-visibleByDefault"></a>`visibleByDefault: boolean` - То же, что передано в [`appendWidget()`](#widget-appendWidget)
 - <a id="widget-widgetIsVisible"></a>`widgetIsVisible: boolean` - Флаг, указывающий, открыто ли в данный момент окно чата
-- <a id="widget-widgetChatIframe"></a>`widgetChatIframe: HTMLIFrameElement` - IFrame-элемент окна чата
+- <a id="widget-widgetIFrameDocument"></a>`widgetIFrameDocument: Document` - Document IFrame-элемента окна чата
 - <a id="widget-widgetChatReactComponent"></a>`widgetChatReactComponent: JSX.Element` - React-компонент виджета (отрендеренный внутри `<iframe>`)
-- <a id="widget-widgetButton"></a>`widgetButton: HTMLElement` - Элемент кнопки активации виджета (отрендеренный вне элемента IFrame)
 
 
 
@@ -705,7 +704,7 @@ elixirChatWidget.appendWidget({
 // Примеры:
 console.log('state React-компонента виджета:', elixirChatWidget.widgetChatReactComponent.state);
 
-elixirChatWidget.widgetChatIframe.style = 'width: 300px';
+elixirChatWidget.widgetIFrameDocument.body.style = 'background: yellow';
 
 if (elixirChatWidget.widgetIsVisible) {
   document.getElementById('my-app-column').className = 'shrinked';

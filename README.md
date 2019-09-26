@@ -691,15 +691,14 @@ elixirChatWidget.appendWidget({
 - <a id="widget-iframeStyles"></a>`iframeStyles: string` - Same as passed to [`appendWidget()`](#widget-appendWidget)
 - <a id="widget-visibleByDefault"></a>`visibleByDefault: boolean` - Same as passed to [`appendWidget()`](#widget-appendWidget)
 - <a id="widget-widgetIsVisible"></a>`widgetIsVisible: boolean` - Flag indicating whether the chat window is currently open
-- <a id="widget-widgetChatIframe"></a>`widgetChatIframe: HTMLIFrameElement` - Chat window IFrame element
+- <a id="widget-widgetIFrameDocument"></a>`widgetIFrameDocument: Document` - Document of the IFrame element of the Chat window
 - <a id="widget-widgetChatReactComponent"></a>`widgetChatReactComponent: JSX.Element` - Widget React component (rendered inside the IFrame element)
-- <a id="widget-widgetButton"></a>`widgetButton: HTMLElement` - Widget activation Button element (rendered outside the IFrame element)
 
 ```js
 // Examples:
 console.log('Widget React component state is', elixirChatWidget.widgetChatReactComponent.state);
 
-elixirChatWidget.widgetChatIframe.style = 'border: 1px solid black';
+elixirChatWidget.widgetIFrameDocument.body.style = 'background: yellow';
 
 if (elixirChatWidget.widgetIsVisible) {
   document.getElementById('my-app-column').className = 'shrinked';
