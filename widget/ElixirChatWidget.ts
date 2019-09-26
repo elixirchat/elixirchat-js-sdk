@@ -58,15 +58,15 @@ export class ElixirChatWidget extends ElixirChat {
   public appendWidget = async ({ container, iframeStyles = '', visibleByDefault = false }: IElixirChatWidgetAppendWidgetConfig): void => {
     if (!(container instanceof HTMLElement)) {
       const errorMessage = 'You must provide an HTMLElement as a "container" option to appendWidget() method';
-      logEvent(this.debug, errorMessage, { container, iframeStyles }, 'error');
+      logEvent(this.debug, errorMessage, { container, iframeStyles, visibleByDefault }, 'error');
       return;
     }
 
     this.container = container;
-    this.visibleByDefault = visibleByDefault;
-    this.widgetChatReactComponent = renderWidgetReactComponent(this.container, this);
     this.iframeStyles = iframeStyles || '';
+    this.visibleByDefault = visibleByDefault;
 
+    this.widgetChatReactComponent = renderWidgetReactComponent(this.container, this);
     if (this.visibleByDefault) {
       this.toggleChatVisibility();
     }

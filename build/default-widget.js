@@ -8194,197 +8194,6 @@ function detectPlatform() {
 }
 
 exports.detectPlatform = detectPlatform;
-},{}],"4KO9":[function(require,module,exports) {
-"use strict";
-
-function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
-
-function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
-
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-function insertElement(tagName, attributes, elementToAppendTo) {
-  var element = document.createElement(tagName);
-
-  if (_typeof(attributes) === 'object') {
-    for (var key in attributes) {
-      element[key] = attributes[key];
-    }
-  }
-
-  if (elementToAppendTo) {
-    elementToAppendTo.appendChild(element);
-  }
-
-  return element;
-}
-
-exports.insertElement = insertElement;
-
-function inflect(locale, number, endings, hideNumber) {
-  var getEnding = {};
-
-  getEnding['en-US'] = function (number, endings) {
-    return number === 1 ? endings[0] : endings[1];
-  };
-
-  getEnding['ru-RU'] = function (number, endings) {
-    var cases = [2, 0, 1, 1, 1, 2];
-    var endingIndex = number % 100 > 4 && number % 100 < 20 ? 2 : cases[Math.min(number % 10, 5)];
-    return endings[endingIndex];
-  };
-
-  var ending = getEnding[locale](number, endings) || endings[0];
-  return hideNumber ? ending : number + ' ' + ending;
-}
-
-exports.inflect = inflect;
-
-function inflectDayJSWeekDays(locale, formattedDateString) {
-  if (locale === 'en-US') {
-    return formattedDateString;
-  }
-
-  var updatedFormattedDateString = formattedDateString;
-  var reDictRu = {
-    'в понедельник': 'в понедельник',
-    'в вторник': 'во вторник',
-    'в среда': 'в среду',
-    'в четверг': 'в четверг',
-    'в пятница': 'в пятницу',
-    'в суббота': 'в субботу',
-    'в воскресенье': 'в воскресенье'
-  };
-
-  for (var key in reDictRu) {
-    var regex = new RegExp(key, 'ig');
-    updatedFormattedDateString = updatedFormattedDateString.replace(regex, reDictRu[key]);
-  }
-
-  return updatedFormattedDateString;
-}
-
-exports.inflectDayJSWeekDays = inflectDayJSWeekDays;
-
-function playNotificationSound() {
-  var context = new AudioContext();
-  var filter = context.createBiquadFilter();
-  filter.type = 'notch';
-  filter.frequency.value = 780;
-  filter.Q.value = 1.5;
-  filter.connect(context.destination);
-  var gain1 = context.createGain();
-  gain1.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 1);
-  gain1.connect(filter);
-  var tone1 = context.createOscillator();
-  tone1.frequency.value = 830.6;
-  tone1.connect(gain1);
-  tone1.start(0);
-  tone1.stop(1.65);
-  var gain2 = context.createGain();
-  gain2.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 1.5);
-  gain2.connect(filter);
-  var tone2 = context.createOscillator();
-  tone2.frequency.value = 440;
-  tone2.connect(gain2);
-  tone2.start(0.15);
-  tone2.stop(1.65);
-}
-
-exports.playNotificationSound = playNotificationSound;
-
-function generateFontFaceRule(fontFamily, fontWeight, fontUrl) {
-  return "@font-face {\n    font-family: \"".concat(fontFamily, "\";\n    ").concat(fontWeight ? "font-weight: ".concat(fontWeight, ";") : '', "\n    src: url(\"").concat(fontUrl, "\") format(\"woff\");\n  }");
-}
-
-exports.generateFontFaceRule = generateFontFaceRule;
-
-function isWebImage(mimeType) {
-  return ['image/jpg', 'image/jpeg', 'image/png', 'image/gif'].includes(mimeType.toLowerCase());
-}
-
-exports.isWebImage = isWebImage;
-
-function getHumanReadableFileSize(locale, sizeInBytes) {
-  var unitsDict = {
-    'ru-RU': {
-      'kb': 'Кб',
-      'mb': 'Мб',
-      'gb': 'Гб'
-    },
-    'en-US': {
-      'kb': 'Kb',
-      'mb': 'Mb',
-      'gb': 'Gb'
-    }
-  };
-  var sizeInKb = sizeInBytes / 1024;
-  var sizeInMb = sizeInKb / 1024;
-  var sizeInGb = sizeInMb / 1024;
-  var primarySize = sizeInKb;
-  var primaryUnit = 'kb';
-
-  if (sizeInGb > 1) {
-    primarySize = sizeInGb;
-    primaryUnit = 'gb';
-  } else if (sizeInMb > 1) {
-    primarySize = sizeInMb;
-    primaryUnit = 'mb';
-  }
-
-  primarySize = primarySize < 0.1 ? 0.1 : +primarySize.toFixed(1);
-  return primarySize.toLocaleString(locale) + ' ' + unitsDict[locale || 'en-US'][primaryUnit];
-}
-
-exports.getHumanReadableFileSize = getHumanReadableFileSize;
-
-function getImageDimensions(_x) {
-  return _getImageDimensions.apply(this, arguments);
-}
-
-function _getImageDimensions() {
-  _getImageDimensions = _asyncToGenerator(
-  /*#__PURE__*/
-  regeneratorRuntime.mark(function _callee(imageUrl) {
-    return regeneratorRuntime.wrap(function _callee$(_context) {
-      while (1) {
-        switch (_context.prev = _context.next) {
-          case 0:
-            return _context.abrupt("return", new Promise(function (resolve) {
-              var image = new Image();
-
-              image.onload = function () {
-                resolve({
-                  width: image.width,
-                  height: image.height
-                });
-              };
-
-              image.onerror = function () {
-                resolve({
-                  width: 0,
-                  height: 0
-                });
-              };
-
-              image.src = imageUrl;
-            }));
-
-          case 1:
-          case "end":
-            return _context.stop();
-        }
-      }
-    }, _callee);
-  }));
-  return _getImageDimensions.apply(this, arguments);
-}
-
-exports.getImageDimensions = getImageDimensions;
 },{}],"J4Nk":[function(require,module,exports) {
 /*
 object-assign
@@ -9297,6 +9106,177 @@ var define;
 	}
 }());
 
+},{}],"4KO9":[function(require,module,exports) {
+"use strict";
+
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+
+function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+function inflect(locale, number, endings, hideNumber) {
+  var getEnding = {};
+
+  getEnding['en-US'] = function (number, endings) {
+    return number === 1 ? endings[0] : endings[1];
+  };
+
+  getEnding['ru-RU'] = function (number, endings) {
+    var cases = [2, 0, 1, 1, 1, 2];
+    var endingIndex = number % 100 > 4 && number % 100 < 20 ? 2 : cases[Math.min(number % 10, 5)];
+    return endings[endingIndex];
+  };
+
+  var ending = getEnding[locale](number, endings) || endings[0];
+  return hideNumber ? ending : number + ' ' + ending;
+}
+
+exports.inflect = inflect;
+
+function inflectDayJSWeekDays(locale, formattedDateString) {
+  if (locale === 'en-US') {
+    return formattedDateString;
+  }
+
+  var updatedFormattedDateString = formattedDateString;
+  var reDictRu = {
+    'в понедельник': 'в понедельник',
+    'в вторник': 'во вторник',
+    'в среда': 'в среду',
+    'в четверг': 'в четверг',
+    'в пятница': 'в пятницу',
+    'в суббота': 'в субботу',
+    'в воскресенье': 'в воскресенье'
+  };
+
+  for (var key in reDictRu) {
+    var regex = new RegExp(key, 'ig');
+    updatedFormattedDateString = updatedFormattedDateString.replace(regex, reDictRu[key]);
+  }
+
+  return updatedFormattedDateString;
+}
+
+exports.inflectDayJSWeekDays = inflectDayJSWeekDays;
+
+function playNotificationSound() {
+  var context = new AudioContext();
+  var filter = context.createBiquadFilter();
+  filter.type = 'notch';
+  filter.frequency.value = 780;
+  filter.Q.value = 1.5;
+  filter.connect(context.destination);
+  var gain1 = context.createGain();
+  gain1.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 1);
+  gain1.connect(filter);
+  var tone1 = context.createOscillator();
+  tone1.frequency.value = 830.6;
+  tone1.connect(gain1);
+  tone1.start(0);
+  tone1.stop(1.65);
+  var gain2 = context.createGain();
+  gain2.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 1.5);
+  gain2.connect(filter);
+  var tone2 = context.createOscillator();
+  tone2.frequency.value = 440;
+  tone2.connect(gain2);
+  tone2.start(0.15);
+  tone2.stop(1.65);
+}
+
+exports.playNotificationSound = playNotificationSound;
+
+function generateFontFaceRule(fontFamily, fontWeight, fontUrl) {
+  return "@font-face {\n    font-family: \"".concat(fontFamily, "\";\n    ").concat(fontWeight ? "font-weight: ".concat(fontWeight, ";") : '', "\n    src: url(\"").concat(fontUrl, "\") format(\"woff\");\n  }");
+}
+
+exports.generateFontFaceRule = generateFontFaceRule;
+
+function isWebImage(mimeType) {
+  return ['image/jpg', 'image/jpeg', 'image/png', 'image/gif'].includes(mimeType.toLowerCase());
+}
+
+exports.isWebImage = isWebImage;
+
+function getHumanReadableFileSize(locale, sizeInBytes) {
+  var unitsDict = {
+    'ru-RU': {
+      'kb': 'Кб',
+      'mb': 'Мб',
+      'gb': 'Гб'
+    },
+    'en-US': {
+      'kb': 'Kb',
+      'mb': 'Mb',
+      'gb': 'Gb'
+    }
+  };
+  var sizeInKb = sizeInBytes / 1024;
+  var sizeInMb = sizeInKb / 1024;
+  var sizeInGb = sizeInMb / 1024;
+  var primarySize = sizeInKb;
+  var primaryUnit = 'kb';
+
+  if (sizeInGb > 1) {
+    primarySize = sizeInGb;
+    primaryUnit = 'gb';
+  } else if (sizeInMb > 1) {
+    primarySize = sizeInMb;
+    primaryUnit = 'mb';
+  }
+
+  primarySize = primarySize < 0.1 ? 0.1 : +primarySize.toFixed(1);
+  return primarySize.toLocaleString(locale) + ' ' + unitsDict[locale || 'en-US'][primaryUnit];
+}
+
+exports.getHumanReadableFileSize = getHumanReadableFileSize;
+
+function getImageDimensions(_x) {
+  return _getImageDimensions.apply(this, arguments);
+}
+
+function _getImageDimensions() {
+  _getImageDimensions = _asyncToGenerator(
+  /*#__PURE__*/
+  regeneratorRuntime.mark(function _callee(imageUrl) {
+    return regeneratorRuntime.wrap(function _callee$(_context) {
+      while (1) {
+        switch (_context.prev = _context.next) {
+          case 0:
+            return _context.abrupt("return", new Promise(function (resolve) {
+              var image = new Image();
+
+              image.onload = function () {
+                resolve({
+                  width: image.width,
+                  height: image.height
+                });
+              };
+
+              image.onerror = function () {
+                resolve({
+                  width: 0,
+                  height: 0
+                });
+              };
+
+              image.src = imageUrl;
+            }));
+
+          case 1:
+          case "end":
+            return _context.stop();
+        }
+      }
+    }, _callee);
+  }));
+  return _getImageDimensions.apply(this, arguments);
+}
+
+exports.getImageDimensions = getImageDimensions;
 },{}],"3dZY":[function(require,module,exports) {
 var define;
 !function(t,n){"object"==typeof exports&&"undefined"!=typeof module?module.exports=n():"function"==typeof define&&define.amd?define(n):t.dayjs=n()}(this,function(){"use strict";var t="millisecond",n="second",e="minute",r="hour",i="day",s="week",u="month",o="quarter",a="year",h=/^(\d{4})-?(\d{1,2})-?(\d{0,2})[^0-9]*(\d{1,2})?:?(\d{1,2})?:?(\d{1,2})?.?(\d{1,3})?$/,f=/\[([^\]]+)]|Y{2,4}|M{1,4}|D{1,2}|d{1,4}|H{1,2}|h{1,2}|a|A|m{1,2}|s{1,2}|Z{1,2}|SSS/g,c=function(t,n,e){var r=String(t);return!r||r.length>=n?t:""+Array(n+1-r.length).join(e)+t},d={s:c,z:function(t){var n=-t.utcOffset(),e=Math.abs(n),r=Math.floor(e/60),i=e%60;return(n<=0?"+":"-")+c(r,2,"0")+":"+c(i,2,"0")},m:function(t,n){var e=12*(n.year()-t.year())+(n.month()-t.month()),r=t.clone().add(e,u),i=n-r<0,s=t.clone().add(e+(i?-1:1),u);return Number(-(e+(n-r)/(i?r-s:s-r))||0)},a:function(t){return t<0?Math.ceil(t)||0:Math.floor(t)},p:function(h){return{M:u,y:a,w:s,d:i,h:r,m:e,s:n,ms:t,Q:o}[h]||String(h||"").toLowerCase().replace(/s$/,"")},u:function(t){return void 0===t}},$={name:"en",weekdays:"Sunday_Monday_Tuesday_Wednesday_Thursday_Friday_Saturday".split("_"),months:"January_February_March_April_May_June_July_August_September_October_November_December".split("_")},l="en",m={};m[l]=$;var y=function(t){return t instanceof v},M=function(t,n,e){var r;if(!t)return l;if("string"==typeof t)m[t]&&(r=t),n&&(m[t]=n,r=t);else{var i=t.name;m[i]=t,r=i}return e||(l=r),r},g=function(t,n,e){if(y(t))return t.clone();var r=n?"string"==typeof n?{format:n,pl:e}:n:{};return r.date=t,new v(r)},D=d;D.l=M,D.i=y,D.w=function(t,n){return g(t,{locale:n.$L,utc:n.$u})};var v=function(){function c(t){this.$L=this.$L||M(t.locale,null,!0),this.parse(t)}var d=c.prototype;return d.parse=function(t){this.$d=function(t){var n=t.date,e=t.utc;if(null===n)return new Date(NaN);if(D.u(n))return new Date;if(n instanceof Date)return new Date(n);if("string"==typeof n&&!/Z$/i.test(n)){var r=n.match(h);if(r)return e?new Date(Date.UTC(r[1],r[2]-1,r[3]||1,r[4]||0,r[5]||0,r[6]||0,r[7]||0)):new Date(r[1],r[2]-1,r[3]||1,r[4]||0,r[5]||0,r[6]||0,r[7]||0)}return new Date(n)}(t),this.init()},d.init=function(){var t=this.$d;this.$y=t.getFullYear(),this.$M=t.getMonth(),this.$D=t.getDate(),this.$W=t.getDay(),this.$H=t.getHours(),this.$m=t.getMinutes(),this.$s=t.getSeconds(),this.$ms=t.getMilliseconds()},d.$utils=function(){return D},d.isValid=function(){return!("Invalid Date"===this.$d.toString())},d.isSame=function(t,n){var e=g(t);return this.startOf(n)<=e&&e<=this.endOf(n)},d.isAfter=function(t,n){return g(t)<this.startOf(n)},d.isBefore=function(t,n){return this.endOf(n)<g(t)},d.$g=function(t,n,e){return D.u(t)?this[n]:this.set(e,t)},d.year=function(t){return this.$g(t,"$y",a)},d.month=function(t){return this.$g(t,"$M",u)},d.day=function(t){return this.$g(t,"$W",i)},d.date=function(t){return this.$g(t,"$D","date")},d.hour=function(t){return this.$g(t,"$H",r)},d.minute=function(t){return this.$g(t,"$m",e)},d.second=function(t){return this.$g(t,"$s",n)},d.millisecond=function(n){return this.$g(n,"$ms",t)},d.unix=function(){return Math.floor(this.valueOf()/1e3)},d.valueOf=function(){return this.$d.getTime()},d.startOf=function(t,o){var h=this,f=!!D.u(o)||o,c=D.p(t),d=function(t,n){var e=D.w(h.$u?Date.UTC(h.$y,n,t):new Date(h.$y,n,t),h);return f?e:e.endOf(i)},$=function(t,n){return D.w(h.toDate()[t].apply(h.toDate(),(f?[0,0,0,0]:[23,59,59,999]).slice(n)),h)},l=this.$W,m=this.$M,y=this.$D,M="set"+(this.$u?"UTC":"");switch(c){case a:return f?d(1,0):d(31,11);case u:return f?d(1,m):d(0,m+1);case s:var g=this.$locale().weekStart||0,v=(l<g?l+7:l)-g;return d(f?y-v:y+(6-v),m);case i:case"date":return $(M+"Hours",0);case r:return $(M+"Minutes",1);case e:return $(M+"Seconds",2);case n:return $(M+"Milliseconds",3);default:return this.clone()}},d.endOf=function(t){return this.startOf(t,!1)},d.$set=function(s,o){var h,f=D.p(s),c="set"+(this.$u?"UTC":""),d=(h={},h[i]=c+"Date",h.date=c+"Date",h[u]=c+"Month",h[a]=c+"FullYear",h[r]=c+"Hours",h[e]=c+"Minutes",h[n]=c+"Seconds",h[t]=c+"Milliseconds",h)[f],$=f===i?this.$D+(o-this.$W):o;if(f===u||f===a){var l=this.clone().set("date",1);l.$d[d]($),l.init(),this.$d=l.set("date",Math.min(this.$D,l.daysInMonth())).toDate()}else d&&this.$d[d]($);return this.init(),this},d.set=function(t,n){return this.clone().$set(t,n)},d.get=function(t){return this[D.p(t)]()},d.add=function(t,o){var h,f=this;t=Number(t);var c=D.p(o),d=function(n){var e=g(f);return D.w(e.date(e.date()+Math.round(n*t)),f)};if(c===u)return this.set(u,this.$M+t);if(c===a)return this.set(a,this.$y+t);if(c===i)return d(1);if(c===s)return d(7);var $=(h={},h[e]=6e4,h[r]=36e5,h[n]=1e3,h)[c]||1,l=this.valueOf()+t*$;return D.w(l,this)},d.subtract=function(t,n){return this.add(-1*t,n)},d.format=function(t){var n=this;if(!this.isValid())return"Invalid Date";var e=t||"YYYY-MM-DDTHH:mm:ssZ",r=D.z(this),i=this.$locale(),s=this.$H,u=this.$m,o=this.$M,a=i.weekdays,h=i.months,c=function(t,r,i,s){return t&&(t[r]||t(n,e))||i[r].substr(0,s)},d=function(t){return D.s(s%12||12,t,"0")},$=i.meridiem||function(t,n,e){var r=t<12?"AM":"PM";return e?r.toLowerCase():r},l={YY:String(this.$y).slice(-2),YYYY:this.$y,M:o+1,MM:D.s(o+1,2,"0"),MMM:c(i.monthsShort,o,h,3),MMMM:h[o]||h(this,e),D:this.$D,DD:D.s(this.$D,2,"0"),d:String(this.$W),dd:c(i.weekdaysMin,this.$W,a,2),ddd:c(i.weekdaysShort,this.$W,a,3),dddd:a[this.$W],H:String(s),HH:D.s(s,2,"0"),h:d(1),hh:d(2),a:$(s,u,!0),A:$(s,u,!1),m:String(u),mm:D.s(u,2,"0"),s:String(this.$s),ss:D.s(this.$s,2,"0"),SSS:D.s(this.$ms,3,"0"),Z:r};return e.replace(f,function(t,n){return n||l[t]||r.replace(":","")})},d.utcOffset=function(){return 15*-Math.round(this.$d.getTimezoneOffset()/15)},d.diff=function(t,h,f){var c,d=D.p(h),$=g(t),l=6e4*($.utcOffset()-this.utcOffset()),m=this-$,y=D.m(this,$);return y=(c={},c[a]=y/12,c[u]=y,c[o]=y/3,c[s]=(m-l)/6048e5,c[i]=(m-l)/864e5,c[r]=m/36e5,c[e]=m/6e4,c[n]=m/1e3,c)[d]||m,f?y:D.a(y)},d.daysInMonth=function(){return this.endOf(u).$D},d.$locale=function(){return m[this.$L]},d.locale=function(t,n){if(!t)return this.$L;var e=this.clone();return e.$L=M(t,n,!0),e},d.clone=function(){return D.w(this.toDate(),this)},d.toDate=function(){return new Date(this.$d)},d.toJSON=function(){return this.toISOString()},d.toISOString=function(){return this.$d.toISOString()},d.toString=function(){return this.$d.toUTCString()},c}();return g.prototype=v.prototype,g.extend=function(t,n){return t(n,v,g),g},g.locale=M,g.isDayjs=y,g.unix=function(t){return g(1e3*t)},g.en=m[l],g.Ls=m,g});
@@ -10059,32 +10039,7 @@ exports.getCompatibilityFallback = function () {
     }
   }
 };
-},{"../utilsCommon":"EjGt"}],"70rD":[function(require,module,exports) {
-
-},{}],"xqZa":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-/**
- * Styles are imported as strings via fs.readFileSync in order to include
- * them into a single bundle JS file, not simply copy to /dist folder
- *
- * SCSS files from widget/DefaultWidget/styles are transpiled into dist/styles
- */
-
-var fs = require('fs');
-
-exports.default = {
-  icons: "/* GLOBAL */\n/* CUSTOM */\n[class^=\"icon-\"], [class*=\" icon-\"] {\n  font-family: \"elixirchat-icons\" !important;\n  speak: none;\n  font-style: normal;\n  font-weight: normal;\n  font-variant: normal;\n  text-transform: none;\n  line-height: 1;\n  -webkit-font-smoothing: antialiased;\n  -moz-osx-font-smoothing: grayscale; }\n\n.icon-arrow-down:before {\n  content: \"\\e900\"; }\n\n.icon-close-thick:before {\n  content: \"\\e901\"; }\n\n.icon-close-thin:before {\n  content: \"\\e902\"; }\n\n.icon-file:before {\n  content: \"\\e903\"; }\n\n.icon-logo:before {\n  content: \"\\e904\"; }\n\n.icon-reply-left:before {\n  content: \"\\e905\"; }\n\n.icon-reply-right:before {\n  content: \"\\e906\"; }\n\n.icon-screenshot:before {\n  content: \"\\e907\"; }\n\n.icon-spinner-lg:before {\n  content: \"\\e908\"; }\n\n.icon-spinner-xs:before {\n  content: \"\\e909\"; }\n\n.icon-typing:before {\n  content: \"\\e90a\"; }\n",
-  Button: "/* GLOBAL */\n/* CUSTOM */\n/* GLOBAL */\n/* CUSTOM */\n@keyframes spinner {\n  to {\n    transform: rotate(360deg); } }\n\n.elixirchat-widget-button {\n  font-family: \"elixirchat-icons\";\n  position: fixed;\n  bottom: 30px;\n  right: 30px;\n  width: 60px;\n  height: 60px;\n  border: 0;\n  border-radius: 100%;\n  cursor: pointer;\n  background-color: #FF0066;\n  box-shadow: 0 0 25px rgba(0, 0, 0, 0.15);\n  outline: none;\n  z-index: 999999;\n  transition: background-color 200ms;\n  color: #ffffff;\n  /* TODO: replace w/ <i class\"icon...\"> element when button is rewritten as a React component */\n  /* TODO: replace w/ <i class\"icon...\"> element when button is rewritten as a React component */ }\n  .elixirchat-widget-button:hover {\n    background-color: #e0005a; }\n  .elixirchat-widget-button:after, .elixirchat-widget-button:before {\n    position: absolute;\n    width: 100%;\n    height: 100%;\n    top: 0;\n    left: 0;\n    transition: opacity 300ms;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    box-sizing: border-box; }\n  .elixirchat-widget-button:after {\n    content: \"\\e904\";\n    /* .icon-logo */\n    font-size: 28px;\n    padding-top: 5px;\n    -webkit-font-smoothing: antialiased;\n    -moz-osx-font-smoothing: grayscale; }\n  .elixirchat-widget-button:before {\n    content: \"\\e902\";\n    /* .icon-close-thin */\n    font-size: 21px;\n    opacity: 0; }\n  .elixirchat-widget-button--visible:after {\n    opacity: 0; }\n  .elixirchat-widget-button--visible:before {\n    opacity: 1; }\n  @media (min-width: 0px) and (max-width: 480px) {\n    .elixirchat-widget-button {\n      right: 20px;\n      bottom: 20px; } }\n\n.elixirchat-widget-button-counter {\n  font: 13px/20px Graphik, \"Helvetica Neue\", sans-serif;\n  display: none;\n  position: absolute;\n  padding: 0 5px;\n  min-width: 10px;\n  height: 20px;\n  text-align: center;\n  border-radius: 100%;\n  background: #FF0066;\n  color: #FFFFFF;\n  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.2);\n  z-index: 2;\n  right: 0;\n  top: 0; }\n  .elixirchat-widget-button-counter--has-unread {\n    display: block; }\n\n.elixirchat-widget-iframe {\n  border-radius: 8px;\n  background: #ffffff;\n  position: fixed;\n  max-height: 600px;\n  height: calc(100vh - 130px);\n  width: 380px;\n  bottom: 100px;\n  right: 30px;\n  border: 0;\n  box-shadow: 0 0 60px rgba(0, 0, 0, 0.15);\n  z-index: 999998;\n  transition: all 200ms;\n  opacity: 1;\n  transform: none;\n  transform-origin: bottom right;\n  display: none; }\n  .elixirchat-widget-iframe--opening {\n    opacity: 0;\n    transform: translateY(15px) scale(0.9); }\n  .elixirchat-widget-iframe--visible {\n    display: block; }\n  @media (min-width: 0px) and (max-width: 480px) {\n    .elixirchat-widget-iframe {\n      bottom: 0;\n      right: 0;\n      left: 0;\n      top: 0;\n      width: 100%;\n      height: 100%;\n      max-height: 100%;\n      z-index: 9999999;\n      border-radius: 0; } }\n\n.elixirchat-widget-image-preview {\n  position: fixed;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  top: 0;\n  z-index: 9999999;\n  background: rgba(0, 0, 0, 0.8);\n  overflow-y: auto;\n  overflow-x: hidden;\n  padding: 40px 50px 0 50px;\n  text-align: center;\n  display: none; }\n  .elixirchat-widget-image-preview--visible {\n    display: block; }\n\n.elixirchat-widget-image-preview__inner {\n  display: inline-block; }\n\n.elixirchat-widget-image-preview__img {\n  position: relative;\n  z-index: 2;\n  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);\n  margin-bottom: 40px; }\n  .elixirchat-widget-image-preview__img--loading {\n    display: none; }\n",
-  Chat: "/* GLOBAL */\n/* CUSTOM */\n/* GLOBAL */\n/* CUSTOM */\n@keyframes spinner {\n  to {\n    transform: rotate(360deg); } }\n\nbody {\n  margin: 0;\n  padding: 0; }\n\nbody,\ninput,\nbutton,\ntextarea {\n  font: 14px/18px Graphik, \"Helvetica Neue\", sans-serif;\n  outline: none;\n  color: #151319;\n  -webkit-font-smoothing: antialiased;\n  -moz-osx-font-smoothing: grayscale; }\n\n.elixirchat-chat-container {\n  position: absolute;\n  top: 0;\n  bottom: 0;\n  right: 0;\n  left: 0; }\n\n.elixirchat-chat-header {\n  margin: 0;\n  font-size: 16px;\n  height: 53px;\n  box-sizing: border-box;\n  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.15);\n  padding: 19px 0 0 30px;\n  position: fixed;\n  top: 0;\n  left: 0;\n  right: 0;\n  z-index: 2;\n  border-radius: 8px 8px 0 0;\n  background: #FFFFFF; }\n\n.elixirchat-chat-header__indicator {\n  display: inline-block;\n  width: 10px;\n  height: 10px;\n  border-radius: 100%;\n  background: #50C900;\n  vertical-align: middle;\n  margin-right: 8px;\n  margin-top: -2px; }\n\n.elixirchat-chat-header__close {\n  width: 53px;\n  height: 53px;\n  border: 0;\n  opacity: .25;\n  position: absolute;\n  top: 1px;\n  right: 0;\n  transition: opacity 200ms;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  font-size: 15px;\n  background: none; }\n  .elixirchat-chat-header__close:hover {\n    opacity: .4; }\n\n.elixirchat-chat-scroll {\n  position: fixed;\n  top: 53px;\n  left: 0;\n  right: 0;\n  bottom: 110px;\n  overflow-x: hidden;\n  overflow-y: auto;\n  padding: 20px 30px; }\n\n.elixirchat-chat-spinner {\n  position: fixed;\n  top: 50%;\n  margin: -45px 0 0 -45px;\n  left: 50%;\n  display: block;\n  width: 90px;\n  height: 90px;\n  border-radius: 100%;\n  border: 1px solid #E2E2E2;\n  animation: spinner 1s linear infinite; }\n  .elixirchat-chat-spinner:after {\n    content: '';\n    background: #FFFFFF;\n    width: 5px;\n    height: 30px;\n    position: absolute;\n    top: 50%;\n    margin: -15px 0 0 0;\n    left: -2px; }\n\n.elixirchat-chat-fatal-error {\n  position: fixed;\n  top: 50%;\n  transform: translateY(-50%);\n  left: 0;\n  right: 0;\n  display: block;\n  padding: 0 50px;\n  color: #999999;\n  line-height: 22px;\n  text-align: center; }\n  .elixirchat-chat-fatal-error--nowrap {\n    white-space: nowrap; }\n",
-  ChatMessages: "/* GLOBAL */\n/* CUSTOM */\n/* GLOBAL */\n/* CUSTOM */\n@keyframes spinner {\n  to {\n    transform: rotate(360deg); } }\n\n.elixirchat-chat-messages {\n  display: flex;\n  flex-direction: column;\n  align-items: flex-end; }\n\n.elixirchat-chat-messages__date-title {\n  text-transform: uppercase;\n  font-size: 12px;\n  font-weight: bold;\n  border-bottom: 1px solid #151319;\n  line-height: 21px;\n  margin-bottom: 15px;\n  width: 100%; }\n\n.elixirchat-chat-messages__item {\n  max-width: 80%;\n  min-width: 50%;\n  margin-bottom: 15px;\n  transition: background-color 500ms; }\n  .elixirchat-chat-messages__item--by-operator {\n    align-self: flex-start; }\n  .elixirchat-chat-messages__item--highlighted {\n    border: 4px solid red; }\n\n.elixirchat-chat-messages__sender {\n  color: #0033FF;\n  font-weight: bold;\n  padding-bottom: 1px; }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__sender {\n    color: #FFFFFF; }\n  .elixirchat-chat-messages__item--by-operator .elixirchat-chat-messages__sender {\n    color: #FF0066; }\n\n.elixirchat-chat-messages__balloon + .elixirchat-chat-messages__balloon {\n  margin-top: 10px; }\n\n.elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__balloon {\n  padding: 9px 10px 7px 10px;\n  border-radius: 3px;\n  background: #0033FF;\n  color: #FFFFFF; }\n\n.elixirchat-chat-messages__reply-message {\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  color: #999999;\n  margin: 2px 0 4px 0;\n  cursor: default; }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__reply-message {\n    color: rgba(255, 255, 255, 0.65); }\n\n.elixirchat-chat-messages__reply-message-icon {\n  margin-right: 7px;\n  opacity: .9;\n  vertical-align: text-bottom; }\n\n.elixirchat-chat-messages__text {\n  white-space: pre-wrap;\n  word-break: break-word; }\n  .elixirchat-chat-messages__text kbd {\n    font: 13px/17px Graphik, \"Helvetica Neue\", sans-serif;\n    background: rgba(0, 0, 0, 0.05);\n    border: 1px solid rgba(0, 0, 0, 0.1);\n    border-bottom-width: 2px;\n    border-radius: 2px;\n    padding: 1px 2px;\n    display: inline-block;\n    margin: 0 1px; }\n  .elixirchat-chat-messages__text a {\n    text-decoration: none;\n    outline: none; }\n  .elixirchat-chat-messages__item--by-operator .elixirchat-chat-messages__text a {\n    color: #0033FF; }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__text a {\n    text-decoration: underline; }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__text + .elixirchat-chat-files {\n    padding-top: 8px; }\n\n.elixirchat-chat-messages__bottom {\n  text-align: right;\n  color: #999999;\n  padding-top: 4px;\n  white-space: nowrap; }\n  .elixirchat-chat-messages__item--by-operator .elixirchat-chat-messages__bottom {\n    text-align: left; }\n\n.elixirchat-chat-messages__submission-error {\n  color: #FF0066;\n  cursor: pointer; }\n\n.elixirchat-chat-messages__reply-button {\n  margin-left: 10px;\n  cursor: default; }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__reply-button {\n    margin-left: 0;\n    margin-right: 10px; }\n\n.elixirchat-chat-files {\n  list-style: none;\n  padding: 6px 0 3px 0;\n  margin: 0; }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-files {\n    padding-top: 2px; }\n\n.elixirchat-chat-files__item {\n  display: flex;\n  line-height: 21px;\n  margin-top: 10px;\n  padding: 0;\n  cursor: default; }\n  .elixirchat-chat-files__item:first-child {\n    margin-top: 0; }\n  .elixirchat-chat-files__item:hover .elixirchat-chat-files__preview {\n    background-color: #efefef; }\n  .elixirchat-chat-files__item:hover .elixirchat-chat-files__preview-image:after {\n    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1); }\n\n.elixirchat-chat-files__preview {\n  width: 50px;\n  height: 50px;\n  flex-basis: 50px;\n  flex-shrink: 0;\n  border-radius: 3px;\n  background: #F4F4F4;\n  transition: all 200ms;\n  position: relative;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  color: #a6a6a6 !important; }\n\n.elixirchat-chat-files__preview-image {\n  background-size: cover; }\n  .elixirchat-chat-files__preview-image:after {\n    content: \"\";\n    position: absolute;\n    border-radius: 3px;\n    top: 0;\n    left: 0;\n    right: 0;\n    bottom: 0;\n    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);\n    pointer-events: none;\n    transition: all 200ms; }\n\n.elixirchat-chat-files__preview-submitting {\n  background-image: none;\n  display: flex;\n  align-items: center;\n  justify-content: center; }\n\n.elixirchat-chat-files__text {\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  padding: 6px 0 0 9px; }\n\n.elixirchat-chat-files__text-link {\n  margin-left: -15px;\n  padding-left: 15px; }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-files__text-link {\n    color: #FFFFFF; }\n\n.elixirchat-chat-files__text-secondary {\n  color: rgba(0, 0, 0, 0.25); }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-files__text-secondary {\n    color: rgba(255, 255, 255, 0.5); }\n\n.elixirchat-chat-messages__take-screenshot {\n  background: #FF0066;\n  color: #FFFFFF;\n  border: 0;\n  border-radius: 4px;\n  padding: 1px 11px 0 11px;\n  height: 31px;\n  line-height: 31px;\n  margin: 6px 0 3px 0;\n  transition: background-color 300ms; }\n  .elixirchat-chat-messages__take-screenshot:hover {\n    background: #e0005a; }\n\n.elixirchat-chat-files__preview-spinner {\n  display: block;\n  width: 22px;\n  height: 22px;\n  font-size: 22.4px;\n  animation: spinner 1s linear infinite; }\n\n.elixirchat-chat-images {\n  list-style: none;\n  padding: 0 0 0 0;\n  margin: 6px 0 2px 0; }\n\n.elixirchat-chat-images__item {\n  padding: 0;\n  margin-top: 6px; }\n  .elixirchat-chat-images__item:first-child {\n    margin-top: 2px; }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-images__item {\n    text-align: right; }\n\n.elixirchat-chat-images__link {\n  display: inline-block;\n  vertical-align: bottom;\n  position: relative; }\n  .elixirchat-chat-images__link:after {\n    content: \"\";\n    position: absolute;\n    border-radius: 3px;\n    top: 0;\n    left: 0;\n    right: 0;\n    bottom: 0;\n    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);\n    pointer-events: none; }\n\n.elixirchat-chat-images__img {\n  max-width: 256px;\n  max-height: 256px;\n  border-radius: 3px;\n  display: block; }\n\n.elixirchat-chat-images__item-not-found > img {\n  position: relative;\n  min-width: 180px;\n  pointer-events: none;\n  cursor: default; }\n  .elixirchat-chat-images__item-not-found > img:after {\n    content: \"(\" attr(alt) \")\";\n    color: rgba(0, 0, 0, 0.2);\n    display: block;\n    margin: 8px 0 0 20px;\n    white-space: nowrap;\n    overflow: hidden;\n    text-overflow: ellipsis;\n    position: absolute;\n    top: 50%;\n    transform: translateY(-50%);\n    width: calc(100% - 40px);\n    text-align: center; }\n  .elixirchat-chat-images__item-not-found > img:before {\n    content: attr(data-error-message);\n    color: rgba(0, 0, 0, 0.2);\n    position: absolute;\n    top: 0;\n    bottom: 0;\n    left: 0;\n    right: 0;\n    background: #fff;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    padding-bottom: 25px; }\n",
-  ChatTextarea: "/* GLOBAL */\n/* CUSTOM */\n.elixirchat-chat-textarea {\n  position: fixed;\n  bottom: 0;\n  left: 0;\n  right: 0;\n  background: #FFFFFF;\n  z-index: 3;\n  box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.15);\n  border-radius: 0 0 8px 8px; }\n\n.elixirchat-chat-typing {\n  position: absolute;\n  background: #FFFFFF;\n  color: #d5d5d5;\n  left: 0;\n  right: 0;\n  bottom: 100%;\n  font-weight: bold;\n  padding: 0 30px 18px 54px;\n  box-shadow: 0 -15px 15px 6px #FFFFFF, inset 0 -1px 0 rgba(0, 0, 0, 0.15); }\n\n.elixirchat-chat-typing__icon {\n  position: absolute;\n  left: 30px;\n  top: 3px;\n  font-size: 11px;\n  color: #d5d5d5;\n  z-index: 2; }\n\n.elixirchat-chat-textarea__reply-to {\n  color: #0033FF;\n  margin: 18px 0 -8px 30px;\n  position: relative;\n  z-index: 1; }\n\n.elixirchat-chat-textarea__reply-to-text {\n  display: inline-block;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 140px); }\n\n.elixirchat-chat-textarea__reply-to-icon {\n  margin-right: 4px;\n  vertical-align: text-top; }\n\n.elixirchat-chat-textarea__reply-to-remove {\n  vertical-align: text-top;\n  margin-left: 6px;\n  font-size: 11px;\n  line-height: 6px; }\n\n.elixirchat-chat-textarea__actions {\n  position: absolute;\n  right: 20px;\n  bottom: 20px;\n  z-index: 2;\n  transition: transform 200ms; }\n  .elixirchat-chat-textarea__actions--collapsed {\n    transform: translateY(9px); }\n\n.elixirchat-chat-textarea__actions-screenshot,\n.elixirchat-chat-textarea__actions-attach {\n  width: 38px;\n  height: 31px;\n  background: #FFFFFF;\n  border: 1px solid #d5d5d5;\n  border-radius: 7px;\n  position: relative;\n  margin-left: 10px;\n  display: inline-block;\n  vertical-align: top;\n  box-sizing: border-box;\n  overflow: hidden;\n  transition: background-color 200ms;\n  color: rgba(0, 0, 0, 0.32);\n  padding-top: 4px; }\n  .elixirchat-chat-textarea__actions-screenshot:hover,\n  .elixirchat-chat-textarea__actions-attach:hover {\n    background-color: #efefef; }\n\n.elixirchat-chat-textarea__actions-attach-input {\n  position: absolute;\n  z-index: 1;\n  opacity: 0; }\n\n.elixirchat-chat-textarea__actions-attach-label {\n  position: absolute;\n  z-index: 2;\n  left: 0;\n  right: 0;\n  top: 0;\n  bottom: 0;\n  padding-top: 8px;\n  text-align: center; }\n\n.elixirchat-chat-textarea__textarea {\n  border: 0;\n  position: relative;\n  left: 0;\n  top: 0;\n  bottom: 0;\n  right: 0;\n  padding: 17px 0 0 30px;\n  margin-bottom: 17px;\n  resize: none;\n  width: calc(100% - 120px); }\n\n.elixirchat-chat-attachment-list {\n  padding: 0;\n  margin: -2px 0 15px 30px;\n  list-style: none;\n  line-height: 22px;\n  color: #0033FF; }\n\n.elixirchat-chat-attachment-item {\n  margin: 0;\n  white-space: nowrap; }\n\n.elixirchat-chat-attachment-icon {\n  margin-right: 8px;\n  vertical-align: middle; }\n  .elixirchat-chat-attachment-icon.icon-screenshot {\n    font-size: 12px;\n    margin-left: -1px; }\n\n.elixirchat-chat-attachment-filename {\n  max-width: calc(100% - 165px);\n  display: inline-block;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  vertical-align: middle; }\n\n.elixirchat-chat-attachment-remove {\n  font-size: 11px;\n  margin-left: 7px;\n  vertical-align: middle; }\n",
-  ImagePreview: ""
-};
-},{"fs":"70rD"}],"17A3":[function(require,module,exports) {
+},{"../utilsCommon":"EjGt"}],"17A3":[function(require,module,exports) {
 "use strict";
 
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -10144,8 +10099,6 @@ var utilsCommon_1 = require("../../utilsCommon");
 var utilsWidget_1 = require("../../utilsWidget");
 
 var ScreenshotTaker_1 = require("../../sdk/ScreenshotTaker");
-
-var styles_1 = __importDefault(require("./styles"));
 
 var ChatMessages =
 /*#__PURE__*/
@@ -10228,61 +10181,16 @@ function (_react_1$Component) {
       };
     };
 
-    _this.onIframeBodyKeyup = function (e) {
-      var elixirChatWidget = _this.props.elixirChatWidget;
-
-      if (e.which === 27
-      /* Esc */
-      ) {
-          elixirChatWidget.closeImagePreview();
-        } else if (e.which === 37
-      /* Arrow left */
-      ) {
-          _this.onImagePreviewArrowNavigation(-1);
-        } else if (e.which === 39
-      /* Arrow right */
-      ) {
-          _this.onImagePreviewArrowNavigation(1);
-        }
-    };
-
     _this.onImagePreviewClick = function (e, preview) {
-      var elixirChatWidget = _this.props.elixirChatWidget;
+      var onImagePreviewOpen = _this.props.onImagePreviewOpen;
+      var imagePreviews = _this.state.imagePreviews;
 
       _this.setState({
         currentImagePreview: preview
       });
 
-      elixirChatWidget.openImagePreview(preview);
+      onImagePreviewOpen(preview, imagePreviews);
       e.preventDefault();
-    };
-
-    _this.onImagePreviewArrowNavigation = function (delta) {
-      var _this$state = _this.state,
-          imagePreviews = _this$state.imagePreviews,
-          currentImagePreview = _this$state.currentImagePreview;
-      var elixirChatWidget = _this.props.elixirChatWidget;
-
-      if (!elixirChatWidget.widgetImagePreviewIsVisible) {
-        return false;
-      }
-
-      var currentImagePreviewIndex = imagePreviews.map(function (preview) {
-        return preview.id;
-      }).indexOf(currentImagePreview.id);
-      var nextImagePreviewIndex = currentImagePreviewIndex + delta;
-
-      if (nextImagePreviewIndex < 0) {
-        nextImagePreviewIndex = imagePreviews.length - 1;
-      } else if (nextImagePreviewIndex >= imagePreviews.length) {
-        nextImagePreviewIndex = 0;
-      }
-
-      _this.setState({
-        currentImagePreview: imagePreviews[nextImagePreviewIndex]
-      });
-
-      elixirChatWidget.openImagePreview(imagePreviews[nextImagePreviewIndex]);
     };
 
     _this.shouldHideMessageBalloon = function (message) {
@@ -10336,13 +10244,9 @@ function (_react_1$Component) {
   _createClass(ChatMessages, [{
     key: "componentDidMount",
     value: function componentDidMount() {
-      var _this$props2 = this.props,
-          messages = _this$props2.messages,
-          elixirChatWidget = _this$props2.elixirChatWidget;
+      var messages = this.props.messages;
       dayjs_1.default.locale('ru');
       dayjs_1.default.extend(calendar_1.default);
-      elixirChatWidget.widgetChatIframe.contentDocument.addEventListener('keyup', this.onIframeBodyKeyup);
-      elixirChatWidget.injectIframeStyles(styles_1.default.ChatMessages);
       this.setProcessedMessages(messages);
       this.setState({
         screenshotFallback: ScreenshotTaker_1.getCompatibilityFallback()
@@ -10362,12 +10266,12 @@ function (_react_1$Component) {
     value: function render() {
       var _this2 = this;
 
-      var _this$state2 = this.state,
-          processedMessages = _this$state2.processedMessages,
-          screenshotFallback = _this$state2.screenshotFallback;
-      var _this$props3 = this.props,
-          onReplyMessage = _this$props3.onReplyMessage,
-          onSubmitRetry = _this$props3.onSubmitRetry;
+      var _this$state = this.state,
+          processedMessages = _this$state.processedMessages,
+          screenshotFallback = _this$state.screenshotFallback;
+      var _this$props2 = this.props,
+          onReplyMessage = _this$props2.onReplyMessage,
+          onSubmitRetry = _this$props2.onSubmitRetry;
       return react_1.default.createElement("div", {
         className: "elixirchat-chat-messages"
       }, processedMessages.map(function (message) {
@@ -10514,7 +10418,7 @@ function (_react_1$Component) {
 }(react_1.Component);
 
 exports.ChatMessages = ChatMessages;
-},{"react":"1n8/","classnames":"9qb7","dayjs":"3dZY","dayjs/plugin/calendar":"B5kD","dayjs/locale/ru":"7ZQM","react-autolink-text2":"7BCM","../../utilsCommon":"EjGt","../../utilsWidget":"4KO9","../../sdk/ScreenshotTaker":"CLsL","./styles":"xqZa"}],"SpjQ":[function(require,module,exports) {
+},{"react":"1n8/","classnames":"9qb7","dayjs":"3dZY","dayjs/plugin/calendar":"B5kD","dayjs/locale/ru":"7ZQM","react-autolink-text2":"7BCM","../../utilsCommon":"EjGt","../../utilsWidget":"4KO9","../../sdk/ScreenshotTaker":"CLsL"}],"SpjQ":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -11003,8 +10907,6 @@ var utilsWidget_1 = require("../../utilsWidget");
 
 var ScreenshotTaker_1 = require("../../sdk/ScreenshotTaker");
 
-var styles_1 = __importDefault(require("./styles"));
-
 var ChatTextarea =
 /*#__PURE__*/
 function (_react_1$Component) {
@@ -11234,7 +11136,6 @@ function (_react_1$Component) {
       var _this2 = this;
 
       var elixirChatWidget = this.props.elixirChatWidget;
-      elixirChatWidget.injectIframeStyles(styles_1.default.ChatTextarea);
       elixirChatWidget.onToggleChatVisibility(function (isOpen) {
         if (isOpen) {
           _this2.updateVerticalHeight({
@@ -11365,7 +11266,7 @@ function (_react_1$Component) {
 }(react_1.Component);
 
 exports.ChatTextarea = ChatTextarea;
-},{"react":"1n8/","classnames":"9qb7","react-textarea-autosize":"0Ldd","../../utilsCommon":"EjGt","../../utilsWidget":"4KO9","../../sdk/ScreenshotTaker":"CLsL","./styles":"xqZa"}],"8tJY":[function(require,module,exports) {
+},{"react":"1n8/","classnames":"9qb7","react-textarea-autosize":"0Ldd","../../utilsCommon":"EjGt","../../utilsWidget":"4KO9","../../sdk/ScreenshotTaker":"CLsL"}],"8tJY":[function(require,module,exports) {
 "use strict";
 
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -11429,8 +11330,6 @@ var utilsWidget_1 = require("../../utilsWidget");
 var ChatMessages_1 = require("./ChatMessages");
 
 var ChatTextarea_1 = require("./ChatTextarea");
-
-var styles_1 = __importDefault(require("./styles"));
 
 var Chat =
 /*#__PURE__*/
@@ -11799,7 +11698,6 @@ function (_react_1$Component) {
       var _this2 = this;
 
       var elixirChatWidget = this.props.elixirChatWidget;
-      elixirChatWidget.injectIframeStyles(styles_1.default.Chat);
       elixirChatWidget.onConnectSuccess(function () {
         elixirChatWidget.fetchMessageHistory(_this2.messageChunkSize).then(function (messages) {
           _this2.setState({
@@ -11810,7 +11708,7 @@ function (_react_1$Component) {
           _this2.scrollToBottom();
 
           _this2.updateUnseenRepliesToCurrentClient();
-        }).catch(function () {
+        }).catch(function (e) {
           _this2.setState({
             isLoading: false,
             isLoadingError: true
@@ -11863,7 +11761,9 @@ function (_react_1$Component) {
           currentlyTypingUsers = _this$state4.currentlyTypingUsers,
           isLoading = _this$state4.isLoading,
           isLoadingError = _this$state4.isLoadingError;
-      var elixirChatWidget = this.props.elixirChatWidget;
+      var _this$props = this.props,
+          elixirChatWidget = _this$props.elixirChatWidget,
+          onImagePreviewOpen = _this$props.onImagePreviewOpen;
       return react_1.default.createElement("div", {
         className: "elixirchat-chat-container",
         ref: this.container
@@ -11890,6 +11790,7 @@ function (_react_1$Component) {
       }, react_1.default.createElement(ChatMessages_1.ChatMessages, {
         onLoadPreviousMessages: this.loadPreviousMessages,
         onScreenshotRequestFulfilled: this.onScreenshotRequestFulfilled,
+        onImagePreviewOpen: onImagePreviewOpen,
         onReplyMessage: this.onReplyMessage,
         onSubmitRetry: this.onSubmitRetry,
         elixirChatWidget: elixirChatWidget,
@@ -11925,7 +11826,389 @@ function appendWidgetIframeContent(container, elixirChatWidget) {
 }
 
 exports.appendWidgetIframeContent = appendWidgetIframeContent;
-},{"react":"1n8/","react-dom":"NKHc","../../utilsCommon":"EjGt","../../utilsWidget":"4KO9","./ChatMessages":"17A3","./ChatTextarea":"Bm76","./styles":"xqZa"}],"GpM8":[function(require,module,exports) {
+},{"react":"1n8/","react-dom":"NKHc","../../utilsCommon":"EjGt","../../utilsWidget":"4KO9","./ChatMessages":"17A3","./ChatTextarea":"Bm76"}],"o2QW":[function(require,module,exports) {
+"use strict";
+
+function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+var __importStar = this && this.__importStar || function (mod) {
+  if (mod && mod.__esModule) return mod;
+  var result = {};
+  if (mod != null) for (var k in mod) {
+    if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+  }
+  result["default"] = mod;
+  return result;
+};
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var react_1 = __importStar(require("react"));
+
+var react_dom_1 = require("react-dom");
+
+var FrameWrapper =
+/*#__PURE__*/
+function (_react_1$Component) {
+  _inherits(FrameWrapper, _react_1$Component);
+
+  function FrameWrapper() {
+    var _this;
+
+    _classCallCheck(this, FrameWrapper);
+
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(FrameWrapper).apply(this, arguments));
+    _this.iframeContentContainer = null;
+    _this.iframe = react_1.default.createRef();
+    _this.state = {
+      isIframeReady: false
+    };
+
+    _this.onIframeReady = function () {
+      return new Promise(function (resolve) {
+        var iframeElement = _this.iframe.current;
+        var iframeDocument = iframeElement.contentWindow.document;
+
+        if (iframeDocument.readyState === 'complete') {
+          resolve(iframeDocument);
+        } else {
+          iframeElement.addEventListener('load', function (e) {
+            iframeElement = e.target;
+            iframeDocument = e.target.contentWindow.document;
+            resolve(iframeDocument);
+          });
+        }
+      });
+    };
+
+    return _this;
+  }
+
+  _createClass(FrameWrapper, [{
+    key: "componentDidMount",
+    value: function componentDidMount() {
+      var _this2 = this;
+
+      var onFrameReady = this.props.onFrameReady;
+      this.onIframeReady().then(function (iframeDocument) {
+        _this2.iframeContentContainer = iframeDocument.createElement('main');
+        iframeDocument.body.appendChild(_this2.iframeContentContainer);
+
+        _this2.setState({
+          isIframeReady: true
+        });
+
+        onFrameReady(iframeDocument);
+      });
+    }
+  }, {
+    key: "render",
+    value: function render() {
+      var _this$props = this.props,
+          children = _this$props.children,
+          className = _this$props.className;
+      var isIframeReady = this.state.isIframeReady;
+      return react_1.default.createElement("iframe", {
+        className: className,
+        ref: this.iframe
+      }, isIframeReady && react_dom_1.createPortal(react_1.default.Children.only(children), this.iframeContentContainer));
+    }
+  }]);
+
+  return FrameWrapper;
+}(react_1.Component);
+
+exports.FrameWrapper = FrameWrapper;
+},{"react":"1n8/","react-dom":"NKHc"}],"3Xfh":[function(require,module,exports) {
+"use strict";
+
+function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+var __importStar = this && this.__importStar || function (mod) {
+  if (mod && mod.__esModule) return mod;
+  var result = {};
+  if (mod != null) for (var k in mod) {
+    if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+  }
+  result["default"] = mod;
+  return result;
+};
+
+var __importDefault = this && this.__importDefault || function (mod) {
+  return mod && mod.__esModule ? mod : {
+    "default": mod
+  };
+};
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var react_1 = __importStar(require("react"));
+
+var classnames_1 = __importDefault(require("classnames"));
+
+var ImagePreview =
+/*#__PURE__*/
+function (_react_1$Component) {
+  _inherits(ImagePreview, _react_1$Component);
+
+  function ImagePreview() {
+    var _this;
+
+    _classCallCheck(this, ImagePreview);
+
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(ImagePreview).apply(this, arguments));
+    _this.state = {
+      currentPreview: {},
+      displaySize: {
+        width: 0,
+        height: 0
+      },
+      marginTop: 0,
+      isVisible: false,
+      isLoading: false
+    };
+    _this.previewHorizontalPaddings = 100;
+    _this.previewVerticalPaddings = 120;
+
+    _this.setPreview = function (preview) {
+      var width = preview.width,
+          height = preview.height,
+          url = preview.url;
+
+      if (preview && url && width && height) {
+        var displaySize = _this.calculateImagePreviewSize(width, height);
+
+        var marginTop = _this.calculateImagePreviewTopMargin(displaySize.height);
+
+        _this.setState({
+          currentPreview: preview,
+          displaySize: displaySize,
+          marginTop: marginTop,
+          isVisible: true,
+          isLoading: true
+        });
+      } else {
+        _this.setState({
+          currentPreview: {},
+          displaySize: {
+            width: 0,
+            height: 0
+          },
+          marginTop: 0,
+          isVisible: false,
+          isLoading: false
+        });
+      }
+    };
+
+    _this.calculateImagePreviewSize = function (imageNativeWidth, imageNativeHeight) {
+      var maxImageWidth = window.innerWidth - _this.previewHorizontalPaddings; // window viewport width minus horizontal paddings
+
+      var width = imageNativeWidth;
+      var height = imageNativeHeight;
+
+      if (imageNativeWidth > maxImageWidth) {
+        var ratio = maxImageWidth / imageNativeWidth;
+        width = maxImageWidth;
+        height = Math.round(imageNativeHeight * ratio);
+      }
+
+      return {
+        width: width,
+        height: height
+      };
+    };
+
+    _this.calculateImagePreviewTopMargin = function (imageDisplayHeight) {
+      var availableVerticalSpace = window.innerHeight - _this.previewVerticalPaddings;
+
+      if (availableVerticalSpace < imageDisplayHeight) {
+        return 0;
+      } else {
+        return (availableVerticalSpace - imageDisplayHeight) / 2;
+      }
+    };
+
+    _this.onIframeBodyKeyup = function (e) {
+      if (e.which === 27
+      /* Esc */
+      ) {
+          _this.onClose();
+        } else if (e.which === 37
+      /* Arrow left */
+      ) {
+          _this.onArrowNavigation(-1);
+        } else if (e.which === 39
+      /* Arrow right */
+      ) {
+          _this.onArrowNavigation(1);
+        }
+    };
+
+    _this.onArrowNavigation = function (delta) {
+      var gallery = _this.props.gallery;
+      var _this$state = _this.state,
+          isVisible = _this$state.isVisible,
+          currentPreview = _this$state.currentPreview;
+
+      if (!isVisible) {
+        return false;
+      }
+
+      var currentPreviewIndex = gallery.map(function (image) {
+        return image.id;
+      }).indexOf(currentPreview.id);
+      var nextPreviewIndex = currentPreviewIndex + delta;
+
+      if (nextPreviewIndex < 0) {
+        nextPreviewIndex = gallery.length - 1;
+      } else if (nextPreviewIndex >= gallery.length) {
+        nextPreviewIndex = 0;
+      }
+
+      _this.setPreview(gallery[nextPreviewIndex]);
+    };
+
+    _this.onClose = function () {
+      var onClose = _this.props.onClose;
+
+      _this.setState({
+        isVisible: false
+      });
+
+      onClose();
+    };
+
+    _this.onImageLoad = function () {
+      _this.setState({
+        isLoading: false
+      });
+    };
+
+    return _this;
+  }
+
+  _createClass(ImagePreview, [{
+    key: "componentDidMount",
+    value: function componentDidMount() {
+      var elixirChatWidget = this.props.elixirChatWidget;
+      elixirChatWidget.widgetIFrameDocument.body.addEventListener('keyup', this.onIframeBodyKeyup);
+    }
+  }, {
+    key: "componentWillUnmount",
+    value: function componentWillUnmount() {
+      var elixirChatWidget = this.props.elixirChatWidget;
+      elixirChatWidget.widgetIFrameDocument.body.removeEventListener('keyup', this.onIframeBodyKeyup);
+    }
+  }, {
+    key: "componentDidUpdate",
+    value: function componentDidUpdate(prevProps) {
+      var preview = this.props.preview;
+
+      if (prevProps.preview.url !== preview.url) {
+        this.setPreview(preview);
+      }
+    }
+  }, {
+    key: "render",
+    value: function render() {
+      var _this$state2 = this.state,
+          currentPreview = _this$state2.currentPreview,
+          displaySize = _this$state2.displaySize,
+          marginTop = _this$state2.marginTop,
+          isLoading = _this$state2.isLoading,
+          isVisible = _this$state2.isVisible;
+      return react_1.default.createElement("div", {
+        className: classnames_1.default({
+          'elixirchat-widget-image-preview': true,
+          'elixirchat-widget-image-preview--visible': isVisible
+        }),
+        onClick: this.onClose
+      }, react_1.default.createElement("div", {
+        className: "elixirchat-widget-image-preview__inner"
+      }, currentPreview.url && react_1.default.createElement("img", {
+        className: classnames_1.default({
+          'elixirchat-widget-image-preview__img': true,
+          'elixirchat-widget-image-preview__img--loading': isLoading
+        }),
+        onLoad: this.onImageLoad,
+        style: {
+          marginTop: marginTop
+        },
+        width: displaySize.width,
+        height: displaySize.height,
+        src: currentPreview.url,
+        alt: currentPreview.name
+      })));
+    }
+  }]);
+
+  return ImagePreview;
+}(react_1.Component);
+
+exports.ImagePreview = ImagePreview;
+},{"react":"1n8/","classnames":"9qb7"}],"70rD":[function(require,module,exports) {
+
+},{}],"xqZa":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+/**
+ * Styles are imported as strings via fs.readFileSync in order to include
+ * them into a single bundle JS file, not simply copy to /dist folder
+ *
+ * SCSS files from widget/DefaultWidget/styles are transpiled into dist/styles
+ */
+
+var fs = require('fs');
+
+exports.default = {
+  icons: "/* GLOBAL */\n/* CUSTOM */\n[class^=\"icon-\"], [class*=\" icon-\"] {\n  font-family: \"elixirchat-icons\" !important;\n  speak: none;\n  font-style: normal;\n  font-weight: normal;\n  font-variant: normal;\n  text-transform: none;\n  line-height: 1;\n  -webkit-font-smoothing: antialiased;\n  -moz-osx-font-smoothing: grayscale; }\n\n.icon-arrow-down:before {\n  content: \"\\e900\"; }\n\n.icon-close-thick:before {\n  content: \"\\e901\"; }\n\n.icon-close-thin:before {\n  content: \"\\e902\"; }\n\n.icon-file:before {\n  content: \"\\e903\"; }\n\n.icon-logo:before {\n  content: \"\\e904\"; }\n\n.icon-reply-left:before {\n  content: \"\\e905\"; }\n\n.icon-reply-right:before {\n  content: \"\\e906\"; }\n\n.icon-screenshot:before {\n  content: \"\\e907\"; }\n\n.icon-spinner-lg:before {\n  content: \"\\e908\"; }\n\n.icon-spinner-xs:before {\n  content: \"\\e909\"; }\n\n.icon-typing:before {\n  content: \"\\e90a\"; }\n",
+  Widget: "/* GLOBAL */\n/* CUSTOM */\n/* GLOBAL */\n/* CUSTOM */\n@keyframes spinner {\n  to {\n    transform: rotate(360deg); } }\n\n.elixirchat-widget-button {\n  font-family: \"elixirchat-icons\";\n  position: fixed;\n  bottom: 30px;\n  right: 30px;\n  width: 60px;\n  height: 60px;\n  border: 0;\n  border-radius: 100%;\n  cursor: pointer;\n  background-color: #FF0066;\n  box-shadow: 0 0 25px rgba(0, 0, 0, 0.15);\n  outline: none;\n  z-index: 999999;\n  transition: background-color 200ms;\n  color: #ffffff;\n  /* TODO: replace w/ <i class\"icon...\"> element when button is rewritten as a React component */\n  /* TODO: replace w/ <i class\"icon...\"> element when button is rewritten as a React component */ }\n  .elixirchat-widget-button:hover {\n    background-color: #e0005a; }\n  .elixirchat-widget-button:after, .elixirchat-widget-button:before {\n    position: absolute;\n    width: 100%;\n    height: 100%;\n    top: 0;\n    left: 0;\n    transition: opacity 300ms;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    box-sizing: border-box; }\n  .elixirchat-widget-button:after {\n    content: \"\\e904\";\n    /* .icon-logo */\n    font-size: 28px;\n    padding-top: 5px;\n    -webkit-font-smoothing: antialiased;\n    -moz-osx-font-smoothing: grayscale; }\n  .elixirchat-widget-button:before {\n    content: \"\\e902\";\n    /* .icon-close-thin */\n    font-size: 21px;\n    opacity: 0; }\n  .elixirchat-widget-button--visible:after {\n    opacity: 0; }\n  .elixirchat-widget-button--visible:before {\n    opacity: 1; }\n  @media (min-width: 0px) and (max-width: 480px) {\n    .elixirchat-widget-button {\n      right: 20px;\n      bottom: 20px; } }\n\n.elixirchat-widget-button-counter {\n  font: 13px/20px Graphik, \"Helvetica Neue\", sans-serif;\n  display: none;\n  position: absolute;\n  padding: 1px 5px 0 5px;\n  min-width: 10px;\n  height: 20px;\n  text-align: center;\n  border-radius: 20px;\n  background: #FF0066;\n  color: #FFFFFF;\n  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.2);\n  z-index: 2;\n  right: 0;\n  top: 0; }\n  .elixirchat-widget-button-counter--has-unread {\n    display: block; }\n\n.elixirchat-widget-iframe {\n  border-radius: 8px;\n  background: #ffffff;\n  position: fixed;\n  max-height: 600px;\n  height: calc(100vh - 130px);\n  width: 380px;\n  bottom: 100px;\n  right: 30px;\n  border: 0;\n  box-shadow: 0 0 60px rgba(0, 0, 0, 0.15);\n  z-index: 999998;\n  transition: all 200ms;\n  opacity: 1;\n  transform: none;\n  transform-origin: bottom right;\n  display: none; }\n  .elixirchat-widget-iframe--opening {\n    opacity: 0;\n    transform: translateY(15px) scale(0.9); }\n  .elixirchat-widget-iframe--visible {\n    display: block; }\n  @media (min-width: 0px) and (max-width: 480px) {\n    .elixirchat-widget-iframe {\n      bottom: 0;\n      right: 0;\n      left: 0;\n      top: 0;\n      width: 100%;\n      height: 100%;\n      max-height: 100%;\n      z-index: 9999999;\n      border-radius: 0; } }\n\n.elixirchat-widget-image-preview {\n  position: fixed;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  top: 0;\n  z-index: 9999999;\n  background: rgba(0, 0, 0, 0.8);\n  overflow-y: auto;\n  overflow-x: hidden;\n  padding: 40px 50px 0 50px;\n  text-align: center;\n  display: none; }\n  .elixirchat-widget-image-preview--visible {\n    display: block; }\n\n.elixirchat-widget-image-preview__inner {\n  display: inline-block; }\n\n.elixirchat-widget-image-preview__img {\n  position: relative;\n  z-index: 2;\n  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);\n  margin-bottom: 40px; }\n  .elixirchat-widget-image-preview__img--loading {\n    display: none; }\n",
+  Chat: "/* GLOBAL */\n/* CUSTOM */\n/* GLOBAL */\n/* CUSTOM */\n@keyframes spinner {\n  to {\n    transform: rotate(360deg); } }\n\nbody {\n  margin: 0;\n  padding: 0; }\n\nbody,\ninput,\nbutton,\ntextarea {\n  font: 14px/18px Graphik, \"Helvetica Neue\", sans-serif;\n  outline: none;\n  color: #151319;\n  -webkit-font-smoothing: antialiased;\n  -moz-osx-font-smoothing: grayscale; }\n\n.elixirchat-chat-container {\n  position: absolute;\n  top: 0;\n  bottom: 0;\n  right: 0;\n  left: 0; }\n\n.elixirchat-chat-header {\n  margin: 0;\n  font-size: 16px;\n  height: 53px;\n  box-sizing: border-box;\n  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.15);\n  padding: 19px 0 0 30px;\n  position: fixed;\n  top: 0;\n  left: 0;\n  right: 0;\n  z-index: 2;\n  border-radius: 8px 8px 0 0;\n  background: #FFFFFF; }\n\n.elixirchat-chat-header__indicator {\n  display: inline-block;\n  width: 10px;\n  height: 10px;\n  border-radius: 100%;\n  background: #50C900;\n  vertical-align: middle;\n  margin-right: 8px;\n  margin-top: -2px; }\n\n.elixirchat-chat-header__close {\n  width: 53px;\n  height: 53px;\n  border: 0;\n  opacity: .25;\n  position: absolute;\n  top: 1px;\n  right: 0;\n  transition: opacity 200ms;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  font-size: 15px;\n  background: none; }\n  .elixirchat-chat-header__close:hover {\n    opacity: .4; }\n\n.elixirchat-chat-scroll {\n  position: fixed;\n  top: 53px;\n  left: 0;\n  right: 0;\n  bottom: 110px;\n  overflow-x: hidden;\n  overflow-y: auto;\n  padding: 20px 30px; }\n\n.elixirchat-chat-spinner {\n  position: fixed;\n  top: 50%;\n  margin: -45px 0 0 -45px;\n  left: 50%;\n  display: block;\n  width: 90px;\n  height: 90px;\n  border-radius: 100%;\n  border: 1px solid #E2E2E2;\n  animation: spinner 1s linear infinite; }\n  .elixirchat-chat-spinner:after {\n    content: '';\n    background: #FFFFFF;\n    width: 5px;\n    height: 30px;\n    position: absolute;\n    top: 50%;\n    margin: -15px 0 0 0;\n    left: -2px; }\n\n.elixirchat-chat-fatal-error {\n  position: fixed;\n  top: 50%;\n  transform: translateY(-50%);\n  left: 0;\n  right: 0;\n  display: block;\n  padding: 0 50px;\n  color: #999999;\n  line-height: 22px;\n  text-align: center; }\n  .elixirchat-chat-fatal-error--nowrap {\n    white-space: nowrap; }\n",
+  ChatMessages: "/* GLOBAL */\n/* CUSTOM */\n/* GLOBAL */\n/* CUSTOM */\n@keyframes spinner {\n  to {\n    transform: rotate(360deg); } }\n\n.elixirchat-chat-messages {\n  display: flex;\n  flex-direction: column;\n  align-items: flex-end; }\n  .elixirchat-chat-messages a {\n    text-decoration: none;\n    outline: none; }\n\n.elixirchat-chat-messages__date-title {\n  text-transform: uppercase;\n  font-size: 12px;\n  font-weight: bold;\n  border-bottom: 1px solid #151319;\n  line-height: 21px;\n  margin-bottom: 15px;\n  width: 100%; }\n\n.elixirchat-chat-messages__item {\n  max-width: 80%;\n  min-width: 50%;\n  margin-bottom: 15px;\n  transition: background-color 500ms; }\n  .elixirchat-chat-messages__item--by-operator {\n    align-self: flex-start; }\n  .elixirchat-chat-messages__item--highlighted {\n    border: 4px solid red; }\n\n.elixirchat-chat-messages__sender {\n  color: #0033FF;\n  font-weight: bold;\n  padding-bottom: 1px; }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__sender {\n    color: #FFFFFF; }\n  .elixirchat-chat-messages__item--by-operator .elixirchat-chat-messages__sender {\n    color: #FF0066; }\n\n.elixirchat-chat-messages__balloon + .elixirchat-chat-messages__balloon {\n  margin-top: 10px; }\n\n.elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__balloon {\n  padding: 9px 10px 7px 10px;\n  border-radius: 3px;\n  background: #0033FF;\n  color: #FFFFFF; }\n\n.elixirchat-chat-messages__reply-message {\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  color: #999999;\n  margin: 2px 0 4px 0;\n  cursor: default; }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__reply-message {\n    color: rgba(255, 255, 255, 0.65); }\n\n.elixirchat-chat-messages__reply-message-icon {\n  margin-right: 7px;\n  opacity: .9;\n  vertical-align: text-bottom; }\n\n.elixirchat-chat-messages__text {\n  white-space: pre-wrap;\n  word-break: break-word; }\n  .elixirchat-chat-messages__text kbd {\n    font: 13px/17px Graphik, \"Helvetica Neue\", sans-serif;\n    background: rgba(0, 0, 0, 0.05);\n    border: 1px solid rgba(0, 0, 0, 0.1);\n    border-bottom-width: 2px;\n    border-radius: 2px;\n    padding: 1px 2px;\n    display: inline-block;\n    margin: 0 1px; }\n  .elixirchat-chat-messages__item--by-operator .elixirchat-chat-messages__text a {\n    color: #0033FF; }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__text a {\n    color: #FFFFFF;\n    text-decoration: underline; }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__text + .elixirchat-chat-files {\n    padding-top: 8px; }\n\n.elixirchat-chat-messages__bottom {\n  text-align: right;\n  color: #999999;\n  padding-top: 4px;\n  white-space: nowrap; }\n  .elixirchat-chat-messages__item--by-operator .elixirchat-chat-messages__bottom {\n    text-align: left; }\n\n.elixirchat-chat-messages__submission-error {\n  color: #FF0066;\n  cursor: pointer; }\n\n.elixirchat-chat-messages__reply-button {\n  margin-left: 10px;\n  cursor: default; }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__reply-button {\n    margin-left: 0;\n    margin-right: 10px; }\n\n.elixirchat-chat-files {\n  list-style: none;\n  padding: 6px 0 3px 0;\n  margin: 0; }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-files {\n    padding-top: 2px; }\n\n.elixirchat-chat-files__item {\n  display: flex;\n  line-height: 21px;\n  margin-top: 10px;\n  padding: 0;\n  cursor: default; }\n  .elixirchat-chat-files__item:first-child {\n    margin-top: 0; }\n  .elixirchat-chat-files__item:hover .elixirchat-chat-files__preview {\n    background-color: #efefef; }\n  .elixirchat-chat-files__item:hover .elixirchat-chat-files__preview-image:after {\n    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1); }\n\n.elixirchat-chat-files__preview {\n  width: 50px;\n  height: 50px;\n  flex-basis: 50px;\n  flex-shrink: 0;\n  border-radius: 3px;\n  background: #F4F4F4;\n  transition: all 200ms;\n  position: relative;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  color: #a6a6a6 !important; }\n\n.elixirchat-chat-files__preview-image {\n  background-size: cover; }\n  .elixirchat-chat-files__preview-image:after {\n    content: \"\";\n    position: absolute;\n    border-radius: 3px;\n    top: 0;\n    left: 0;\n    right: 0;\n    bottom: 0;\n    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);\n    pointer-events: none;\n    transition: all 200ms; }\n\n.elixirchat-chat-files__preview-submitting {\n  background-image: none;\n  display: flex;\n  align-items: center;\n  justify-content: center; }\n\n.elixirchat-chat-files__text {\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  padding: 6px 0 0 9px; }\n\n.elixirchat-chat-files__text-link {\n  margin-left: -15px;\n  padding-left: 15px; }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-files__text-link {\n    color: #FFFFFF; }\n\n.elixirchat-chat-files__text-secondary {\n  color: rgba(0, 0, 0, 0.25); }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-files__text-secondary {\n    color: rgba(255, 255, 255, 0.5); }\n\n.elixirchat-chat-messages__take-screenshot {\n  background: #FF0066;\n  color: #FFFFFF;\n  border: 0;\n  border-radius: 4px;\n  padding: 1px 11px 0 11px;\n  height: 31px;\n  line-height: 31px;\n  margin: 6px 0 3px 0;\n  transition: background-color 300ms; }\n  .elixirchat-chat-messages__take-screenshot:hover {\n    background: #e0005a; }\n\n.elixirchat-chat-files__preview-spinner {\n  display: block;\n  width: 22px;\n  height: 22px;\n  font-size: 22.4px;\n  animation: spinner 1s linear infinite; }\n\n.elixirchat-chat-images {\n  list-style: none;\n  padding: 0 0 0 0;\n  margin: 6px 0 2px 0; }\n\n.elixirchat-chat-images__item {\n  padding: 0;\n  margin-top: 6px; }\n  .elixirchat-chat-images__item:first-child {\n    margin-top: 2px; }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-images__item {\n    text-align: right; }\n\n.elixirchat-chat-images__link {\n  display: inline-block;\n  vertical-align: bottom;\n  position: relative; }\n  .elixirchat-chat-images__link:after {\n    content: \"\";\n    position: absolute;\n    border-radius: 3px;\n    top: 0;\n    left: 0;\n    right: 0;\n    bottom: 0;\n    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);\n    pointer-events: none; }\n\n.elixirchat-chat-images__img {\n  max-width: 256px;\n  max-height: 256px;\n  border-radius: 3px;\n  display: block; }\n\n.elixirchat-chat-images__item-not-found > img {\n  position: relative;\n  min-width: 180px;\n  pointer-events: none;\n  cursor: default; }\n  .elixirchat-chat-images__item-not-found > img:after {\n    content: \"(\" attr(alt) \")\";\n    color: rgba(0, 0, 0, 0.2);\n    display: block;\n    margin: 8px 0 0 20px;\n    white-space: nowrap;\n    overflow: hidden;\n    text-overflow: ellipsis;\n    position: absolute;\n    top: 50%;\n    transform: translateY(-50%);\n    width: calc(100% - 40px);\n    text-align: center; }\n  .elixirchat-chat-images__item-not-found > img:before {\n    content: attr(data-error-message);\n    color: rgba(0, 0, 0, 0.2);\n    position: absolute;\n    top: 0;\n    bottom: 0;\n    left: 0;\n    right: 0;\n    background: #fff;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    padding-bottom: 25px; }\n",
+  ChatTextarea: "/* GLOBAL */\n/* CUSTOM */\n.elixirchat-chat-textarea {\n  position: fixed;\n  bottom: 0;\n  left: 0;\n  right: 0;\n  background: #FFFFFF;\n  z-index: 3;\n  box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.15);\n  border-radius: 0 0 8px 8px; }\n\n.elixirchat-chat-typing {\n  position: absolute;\n  background: #FFFFFF;\n  color: #d5d5d5;\n  left: 0;\n  right: 0;\n  bottom: 100%;\n  font-weight: bold;\n  padding: 0 30px 18px 54px;\n  box-shadow: 0 -15px 15px 6px #FFFFFF, inset 0 -1px 0 rgba(0, 0, 0, 0.15); }\n\n.elixirchat-chat-typing__icon {\n  position: absolute;\n  left: 30px;\n  top: 3px;\n  font-size: 11px;\n  color: #d5d5d5;\n  z-index: 2; }\n\n.elixirchat-chat-textarea__reply-to {\n  color: #0033FF;\n  margin: 18px 0 -8px 30px;\n  position: relative;\n  z-index: 1; }\n\n.elixirchat-chat-textarea__reply-to-text {\n  display: inline-block;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 140px); }\n\n.elixirchat-chat-textarea__reply-to-icon {\n  margin-right: 4px;\n  vertical-align: text-top; }\n\n.elixirchat-chat-textarea__reply-to-remove {\n  vertical-align: text-top;\n  margin-left: 6px;\n  font-size: 11px;\n  line-height: 6px; }\n\n.elixirchat-chat-textarea__actions {\n  position: absolute;\n  right: 20px;\n  bottom: 20px;\n  z-index: 2;\n  transition: transform 200ms; }\n  .elixirchat-chat-textarea__actions--collapsed {\n    transform: translateY(9px); }\n\n.elixirchat-chat-textarea__actions-screenshot,\n.elixirchat-chat-textarea__actions-attach {\n  width: 38px;\n  height: 31px;\n  background: #FFFFFF;\n  border: 1px solid #d5d5d5;\n  border-radius: 7px;\n  position: relative;\n  margin-left: 10px;\n  display: inline-block;\n  vertical-align: top;\n  box-sizing: border-box;\n  overflow: hidden;\n  transition: background-color 200ms;\n  color: rgba(0, 0, 0, 0.32);\n  padding-top: 4px; }\n  .elixirchat-chat-textarea__actions-screenshot:hover,\n  .elixirchat-chat-textarea__actions-attach:hover {\n    background-color: #efefef; }\n\n.elixirchat-chat-textarea__actions-attach-input {\n  position: absolute;\n  z-index: 1;\n  opacity: 0; }\n\n.elixirchat-chat-textarea__actions-attach-label {\n  position: absolute;\n  z-index: 2;\n  left: 0;\n  right: 0;\n  top: 0;\n  bottom: 0;\n  padding-top: 8px;\n  text-align: center; }\n\n.elixirchat-chat-textarea__textarea {\n  border: 0;\n  position: relative;\n  left: 0;\n  top: 0;\n  bottom: 0;\n  right: 0;\n  padding: 17px 0 0 30px;\n  margin-bottom: 17px;\n  resize: none;\n  width: calc(100% - 120px); }\n\n.elixirchat-chat-attachment-list {\n  padding: 0;\n  margin: -2px 0 15px 30px;\n  list-style: none;\n  line-height: 22px;\n  color: #0033FF; }\n\n.elixirchat-chat-attachment-item {\n  margin: 0;\n  white-space: nowrap; }\n\n.elixirchat-chat-attachment-icon {\n  margin-right: 8px;\n  vertical-align: middle; }\n  .elixirchat-chat-attachment-icon.icon-screenshot {\n    font-size: 12px;\n    margin-left: -1px; }\n\n.elixirchat-chat-attachment-filename {\n  max-width: calc(100% - 165px);\n  display: inline-block;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  vertical-align: middle; }\n\n.elixirchat-chat-attachment-remove {\n  font-size: 11px;\n  margin-left: 7px;\n  vertical-align: middle; }\n",
+  ImagePreview: ""
+};
+},{"fs":"70rD"}],"GpM8":[function(require,module,exports) {
 "use strict";
 /**
  * Styles are imported as base64-strings via fs.readFileSync() in order to include
@@ -11946,14 +12229,10 @@ exports.default = {
   fontElixirchatIcons: woffDataUrlPrefix + "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",
   notificationSound: mp3DataUrlPrefix + "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VVVVVVVVVVVVVVVMQU1FMy45OS41VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/+1LE0wPMVUr9oIxh6AAANIAAAARVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUxBTUUzLjk5LjVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/7UsShg8AAAaQAAAAgAAA0gAAABFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMuOTkuNVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//tSxKGDwAABpAAAACAAADSAAAAEVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVMQU1FMy45OS41VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/+1LEoYPAAAGkAAAAIAAANIAAAARVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUxBTUUzLjk5LjVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/7UsShg8AAAaQAAAAgAAA0gAAABFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMuOTkuNVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//tSxKGDwAABpAAAACAAADSAAAAEVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVMQU1FMy45OS41VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/+1LEoYPAAAGkAAAAIAAANIAAAARVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUxBTUUzLjk5LjVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/7UsShg8AAAaQAAAAgAAA0gAAABFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//tSxKGDwAABpAAAACAAADSAAAAEVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVU="
 };
-},{"fs":"70rD"}],"Nvy6":[function(require,module,exports) {
+},{"fs":"70rD"}],"2RVT":[function(require,module,exports) {
 "use strict";
 
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
-function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
-
-function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -11971,6 +12250,16 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 
+var __importStar = this && this.__importStar || function (mod) {
+  if (mod && mod.__esModule) return mod;
+  var result = {};
+  if (mod != null) for (var k in mod) {
+    if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+  }
+  result["default"] = mod;
+  return result;
+};
+
 var __importDefault = this && this.__importDefault || function (mod) {
   return mod && mod.__esModule ? mod : {
     "default": mod
@@ -11981,19 +12270,225 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
+var react_1 = __importStar(require("react"));
+
+var react_dom_1 = __importDefault(require("react-dom"));
+
+var classnames_1 = __importDefault(require("classnames"));
+
+var utilsWidget_1 = require("../../utilsWidget");
+
+var Chat_1 = require("./Chat");
+
+var FrameWrapper_1 = require("./FrameWrapper");
+
+var ImagePreview_1 = require("./ImagePreview");
+
+var styles_1 = __importDefault(require("./styles"));
+
+var assets_1 = __importDefault(require("./assets"));
+
+var Widget =
+/*#__PURE__*/
+function (_react_1$Component) {
+  _inherits(Widget, _react_1$Component);
+
+  function Widget() {
+    var _this;
+
+    _classCallCheck(this, Widget);
+
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(Widget).apply(this, arguments));
+    _this.state = {
+      isIFrameReady: false,
+      isIFrameOpen: false,
+      isIFrameOpeningAnimation: false,
+      outsideIframeStyles: null,
+      insideIframeStyles: null,
+      unreadCount: 0,
+      currentImagePreview: {},
+      imagePreviewGallery: []
+    };
+
+    _this.generateStyles = function () {
+      var elixirChatWidget = _this.props.elixirChatWidget;
+      var fontFaceGraphikNormal = utilsWidget_1.generateFontFaceRule('Graphik', 'normal', assets_1.default.fontGraphikRegularWeb);
+      var fontFaceGraphikBold = utilsWidget_1.generateFontFaceRule('Graphik', 'bold', assets_1.default.fontGraphikBoldWeb);
+      var fontFaceElixirIcons = utilsWidget_1.generateFontFaceRule('elixirchat-icons', null, assets_1.default.fontElixirchatIcons);
+      var outsideIframeStyles = [styles_1.default.icons, styles_1.default.Widget, styles_1.default.ImagePreview, fontFaceGraphikNormal, fontFaceElixirIcons].join('\n');
+      var insideIframeStyles = [styles_1.default.icons, styles_1.default.Chat, styles_1.default.ChatMessages, styles_1.default.ChatTextarea, fontFaceGraphikNormal, fontFaceGraphikBold, fontFaceElixirIcons, elixirChatWidget.iframeStyles].join('\n');
+      return {
+        outsideIframeStyles: outsideIframeStyles,
+        insideIframeStyles: insideIframeStyles
+      };
+    };
+
+    _this.onButtonClick = function () {
+      var elixirChatWidget = _this.props.elixirChatWidget;
+      elixirChatWidget.toggleChatVisibility({
+        isSilent: true
+      });
+
+      _this.setState({
+        isIFrameOpen: !_this.state.isIFrameOpen,
+        isIFrameOpeningAnimation: true
+      });
+
+      setTimeout(function () {
+        _this.setState({
+          isIFrameOpeningAnimation: false
+        });
+      });
+    };
+
+    _this.onImagePreviewOpen = function (currentImagePreview, imagePreviewGallery) {
+      _this.setState({
+        currentImagePreview: currentImagePreview,
+        imagePreviewGallery: imagePreviewGallery
+      });
+    };
+
+    _this.onImagePreviewClose = function () {
+      _this.setState({
+        currentImagePreview: {},
+        imagePreviewGallery: []
+      });
+    };
+
+    _this.onFrameReady = function (iframeDocument) {
+      var elixirChatWidget = _this.props.elixirChatWidget;
+      elixirChatWidget.widgetIFrameDocument = iframeDocument;
+
+      _this.setState({
+        isIFrameReady: true
+      });
+    };
+
+    return _this;
+  }
+
+  _createClass(Widget, [{
+    key: "componentDidMount",
+    value: function componentDidMount() {
+      var _this2 = this;
+
+      var elixirChatWidget = this.props.elixirChatWidget;
+
+      var _this$generateStyles = this.generateStyles(),
+          outsideIframeStyles = _this$generateStyles.outsideIframeStyles,
+          insideIframeStyles = _this$generateStyles.insideIframeStyles;
+
+      this.setState({
+        outsideIframeStyles: outsideIframeStyles,
+        insideIframeStyles: insideIframeStyles
+      });
+      elixirChatWidget.onToggleChatVisibility(function (isOpen, isSilent) {
+        if (!isSilent) {
+          _this2.onButtonClick();
+        }
+      });
+      elixirChatWidget.onSetUnreadCount(function (unreadCount) {
+        return _this2.setState({
+          unreadCount: unreadCount
+        });
+      });
+    }
+  }, {
+    key: "render",
+    value: function render() {
+      var elixirChatWidget = this.props.elixirChatWidget;
+      var _this$state = this.state,
+          isIFrameReady = _this$state.isIFrameReady,
+          isIFrameOpen = _this$state.isIFrameOpen,
+          isIFrameOpeningAnimation = _this$state.isIFrameOpeningAnimation,
+          outsideIframeStyles = _this$state.outsideIframeStyles,
+          insideIframeStyles = _this$state.insideIframeStyles,
+          unreadCount = _this$state.unreadCount,
+          currentImagePreview = _this$state.currentImagePreview,
+          imagePreviewGallery = _this$state.imagePreviewGallery;
+      return react_1.default.createElement(react_1.Fragment, null, react_1.default.createElement("style", {
+        dangerouslySetInnerHTML: {
+          __html: outsideIframeStyles
+        }
+      }), react_1.default.createElement("button", {
+        className: "elixirchat-widget-button",
+        onClick: this.onButtonClick
+      }, react_1.default.createElement("span", {
+        className: classnames_1.default({
+          'elixirchat-widget-button-counter': true,
+          'elixirchat-widget-button-counter--has-unread': unreadCount
+        })
+      }, Boolean(unreadCount) && unreadCount)), isIFrameReady && react_1.default.createElement(ImagePreview_1.ImagePreview, {
+        elixirChatWidget: elixirChatWidget,
+        preview: currentImagePreview,
+        gallery: imagePreviewGallery,
+        onClose: this.onImagePreviewClose
+      }), react_1.default.createElement(FrameWrapper_1.FrameWrapper, {
+        className: classnames_1.default({
+          'elixirchat-widget-iframe': true,
+          'elixirchat-widget-iframe--visible': isIFrameOpen,
+          'elixirchat-widget-iframe--opening': isIFrameOpeningAnimation
+        }),
+        onFrameReady: this.onFrameReady
+      }, react_1.default.createElement(react_1.Fragment, null, react_1.default.createElement("style", {
+        dangerouslySetInnerHTML: {
+          __html: insideIframeStyles
+        }
+      }), react_1.default.createElement(Chat_1.Chat, {
+        elixirChatWidget: elixirChatWidget,
+        onImagePreviewOpen: this.onImagePreviewOpen
+      }))));
+    }
+  }]);
+
+  return Widget;
+}(react_1.Component);
+
+exports.Widget = Widget;
+
+function renderWidgetReactComponent(container, elixirChatWidget) {
+  var component;
+  react_dom_1.default.render(react_1.default.createElement(Widget, {
+    ref: function ref(widget) {
+      component = widget;
+    },
+    elixirChatWidget: elixirChatWidget
+  }), container);
+  return component;
+}
+
+exports.renderWidgetReactComponent = renderWidgetReactComponent;
+},{"react":"1n8/","react-dom":"NKHc","classnames":"9qb7","../../utilsWidget":"4KO9","./Chat":"8tJY","./FrameWrapper":"o2QW","./ImagePreview":"3Xfh","./styles":"xqZa","./assets":"GpM8"}],"Nvy6":[function(require,module,exports) {
+"use strict";
+
+function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+
+function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
 require("babel-polyfill");
 
 var utilsCommon_1 = require("../utilsCommon");
 
-var utilsWidget_1 = require("../utilsWidget");
+var Widget_1 = require("./DefaultWidget/Widget");
 
-var Chat_1 = require("./DefaultWidget/Chat");
-
-var styles_1 = __importDefault(require("./DefaultWidget/styles"));
-
-var assets_1 = __importDefault(require("./DefaultWidget/assets"));
-
-console.log('___ styles', styles_1.default);
 var ElixirChat = window.ElixirChat;
 
 if ("production" === 'development') {
@@ -12017,50 +12512,30 @@ function (_ElixirChat) {
     _classCallCheck(this, ElixirChatWidget);
 
     _this = _possibleConstructorReturn(this, _getPrototypeOf(ElixirChatWidget).apply(this, arguments));
-    _this.imagePreviewHorizontalPaddings = 100;
-    _this.imagePreviewVerticalPaddings = 120;
     _this.widgetIsVisible = false;
-    _this.widgetImagePreviewIsVisible = false;
     _this.widgetChatReactComponent = {};
+    _this.widgetIFrameDocument = {};
     _this.onToggleChatVisibilityCallbacks = [];
+    _this.onSetUnreadCountCallbacks = [];
 
     _this.setUnreadCount = function (count) {
-      var counter = _this.widgetButton.querySelector('.elixirchat-widget-button-counter');
-
-      var classNameHasUnread = 'elixirchat-widget-button-counter--has-unread';
       _this.widgetUnreadCount = +count || 0;
 
-      if (count) {
-        counter.classList.add(classNameHasUnread);
-        counter.innerText = count;
-      } else {
-        counter.classList.remove(classNameHasUnread);
-        counter.innerText = '';
-      }
+      _this.onSetUnreadCountCallbacks.forEach(function (callback) {
+        return callback(_this.widgetUnreadCount);
+      });
+    };
+
+    _this.onSetUnreadCount = function (callback) {
+      _this.onSetUnreadCountCallbacks.push(callback);
     };
 
     _this.toggleChatVisibility = function () {
-      var iframeClassNameOpening = 'elixirchat-widget-iframe--opening';
-      var iframeClassNameVisible = 'elixirchat-widget-iframe--visible';
-      var buttonClassNameVisible = 'elixirchat-widget-button--visible';
+      var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
       _this.widgetIsVisible = !_this.widgetIsVisible;
 
-      if (_this.widgetIsVisible) {
-        _this.widgetButton.classList.add(buttonClassNameVisible);
-
-        _this.widgetChatIframe.classList.add(iframeClassNameOpening, iframeClassNameVisible);
-
-        setTimeout(function () {
-          _this.widgetChatIframe.classList.remove(iframeClassNameOpening);
-        }, 0);
-      } else {
-        _this.widgetButton.classList.remove(buttonClassNameVisible);
-
-        _this.widgetChatIframe.classList.remove(iframeClassNameVisible);
-      }
-
       _this.onToggleChatVisibilityCallbacks.forEach(function (callback) {
-        return callback(_this.widgetIsVisible);
+        return callback(_this.widgetIsVisible, params.isSilent);
       });
     };
 
@@ -12090,21 +12565,16 @@ function (_ElixirChat) {
                 errorMessage = 'You must provide an HTMLElement as a "container" option to appendWidget() method';
                 utilsCommon_1.logEvent(_this.debug, errorMessage, {
                   container: container,
-                  iframeStyles: iframeStyles
+                  iframeStyles: iframeStyles,
+                  visibleByDefault: visibleByDefault
                 }, 'error');
                 return _context.abrupt("return");
 
               case 5:
                 _this.container = container;
-                _this.iframeStyles = iframeStyles;
+                _this.iframeStyles = iframeStyles || '';
                 _this.visibleByDefault = visibleByDefault;
-                _context.next = 10;
-                return _this.appendChatIframe();
-
-              case 10:
-                _this.appendWidgetButton();
-
-                _this.appendImagePreview();
+                _this.widgetChatReactComponent = Widget_1.renderWidgetReactComponent(_this.container, _assertThisInitialized(_this));
 
                 if (_this.visibleByDefault) {
                   _this.toggleChatVisibility();
@@ -12115,7 +12585,7 @@ function (_ElixirChat) {
                 });
                 return _context.abrupt("return", _this.widgetChatReactComponent);
 
-              case 15:
+              case 12:
               case "end":
                 return _context.stop();
             }
@@ -12131,153 +12601,6 @@ function (_ElixirChat) {
     return _this;
   }
 
-  _createClass(ElixirChatWidget, [{
-    key: "injectGlobalStyles",
-    value: function injectGlobalStyles(styles) {
-      utilsWidget_1.insertElement('style', {
-        innerHTML: styles,
-        type: 'text/css'
-      }, this.container);
-    }
-  }, {
-    key: "injectIframeStyles",
-    value: function injectIframeStyles(styles) {
-      var iframeContainer = this.widgetChatIframe.contentWindow.document.querySelector('main');
-      utilsWidget_1.insertElement('style', {
-        innerHTML: styles,
-        type: 'text/css'
-      }, iframeContainer);
-    }
-  }, {
-    key: "appendWidgetButton",
-    value: function appendWidgetButton() {
-      var button = utilsWidget_1.insertElement('button', {
-        className: 'elixirchat-widget-button'
-      }, this.container);
-      utilsWidget_1.insertElement('span', {
-        className: 'elixirchat-widget-button-counter'
-      }, button);
-      button.addEventListener('click', this.toggleChatVisibility);
-      this.widgetButton = button;
-      this.injectGlobalStyles([utilsWidget_1.generateFontFaceRule('Graphik', 'normal', assets_1.default.fontGraphikRegularWeb), utilsWidget_1.generateFontFaceRule('elixirchat-icons', null, assets_1.default.fontElixirchatIcons)].join('\n'));
-      this.injectGlobalStyles(styles_1.default.Button, this.container);
-      this.injectGlobalStyles(styles_1.default.icons, this.container);
-    }
-  }, {
-    key: "appendChatIframe",
-    value: function appendChatIframe() {
-      var _this2 = this;
-
-      return new Promise(function (resolve) {
-        var iframe = document.createElement('iframe');
-        iframe.className = 'elixirchat-widget-iframe';
-        iframe.hidden = true;
-
-        iframe.onload = function () {
-          iframe.contentWindow.document.body.appendChild(utilsWidget_1.insertElement('main'));
-
-          if (_this2.widgetChatIframe) {
-            _this2.widgetChatIframe.remove();
-          }
-
-          _this2.widgetChatIframe = iframe;
-          var iframeContainer = iframe.contentWindow.document.querySelector('main');
-          _this2.widgetChatReactComponent = Chat_1.appendWidgetIframeContent(iframeContainer, _this2);
-
-          _this2.injectIframeStyles([utilsWidget_1.generateFontFaceRule('Graphik', 'normal', assets_1.default.fontGraphikRegularWeb), utilsWidget_1.generateFontFaceRule('Graphik', 'bold', assets_1.default.fontGraphikBoldWeb), utilsWidget_1.generateFontFaceRule('elixirchat-icons', null, assets_1.default.fontElixirchatIcons)].join('\n'));
-
-          _this2.injectIframeStyles(_this2.iframeStyles);
-
-          _this2.injectIframeStyles(styles_1.default.icons);
-
-          resolve();
-        };
-
-        _this2.container.appendChild(iframe);
-      });
-    }
-  }, {
-    key: "appendImagePreview",
-    value: function appendImagePreview() {
-      var _this3 = this;
-
-      var container = utilsWidget_1.insertElement('div', {
-        className: 'elixirchat-widget-image-preview'
-      }, this.container);
-      var inner = utilsWidget_1.insertElement('div', {
-        className: 'elixirchat-widget-image-preview__inner'
-      }, container);
-      var img = utilsWidget_1.insertElement('img', {
-        className: 'elixirchat-widget-image-preview__img'
-      }, inner);
-      var imagePreviewImgClassNameLoading = 'elixirchat-widget-image-preview__img--loading';
-
-      container.onclick = function () {
-        return _this3.closeImagePreview();
-      };
-
-      img.onload = function () {
-        img.classList.remove(imagePreviewImgClassNameLoading);
-      };
-
-      this.widgetImagePreview = container;
-      this.widgetImagePreviewImg = img;
-    }
-  }, {
-    key: "calculateImagePreviewSize",
-    value: function calculateImagePreviewSize(imageNativeWidth, imageNativeHeight) {
-      var maxImageWidth = window.innerWidth - this.imagePreviewHorizontalPaddings; // window viewport width minus horizontal paddings
-
-      var width = imageNativeWidth;
-      var height = imageNativeHeight;
-
-      if (imageNativeWidth > maxImageWidth) {
-        var ratio = maxImageWidth / imageNativeWidth;
-        width = maxImageWidth;
-        height = Math.round(imageNativeHeight * ratio);
-      }
-
-      return {
-        width: width,
-        height: height
-      };
-    }
-  }, {
-    key: "calculateImagePreviewTopMargin",
-    value: function calculateImagePreviewTopMargin(imageDisplayHeight) {
-      var availableVerticalSpace = window.innerHeight - this.imagePreviewVerticalPaddings;
-
-      if (availableVerticalSpace < imageDisplayHeight) {
-        return 0;
-      } else {
-        return (availableVerticalSpace - imageDisplayHeight) / 2;
-      }
-    }
-  }, {
-    key: "openImagePreview",
-    value: function openImagePreview(previewData) {
-      var width = previewData.width,
-          height = previewData.height,
-          url = previewData.url,
-          name = previewData.name;
-      var displaySize = this.calculateImagePreviewSize(width, height);
-      this.widgetImagePreviewImg.style.marginTop = this.calculateImagePreviewTopMargin(displaySize.height) + 'px';
-      this.widgetImagePreviewImg.width = displaySize.width;
-      this.widgetImagePreviewImg.height = displaySize.height;
-      this.widgetImagePreviewImg.src = url;
-      this.widgetImagePreviewImg.alt = name;
-      this.widgetImagePreviewImg.classList.add('elixirchat-widget-image-preview__img--loading');
-      this.widgetImagePreviewIsVisible = true;
-      this.widgetImagePreview.classList.add('elixirchat-widget-image-preview--visible');
-    }
-  }, {
-    key: "closeImagePreview",
-    value: function closeImagePreview() {
-      this.widgetImagePreviewIsVisible = false;
-      this.widgetImagePreview.classList.remove('elixirchat-widget-image-preview--visible');
-    }
-  }]);
-
   return ElixirChatWidget;
 }(ElixirChat);
 
@@ -12286,7 +12609,7 @@ exports.ElixirChatWidget = ElixirChatWidget;
 if (typeof window !== 'undefined') {
   window.ElixirChatWidget = ElixirChatWidget;
 }
-},{"babel-polyfill":"wllv","../utilsCommon":"EjGt","../utilsWidget":"4KO9","./DefaultWidget/Chat":"8tJY","./DefaultWidget/styles":"xqZa","./DefaultWidget/assets":"GpM8"}],"7QCb":[function(require,module,exports) {
+},{"babel-polyfill":"wllv","../utilsCommon":"EjGt","./DefaultWidget/Widget":"2RVT"}],"7QCb":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
