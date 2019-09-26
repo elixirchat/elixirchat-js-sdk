@@ -45,53 +45,15 @@ export function inflectDayJSWeekDays(locale: 'en-US' | 'ru-RU', formattedDateStr
  * @see https://medium.com/@curtisrobinson/how-to-auto-play-audio-in-safari-with-javascript-21d50b0a2765
  */
 export function unlockNotificationSoundAutoplay(e): void {
-
-  // function _base64ToArrayBuffer(base64) {
-  //   var binary_string =  window.atob(base64);
-  //   var len = binary_string.length;
-  //   var bytes = new Uint8Array( len );
-  //   for (var i = 0; i < len; i++)        {
-  //     bytes[i] = binary_string.charCodeAt(i);
-  //   }
-  //   return bytes.buffer;
-  // }
-  //
-  //
-  // window.AudioContext = window.AudioContext || window.webkitAudioContext;
-  // window.context = new AudioContext();
-  //
-  // window.playSound = (buffer) => {
-  //   var source = context.createBufferSource(); // creates a sound source
-  //   source.buffer = buffer;                    // tell the source which sound to play
-  //   source.connect(context.destination);       // connect the source to the context's destination (the speakers)
-  //   source.start(0);                           // play the source now
-  // }
-
-
-
-  window.addEventListener('load', init, false);
-  function init() {
-    try {
-      // Fix up for prefixing
-      window.AudioContext = window.AudioContext||window.webkitAudioContext;
-      context = new AudioContext();
-      console.log('___ context', context);
-    }
-    catch(e) {
-      alert('Web Audio API is not supported in this browser');
-    }
-  }
-
-
-
-  console.log('___ unlock 000', e.target, '---', e.currentTarget, '--', e.type);
-
   const notification = new Audio(assets.notificationSound);
-  // notification.autoplay = true;
-  notification.play();
-  // notification.pause();
-  // notification.currentTime = 0;
-  // e.currentTarget.removeEventListener(e.type, unlockNotificationSoundAutoplay);
+  notification.play().then(() => {
+    notification.pause();
+    notification.currentTime = 0;
+  });
+
+  if (e.target.tagName !== 'TEXTAREA') { // In Firefox, click on textarea doesn't unlock autoplay
+    e.currentTarget.removeEventListener(e.type, unlockNotificationSoundAutoplay);
+  }
 }
 
 export function playNotificationSound(): void {

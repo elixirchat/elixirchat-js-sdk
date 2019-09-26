@@ -41,53 +41,6 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
     const { outsideIframeStyles, insideIframeStyles } = this.generateStyles();
     document.body.addEventListener('click', unlockNotificationSoundAutoplay);
 
-
-    function _base64ToArrayBuffer(base64) {
-      var binary_string =  atob(base64);
-      var len = binary_string.length;
-      var bytes = new Uint8Array( len );
-      for (var i = 0; i < len; i++)        {
-        bytes[i] = binary_string.charCodeAt(i);
-      }
-      return bytes.buffer;
-    }
-
-
-    const context = new AudioContext();
-
-    const playSound = (buffer) => {
-      var source = context.createBufferSource(); // creates a sound source
-
-      context.decodeAudioData(buffer).then(a => {
-        console.log('___ decode 1', a);
-
-        source.buffer = a;                    // tell the source which sound to play
-        source.connect(context.destination);       // connect the source to the context's destination (the speakers)
-        source.start(0);                           // play the source now
-
-      })
-        .catch(e => {
-          console.log('___ decode 2', e);
-        });
-
-      // console.log('___ buffer', buffer);
-
-    };
-
-    window.__assets = assets;
-    window.___base64ToArrayBuffer = _base64ToArrayBuffer;
-    window.__playSound = playSound;
-
-
-
-    const buf = _base64ToArrayBuffer(__assets.notificationSound.split(',')[1]);
-    playSound(buf);
-
-
-
-
-
-
     this.setState({
       outsideIframeStyles,
       insideIframeStyles,

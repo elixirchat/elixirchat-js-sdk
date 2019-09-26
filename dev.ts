@@ -23,7 +23,7 @@ const elixirChatWidget = new ElixirChatWidget({
     firstName: 'Development',
     lastName: 'Client'
   },
-  // debug: true,
+  debug: true,
 });
 
 elixirChatWidget.appendWidget({
