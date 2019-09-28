@@ -7,7 +7,6 @@ import AutoLinkText from 'react-autolink-text2';
 import { _get, _round } from '../../utilsCommon';
 import { isWebImage, getHumanReadableFileSize, inflectDayJSWeekDays } from '../../utilsWidget';
 import { getCompatibilityFallback } from '../../sdk/ScreenshotTaker';
-import styles from './styles';
 
 export interface IDefaultWidgetMessagesProps {
   elixirChatWidget: any;

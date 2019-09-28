@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import cn from 'classnames';
 import { generateFontFaceRule, unlockNotificationSoundAutoplay } from '../../utilsWidget';
 import { Chat } from './Chat';
-import { FrameWrapper } from './FrameWrapper';
+import { IFrameWrapper } from './IFrameWrapper';
 import { ImagePreview } from './ImagePreview';
 import styles from './styles';
 import assets from './assets';
@@ -14,7 +14,6 @@ export interface IWidgetProps {
 
 export interface IWidgetState {
   isIFrameOpen: boolean;
-  isIFrameReady: boolean;
   isIFrameOpeningAnimation: boolean;
   outsideIframeStyles: null | string;
   insideIframeStyles: null | string;
@@ -26,7 +25,6 @@ export interface IWidgetState {
 export class Widget extends Component<IWidgetProps, IWidgetState> {
 
   state = {
-    isIFrameReady: false,
     isIFrameOpen: false,
     isIFrameOpeningAnimation: false,
     outsideIframeStyles: null,
@@ -46,11 +44,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
       insideIframeStyles,
     });
 
-    elixirChatWidget.onToggleChatVisibility((isOpen, isSilent) => {
-      if (!isSilent) {
-        this.onButtonClick();
-      }
-    });
+    elixirChatWidget.onToggleChatVisibility(this.onToggleButton);
     elixirChatWidget.onSetUnreadCount((unreadCount) => this.setState({ unreadCount }));
   }
 
@@ -85,11 +79,8 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
     };
   };
 
-  onButtonClick = () => {
-    const { elixirChatWidget } = this.props;
-    elixirChatWidget.toggleChatVisibility({ isSilent: true });
-
-    this.setState({
+  onToggleButton = async () => {
+    await this.setState({
       isIFrameOpen: !this.state.isIFrameOpen,
       isIFrameOpeningAnimation: true,
     });
@@ -112,16 +103,9 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
     });
   };
 
-  onFrameReady = (iframeDocument) => {
-    const { elixirChatWidget } = this.props;
-    elixirChatWidget.widgetIFrameDocument = iframeDocument;
-    this.setState({ isIFrameReady: true });
-  };
-
   render() {
     const { elixirChatWidget } = this.props;
     const {
-      isIFrameReady,
       isIFrameOpen,
       isIFrameOpeningAnimation,
       outsideIframeStyles,
@@ -134,34 +118,29 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
     return (
       <Fragment>
         <style dangerouslySetInnerHTML={{ __html: outsideIframeStyles }}/>
-        <button className="elixirchat-widget-button" onClick={this.onButtonClick}>
+        <button className="elixirchat-widget-button" onClick={elixirChatWidget.toggleChatVisibility}>
           <span className={cn({
             'elixirchat-widget-button-counter': true,
             'elixirchat-widget-button-counter--has-unread': unreadCount,
           })}>{Boolean(unreadCount) && unreadCount}</span>
         </button>
 
-        {isIFrameReady && (
-          <ImagePreview
-            elixirChatWidget={elixirChatWidget}
-            preview={currentImagePreview}
-            gallery={imagePreviewGallery}
-            onClose={this.onImagePreviewClose}/>
-        )}
+        <ImagePreview
+          elixirChatWidget={elixirChatWidget}
+          preview={currentImagePreview}
+          gallery={imagePreviewGallery}
+          onClose={this.onImagePreviewClose}/>
 
-        <FrameWrapper className={cn({
+        <IFrameWrapper elixirChatWidget={elixirChatWidget} className={cn({
           'elixirchat-widget-iframe': true,
           'elixirchat-widget-iframe--visible': isIFrameOpen,
           'elixirchat-widget-iframe--opening': isIFrameOpeningAnimation,
-        })}
-          onFrameReady={this.onFrameReady}>
+        })}>
           <Fragment>
             <style dangerouslySetInnerHTML={{ __html: insideIframeStyles }}/>
-            {isIFrameReady && (
-              <Chat elixirChatWidget={elixirChatWidget} onImagePreviewOpen={this.onImagePreviewOpen} />
-            )}
+            <Chat elixirChatWidget={elixirChatWidget} onImagePreviewOpen={this.onImagePreviewOpen} />
           </Fragment>
-        </FrameWrapper>
+        </IFrameWrapper>
       </Fragment>
     );
   }

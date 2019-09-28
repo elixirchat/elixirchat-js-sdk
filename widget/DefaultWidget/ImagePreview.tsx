@@ -34,7 +34,9 @@ export class ImagePreview extends Component<IImagePreviewProps, IImagePreviewSta
 
   componentDidMount() {
     const { elixirChatWidget } = this.props;
-    elixirChatWidget.widgetIFrameDocument.body.addEventListener('keyup', this.onIframeBodyKeyup);
+    elixirChatWidget.onIFrameReady(() => {
+      elixirChatWidget.widgetIFrameDocument.body.addEventListener('keyup', this.onIframeBodyKeyup);
+    });
   }
 
   componentWillUnmount() {

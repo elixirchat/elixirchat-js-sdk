@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { createPortal } from 'react-dom';
 
-export class FrameWrapper extends Component {
+export class IFrameWrapper extends Component {
 
   iframeContentContainer = null;
   iframe = React.createRef();
@@ -11,12 +11,12 @@ export class FrameWrapper extends Component {
   };
 
   componentDidMount(){
-    const { onFrameReady } = this.props;
+    const { elixirChatWidget } = this.props;
     this.onIframeReady().then(iframeDocument => {
       this.iframeContentContainer = iframeDocument.createElement('main');
       iframeDocument.body.appendChild(this.iframeContentContainer);
       this.setState({ isIframeReady: true });
-      onFrameReady(iframeDocument);
+      elixirChatWidget.setIFrameReady(iframeDocument);
     });
   }
 

@@ -10,7 +10,6 @@ import {
 import { IMessage } from '../../sdk/serializers/serializeMessage';
 import { ChatMessages } from './ChatMessages';
 import { ChatTextarea } from './ChatTextarea';
-import assets from './assets';
 
 export interface IDefaultWidgetProps {
   elixirChatWidget: any;
@@ -51,25 +50,29 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
   componentDidMount(): void {
     const { elixirChatWidget } = this.props;
 
-    elixirChatWidget.widgetIFrameDocument.body.addEventListener('click', unlockNotificationSoundAutoplay);
+    elixirChatWidget.onIFrameReady(() => {
+      elixirChatWidget.widgetIFrameDocument.body.addEventListener('click', unlockNotificationSoundAutoplay);
+    });
 
     elixirChatWidget.onConnectSuccess(() => {
       elixirChatWidget.fetchMessageHistory(this.messageChunkSize)
-        .then(messages => {
-          this.setState({ messages, isLoading: false });
+        .then(async messages => {
+          await this.setState({ messages, isLoading: false });
           this.scrollToBottom();
-          this.updateUnseenRepliesToCurrentClient();
+          this.updateUnseenRepliesCount();
+          elixirChatWidget.setIFrameContentMounted();
         })
-        .catch((e) => {
-          this.setState({
+        .catch(async e => {
+          await this.setState({
             isLoading: false,
             isLoadingError: true,
           });
+          elixirChatWidget.setIFrameContentMounted();
         });
     });
 
-    elixirChatWidget.onConnectError(() => {
-      this.setState({
+    elixirChatWidget.onConnectError(async () => {
+      await this.setState({
         isLoading: false,
         isLoadingError: true,
       });
@@ -90,14 +93,12 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
       if (!hasUserScroll) {
         this.scrollToBottom();
       }
-      this.updateUnseenRepliesToCurrentClient();
+      this.updateUnseenRepliesCount();
     });
 
     elixirChatWidget.onTyping(currentlyTypingUsers => {
       this.setState({ currentlyTypingUsers });
     });
-
-    elixirChatWidget.onToggleChatVisibility(this.updateUnseenRepliesToCurrentClient);
   }
 
   loadPreviousMessages = (callback): void => {
@@ -259,32 +260,40 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
     };
   };
 
-  updateUnseenRepliesToCurrentClient = () => {
-    const { messages } = this.state;
+  getRepliesToCurrentClient = () => {
     const { elixirChatWidget } = this.props;
+    const { messages } = this.state;
 
-    const repliesToCurrentClient = messages.filter(message => {
+    return messages.filter(message => {
       const { responseToMessage } = message;
       return responseToMessage && responseToMessage.sender.id === elixirChatWidget.elixirChatClientId;
     });
+  };
 
-    if (elixirChatWidget.widgetIsVisible) {
-      const latestReplyToCurrentClient = _last(repliesToCurrentClient);
-      if (latestReplyToCurrentClient) {
-        localStorage.setItem('elixirchat-latest-unseen-reply', latestReplyToCurrentClient.id);
-      }
-      elixirChatWidget.setUnreadCount(0);
+  updateUnseenRepliesCount = () => {
+    const { elixirChatWidget } = this.props;
+
+    const allRepliesToCurrentClient = this.getRepliesToCurrentClient();
+    const latestUnseenReplyId = localStorage.getItem('elixirchat-latest-unseen-reply');
+    const latestUnseenReplyIndex = allRepliesToCurrentClient
+      .map(message => message.id)
+      .indexOf(latestUnseenReplyId);
+
+    const unseenRepliesToCurrentClient = latestUnseenReplyIndex === -1
+      ? allRepliesToCurrentClient
+      : allRepliesToCurrentClient.slice(latestUnseenReplyIndex + 1);
+
+    elixirChatWidget.setUnreadCount(unseenRepliesToCurrentClient.length);
+  };
+
+  resetUnseenRepliesCount = () => {
+    const { elixirChatWidget } = this.props;
+    const allRepliesToCurrentClient = this.getRepliesToCurrentClient();
+    const latestReplyToCurrentClient = _last(allRepliesToCurrentClient);
+    if (latestReplyToCurrentClient) {
+      localStorage.setItem('elixirchat-latest-unseen-reply', latestReplyToCurrentClient.id);
     }
-    else {
-      const latestUnseenReplyId = localStorage.getItem('elixirchat-latest-unseen-reply');
-      const latestUnseenReplyIndex = repliesToCurrentClient
-        .map(message => message.id)
-        .indexOf(latestUnseenReplyId);
-      const unseenRepliesToCurrentClient = latestUnseenReplyIndex === -1
-        ? repliesToCurrentClient
-        : repliesToCurrentClient.slice(latestUnseenReplyIndex + 1);
-      elixirChatWidget.setUnreadCount(unseenRepliesToCurrentClient.length);
-    }
+    elixirChatWidget.setUnreadCount(0);
   };
 
   onTextareaChange = (stateChange) => {
@@ -346,7 +355,7 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
     const { elixirChatWidget, onImagePreviewOpen } = this.props;
 
     return (
-      <div className="elixirchat-chat-container" ref={this.container}>
+      <div className="elixirchat-chat-container" ref={this.container} onClick={this.resetUnseenRepliesCount}>
 
         <h2 className="elixirchat-chat-header">
           <i className="elixirchat-chat-header__indicator"/>

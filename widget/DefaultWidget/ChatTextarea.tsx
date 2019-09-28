@@ -4,7 +4,6 @@ import TextareaAutosize from 'react-textarea-autosize';
 import { randomDigitStringId } from '../../utilsCommon';
 import { inflect, getImageDimensions } from '../../utilsWidget';
 import { getCompatibilityFallback } from '../../sdk/ScreenshotTaker';
-import styles from './styles';
 
 export interface IDefaultWidgetTextareaProps {
   elixirChatWidget: any;
@@ -29,16 +28,30 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
 
   componentDidMount(): void {
     const { elixirChatWidget } = this.props;
+
+    elixirChatWidget.onIFrameContentMounted(() => {
+      if (elixirChatWidget.visibleByDefault) {
+        this.focusTextarea();
+      }
+    });
+
     elixirChatWidget.onToggleChatVisibility((isOpen) => {
       if (isOpen) {
         this.updateVerticalHeight({ forceScrollToBottom: true });
-        this.textarea.focus();
+        this.focusTextarea();
       }
     });
+
     this.setState({
       screenshotFallback: getCompatibilityFallback(),
     });
   }
+
+  focusTextarea = () => {
+    setTimeout(() => {
+      this.textarea.focus();
+    });
+  };
 
   componentDidUpdate(prevProps) {
     const { textareaAttachments, textareaResponseToMessageId } = this.props;
@@ -46,7 +59,7 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
     const didAttachmentsChange = textareaAttachments !== prevProps.textareaAttachments;
     if (didResponseToMessageIdChange || didAttachmentsChange) {
       this.updateVerticalHeight();
-      this.textarea.focus();
+      this.focusTextarea();
     }
   }
 
@@ -155,14 +168,17 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
     this.inputFile.current.value = '';
   };
 
-  updateVerticalHeight = (options: { forceScrollToBottom: boolean }) => {
-    setTimeout(() => {
-      const newHeight = this.container.current.offsetHeight;
-      this.setState({
-        areTextareaActionsCollapsed: newHeight < 60,
-      });
-      this.props.onVerticalResize(newHeight, options);
-    }, 0);
+  updateVerticalHeight = async (options: { forceScrollToBottom: boolean }) => {
+    const { onVerticalResize } = this.props;
+    const containerElement = this.container.current;
+    if (!containerElement) {
+      return;
+    }
+    const newHeight = containerElement.offsetHeight;
+    await this.setState({
+      areTextareaActionsCollapsed: newHeight < 60,
+    });
+    onVerticalResize(newHeight, options);
   };
 
   render(): void {
