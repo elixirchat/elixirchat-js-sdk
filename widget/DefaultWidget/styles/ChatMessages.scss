@@ -30,6 +30,13 @@
 
   &--by-operator {
     align-self: flex-start;
+    padding-right: 20%;
+    width: 100%;
+  }
+
+  &:not(.elixirchat-chat-messages__item--by-me):not(.elixirchat-chat-messages__item--by-operator) {
+    padding-left: 20%;
+    width: 100%;
   }
 
   &--highlighted {
