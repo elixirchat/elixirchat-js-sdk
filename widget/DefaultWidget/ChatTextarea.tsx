@@ -47,12 +47,6 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
     });
   }
 
-  focusTextarea = () => {
-    setTimeout(() => {
-      this.textarea.focus();
-    });
-  };
-
   componentDidUpdate(prevProps) {
     const { textareaAttachments, textareaResponseToMessageId } = this.props;
     const didResponseToMessageIdChange = textareaResponseToMessageId !== prevProps.textareaResponseToMessageId;
@@ -62,6 +56,12 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
       this.focusTextarea();
     }
   }
+
+  focusTextarea = () => {
+    setTimeout(() => {
+      this.textarea.focus();
+    });
+  };
 
   onTextareaChange = (e): void => {
     const { elixirChatWidget, onChange } = this.props;

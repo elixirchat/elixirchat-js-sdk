@@ -30,24 +30,27 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
   maxThumbnailSize = 256;
 
   componentDidMount(): void {
-    const { messages } = this.props;
+    const { messages, highlightedMessageIds } = this.props;
     dayjs.locale('ru');
     dayjs.extend(dayjsCalendar);
 
-    this.setProcessedMessages(messages);
+    this.setProcessedMessages(messages, highlightedMessageIds);
     this.setState({
       screenshotFallback: getCompatibilityFallback(),
     });
   }
 
   componentDidUpdate(prevProps): void {
-    const { messages } = this.props;
-    if (prevProps.messages !== messages) {
-      this.setProcessedMessages(messages);
+    const { messages, highlightedMessageIds } = this.props;
+    const didMessagesChange = prevProps.messages !== messages;
+    const didHighlightedMessagesChange = prevProps.highlightedMessageIds !== highlightedMessageIds;
+
+    if (didMessagesChange || didHighlightedMessagesChange) {
+      this.setProcessedMessages(messages, highlightedMessageIds);
     }
   }
 
-  setProcessedMessages = (messages) => {
+  setProcessedMessages = (messages, highlightedMessageIds) => {
     let imagePreviews = [];
     const processedMessages = messages.map((message, i) => {
       const processedMessage = { ...message };
@@ -64,7 +67,9 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
         processedMessage.files = files;
         processedMessage.images = images;
       }
-
+      if (highlightedMessageIds.includes(processedMessage.id)) {
+        processedMessage.isHighlighted = true;
+      }
       return processedMessage;
     });
 
@@ -180,6 +185,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                 'elixirchat-chat-messages__item': true,
                 'elixirchat-chat-messages__item--by-me': message.sender.isCurrentClient,
                 'elixirchat-chat-messages__item--by-operator': message.sender.isOperator,
+                'elixirchat-chat-messages__item--highlighted': message.isHighlighted,
               })}>
 
                 {!this.shouldHideMessageBalloon(message) && (

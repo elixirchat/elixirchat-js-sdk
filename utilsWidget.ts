@@ -58,7 +58,6 @@ export function unlockNotificationSoundAutoplay(e): void {
 
 export function playNotificationSound(): void {
   const notification = new Audio(assets.notificationSound);
-  notification.autoplay = true;
   notification.play();
 }
 

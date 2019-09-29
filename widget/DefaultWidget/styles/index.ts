@@ -1,9 +1,13 @@
 /**
+ * SCSS files from widget/DefaultWidget/styles are transpiled into dist/styles
+ *
  * Styles are imported as strings via fs.readFileSync in order to include
  * them into a single bundle JS file, not simply copy to /dist folder
  *
- * SCSS files from widget/DefaultWidget/styles are transpiled into dist/styles
+ * Note that Parcel bundler utilizes a very limited custom implementation of fs.readFileSync()
+ * @see https://en.parceljs.org/javascript.html#javascript
  */
+
 const fs = require('fs');
 
 export default {

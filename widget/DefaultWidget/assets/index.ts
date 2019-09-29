@@ -1,6 +1,9 @@
 /**
  * Styles are imported as base64-strings via fs.readFileSync() in order to include
  * them into a single bundle JS file, not simply copy to /dist folder as separate files
+ *
+ * Note that Parcel bundler utilizes a very limited custom implementation of fs.readFileSync()
+ * @see https://en.parceljs.org/javascript.html#javascript
  */
 
 const fs = require('fs');

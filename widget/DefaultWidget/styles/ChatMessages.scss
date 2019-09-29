@@ -33,9 +33,10 @@
   }
 
   &--highlighted {
-    //background: rgba(255, 0, 102, 0.05);
+    background: rgba(255, 0, 102, 0.05);
     //TODO: come up w/ highlighting style
-    border: 4px solid red;
+    //background: green;
+    //border: 4px solid red;
   }
 }
 

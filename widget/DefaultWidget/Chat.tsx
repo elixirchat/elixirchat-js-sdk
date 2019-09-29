@@ -17,6 +17,7 @@ export interface IDefaultWidgetProps {
 
 export interface IDefaultWidgetState {
   messages: Array<IMessage>;
+  highlightedMessageIds: Array<IMessage>;
   room: any;
   client: any;
   currentlyTypingUsers: Array<any>;
@@ -36,6 +37,7 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
 
   state = {
     messages: [],
+    highlightedMessageIds: [],
     room: {},
     client: {},
     currentlyTypingUsers: [],
@@ -264,10 +266,15 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
     const { elixirChatWidget } = this.props;
     const { messages } = this.state;
 
-    return messages.filter(message => {
-      const { responseToMessage } = message;
-      return responseToMessage && responseToMessage.sender.id === elixirChatWidget.elixirChatClientId;
-    });
+    if (elixirChatWidget.isPrivate) {
+      return messages;
+    }
+    else {
+      return messages.filter(message => {
+        const { responseToMessage } = message;
+        return responseToMessage && responseToMessage.sender.id === elixirChatWidget.elixirChatClientId;
+      });
+    }
   };
 
   updateUnseenRepliesCount = () => {
@@ -283,6 +290,9 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
       ? allRepliesToCurrentClient
       : allRepliesToCurrentClient.slice(latestUnseenReplyIndex + 1);
 
+    const highlightedMessageIds = unseenRepliesToCurrentClient.map(message => message.id);
+    this.setState({ highlightedMessageIds });
+
     elixirChatWidget.setUnreadCount(unseenRepliesToCurrentClient.length);
   };
 
@@ -294,6 +304,7 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
       localStorage.setItem('elixirchat-latest-unseen-reply', latestReplyToCurrentClient.id);
     }
     elixirChatWidget.setUnreadCount(0);
+    this.setState({ highlightedMessageIds: [] });
   };
 
   onTextareaChange = (stateChange) => {
@@ -343,8 +354,10 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
   };
 
   render(): void {
+    const { elixirChatWidget, onImagePreviewOpen } = this.props;
     const {
       messages,
+      highlightedMessageIds,
       textareaText,
       textareaResponseToMessageId,
       textareaAttachments,
@@ -352,7 +365,6 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
       isLoading,
       isLoadingError,
     } = this.state;
-    const { elixirChatWidget, onImagePreviewOpen } = this.props;
 
     return (
       <div className="elixirchat-chat-container" ref={this.container} onClick={this.resetUnseenRepliesCount}>
@@ -389,8 +401,9 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
                 onImagePreviewOpen={onImagePreviewOpen}
                 onReplyMessage={this.onReplyMessage}
                 onSubmitRetry={this.onSubmitRetry}
-                elixirChatWidget={elixirChatWidget}
-                messages={messages}/>
+                messages={messages}
+                highlightedMessageIds={highlightedMessageIds}
+                elixirChatWidget={elixirChatWidget}/>
             </div>
 
             <ChatTextarea

@@ -46,6 +46,7 @@ export class ElixirChat {
   public elixirChatClientId: string;
   public authToken: string;
   public connected: boolean;
+  public isPrivate: boolean;
 
   public get reachedBeginningOfMessageHistory(): boolean {
     return this.messagesSubscription ? this.messagesSubscription.reachedBeginningOfMessageHistory : false;
@@ -189,6 +190,13 @@ export class ElixirChat {
       firstName: clientFirstName,
       lastName: clientLastName,
     };
+
+    if (!room.id) {
+      this.isPrivate = true;
+    }
+    else {
+      this.isPrivate = false;
+    }
 
     const roomId = room.id || client.id;
     const roomTitle = room.title || client.firstName + ' ' + client.lastName;
