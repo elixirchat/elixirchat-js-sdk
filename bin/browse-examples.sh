@@ -24,6 +24,7 @@ update_examples_files () {
 
   cp -rf build/examples/sdk.html dist/build/examples/sdk.html
   cp -rf build/examples/widget.html dist/build/examples/widget.html
+  cp -rf build/examples/widget-private.html dist/build/examples/widget-private.html
 
   if [ "$IS_LOCAL_SERVER" != "undefined" ];
     then
@@ -33,6 +34,7 @@ update_examples_files () {
 
       replace_env_variables "dist/build/examples/sdk.html"
       replace_env_variables "dist/build/examples/widget.html"
+      replace_env_variables "dist/build/examples/widget-private.html"
     else
       tput setaf 2
       printf "\nRunning SDK with DEV-SERVER (dev-admin.elixir.chat/api)\n\n"
@@ -47,5 +49,7 @@ update_examples_files
 
 concurrently "watch update_examples_files build" \
 "http-server dist/build -p 8002" \
+"http-server dist/build -p 8003" \
 "open http://localhost:8002/examples/sdk.html" \
-"open http://localhost:8002/examples/widget.html"
+"open http://localhost:8002/examples/widget.html" \
+"open http://localhost:8003/examples/widget-private.html"
