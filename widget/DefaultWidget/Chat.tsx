@@ -267,7 +267,9 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
     const { messages } = this.state;
 
     if (elixirChatWidget.isPrivate) {
-      return messages;
+      return messages.filter(message => {
+        return message.sender.id !== elixirChatWidget.elixirChatClientId;
+      });
     }
     else {
       return messages.filter(message => {

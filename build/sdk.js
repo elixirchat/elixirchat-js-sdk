@@ -6694,6 +6694,8 @@ function () {
         _this.client = client;
       }
 
+      _this.isPrivate = !room || !room.id;
+
       _this.setDefaultConfigValues();
 
       _this.messagesSubscription.unsubscribe();
@@ -6746,6 +6748,7 @@ function () {
     this.debug = config.debug || false;
     this.room = config.room;
     this.client = config.client;
+    this.isPrivate = !this.room || !this.room.id;
     var localValues = this.getRoomClientFromLocalStorage();
 
     if (!this.room || !this.room.id) {
@@ -6763,6 +6766,8 @@ function () {
     key: "initialize",
     value: function initialize() {
       var _this2 = this;
+
+      window.__this = this;
 
       if (!this.companyId) {
         utilsCommon_1.logEvent(this.debug, "Required parameter companyId is not provided: \nSee more: ".concat(exports.API_REFERENCE_URL, "#config-companyid"), null, 'error');

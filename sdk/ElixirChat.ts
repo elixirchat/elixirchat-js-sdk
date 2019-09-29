@@ -98,6 +98,8 @@ export class ElixirChat {
     this.room = config.room;
     this.client = config.client;
 
+    this.isPrivate = !this.room || !this.room.id;
+
     const localValues = this.getRoomClientFromLocalStorage();
     if (!this.room || !this.room.id) {
       this.room = localValues.room;
@@ -109,6 +111,9 @@ export class ElixirChat {
   }
 
   protected initialize(): void {
+
+    window.__this = this;
+
     if (!this.companyId) {
       logEvent(
         this.debug,
@@ -190,13 +195,6 @@ export class ElixirChat {
       firstName: clientFirstName,
       lastName: clientLastName,
     };
-
-    if (!room.id) {
-      this.isPrivate = true;
-    }
-    else {
-      this.isPrivate = false;
-    }
 
     const roomId = room.id || client.id;
     const roomTitle = room.title || client.firstName + ' ' + client.lastName;
@@ -376,6 +374,9 @@ export class ElixirChat {
     if (client) {
       this.client = client;
     }
+
+    this.isPrivate = !room || !room.id;
+
     this.setDefaultConfigValues();
     this.messagesSubscription.unsubscribe();
     return this.connectToRoom().then(() => {
