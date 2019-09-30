@@ -80,6 +80,7 @@ export class MessagesSubscription {
             author {
               employee { id firstName lastName }
             }
+            whenWouldWork
           }
         }
         sender {
@@ -130,6 +131,7 @@ export class MessagesSubscription {
             author {
               employee { id firstName lastName }
             }
+            whenWouldWork
           }
 
         }
@@ -184,6 +186,7 @@ export class MessagesSubscription {
                 author {
                   employee { id firstName lastName }
                 }
+                whenWouldWork
               }
 
             }

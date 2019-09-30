@@ -69,6 +69,7 @@ export function serializeMessage(message: any, options?: ISerializeMessageOption
     isSystem,
     systemData: !isSystem ? null : {
       type: _get(message, 'data.type') || null,
+      whenWouldWork: _get(message, 'data.whenWouldWork') || null,
     },
   };
 }

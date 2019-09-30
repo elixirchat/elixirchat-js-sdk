@@ -335,17 +335,13 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                     </Fragment>
                   )}
 
-                  {/*
-                    TODO: replace ALL_OPERATORS_OFFLINE w/ actual message type
-                    TODO: replace message.systemData.workHoursStartAt w/ actual field
-                  */}
-                  {message.systemData.type === 'ALL_OPERATORS_OFFLINE' && (
+                  {message.systemData.type === 'NOBODY_WORKING' && (
                     <Fragment>
                       <div className="elixirchat-chat-messages__text">
                         К сожалению, все операторы поддержки сейчас оффлайн
-                        {message.systemData.workHoursStartAt &&
+                        {message.systemData.whenWouldWork &&
                           ', но будут снова в сети ' +
-                          inflectDayJSWeekDays('ru-RU', dayjs(message.systemData.workHoursStartAt).calendar(null, {
+                          inflectDayJSWeekDays('ru-RU', dayjs(message.systemData.whenWouldWork).calendar(null, {
                             nextWeek: '[в] dddd [в] H:mm',
                             nextDay: '[завтра в] H:mm',
                             sameDay: '[сегодня в] H:mm',
