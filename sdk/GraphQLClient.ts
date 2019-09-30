@@ -102,3 +102,16 @@ export interface IGql {
 export const gql: IGql = (queryParts) => {
   return queryParts.join('');
 };
+
+
+export interface IInsertGraphQlFragments {
+  (query: string, fragments: object): string
+}
+
+export const insertGraphQlFragments: IInsertGraphQlFragments = (query, fragments = {}) => {
+  let fragmentsString = '';
+  for (let name in fragments) {
+    fragmentsString += fragments[name];
+  }
+  return query + fragmentsString;
+};

@@ -54,18 +54,6 @@ export function _get(object: any, path: string, defaultValue?: any): any {
 }
 
 
-// Lodash-like _.omit
-export function _omit(object: object, listOfKeys: Array<string>) {
-  const newObject = {};
-  for (let key in object) {
-    if (!listOfKeys.includes(key)) {
-      newObject[key] = object[key];
-    }
-  }
-  return newObject;
-}
-
-
 // Lodash-like _.merge
 export function _merge(object1: object, object2: object): object {
   const mergedObject = {};

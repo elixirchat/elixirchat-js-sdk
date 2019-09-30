@@ -1,3 +1,27 @@
+import { gql } from '../GraphQLClient';
+
+export const fragmentFile: string = gql`
+  fragment fragmentFile on File {
+    id
+    url
+    name
+    bytesSize
+    height
+    width
+    contentType
+    thumbnails {
+      id
+      url
+      name
+      bytesSize
+      height
+      width
+      contentType
+      thumbType
+    }
+  }
+`;
+
 export interface IFile {
   id: string | null;
   url: string;

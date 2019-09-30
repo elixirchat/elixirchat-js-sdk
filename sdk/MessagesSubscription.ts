@@ -1,7 +1,11 @@
 import * as AbsintheSocket from '@absinthe/socket'
 import * as Phoenix from 'phoenix'
-import { serializeMessage, IMessage } from './serializers/serializeMessage';
-import { GraphQLClient, simplifyGraphQLJSON, gql } from './GraphQLClient';
+import { serializeMessage, IMessage, fragmentMessage } from './serializers/serializeMessage';
+import {
+  GraphQLClient,
+  simplifyGraphQLJSON,
+  gql, insertGraphQlFragments,
+} from './GraphQLClient';
 
 export interface ISentMessage {
   text?: string,
@@ -43,165 +47,34 @@ export class MessagesSubscription {
   protected isBeforeUnload: boolean = false;
   protected isCurrentlySubscribed: boolean = false;
 
-  protected subscriptionQuery: string = gql`
+  protected subscriptionQuery: string = insertGraphQlFragments(gql`
     subscription {
       newMessage {
-        id
-        tempId
-        text
-        timestamp
-        system
-        attachments {
-          id
-          url
-          name
-          bytesSize
-          height
-          width
-          contentType
-          thumbnails { id url name bytesSize height width contentType thumbType }
-        }
-        data {
-          ... on NotSystemMessageData {
-            responseToMessage {
-              id
-              text
-              sender {
-                __typename
-                ... on Client { id foreignId firstName lastName }
-                ... on CompanyEmployee {
-                  employee { id firstName lastName }
-                }
-              }
-            }
-          }
-          ... on SystemMessageData {
-            type
-            author {
-              employee { id firstName lastName }
-            }
-            whenWouldWork
-          }
-        }
-        sender {
-          __typename
-          ... on Client { id foreignId firstName lastName }
-          ... on CompanyEmployee {
-            employee { id firstName lastName }
-          }
-        }
+        ...fragmentMessage
       }
     }
-  `;
+  `, { fragmentMessage });
 
-  protected sendMessageQuery: string = gql`
+  protected sendMessageQuery: string = insertGraphQlFragments(gql`
     mutation ($text: String!, $responseToMessageId: ID, $attachments: [Upload!], $tempId: ID) {
       sendMessage(text: $text, responseToMessageId: $responseToMessageId, attachments: $attachments, tempId: $tempId) {
-        id
-        tempId
-        text
-        timestamp
-        system
-        attachments {
-          id
-          url
-          name
-          bytesSize
-          height
-          width
-          contentType
-          thumbnails { id url name bytesSize height width contentType thumbType }
-        }
-        data {
-          ... on NotSystemMessageData {
-            responseToMessage {
-              id
-              text
-              sender {
-                __typename
-                ... on Client { id foreignId firstName lastName }
-                ... on CompanyEmployee {
-                  employee { id firstName lastName }
-                }
-              }
-            }
-          }
-          ... on SystemMessageData {
-            type
-            author {
-              employee { id firstName lastName }
-            }
-            whenWouldWork
-          }
-
-        }
-        sender {
-          __typename
-          ... on Client { id foreignId firstName lastName }
-          ... on CompanyEmployee {
-            employee { id firstName lastName }
-          }
-        }
+        ...fragmentMessage
       }
     }
-  `;
+  `, { fragmentMessage });
 
-  protected messageHistoryQuery: string = gql`
+  protected messageHistoryQuery: string = insertGraphQlFragments(gql`
     query ($beforeCursor: String, $limit: Int!) {
       messages(before: $beforeCursor, last: $limit) {
         edges {
           cursor
           node {
-            id
-            tempId
-            text
-            timestamp
-            system
-            attachments {
-              id
-              url
-              name
-              bytesSize
-              height
-              width
-              contentType
-              thumbnails { id url name bytesSize height width contentType thumbType }
-            }
-            data {
-              ... on NotSystemMessageData {
-                responseToMessage {
-                  id
-                  text
-                  sender {
-                    __typename
-                    ... on Client { id foreignId firstName lastName }
-                    ... on CompanyEmployee {
-                      employee { id firstName lastName }
-                    }
-                  }
-                }
-              }
-              ... on SystemMessageData {
-                type
-                author {
-                  employee { id firstName lastName }
-                }
-                whenWouldWork
-              }
-
-            }
-            sender {
-              __typename
-              ... on Client { id foreignId firstName lastName }
-              ... on CompanyEmployee {
-                employee { id firstName lastName }
-              }
-            }
+            ...fragmentMessage
           }
         }
       }
     }
-  `;
+  `, { fragmentMessage });
 
   constructor(config: IMessagesSubscriptionConfig) {
     this.apiUrl = config.apiUrl;
