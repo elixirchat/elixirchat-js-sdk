@@ -276,16 +276,24 @@ export class MessagesSubscription {
 
   public sendMessage = ({ text, attachments, responseToMessageId, tempId }: ISentMessage): Promise<IMessage> => {
     const query = this.sendMessageQuery;
+    const attachmentFileNames = [];
+    const binaryAttachmentsObject = {};
+
+    attachments.forEach(file => {
+      attachmentFileNames.push(file.name);
+      binaryAttachmentsObject[file.name] = file;
+    });
+
     const variables = {
       text,
-      attachments,
+      attachments: attachmentFileNames,
       responseToMessageId,
       tempId,
     };
 
     return new Promise((resolve, reject) => {
       this.graphQLClient
-        .query(query, variables, { asFormData: true })
+        .query(query, variables, binaryAttachmentsObject)
         .then(data => {
           if (data && data.sendMessage) {
             const message = serializeMessage(data.sendMessage, {

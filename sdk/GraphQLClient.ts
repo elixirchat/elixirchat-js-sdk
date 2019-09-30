@@ -7,9 +7,7 @@ export interface IGraphQLClientQuery {
   (
     query: string,
     variables?: object,
-    options?: {
-      asFormData: boolean,
-    },
+    binaryFiles?: object,
   ): void
 }
 
@@ -30,33 +28,23 @@ export class GraphQLClient {
     }
   }
 
-  protected makeFormData(query: string, variables: object): FormData {
+  protected makeFormData(query: string, variables: object, binaryFiles?: object): FormData {
     const formData = new FormData();
-
-    // TODO: remove hardcoded query variables
-    const formVariables = {
-      roomId: variables.roomId,
-      text: variables.text,
-      attachments: variables.attachments.map(file => file.name),
-      responseToMessageId: variables.responseToMessageId,
-      tempId: variables.tempId,
-    };
-
     formData.append('query', query);
-    formData.append('variables', JSON.stringify(formVariables));
-    variables.attachments.forEach(file => {
-      formData.append(file.name, file);
-    });
+    formData.append('variables', JSON.stringify(variables));
 
+    for (let fileName in binaryFiles) {
+      formData.append(fileName, binaryFiles[fileName]);
+    }
     return formData;
   };
 
-  public query(query, variables, options = { asFormData: false }): IGraphQLClientQuery {
+  public query(query, variables, binaryFiles): IGraphQLClientQuery {
     let headers;
     let body;
 
-    if (options.asFormData) {
-      body = this.makeFormData(query, variables);
+    if (binaryFiles) {
+      body = this.makeFormData(query, variables, binaryFiles);
       headers = this.headers;
     }
     else {
