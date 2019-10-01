@@ -335,21 +335,7 @@ function _get(object, path, defaultValue) {
   }
 }
 
-exports._get = _get; // Lodash-like _.omit
-
-function _omit(object, listOfKeys) {
-  var newObject = {};
-
-  for (var key in object) {
-    if (!listOfKeys.includes(key)) {
-      newObject[key] = object[key];
-    }
-  }
-
-  return newObject;
-}
-
-exports._omit = _omit; // Lodash-like _.merge
+exports._get = _get; // Lodash-like _.merge
 
 function _merge(object1, object2) {
   var mergedObject = {};
@@ -5711,136 +5697,7 @@ var unobserveOrCancel = function unobserveOrCancel(absintheSocket, notifier, obs
 
 
 exports.unobserveOrCancel = unobserveOrCancel;
-},{"core-js/modules/es6.array.find-index":"7sVm","core-js/modules/es6.array.find":"Qppk","core-js/modules/es6.function.name":"N3yi","@jumpn/utils-composite":"7Q0f","phoenix":"XFqm","core-js/modules/web.dom.iterable":"v6Aj","core-js/modules/es6.array.for-each":"VsIt","@babel/runtime/helpers/toConsumableArray":"Fhqp","@jumpn/utils-graphql":"2hqA","zen-observable":"U0NN","core-js/modules/es7.array.includes":"TLss","core-js/modules/es6.string.includes":"fH7p","@babel/runtime/helpers/objectSpread":"fwAU","@babel/runtime/helpers/objectWithoutProperties":"U8F3","core-js/modules/es6.array.index-of":"LvRh","@jumpn/utils-array":"Yu+T","core-js/modules/es6.function.bind":"WIhg","@babel/runtime/helpers/newArrowCheck":"tS9b"}],"1lqy":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var utilsCommon_1 = require("../../utilsCommon");
-
-function serializeUser(user, options) {
-  var elixirChatId = utilsCommon_1._get(user, 'foreignId') || null;
-  return {
-    id: utilsCommon_1._get(user, 'id') || null,
-    firstName: utilsCommon_1._get(user, 'firstName') || '',
-    lastName: utilsCommon_1._get(user, 'lastName') || '',
-    isOperator: utilsCommon_1._get(user, '__typename') !== 'Client',
-    isCurrentClient: elixirChatId === options.currentClientId,
-    elixirChatId: elixirChatId
-  };
-}
-
-exports.serializeUser = serializeUser;
-},{"../../utilsCommon":"EjGt"}],"sQAQ":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-function serializeFile(fileData, options) {
-  var file = fileData || {};
-  var thumbnails = null;
-
-  if (file.thumbnails && file.thumbnails.length) {
-    thumbnails = file.thumbnails.map(function (thumbnail) {
-      var serializedThumbnail = serializeFile(thumbnail, options);
-      return {
-        id: serializedThumbnail.id,
-        url: serializedThumbnail.url,
-        name: serializedThumbnail.name,
-        bytesSize: serializedThumbnail.bytesSize,
-        width: serializedThumbnail.width,
-        height: serializedThumbnail.height,
-        contentType: serializedThumbnail.contentType,
-        thumbType: thumbnail.thumbType || null
-      };
-    });
-  }
-
-  var uploadsUrlPrefix = options.backendStaticUrl.replace(/\/$/, '') + '/';
-  var fileUrl = '';
-
-  if (file.url) {
-    fileUrl = /^uploads/i.test(file.url) ? uploadsUrlPrefix + file.url : file.url;
-  }
-
-  return {
-    id: file.id || null,
-    url: fileUrl,
-    name: file.name || '',
-    bytesSize: file.bytesSize || 0,
-    height: file.height || 0,
-    width: file.width || 0,
-    thumbnails: thumbnails,
-    contentType: file.contentType || null,
-    originalFileObject: file.originalFileObject || null
-  };
-}
-
-exports.serializeFile = serializeFile;
-},{}],"ZEl5":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var utilsCommon_1 = require("../../utilsCommon");
-
-var serializeUser_1 = require("./serializeUser");
-
-var serializeFile_1 = require("./serializeFile");
-
-function serializeMessage(message, options) {
-  var _message$sender = message.sender,
-      sender = _message$sender === void 0 ? {} : _message$sender,
-      attachments = message.attachments,
-      _message$data = message.data,
-      data = _message$data === void 0 ? {} : _message$data;
-  var responseToMessage = data.responseToMessage,
-      _data$author = data.author,
-      author = _data$author === void 0 ? {} : _data$author; // TODO: change backend API structure into same-format inline objects
-
-  var senderData = Object.assign({}, utilsCommon_1._omit(sender, ['employee']), utilsCommon_1._get(sender, 'employee'), utilsCommon_1._omit(author, ['employee']), utilsCommon_1._get(author, 'employee'));
-  var serializedSender = serializeUser_1.serializeUser(senderData, options);
-  var serializedAttachments = (attachments || []).map(function (attachment) {
-    return serializeFile_1.serializeFile(attachment, options);
-  });
-
-  var responseToMessageSender = utilsCommon_1._get(responseToMessage, 'sender', {});
-
-  var responseToMessageSenderData = Object.assign({}, utilsCommon_1._omit(responseToMessageSender, ['employee']), utilsCommon_1._get(responseToMessageSender, 'employee'));
-  var serializedResponseToMessage = {
-    id: utilsCommon_1._get(responseToMessage, 'id') || null,
-    text: utilsCommon_1._get(responseToMessage, 'text') || '',
-    sender: serializeUser_1.serializeUser(responseToMessageSenderData, options)
-  };
-
-  var isSystem = utilsCommon_1._get(message, 'system', false);
-
-  return {
-    id: utilsCommon_1._get(message, 'id') || null,
-    tempId: utilsCommon_1._get(message, 'tempId') || null,
-    text: utilsCommon_1._get(message, 'text') || '',
-    timestamp: utilsCommon_1._get(message, 'timestamp') || '',
-    cursor: utilsCommon_1._get(message, 'cursor') || null,
-    sender: serializedSender,
-    responseToMessage: serializedResponseToMessage.id ? serializedResponseToMessage : null,
-    attachments: serializedAttachments,
-    isSubmitting: utilsCommon_1._get(message, 'isSubmitting') || false,
-    isSubmissionError: utilsCommon_1._get(message, 'isSubmissionError') || false,
-    isSystem: isSystem,
-    systemData: !isSystem ? null : {
-      type: utilsCommon_1._get(message, 'data.type') || null
-    }
-  };
-}
-
-exports.serializeMessage = serializeMessage;
-},{"../../utilsCommon":"EjGt","./serializeUser":"1lqy","./serializeFile":"sQAQ"}],"1fv+":[function(require,module,exports) {
+},{"core-js/modules/es6.array.find-index":"7sVm","core-js/modules/es6.array.find":"Qppk","core-js/modules/es6.function.name":"N3yi","@jumpn/utils-composite":"7Q0f","phoenix":"XFqm","core-js/modules/web.dom.iterable":"v6Aj","core-js/modules/es6.array.for-each":"VsIt","@babel/runtime/helpers/toConsumableArray":"Fhqp","@jumpn/utils-graphql":"2hqA","zen-observable":"U0NN","core-js/modules/es7.array.includes":"TLss","core-js/modules/es6.string.includes":"fH7p","@babel/runtime/helpers/objectSpread":"fwAU","@babel/runtime/helpers/objectWithoutProperties":"U8F3","core-js/modules/es6.array.index-of":"LvRh","@jumpn/utils-array":"Yu+T","core-js/modules/es6.function.bind":"WIhg","@babel/runtime/helpers/newArrowCheck":"tS9b"}],"1fv+":[function(require,module,exports) {
 "use strict";
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -5875,38 +5732,27 @@ function () {
 
   _createClass(GraphQLClient, [{
     key: "makeFormData",
-    value: function makeFormData(query, variables) {
-      var formData = new FormData(); // TODO: remove hardcoded query variables
-
-      var formVariables = {
-        roomId: variables.roomId,
-        text: variables.text,
-        attachments: variables.attachments.map(function (file) {
-          return file.name;
-        }),
-        responseToMessageId: variables.responseToMessageId,
-        tempId: variables.tempId
-      };
+    value: function makeFormData(query, variables, binaryFiles) {
+      var formData = new FormData();
       formData.append('query', query);
-      formData.append('variables', JSON.stringify(formVariables));
-      variables.attachments.forEach(function (file) {
-        formData.append(file.name, file);
-      });
+      formData.append('variables', JSON.stringify(variables));
+
+      for (var fileName in binaryFiles) {
+        formData.append(fileName, binaryFiles[fileName]);
+      }
+
       return formData;
     }
   }, {
     key: "query",
-    value: function query(_query, variables) {
+    value: function query(_query, variables, binaryFiles) {
       var _this = this;
 
-      var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {
-        asFormData: false
-      };
       var headers;
       var body;
 
-      if (options.asFormData) {
-        body = this.makeFormData(_query, variables);
+      if (binaryFiles) {
+        body = this.makeFormData(_query, variables, binaryFiles);
         headers = this.headers;
       } else {
         body = JSON.stringify({
@@ -5954,7 +5800,210 @@ exports.simplifyGraphQLJSON = function (graphQLJSON) {
 exports.gql = function (queryParts) {
   return queryParts.join('');
 };
-},{}],"y8vH":[function(require,module,exports) {
+
+exports.insertGraphQlFragments = function (query) {
+  var fragments = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+  var fragmentsString = '';
+
+  for (var name in fragments) {
+    fragmentsString += fragments[name];
+  }
+
+  return query + fragmentsString;
+};
+},{}],"1lqy":[function(require,module,exports) {
+"use strict";
+
+function _templateObject2() {
+  var data = _taggedTemplateLiteral(["\n  fragment fragmentCompanyEmployee on CompanyEmployee {\n    employee {\n      id\n      firstName\n      lastName\n    }\n    __typename\n    isWorking\n    role\n  }\n"]);
+
+  _templateObject2 = function _templateObject2() {
+    return data;
+  };
+
+  return data;
+}
+
+function _templateObject() {
+  var data = _taggedTemplateLiteral(["\n  fragment fragmentClient on Client {\n    __typename\n    id\n    foreignId\n    firstName\n    lastName\n  }\n"]);
+
+  _templateObject = function _templateObject() {
+    return data;
+  };
+
+  return data;
+}
+
+function _taggedTemplateLiteral(strings, raw) { if (!raw) { raw = strings.slice(0); } return Object.freeze(Object.defineProperties(strings, { raw: { value: Object.freeze(raw) } })); }
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var GraphQLClient_1 = require("../GraphQLClient");
+
+var utilsCommon_1 = require("../../utilsCommon");
+
+exports.fragmentClient = GraphQLClient_1.gql(_templateObject());
+exports.fragmentCompanyEmployee = GraphQLClient_1.gql(_templateObject2());
+
+function serializeUser(user, options) {
+  var elixirChatId = utilsCommon_1._get(user, 'foreignId') || null;
+  var isOperator = utilsCommon_1._get(user, '__typename') !== 'Client';
+  var id = isOperator ? utilsCommon_1._get(user, 'employee.id') : utilsCommon_1._get(user, 'id');
+  return {
+    id: id || null,
+    firstName: utilsCommon_1._get(user, 'firstName') || utilsCommon_1._get(user, 'employee.firstName') || '',
+    lastName: utilsCommon_1._get(user, 'lastName') || utilsCommon_1._get(user, 'employee.lastName') || '',
+    isCurrentClient: elixirChatId === options.currentClientId,
+    isOperator: isOperator,
+    elixirChatId: elixirChatId
+  };
+}
+
+exports.serializeUser = serializeUser;
+},{"../GraphQLClient":"1fv+","../../utilsCommon":"EjGt"}],"sQAQ":[function(require,module,exports) {
+"use strict";
+
+function _templateObject() {
+  var data = _taggedTemplateLiteral(["\n  fragment fragmentFile on File {\n    id\n    url\n    name\n    bytesSize\n    height\n    width\n    contentType\n    thumbnails {\n      id\n      url\n      name\n      bytesSize\n      height\n      width\n      contentType\n      thumbType\n    }\n  }\n"]);
+
+  _templateObject = function _templateObject() {
+    return data;
+  };
+
+  return data;
+}
+
+function _taggedTemplateLiteral(strings, raw) { if (!raw) { raw = strings.slice(0); } return Object.freeze(Object.defineProperties(strings, { raw: { value: Object.freeze(raw) } })); }
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var GraphQLClient_1 = require("../GraphQLClient");
+
+exports.fragmentFile = GraphQLClient_1.gql(_templateObject());
+
+function serializeFile(fileData, options) {
+  var file = fileData || {};
+  var thumbnails = null;
+
+  if (file.thumbnails && file.thumbnails.length) {
+    thumbnails = file.thumbnails.map(function (thumbnail) {
+      var serializedThumbnail = serializeFile(thumbnail, options);
+      return {
+        id: serializedThumbnail.id,
+        url: serializedThumbnail.url,
+        name: serializedThumbnail.name,
+        bytesSize: serializedThumbnail.bytesSize,
+        width: serializedThumbnail.width,
+        height: serializedThumbnail.height,
+        contentType: serializedThumbnail.contentType,
+        thumbType: thumbnail.thumbType || null
+      };
+    });
+  }
+
+  var uploadsUrlPrefix = options.backendStaticUrl.replace(/\/$/, '') + '/';
+  var fileUrl = '';
+
+  if (file.url) {
+    fileUrl = /^uploads/i.test(file.url) ? uploadsUrlPrefix + file.url : file.url;
+  }
+
+  return {
+    id: file.id || null,
+    url: fileUrl,
+    name: file.name || '',
+    bytesSize: file.bytesSize || 0,
+    height: file.height || 0,
+    width: file.width || 0,
+    thumbnails: thumbnails,
+    contentType: file.contentType || null,
+    originalFileObject: file.originalFileObject || null
+  };
+}
+
+exports.serializeFile = serializeFile;
+},{"../GraphQLClient":"1fv+"}],"ZEl5":[function(require,module,exports) {
+"use strict";
+
+function _templateObject() {
+  var data = _taggedTemplateLiteral(["\n  fragment fragmentMessage on Message {\n    id\n    tempId\n    text\n    timestamp\n    system\n    sender {\n      ... on Client { ...fragmentClient }\n      ... on CompanyEmployee { ...fragmentCompanyEmployee }\n    }\n    attachments {\n      ...fragmentFile\n    }\n    data {\n      ... on SystemMessageData {\n        type\n        author {\n          ...fragmentCompanyEmployee\n        }\n        whenWouldWork\n      }\n      ... on NotSystemMessageData {\n        responseToMessage {\n          id\n          text\n          sender {\n            __typename\n            ... on Client { ...fragmentClient }\n            ... on CompanyEmployee { ...fragmentCompanyEmployee }\n          }\n        }\n      }\n    }\n  }\n"]);
+
+  _templateObject = function _templateObject() {
+    return data;
+  };
+
+  return data;
+}
+
+function _taggedTemplateLiteral(strings, raw) { if (!raw) { raw = strings.slice(0); } return Object.freeze(Object.defineProperties(strings, { raw: { value: Object.freeze(raw) } })); }
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var GraphQLClient_1 = require("../GraphQLClient");
+
+var utilsCommon_1 = require("../../utilsCommon");
+
+var serializeUser_1 = require("./serializeUser");
+
+var serializeFile_1 = require("./serializeFile");
+
+exports.fragmentMessage = GraphQLClient_1.insertGraphQlFragments(GraphQLClient_1.gql(_templateObject()), {
+  fragmentClient: serializeUser_1.fragmentClient,
+  fragmentCompanyEmployee: serializeUser_1.fragmentCompanyEmployee,
+  fragmentFile: serializeFile_1.fragmentFile
+});
+
+function serializeMessage(message, options) {
+  var _message$sender = message.sender,
+      sender = _message$sender === void 0 ? {} : _message$sender,
+      attachments = message.attachments,
+      _message$data = message.data,
+      data = _message$data === void 0 ? {} : _message$data;
+  var responseToMessage = data.responseToMessage,
+      _data$author = data.author,
+      author = _data$author === void 0 ? {} : _data$author;
+  var serializedSender = serializeUser_1.serializeUser(Object.assign({}, sender, author), options);
+  var serializedAttachments = (attachments || []).map(function (attachment) {
+    return serializeFile_1.serializeFile(attachment, options);
+  });
+
+  var responseToMessageSender = utilsCommon_1._get(responseToMessage, 'sender', {});
+
+  var serializedResponseToMessage = {
+    id: utilsCommon_1._get(responseToMessage, 'id') || null,
+    text: utilsCommon_1._get(responseToMessage, 'text') || '',
+    sender: serializeUser_1.serializeUser(responseToMessageSender, options)
+  };
+
+  var isSystem = utilsCommon_1._get(message, 'system', false);
+
+  return {
+    id: utilsCommon_1._get(message, 'id') || null,
+    tempId: utilsCommon_1._get(message, 'tempId') || null,
+    text: utilsCommon_1._get(message, 'text') || '',
+    timestamp: utilsCommon_1._get(message, 'timestamp') || '',
+    cursor: utilsCommon_1._get(message, 'cursor') || null,
+    sender: serializedSender,
+    responseToMessage: serializedResponseToMessage.id ? serializedResponseToMessage : null,
+    attachments: serializedAttachments,
+    isSubmitting: utilsCommon_1._get(message, 'isSubmitting') || false,
+    isSubmissionError: utilsCommon_1._get(message, 'isSubmissionError') || false,
+    isSystem: isSystem,
+    systemData: !isSystem ? null : {
+      type: utilsCommon_1._get(message, 'data.type') || null,
+      whenWouldWork: utilsCommon_1._get(message, 'data.whenWouldWork') || null
+    }
+  };
+}
+
+exports.serializeMessage = serializeMessage;
+},{"../GraphQLClient":"1fv+","../../utilsCommon":"EjGt","./serializeUser":"1lqy","./serializeFile":"sQAQ"}],"y8vH":[function(require,module,exports) {
 "use strict";
 
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
@@ -5966,7 +6015,7 @@ function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.
 function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
 
 function _templateObject3() {
-  var data = _taggedTemplateLiteral(["\n    query ($beforeCursor: String, $limit: Int!) {\n      messages(before: $beforeCursor, last: $limit) {\n        edges {\n          cursor\n          node {\n            id\n            tempId\n            text\n            timestamp\n            system\n            attachments {\n              id\n              url\n              name\n              bytesSize\n              height\n              width\n              contentType\n              thumbnails { id url name bytesSize height width contentType thumbType }\n            }\n            data {\n              ... on NotSystemMessageData {\n                responseToMessage {\n                  id\n                  text\n                  sender {\n                    __typename\n                    ... on Client { id foreignId firstName lastName }\n                    ... on CompanyEmployee {\n                      employee { id firstName lastName }\n                    }\n                  }\n                }\n              }\n              ... on SystemMessageData {\n                type\n                author {\n                  employee { id firstName lastName }\n                }\n              }\n\n            }\n            sender {\n              __typename\n              ... on Client { id foreignId firstName lastName }\n              ... on CompanyEmployee {\n                employee { id firstName lastName }\n              }\n            }\n          }\n        }\n      }\n    }\n  "]);
+  var data = _taggedTemplateLiteral(["\n    query ($beforeCursor: String, $limit: Int!) {\n      messages(before: $beforeCursor, last: $limit) {\n        edges {\n          cursor\n          node {\n            ...fragmentMessage\n          }\n        }\n      }\n    }\n  "]);
 
   _templateObject3 = function _templateObject3() {
     return data;
@@ -5976,7 +6025,7 @@ function _templateObject3() {
 }
 
 function _templateObject2() {
-  var data = _taggedTemplateLiteral(["\n    mutation ($text: String!, $responseToMessageId: ID, $attachments: [Upload!], $tempId: ID) {\n      sendMessage(text: $text, responseToMessageId: $responseToMessageId, attachments: $attachments, tempId: $tempId) {\n        id\n        tempId\n        text\n        timestamp\n        system\n        attachments {\n          id\n          url\n          name\n          bytesSize\n          height\n          width\n          contentType\n          thumbnails { id url name bytesSize height width contentType thumbType }\n        }\n        data {\n          ... on NotSystemMessageData {\n            responseToMessage {\n              id\n              text\n              sender {\n                __typename\n                ... on Client { id foreignId firstName lastName }\n                ... on CompanyEmployee {\n                  employee { id firstName lastName }\n                }\n              }\n            }\n          }\n          ... on SystemMessageData {\n            type\n            author {\n              employee { id firstName lastName }\n            }\n          }\n\n        }\n        sender {\n          __typename\n          ... on Client { id foreignId firstName lastName }\n          ... on CompanyEmployee {\n            employee { id firstName lastName }\n          }\n        }\n      }\n    }\n  "]);
+  var data = _taggedTemplateLiteral(["\n    mutation ($text: String!, $responseToMessageId: ID, $attachments: [Upload!], $tempId: ID) {\n      sendMessage(text: $text, responseToMessageId: $responseToMessageId, attachments: $attachments, tempId: $tempId) {\n        ...fragmentMessage\n      }\n    }\n  "]);
 
   _templateObject2 = function _templateObject2() {
     return data;
@@ -5986,7 +6035,7 @@ function _templateObject2() {
 }
 
 function _templateObject() {
-  var data = _taggedTemplateLiteral(["\n    subscription {\n      newMessage {\n        id\n        tempId\n        text\n        timestamp\n        system\n        attachments {\n          id\n          url\n          name\n          bytesSize\n          height\n          width\n          contentType\n          thumbnails { id url name bytesSize height width contentType thumbType }\n        }\n        data {\n          ... on NotSystemMessageData {\n            responseToMessage {\n              id\n              text\n              sender {\n                __typename\n                ... on Client { id foreignId firstName lastName }\n                ... on CompanyEmployee {\n                  employee { id firstName lastName }\n                }\n              }\n            }\n          }\n          ... on SystemMessageData {\n            type\n            author {\n              employee { id firstName lastName }\n            }\n          }\n        }\n        sender {\n          __typename\n          ... on Client { id foreignId firstName lastName }\n          ... on CompanyEmployee {\n            employee { id firstName lastName }\n          }\n        }\n      }\n    }\n  "]);
+  var data = _taggedTemplateLiteral(["\n    subscription {\n      newMessage {\n        ...fragmentMessage\n      }\n    }\n  "]);
 
   _templateObject = function _templateObject() {
     return data;
@@ -6037,9 +6086,15 @@ function () {
     this.reachedBeginningOfMessageHistory = false;
     this.isBeforeUnload = false;
     this.isCurrentlySubscribed = false;
-    this.subscriptionQuery = GraphQLClient_1.gql(_templateObject());
-    this.sendMessageQuery = GraphQLClient_1.gql(_templateObject2());
-    this.messageHistoryQuery = GraphQLClient_1.gql(_templateObject3());
+    this.subscriptionQuery = GraphQLClient_1.insertGraphQlFragments(GraphQLClient_1.gql(_templateObject()), {
+      fragmentMessage: serializeMessage_1.fragmentMessage
+    });
+    this.sendMessageQuery = GraphQLClient_1.insertGraphQlFragments(GraphQLClient_1.gql(_templateObject2()), {
+      fragmentMessage: serializeMessage_1.fragmentMessage
+    });
+    this.messageHistoryQuery = GraphQLClient_1.insertGraphQlFragments(GraphQLClient_1.gql(_templateObject3()), {
+      fragmentMessage: serializeMessage_1.fragmentMessage
+    });
 
     this.onBeforeUnload = function () {
       _this.isBeforeUnload = true;
@@ -6062,16 +6117,20 @@ function () {
           responseToMessageId = _ref.responseToMessageId,
           tempId = _ref.tempId;
       var query = _this.sendMessageQuery;
+      var attachmentFileNames = [];
+      var binaryAttachmentsObject = {};
+      attachments.forEach(function (file) {
+        attachmentFileNames.push(file.name);
+        binaryAttachmentsObject[file.name] = file;
+      });
       var variables = {
         text: text,
-        attachments: attachments,
+        attachments: attachmentFileNames,
         responseToMessageId: responseToMessageId,
         tempId: tempId
       };
       return new Promise(function (resolve, reject) {
-        _this.graphQLClient.query(query, variables, {
-          asFormData: true
-        }).then(function (data) {
+        _this.graphQLClient.query(query, variables, binaryAttachmentsObject).then(function (data) {
           if (data && data.sendMessage) {
             var message = serializeMessage_1.serializeMessage(data.sendMessage, {
               backendStaticUrl: _this.backendStaticUrl,
