@@ -12839,14 +12839,16 @@ var utilsCommon_1 = require("../utilsCommon");
 
 var Widget_1 = require("./DefaultWidget/Widget");
 
-console.log('process.env.NODE_ENV 555', process);
+console.log('process.env.NODE_ENV 555', process, __dirname);
 console.log('process.env.NODE_ENV 666', process.env);
 console.log('process.env.NODE_ENV 777', "production");
 console.log('process.env.NODE_ENV 888 1', "123");
+console.log('----- yyy 222', "123");
 var ElixirChat = window.ElixirChat;
 
 if (!window.ElixirChat) {
-  ElixirChat = require(__dirname + '../sdk').default;
+  window.__require = require;
+  ElixirChat = require(__dirname + '/../sdk').default; // ElixirChat = require('/Users/egorvinogradov/elixir/elixirchat-promo/static/node_modules/elixirchat-js-sdk/sdk').default;
 }
 
 if (!ElixirChat) {

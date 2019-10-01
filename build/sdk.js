@@ -7162,5 +7162,6 @@ Object.defineProperty(exports, "__esModule", {
 
 var ElixirChat_1 = require("./ElixirChat");
 
+console.log('----- yyy', "123");
 exports.default = ElixirChat_1.ElixirChat;
 },{"./ElixirChat":"Pqo8"}]},{},["7QCb"], null)
