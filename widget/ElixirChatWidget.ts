@@ -2,19 +2,9 @@ import 'babel-polyfill';
 import { logEvent } from '../utilsCommon';
 import { renderWidgetReactComponent } from './DefaultWidget/Widget';
 
-console.log('process.env.NODE_ENV 555', process, __dirname);
-console.log('process.env.NODE_ENV 666', process.env);
-console.log('process.env.NODE_ENV 777', process.env.NODE_ENV);
-console.log('process.env.NODE_ENV 888 1', process.env.IS_BUILDING_STATIC);
-console.log('----- yyy 222', process.env.IS_BUILDING_STATIC);
-
 let ElixirChat = window.ElixirChat;
 if (!window.ElixirChat) {
-  window.__require = require;
   ElixirChat = require('../sdk').default;
-  console.log('require ElixirChat', ElixirChat);
-  // ElixirChat = require(__dirname + '/../sdk').default;
-  // ElixirChat = require('/Users/egorvinogradov/elixir/elixirchat-promo/static/node_modules/elixirchat-js-sdk/sdk').default;
 }
 if (!ElixirChat) {
   logEvent(

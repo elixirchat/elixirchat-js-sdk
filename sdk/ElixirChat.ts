@@ -111,9 +111,6 @@ export class ElixirChat {
   }
 
   protected initialize(): void {
-
-    window.__this = this;
-
     if (!this.companyId) {
       logEvent(
         this.debug,
