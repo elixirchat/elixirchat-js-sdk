@@ -2,6 +2,8 @@ import 'babel-polyfill';
 import { logEvent } from '../utilsCommon';
 import { renderWidgetReactComponent } from './DefaultWidget/Widget';
 
+console.log('process.env.NODE_ENV', process.env.NODE_ENV);
+
 let ElixirChat = window.ElixirChat;
 if (process.env.NODE_ENV === 'development') {
   ElixirChat = require(__dirname + '../sdk').default;
