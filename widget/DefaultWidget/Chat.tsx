@@ -59,6 +59,9 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
     elixirChatWidget.onConnectSuccess(() => {
       elixirChatWidget.fetchMessageHistory(this.messageChunkSize)
         .then(async messages => {
+          if (messages.length < this.messageChunkSize) {
+            messages = [this.generateNewClientPlaceholderMessage(), ...messages];
+          }
           await this.setState({ messages, isLoading: false });
           this.scrollToBottom();
           this.updateUnseenRepliesCount();
@@ -262,13 +265,28 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
     };
   };
 
+  generateNewClientPlaceholderMessage = () => {
+    return {
+      id: randomDigitStringId(6),
+      timestamp: new Date().toISOString(),
+      isSystem: true,
+      sender: {},
+      attachments: [],
+      systemData: {
+        type: 'NEW_CLIENT_PLACEHOLDER'
+      },
+    };
+  };
+
   getRepliesToCurrentClient = () => {
     const { elixirChatWidget } = this.props;
     const { messages } = this.state;
 
     if (elixirChatWidget.isPrivate) {
       return messages.filter(message => {
-        return message.sender.id !== elixirChatWidget.elixirChatClientId;
+        const isSentByCurrentClient = message.sender.id !== elixirChatWidget.elixirChatClientId;
+        const isNewClientPlaceholder = _get(message, 'systemData.type') === 'NEW_CLIENT_PLACEHOLDER';
+        return !isSentByCurrentClient && !isNewClientPlaceholder;
       });
     }
     else {

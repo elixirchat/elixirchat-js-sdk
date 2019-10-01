@@ -193,8 +193,8 @@ export class ElixirChat {
       lastName: clientLastName,
     };
 
-    const roomId = room.id || client.id;
-    const roomTitle = room.title || client.firstName + ' ' + client.lastName;
+    const roomId = room.id || clientId;
+    const roomTitle = room.title || clientFirstName + ' ' + clientLastName;
     const roomData = room.data || {};
     this.room = {
       id: roomId,

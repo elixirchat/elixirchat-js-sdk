@@ -52,7 +52,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
   setProcessedMessages = (messages, highlightedMessageIds) => {
     let imagePreviews = [];
-    const processedMessages = messages.map((message, i) => {
+    let processedMessages = messages.map((message, i) => {
       const processedMessage = { ...message };
       const previousMessage = messages[i - 1];
       if (previousMessage) {
@@ -350,6 +350,14 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                             sameElse: 'D MMMM [в] H:mm',
                           })
                         )}.
+                      </div>
+                    </Fragment>
+                  )}
+
+                  {message.systemData.type === 'NEW_CLIENT_PLACEHOLDER' && (
+                    <Fragment>
+                      <div className="elixirchat-chat-messages__text">
+                        Здравствуйте! Как мы можем вам помочь?
                       </div>
                     </Fragment>
                   )}
