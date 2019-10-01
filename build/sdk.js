@@ -6826,8 +6826,6 @@ function () {
     value: function initialize() {
       var _this2 = this;
 
-      window.__this = this;
-
       if (!this.companyId) {
         utilsCommon_1.logEvent(this.debug, "Required parameter companyId is not provided: \nSee more: ".concat(exports.API_REFERENCE_URL, "#config-companyid"), null, 'error');
         return;
@@ -6925,8 +6923,8 @@ function () {
         firstName: clientFirstName,
         lastName: clientLastName
       };
-      var roomId = room.id || client.id;
-      var roomTitle = room.title || client.firstName + ' ' + client.lastName;
+      var roomId = room.id || clientId;
+      var roomTitle = room.title || clientFirstName + ' ' + clientLastName;
       var roomData = room.data || {};
       this.room = {
         id: roomId,
@@ -7162,6 +7160,5 @@ Object.defineProperty(exports, "__esModule", {
 
 var ElixirChat_1 = require("./ElixirChat");
 
-console.log('----- yyy', "123");
 exports.default = ElixirChat_1.ElixirChat;
 },{"./ElixirChat":"Pqo8"}]},{},["7QCb"], null)
