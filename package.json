@@ -6,7 +6,8 @@
     "dev": "./bin/dev.sh",
     "build": "./bin/build.sh",
     "examples": "./bin/examples.sh",
-    "link-with-backend": "./bin/link-with-backend.sh"
+    "link-with-backend": "./bin/link-with-backend.sh",
+    "postinstall": "./bin/postinstall.sh"
   },
   "main": "sdk/index.ts",
   "repository": {
