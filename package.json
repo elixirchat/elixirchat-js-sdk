@@ -1,6 +1,6 @@
 {
   "name": "elixirchat-js-sdk",
-  "version": "1.1.7",
+  "version": "1.1.8",
   "description": "JavaScript SDK for https://elixir.chat",
   "scripts": {
     "dev": "./bin/dev.sh",
