@@ -4,7 +4,7 @@ import { renderWidgetReactComponent } from './DefaultWidget/Widget';
 
 let ElixirChat = window.ElixirChat;
 if (process.env.NODE_ENV === 'development') {
-  ElixirChat = require('../sdk').default;
+  ElixirChat = require(__dirname + '../sdk').default;
 }
 if (!ElixirChat) {
   logEvent(

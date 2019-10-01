@@ -12598,6 +12598,7 @@ function renderWidgetReactComponent(container, elixirChatWidget) {
 
 exports.renderWidgetReactComponent = renderWidgetReactComponent;
 },{"react":"1n8/","react-dom":"NKHc","classnames":"9qb7","../../utilsWidget":"4KO9","./Chat":"8tJY","./IFrameWrapper":"0q3/","./ImagePreview":"3Xfh","./styles":"xqZa","./assets":"GpM8"}],"Nvy6":[function(require,module,exports) {
+var __dirname = "/Users/egorvinogradov/elixir/elixirchat-js-sdk/widget";
 "use strict";
 
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -12631,7 +12632,7 @@ var Widget_1 = require("./DefaultWidget/Widget");
 var ElixirChat = window.ElixirChat;
 
 if ("production" === 'development') {
-  ElixirChat = require('../sdk').default;
+  ElixirChat = require(__dirname + '../sdk').default;
 }
 
 if (!ElixirChat) {
