@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 
-printf "\n\n\n --- POSTINSTALL YO YO \n\n"
+printf "\n\n\n --- POSTINSTALL YO YO 2 \n\n"
 printf " --- COMMAND: \n\n"
 echo $(command -v node-sass)
 printf " ^^^^^\n\n\n\n"
