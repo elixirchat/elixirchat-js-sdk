@@ -7,7 +7,7 @@
     "build": "./bin/build.sh",
     "examples": "./bin/examples.sh",
     "link-with-backend": "./bin/link-with-backend.sh",
-    "preinstall": "printf '\n\n\nPREINSTALL1111111111\n\n\n' && npm i node-sass",
+    "preinstall": "npm i node-sass@4.12.0",
     "postinstall": "./bin/postinstall.sh"
   },
   "main": "sdk/index.ts",
