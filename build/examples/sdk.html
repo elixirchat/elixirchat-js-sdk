@@ -211,7 +211,7 @@ function renderMessages(messages, shouldScrollDown = false){
     clone.querySelector('li').id = message.id;
     clone.querySelector('blockquote').textContent = responseToMessage.text ? 'Reply to “' + responseToMessage.text.trim() + '”' : '';
     clone.querySelector('b').textContent = message.sender.firstName + ' ' + message.sender.lastName;
-    clone.querySelector('div').textContent = message.text;
+    clone.querySelector('div').textContent = message.isSystem ? 'System message: ' + message.systemData.type : message.text + ' ';
     clone.querySelector('button').onclick = () => replyToMessage(message.id);
     container.appendChild(clone);
   });
