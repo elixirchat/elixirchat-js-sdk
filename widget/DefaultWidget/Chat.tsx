@@ -303,8 +303,10 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
     }
     else {
       return messages.filter(message => {
-        const { responseToMessage } = message;
-        return responseToMessage && responseToMessage.sender.id === elixirChatWidget.elixirChatClientId;
+        const { responseToMessage, sender } = message;
+        const isSentByCurrentClient = sender.id !== elixirChatWidget.elixirChatClientId;
+        const isResponseToCurrentClient = responseToMessage && responseToMessage.sender.id === elixirChatWidget.elixirChatClientId;
+        return isResponseToCurrentClient && !isSentByCurrentClient;
       });
     }
   };
