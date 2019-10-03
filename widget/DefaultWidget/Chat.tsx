@@ -27,6 +27,7 @@ export interface IDefaultWidgetState {
   isLoading: boolean;
   isLoadingError: boolean;
   isLoadingPreviousMessages: boolean;
+  widgetTitle: string;
 }
 
 export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
@@ -47,6 +48,7 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
     isLoading: true,
     isLoadingError: false,
     isLoadingPreviousMessages: false,
+    widgetTitle: '',
   };
 
   componentDidMount(): void {
@@ -57,6 +59,8 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
     });
 
     elixirChatWidget.onConnectSuccess(() => {
+      this.setState({ widgetTitle: elixirChatWidget.widgetTitle });
+
       elixirChatWidget.fetchMessageHistory(this.messageChunkSize)
         .then(async messages => {
           if (messages.length < this.messageChunkSize) {
@@ -384,6 +388,7 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
       currentlyTypingUsers,
       isLoading,
       isLoadingError,
+      widgetTitle,
     } = this.state;
 
     return (
@@ -391,7 +396,7 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
 
         <h2 className="elixirchat-chat-header">
           <i className="elixirchat-chat-header__indicator"/>
-          Служба поддержки
+          {widgetTitle}
           <button className="elixirchat-chat-header__close"
             title="Закрыть чат"
             onClick={elixirChatWidget.toggleChatVisibility}>

@@ -1,10 +1,11 @@
 import { uniqueNamesGenerator } from 'unique-names-generator';
 import { logEvent, capitalize, randomDigitStringId } from '../utilsCommon';
 import { IMessage } from './serializers/serializeMessage';
+import { fragmentClient } from './serializers/serializeUser';
 import { MessagesSubscription, ISentMessage } from './MessagesSubscription';
 import { TypingStatusSubscription } from './TypingStatusSubscription';
 import { ScreenshotTaker, IScreenshot } from './ScreenshotTaker';
-import { GraphQLClient, gql } from './GraphQLClient';
+import { GraphQLClient, insertGraphQlFragments, gql } from './GraphQLClient';
 
 export const API_REFERENCE_URL = 'https://github.com/elixirchat/elixirchat-js-sdk';
 
@@ -48,6 +49,9 @@ export class ElixirChat {
   public connected: boolean;
   public isPrivate: boolean;
 
+  public widgetTitle: string = '';
+  public defaultWidgetTitle: string = 'Служба поддержки';
+
   public get reachedBeginningOfMessageHistory(): boolean {
     return this.messagesSubscription ? this.messagesSubscription.reachedBeginningOfMessageHistory : false;
   }
@@ -57,32 +61,25 @@ export class ElixirChat {
   protected typingStatusSubscription: any;
   protected screenshotTaker: any;
 
-  protected joinRoomQuery: string = gql`
+  protected joinRoomQuery: string = insertGraphQlFragments(gql`
     mutation($companyId: Uuid!, $room: ForeignRoom, $client: ForeignClient) {
       joinRoom (companyId: $companyId, room: $room, client: $client) {
         token
+        company {
+          working
+          widgetTitle
+        }
         client {
-          id
-          foreignId
-          firstName
-          lastName
+          ...fragmentClient
         }
         room {
           id
           title
           foreignId
-          members {
-            client {
-              id
-              foreignId
-              firstName
-              lastName
-            }
-          }
         }
       }
     }
-  `;
+  `, { fragmentClient });
 
   protected onMessageCallbacks: Array<(message: IElixirChatReceivedMessage) => void> = [];
   protected onConnectSuccessCallbacks: Array<(data?: any) => void> = [];
@@ -241,6 +238,7 @@ export class ElixirChat {
             this.client.lastName = joinRoom.client.lastName;
             this.client.id = joinRoom.client.foreignId;
             this.elixirChatClientId = joinRoom.client.id;
+            this.widgetTitle = joinRoom.company.widgetTitle || this.defaultWidgetTitle;
 
             this.room.id = joinRoom.room.foreignId;
             this.room.title = joinRoom.room.title;
