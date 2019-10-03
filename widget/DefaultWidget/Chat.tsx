@@ -378,7 +378,12 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
   };
 
   render(): void {
-    const { elixirChatWidget, onImagePreviewOpen } = this.props;
+    const {
+      elixirChatWidget,
+      onImagePreviewOpen,
+      isImagePreviewOpen,
+    } = this.props;
+
     const {
       messages,
       highlightedMessageIds,
@@ -395,8 +400,12 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
       <div className="elixirchat-chat-container" ref={this.container} onClick={this.resetUnseenRepliesCount}>
 
         <h2 className="elixirchat-chat-header">
-          <i className="elixirchat-chat-header__indicator"/>
-          {widgetTitle}
+          {widgetTitle && (
+            <Fragment>
+              <i className="elixirchat-chat-header__indicator"/>
+              {widgetTitle}
+            </Fragment>
+          )}
           <button className="elixirchat-chat-header__close"
             title="Закрыть чат"
             onClick={elixirChatWidget.toggleChatVisibility}>
@@ -436,6 +445,7 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
               onChange={this.onTextareaChange}
               messages={messages}
               textareaText={textareaText}
+              isImagePreviewOpen={isImagePreviewOpen}
               textareaResponseToMessageId={textareaResponseToMessageId}
               textareaAttachments={textareaAttachments}
               currentlyTypingUsers={currentlyTypingUsers}

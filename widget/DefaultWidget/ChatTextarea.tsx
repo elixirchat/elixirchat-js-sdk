@@ -48,11 +48,15 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
   }
 
   componentDidUpdate(prevProps) {
-    const { textareaAttachments, textareaResponseToMessageId } = this.props;
+    const { textareaAttachments, textareaResponseToMessageId, isImagePreviewOpen } = this.props;
     const didResponseToMessageIdChange = textareaResponseToMessageId !== prevProps.textareaResponseToMessageId;
     const didAttachmentsChange = textareaAttachments !== prevProps.textareaAttachments;
+    const didImagePreviewClose = !isImagePreviewOpen && prevProps.isImagePreviewOpen;
     if (didResponseToMessageIdChange || didAttachmentsChange) {
       this.updateVerticalHeight();
+      this.focusTextarea();
+    }
+    if (didImagePreviewClose) {
       this.focusTextarea();
     }
   }

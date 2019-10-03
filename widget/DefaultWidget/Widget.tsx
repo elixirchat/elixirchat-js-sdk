@@ -18,6 +18,7 @@ export interface IWidgetState {
   outsideIframeStyles: null | string;
   insideIframeStyles: null | string;
   unreadCount: number;
+  isImagePreviewOpen: boolean;
   currentImagePreview: any,
   imagePreviewGallery: Array<any>,
 }
@@ -30,6 +31,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
     outsideIframeStyles: null,
     insideIframeStyles: null,
     unreadCount: 0,
+    isImagePreviewOpen: false,
     currentImagePreview: {},
     imagePreviewGallery: [],
   };
@@ -91,6 +93,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
 
   onImagePreviewOpen = (currentImagePreview, imagePreviewGallery) => {
     this.setState({
+      isImagePreviewOpen: true,
       currentImagePreview,
       imagePreviewGallery,
     });
@@ -98,6 +101,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
 
   onImagePreviewClose = () => {
     this.setState({
+      isImagePreviewOpen: false,
       currentImagePreview: {},
       imagePreviewGallery: [],
     });
@@ -113,6 +117,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
       unreadCount,
       currentImagePreview,
       imagePreviewGallery,
+      isImagePreviewOpen,
     } = this.state;
 
     return (
@@ -138,7 +143,9 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
         })}>
           <Fragment>
             <style dangerouslySetInnerHTML={{ __html: insideIframeStyles }}/>
-            <Chat elixirChatWidget={elixirChatWidget} onImagePreviewOpen={this.onImagePreviewOpen} />
+            <Chat elixirChatWidget={elixirChatWidget}
+              isImagePreviewOpen={isImagePreviewOpen}
+              onImagePreviewOpen={this.onImagePreviewOpen} />
           </Fragment>
         </IFrameWrapper>
       </Fragment>

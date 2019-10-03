@@ -22,7 +22,6 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
   state = {
     processedMessages: [],
-    currentImagePreview: {},
     imagePreviews: [],
     screenshotFallback: null,
   };
@@ -108,7 +107,6 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
   onImagePreviewClick = (e, preview) => {
     const { onImagePreviewOpen } = this.props;
     const { imagePreviews } = this.state;
-    this.setState({ currentImagePreview: preview });
     onImagePreviewOpen(preview, imagePreviews);
     e.preventDefault();
   };
