@@ -139,7 +139,11 @@
 
 .elixirchat-chat-messages__reply-button {
   margin-left: 10px;
-  cursor: default;
+  cursor: pointer;
+
+  &:hover {
+    color: $color-pink-dark;
+  }
 
   .elixirchat-chat-messages__item--by-me & {
     margin-left: 0;
