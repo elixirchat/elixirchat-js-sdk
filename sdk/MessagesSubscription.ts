@@ -45,7 +45,6 @@ export class MessagesSubscription {
 
   protected latestMessageHistoryCursorsCache: Array<IMessage> = [];
   protected reachedBeginningOfMessageHistory: boolean = false;
-  protected isBeforeUnload: boolean = false;
   protected isCurrentlySubscribed: boolean = false;
 
   protected subscriptionQuery: string = insertGraphQlFragments(gql`
@@ -92,22 +91,14 @@ export class MessagesSubscription {
 
   protected initialize(): void {
     this.absintheSocket = AbsintheSocket.create(
-      new Phoenix.Socket(this.socketUrl, {params: {
-        token: this.token
-      }})
+      new Phoenix.Socket(this.socketUrl, {params: { token: this.token }})
     );
     this.graphQLClient = new GraphQLClient({
       url: this.apiUrl,
       token: this.token,
     });
-    window.addEventListener('beforeunload', this.onBeforeUnload);
     this.subscribe();
   }
-
-  protected onBeforeUnload = (): boolean => {
-    this.isBeforeUnload = true;
-    return false;
-  };
 
   protected subscribe(): void {
     const notifier = AbsintheSocket.send(this.absintheSocket, {
@@ -134,16 +125,14 @@ export class MessagesSubscription {
     })
   }
 
-  protected onSubscribeAbort(error: any, methodName: string): void {
+  protected onSubscribeAbort(error: any): void {
     this.onSubscribeError({
       error,
-      variables: { methodName },
       graphQLQuery: this.subscriptionQuery
     });
   }
 
   public unsubscribe = (): void => {
-    window.removeEventListener('beforeunload', this.onBeforeUnload);
     this.absintheSocket = AbsintheSocket.cancel(this.absintheSocket, this.notifier);
     this.latestMessageHistoryCursorsCache = [];
     this.reachedBeginningOfMessageHistory = false;

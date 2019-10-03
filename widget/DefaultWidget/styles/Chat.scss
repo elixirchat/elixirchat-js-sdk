@@ -31,7 +31,7 @@ textarea {
   height: 53px;
   box-sizing: border-box;
   box-shadow: 0 1px 0 rgba(0,0,0,.15);
-  padding: 19px 0 0 30px;
+  padding: 19px 35px 0 30px;
   position: fixed;
   top: 0;
   left: 0;
@@ -39,6 +39,9 @@ textarea {
   z-index: 2;
   border-radius: 8px 8px 0 0;
   background: $color-white;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .elixirchat-chat-header__indicator {
@@ -46,10 +49,14 @@ textarea {
   width: 10px;
   height: 10px;
   border-radius: 100%;
-  background: $color-green;
+  background: $color-gray-light;
   vertical-align: middle;
   margin-right: 8px;
   margin-top: -2px;
+
+  &--online {
+    background: $color-green;
+  }
 }
 
 .elixirchat-chat-header__close {

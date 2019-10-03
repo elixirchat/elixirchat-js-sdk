@@ -4,6 +4,7 @@ import { IMessage } from './serializers/serializeMessage';
 import { fragmentClient } from './serializers/serializeUser';
 import { MessagesSubscription, ISentMessage } from './MessagesSubscription';
 import { TypingStatusSubscription } from './TypingStatusSubscription';
+import { OperatorOnlineStatusSubscription } from './OperatorOnlineStatusSubscription';
 import { ScreenshotTaker, IScreenshot } from './ScreenshotTaker';
 import { GraphQLClient, insertGraphQlFragments, gql } from './GraphQLClient';
 
@@ -58,6 +59,7 @@ export class ElixirChat {
 
   protected graphQLClient: any;
   protected messagesSubscription: any;
+  protected operatorOnlineStatusSubscription: any;
   protected typingStatusSubscription: any;
   protected screenshotTaker: any;
 
@@ -85,6 +87,7 @@ export class ElixirChat {
   protected onConnectSuccessCallbacks: Array<(data?: any) => void> = [];
   protected onConnectErrorCallbacks: Array<(e: any) => void> = [];
   protected onTypingCallbacks: Array<(typingUsers: Array<IElixirChatUser>) => void> = [];
+  protected onOperatorOnlineStatusChangeCallbacks: Array<(isOnline: boolean) => void> = [];
 
   constructor(config: IElixirChatConfig) {
     this.apiUrl = config.apiUrl;
@@ -132,6 +135,7 @@ export class ElixirChat {
       this.saveRoomClientToLocalStorage(this.room, this.client);
       this.subscribeToNewMessages();
       this.subscribeToTypingStatusChange();
+      this.subscribeToOperatorOnlineStatusChange();
     });
   }
 
@@ -279,6 +283,26 @@ export class ElixirChat {
     });
   }
 
+  protected subscribeToOperatorOnlineStatusChange(): void {
+    this.operatorOnlineStatusSubscription = new OperatorOnlineStatusSubscription({
+      socketUrl: this.socketUrl,
+      token: this.authToken,
+      onSubscribeSuccess: () => {
+        logEvent(this.debug, 'Successfully subscribed to operator online status change')
+      },
+      onSubscribeError: (data) => {
+        logEvent(this.debug, 'Failed to subscribe to operator online status change', data, 'error');
+      },
+      onStatusChange: (isOnline: boolean) => {
+        logEvent(this.debug, isOnline ? 'Operators got back online' : 'All operators went');
+        this.onOperatorOnlineStatusChangeCallbacks.forEach(callback => callback(isOnline));
+      },
+      onUnsubscribe: () => {
+        logEvent(this.debug, 'Unsubscribed from  operator online status change');
+      },
+    });
+  }
+
   protected subscribeToNewMessages(): void {
     this.messagesSubscription = new MessagesSubscription({
       apiUrl: this.apiUrl,
@@ -361,6 +385,10 @@ export class ElixirChat {
     this.onTypingCallbacks.push(callback);
   };
 
+  public onOperatorOnlineStatusChange = (callback: (isOnline: boolean) => void): void => {
+    this.onOperatorOnlineStatusChangeCallbacks.push(callback);
+  };
+
   public reconnect = ({ room, client }: { room?: IElixirChatRoom, client?: IElixirChatUser }): Promise<void> => {
     logEvent(this.debug, 'Attempting to reconnect to another room', { room, client });
     if (room) {
@@ -374,9 +402,11 @@ export class ElixirChat {
 
     this.setDefaultConfigValues();
     this.messagesSubscription.unsubscribe();
+    this.operatorOnlineStatusSubscription.unsubscribe();
     return this.connectToRoom().then(() => {
       this.saveRoomClientToLocalStorage(this.room, this.client);
       this.subscribeToNewMessages();
+      this.subscribeToOperatorOnlineStatusChange();
       this.typingStatusSubscription.resubscribeToAnotherRoom(this.room.id);
     });
   };

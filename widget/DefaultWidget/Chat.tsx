@@ -1,5 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import { _get, _last, randomDigitStringId } from '../../utilsCommon';
+import cn from 'classnames';
 import {
   unlockNotificationSoundAutoplay,
   playNotificationSound,
@@ -28,6 +29,7 @@ export interface IDefaultWidgetState {
   isLoadingError: boolean;
   isLoadingPreviousMessages: boolean;
   widgetTitle: string;
+  areOperatorsOnline: boolean;
 }
 
 export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
@@ -49,6 +51,7 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
     isLoadingError: false,
     isLoadingPreviousMessages: false,
     widgetTitle: '',
+    areOperatorsOnline: false,
   };
 
   componentDidMount(): void {
@@ -107,6 +110,11 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
 
     elixirChatWidget.onTyping(currentlyTypingUsers => {
       this.setState({ currentlyTypingUsers });
+    });
+
+    elixirChatWidget.onOperatorOnlineStatusChange(areOperatorsOnline => {
+      console.log('%c__ IS ONLINE CHANGED', 'color: green', isOnline); // TODO: remove
+      this.setState({ areOperatorsOnline });
     });
   }
 
@@ -394,6 +402,7 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
       isLoading,
       isLoadingError,
       widgetTitle,
+      areOperatorsOnline,
     } = this.state;
 
     return (
@@ -402,8 +411,12 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
         <h2 className="elixirchat-chat-header">
           {widgetTitle && (
             <Fragment>
-              <i className="elixirchat-chat-header__indicator"/>
+              <i className={cn({
+                'elixirchat-chat-header__indicator': true,
+                'elixirchat-chat-header__indicator--online': areOperatorsOnline,
+              })}/>
               {widgetTitle}
+              {!areOperatorsOnline && ' (не в сети)'}
             </Fragment>
           )}
           <button className="elixirchat-chat-header__close"
