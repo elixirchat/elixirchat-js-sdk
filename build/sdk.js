@@ -375,7 +375,172 @@ function detectPlatform() {
 }
 
 exports.detectPlatform = detectPlatform;
-},{}],"5qf4":[function(require,module,exports) {
+},{}],"1fv+":[function(require,module,exports) {
+"use strict";
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var GraphQLClient =
+/*#__PURE__*/
+function () {
+  function GraphQLClient(_ref) {
+    var url = _ref.url,
+        token = _ref.token;
+
+    _classCallCheck(this, GraphQLClient);
+
+    this.headers = {
+      'Accept': 'application/json'
+    };
+    this.url = url;
+    this.token = token;
+
+    if (this.token) {
+      this.headers.Authorization = "Bearer ".concat(this.token);
+    }
+  }
+
+  _createClass(GraphQLClient, [{
+    key: "makeFormData",
+    value: function makeFormData(query, variables, binaryFiles) {
+      var formData = new FormData();
+      formData.append('query', query);
+      formData.append('variables', JSON.stringify(variables));
+
+      for (var fileName in binaryFiles) {
+        formData.append(fileName, binaryFiles[fileName]);
+      }
+
+      return formData;
+    }
+  }, {
+    key: "query",
+    value: function query(_query, variables, binaryFiles) {
+      var _this = this;
+
+      var headers;
+      var body;
+
+      if (binaryFiles) {
+        body = this.makeFormData(_query, variables, binaryFiles);
+        headers = this.headers;
+      } else {
+        body = JSON.stringify({
+          query: _query,
+          variables: variables
+        });
+        headers = Object.assign({}, this.headers, {
+          'Content-Type': 'application/json'
+        });
+      }
+
+      return new Promise(function (resolve, reject) {
+        fetch(_this.url, {
+          method: 'POST',
+          headers: headers,
+          body: body
+        }).then(function (response) {
+          return response.json();
+        }).then(function (response) {
+          if (response.errors) {
+            reject(response);
+          } else {
+            resolve(response.data);
+          }
+        }).catch(function (response) {
+          return reject(response);
+        });
+      });
+    }
+  }]);
+
+  return GraphQLClient;
+}();
+
+exports.GraphQLClient = GraphQLClient;
+
+exports.simplifyGraphQLJSON = function (graphQLJSON) {
+  return graphQLJSON.edges.map(function (data) {
+    return Object.assign({}, data.node, {
+      cursor: data.cursor
+    });
+  });
+};
+
+exports.gql = function (queryParts) {
+  return queryParts.join('');
+};
+
+exports.insertGraphQlFragments = function (query) {
+  var fragments = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+  var fragmentsString = '';
+
+  for (var name in fragments) {
+    fragmentsString += fragments[name];
+  }
+
+  return query + fragmentsString;
+};
+},{}],"1lqy":[function(require,module,exports) {
+"use strict";
+
+function _templateObject2() {
+  var data = _taggedTemplateLiteral(["\n  fragment fragmentCompanyEmployee on CompanyEmployee {\n    employee {\n      id\n      firstName\n      lastName\n    }\n    __typename\n    isWorking\n    role\n  }\n"]);
+
+  _templateObject2 = function _templateObject2() {
+    return data;
+  };
+
+  return data;
+}
+
+function _templateObject() {
+  var data = _taggedTemplateLiteral(["\n  fragment fragmentClient on Client {\n    __typename\n    id\n    foreignId\n    firstName\n    lastName\n  }\n"]);
+
+  _templateObject = function _templateObject() {
+    return data;
+  };
+
+  return data;
+}
+
+function _taggedTemplateLiteral(strings, raw) { if (!raw) { raw = strings.slice(0); } return Object.freeze(Object.defineProperties(strings, { raw: { value: Object.freeze(raw) } })); }
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var GraphQLClient_1 = require("../GraphQLClient");
+
+var utilsCommon_1 = require("../../utilsCommon");
+
+exports.fragmentClient = GraphQLClient_1.gql(_templateObject());
+exports.fragmentCompanyEmployee = GraphQLClient_1.gql(_templateObject2());
+
+function serializeUser(user, options) {
+  var elixirChatId = utilsCommon_1._get(user, 'foreignId') || null;
+  var isOperator = utilsCommon_1._get(user, '__typename') !== 'Client';
+  var id = isOperator ? utilsCommon_1._get(user, 'employee.id') : utilsCommon_1._get(user, 'id');
+  return {
+    id: id || null,
+    firstName: utilsCommon_1._get(user, 'firstName') || utilsCommon_1._get(user, 'employee.firstName') || '',
+    lastName: utilsCommon_1._get(user, 'lastName') || utilsCommon_1._get(user, 'employee.lastName') || '',
+    isCurrentClient: elixirChatId === options.currentClientId,
+    isOperator: isOperator,
+    elixirChatId: elixirChatId
+  };
+}
+
+exports.serializeUser = serializeUser;
+},{"../GraphQLClient":"1fv+","../../utilsCommon":"EjGt"}],"5qf4":[function(require,module,exports) {
 
 // https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
 var global = module.exports = typeof window != 'undefined' && window.Math == Math
@@ -5697,172 +5862,7 @@ var unobserveOrCancel = function unobserveOrCancel(absintheSocket, notifier, obs
 
 
 exports.unobserveOrCancel = unobserveOrCancel;
-},{"core-js/modules/es6.array.find-index":"7sVm","core-js/modules/es6.array.find":"Qppk","core-js/modules/es6.function.name":"N3yi","@jumpn/utils-composite":"7Q0f","phoenix":"XFqm","core-js/modules/web.dom.iterable":"v6Aj","core-js/modules/es6.array.for-each":"VsIt","@babel/runtime/helpers/toConsumableArray":"Fhqp","@jumpn/utils-graphql":"2hqA","zen-observable":"U0NN","core-js/modules/es7.array.includes":"TLss","core-js/modules/es6.string.includes":"fH7p","@babel/runtime/helpers/objectSpread":"fwAU","@babel/runtime/helpers/objectWithoutProperties":"U8F3","core-js/modules/es6.array.index-of":"LvRh","@jumpn/utils-array":"Yu+T","core-js/modules/es6.function.bind":"WIhg","@babel/runtime/helpers/newArrowCheck":"tS9b"}],"1fv+":[function(require,module,exports) {
-"use strict";
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var GraphQLClient =
-/*#__PURE__*/
-function () {
-  function GraphQLClient(_ref) {
-    var url = _ref.url,
-        token = _ref.token;
-
-    _classCallCheck(this, GraphQLClient);
-
-    this.headers = {
-      'Accept': 'application/json'
-    };
-    this.url = url;
-    this.token = token;
-
-    if (this.token) {
-      this.headers.Authorization = "Bearer ".concat(this.token);
-    }
-  }
-
-  _createClass(GraphQLClient, [{
-    key: "makeFormData",
-    value: function makeFormData(query, variables, binaryFiles) {
-      var formData = new FormData();
-      formData.append('query', query);
-      formData.append('variables', JSON.stringify(variables));
-
-      for (var fileName in binaryFiles) {
-        formData.append(fileName, binaryFiles[fileName]);
-      }
-
-      return formData;
-    }
-  }, {
-    key: "query",
-    value: function query(_query, variables, binaryFiles) {
-      var _this = this;
-
-      var headers;
-      var body;
-
-      if (binaryFiles) {
-        body = this.makeFormData(_query, variables, binaryFiles);
-        headers = this.headers;
-      } else {
-        body = JSON.stringify({
-          query: _query,
-          variables: variables
-        });
-        headers = Object.assign({}, this.headers, {
-          'Content-Type': 'application/json'
-        });
-      }
-
-      return new Promise(function (resolve, reject) {
-        fetch(_this.url, {
-          method: 'POST',
-          headers: headers,
-          body: body
-        }).then(function (response) {
-          return response.json();
-        }).then(function (response) {
-          if (response.errors) {
-            reject(response);
-          } else {
-            resolve(response.data);
-          }
-        }).catch(function (response) {
-          return reject(response);
-        });
-      });
-    }
-  }]);
-
-  return GraphQLClient;
-}();
-
-exports.GraphQLClient = GraphQLClient;
-
-exports.simplifyGraphQLJSON = function (graphQLJSON) {
-  return graphQLJSON.edges.map(function (data) {
-    return Object.assign({}, data.node, {
-      cursor: data.cursor
-    });
-  });
-};
-
-exports.gql = function (queryParts) {
-  return queryParts.join('');
-};
-
-exports.insertGraphQlFragments = function (query) {
-  var fragments = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-  var fragmentsString = '';
-
-  for (var name in fragments) {
-    fragmentsString += fragments[name];
-  }
-
-  return query + fragmentsString;
-};
-},{}],"1lqy":[function(require,module,exports) {
-"use strict";
-
-function _templateObject2() {
-  var data = _taggedTemplateLiteral(["\n  fragment fragmentCompanyEmployee on CompanyEmployee {\n    employee {\n      id\n      firstName\n      lastName\n    }\n    __typename\n    isWorking\n    role\n  }\n"]);
-
-  _templateObject2 = function _templateObject2() {
-    return data;
-  };
-
-  return data;
-}
-
-function _templateObject() {
-  var data = _taggedTemplateLiteral(["\n  fragment fragmentClient on Client {\n    __typename\n    id\n    foreignId\n    firstName\n    lastName\n  }\n"]);
-
-  _templateObject = function _templateObject() {
-    return data;
-  };
-
-  return data;
-}
-
-function _taggedTemplateLiteral(strings, raw) { if (!raw) { raw = strings.slice(0); } return Object.freeze(Object.defineProperties(strings, { raw: { value: Object.freeze(raw) } })); }
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var GraphQLClient_1 = require("../GraphQLClient");
-
-var utilsCommon_1 = require("../../utilsCommon");
-
-exports.fragmentClient = GraphQLClient_1.gql(_templateObject());
-exports.fragmentCompanyEmployee = GraphQLClient_1.gql(_templateObject2());
-
-function serializeUser(user, options) {
-  var elixirChatId = utilsCommon_1._get(user, 'foreignId') || null;
-  var isOperator = utilsCommon_1._get(user, '__typename') !== 'Client';
-  var id = isOperator ? utilsCommon_1._get(user, 'employee.id') : utilsCommon_1._get(user, 'id');
-  return {
-    id: id || null,
-    firstName: utilsCommon_1._get(user, 'firstName') || utilsCommon_1._get(user, 'employee.firstName') || '',
-    lastName: utilsCommon_1._get(user, 'lastName') || utilsCommon_1._get(user, 'employee.lastName') || '',
-    isCurrentClient: elixirChatId === options.currentClientId,
-    isOperator: isOperator,
-    elixirChatId: elixirChatId
-  };
-}
-
-exports.serializeUser = serializeUser;
-},{"../GraphQLClient":"1fv+","../../utilsCommon":"EjGt"}],"sQAQ":[function(require,module,exports) {
+},{"core-js/modules/es6.array.find-index":"7sVm","core-js/modules/es6.array.find":"Qppk","core-js/modules/es6.function.name":"N3yi","@jumpn/utils-composite":"7Q0f","phoenix":"XFqm","core-js/modules/web.dom.iterable":"v6Aj","core-js/modules/es6.array.for-each":"VsIt","@babel/runtime/helpers/toConsumableArray":"Fhqp","@jumpn/utils-graphql":"2hqA","zen-observable":"U0NN","core-js/modules/es7.array.includes":"TLss","core-js/modules/es6.string.includes":"fH7p","@babel/runtime/helpers/objectSpread":"fwAU","@babel/runtime/helpers/objectWithoutProperties":"U8F3","core-js/modules/es6.array.index-of":"LvRh","@jumpn/utils-array":"Yu+T","core-js/modules/es6.function.bind":"WIhg","@babel/runtime/helpers/newArrowCheck":"tS9b"}],"sQAQ":[function(require,module,exports) {
 "use strict";
 
 function _templateObject() {
@@ -6084,7 +6084,6 @@ function () {
 
     this.latestMessageHistoryCursorsCache = [];
     this.reachedBeginningOfMessageHistory = false;
-    this.isBeforeUnload = false;
     this.isCurrentlySubscribed = false;
     this.subscriptionQuery = GraphQLClient_1.insertGraphQlFragments(GraphQLClient_1.gql(_templateObject()), {
       fragmentMessage: serializeMessage_1.fragmentMessage
@@ -6096,13 +6095,7 @@ function () {
       fragmentMessage: serializeMessage_1.fragmentMessage
     });
 
-    this.onBeforeUnload = function () {
-      _this.isBeforeUnload = true;
-      return false;
-    };
-
     this.unsubscribe = function () {
-      window.removeEventListener('beforeunload', _this.onBeforeUnload);
       _this.absintheSocket = AbsintheSocket.cancel(_this.absintheSocket, _this.notifier);
       _this.latestMessageHistoryCursorsCache = [];
       _this.reachedBeginningOfMessageHistory = false;
@@ -6234,7 +6227,6 @@ function () {
         url: this.apiUrl,
         token: this.token
       });
-      window.addEventListener('beforeunload', this.onBeforeUnload);
       this.subscribe();
     }
   }, {
@@ -6274,12 +6266,9 @@ function () {
     }
   }, {
     key: "onSubscribeAbort",
-    value: function onSubscribeAbort(error, methodName) {
+    value: function onSubscribeAbort(error) {
       this.onSubscribeError({
         error: error,
-        variables: {
-          methodName: methodName
-        },
         graphQLQuery: this.subscriptionQuery
       });
     }
@@ -6510,7 +6499,132 @@ function () {
 }();
 
 exports.TypingStatusSubscription = TypingStatusSubscription;
-},{"phoenix":"XFqm"}],"CLsL":[function(require,module,exports) {
+},{"phoenix":"XFqm"}],"zgd1":[function(require,module,exports) {
+"use strict";
+
+function _templateObject() {
+  var data = _taggedTemplateLiteral(["\n    subscription {\n      updateCompanyWorking\n    }\n  "]);
+
+  _templateObject = function _templateObject() {
+    return data;
+  };
+
+  return data;
+}
+
+function _taggedTemplateLiteral(strings, raw) { if (!raw) { raw = strings.slice(0); } return Object.freeze(Object.defineProperties(strings, { raw: { value: Object.freeze(raw) } })); }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+var __importStar = this && this.__importStar || function (mod) {
+  if (mod && mod.__esModule) return mod;
+  var result = {};
+  if (mod != null) for (var k in mod) {
+    if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+  }
+  result["default"] = mod;
+  return result;
+};
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var AbsintheSocket = __importStar(require("@absinthe/socket"));
+
+var Phoenix = __importStar(require("phoenix"));
+
+var GraphQLClient_1 = require("./GraphQLClient");
+
+var OperatorOnlineStatusSubscription =
+/*#__PURE__*/
+function () {
+  function OperatorOnlineStatusSubscription(config) {
+    var _this = this;
+
+    _classCallCheck(this, OperatorOnlineStatusSubscription);
+
+    this.isCurrentlySubscribed = false;
+    this.subscriptionQuery = GraphQLClient_1.gql(_templateObject());
+
+    this.unsubscribe = function () {
+      _this.absintheSocket = AbsintheSocket.cancel(_this.absintheSocket, _this.notifier);
+      _this.isCurrentlySubscribed = false;
+
+      _this.onUnsubscribe();
+    };
+
+    this.socketUrl = config.socketUrl;
+    this.token = config.token;
+
+    this.onSubscribeSuccess = config.onSubscribeSuccess || function () {};
+
+    this.onSubscribeError = config.onSubscribeError || function () {};
+
+    this.onUnsubscribe = config.onUnsubscribe || function () {};
+
+    this.onStatusChange = config.onStatusChange;
+    this.initialize();
+  }
+
+  _createClass(OperatorOnlineStatusSubscription, [{
+    key: "initialize",
+    value: function initialize() {
+      this.absintheSocket = AbsintheSocket.create(new Phoenix.Socket(this.socketUrl, {
+        params: {
+          token: this.token
+        }
+      }));
+      this.subscribe();
+    }
+  }, {
+    key: "subscribe",
+    value: function subscribe() {
+      var _this2 = this;
+
+      var notifier = AbsintheSocket.send(this.absintheSocket, {
+        operation: this.subscriptionQuery
+      });
+      AbsintheSocket.observe(this.absintheSocket, notifier, {
+        onAbort: function onAbort(e) {
+          return _this2.onSubscribeAbort(e);
+        },
+        onStart: function onStart(notifier) {
+          _this2.notifier = notifier;
+
+          if (!_this2.isCurrentlySubscribed) {
+            _this2.isCurrentlySubscribed = true;
+
+            _this2.onSubscribeSuccess(notifier);
+          }
+        },
+        onResult: function onResult(data) {
+          // TODO: figure out format & update
+          console.warn('OperatorOnlineStatusSubscription data', data);
+
+          _this2.onStatusChange(data);
+        }
+      });
+    }
+  }, {
+    key: "onSubscribeAbort",
+    value: function onSubscribeAbort(error) {
+      this.onSubscribeError({
+        error: error,
+        graphQLQuery: this.subscriptionQuery
+      });
+    }
+  }]);
+
+  return OperatorOnlineStatusSubscription;
+}();
+
+exports.OperatorOnlineStatusSubscription = OperatorOnlineStatusSubscription;
+},{"@absinthe/socket":"zTqj","phoenix":"XFqm","./GraphQLClient":"1fv+"}],"CLsL":[function(require,module,exports) {
 "use strict";
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -6676,7 +6790,7 @@ function _iterableToArrayLimit(arr, i) { var _arr = []; var _n = true; var _d = 
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
 function _templateObject() {
-  var data = _taggedTemplateLiteral(["\n    mutation($companyId: Uuid!, $room: ForeignRoom, $client: ForeignClient) {\n      joinRoom (companyId: $companyId, room: $room, client: $client) {\n        token\n        client {\n          id\n          foreignId\n          firstName\n          lastName\n        }\n        room {\n          id\n          title\n          foreignId\n          members {\n            client {\n              id\n              foreignId\n              firstName\n              lastName\n            }\n          }\n        }\n      }\n    }\n  "]);
+  var data = _taggedTemplateLiteral(["\n    mutation($companyId: Uuid!, $room: ForeignRoom, $client: ForeignClient) {\n      joinRoom (companyId: $companyId, room: $room, client: $client) {\n        token\n        company {\n          working\n          widgetTitle\n        }\n        client {\n          ...fragmentClient\n        }\n        room {\n          id\n          title\n          foreignId\n        }\n      }\n    }\n  "]);
 
   _templateObject = function _templateObject() {
     return data;
@@ -6701,9 +6815,13 @@ var unique_names_generator_1 = require("unique-names-generator");
 
 var utilsCommon_1 = require("../utilsCommon");
 
+var serializeUser_1 = require("./serializers/serializeUser");
+
 var MessagesSubscription_1 = require("./MessagesSubscription");
 
 var TypingStatusSubscription_1 = require("./TypingStatusSubscription");
+
+var OperatorOnlineStatusSubscription_1 = require("./OperatorOnlineStatusSubscription");
 
 var ScreenshotTaker_1 = require("./ScreenshotTaker");
 
@@ -6719,11 +6837,16 @@ function () {
 
     _classCallCheck(this, ElixirChat);
 
-    this.joinRoomQuery = GraphQLClient_1.gql(_templateObject());
+    this.widgetTitle = '';
+    this.defaultWidgetTitle = 'Служба поддержки';
+    this.joinRoomQuery = GraphQLClient_1.insertGraphQlFragments(GraphQLClient_1.gql(_templateObject()), {
+      fragmentClient: serializeUser_1.fragmentClient
+    });
     this.onMessageCallbacks = [];
     this.onConnectSuccessCallbacks = [];
     this.onConnectErrorCallbacks = [];
     this.onTypingCallbacks = [];
+    this.onOperatorOnlineStatusChangeCallbacks = [];
 
     this.dispatchTypedText = function (typedText) {
       _this.typingStatusSubscription.dispatchTypedText(typedText);
@@ -6735,6 +6858,10 @@ function () {
 
     this.onTyping = function (callback) {
       _this.onTypingCallbacks.push(callback);
+    };
+
+    this.onOperatorOnlineStatusChange = function (callback) {
+      _this.onOperatorOnlineStatusChangeCallbacks.push(callback);
     };
 
     this.reconnect = function (_ref) {
@@ -6759,10 +6886,14 @@ function () {
 
       _this.messagesSubscription.unsubscribe();
 
+      _this.operatorOnlineStatusSubscription.unsubscribe();
+
       return _this.connectToRoom().then(function () {
         _this.saveRoomClientToLocalStorage(_this.room, _this.client);
 
         _this.subscribeToNewMessages();
+
+        _this.subscribeToOperatorOnlineStatusChange();
 
         _this.typingStatusSubscription.resubscribeToAnotherRoom(_this.room.id);
       });
@@ -6848,6 +6979,8 @@ function () {
         _this2.subscribeToNewMessages();
 
         _this2.subscribeToTypingStatusChange();
+
+        _this2.subscribeToOperatorOnlineStatusChange();
       });
     }
   }, {
@@ -6976,6 +7109,7 @@ function () {
             _this3.client.lastName = joinRoom.client.lastName;
             _this3.client.id = joinRoom.client.foreignId;
             _this3.elixirChatClientId = joinRoom.client.id;
+            _this3.widgetTitle = joinRoom.company.widgetTitle || _this3.defaultWidgetTitle;
             _this3.room.id = joinRoom.room.foreignId;
             _this3.room.title = joinRoom.room.title;
             _this3.elixirChatRoomId = joinRoom.room.id;
@@ -7043,9 +7177,35 @@ function () {
       });
     }
   }, {
+    key: "subscribeToOperatorOnlineStatusChange",
+    value: function subscribeToOperatorOnlineStatusChange() {
+      var _this5 = this;
+
+      this.operatorOnlineStatusSubscription = new OperatorOnlineStatusSubscription_1.OperatorOnlineStatusSubscription({
+        socketUrl: this.socketUrl,
+        token: this.authToken,
+        onSubscribeSuccess: function onSubscribeSuccess() {
+          utilsCommon_1.logEvent(_this5.debug, 'Successfully subscribed to operator online status change');
+        },
+        onSubscribeError: function onSubscribeError(data) {
+          utilsCommon_1.logEvent(_this5.debug, 'Failed to subscribe to operator online status change', data, 'error');
+        },
+        onStatusChange: function onStatusChange(isOnline) {
+          utilsCommon_1.logEvent(_this5.debug, isOnline ? 'Operators got back online' : 'All operators went');
+
+          _this5.onOperatorOnlineStatusChangeCallbacks.forEach(function (callback) {
+            return callback(isOnline);
+          });
+        },
+        onUnsubscribe: function onUnsubscribe() {
+          utilsCommon_1.logEvent(_this5.debug, 'Unsubscribed from  operator online status change');
+        }
+      });
+    }
+  }, {
     key: "subscribeToNewMessages",
     value: function subscribeToNewMessages() {
-      var _this5 = this;
+      var _this6 = this;
 
       this.messagesSubscription = new MessagesSubscription_1.MessagesSubscription({
         apiUrl: this.apiUrl,
@@ -7055,35 +7215,35 @@ function () {
         currentClientId: this.client.id,
         onSubscribeSuccess: function onSubscribeSuccess() {
           var roomData = {
-            room: _this5.room,
-            client: _this5.client
+            room: _this6.room,
+            client: _this6.client
           };
-          utilsCommon_1.logEvent(_this5.debug, 'Successfully subscribed to messages', roomData);
+          utilsCommon_1.logEvent(_this6.debug, 'Successfully subscribed to messages', roomData);
 
-          _this5.onConnectSuccessCallbacks.forEach(function (callback) {
+          _this6.onConnectSuccessCallbacks.forEach(function (callback) {
             return callback(roomData);
           });
         },
         onSubscribeError: function onSubscribeError(data) {
-          utilsCommon_1.logEvent(_this5.debug, 'Failed to subscribe to messages', {
+          utilsCommon_1.logEvent(_this6.debug, 'Failed to subscribe to messages', {
             data: data
           }, 'error');
 
-          _this5.onConnectErrorCallbacks.forEach(function (callback) {
+          _this6.onConnectErrorCallbacks.forEach(function (callback) {
             return callback(data);
           });
         },
         onMessage: function onMessage(message) {
-          utilsCommon_1.logEvent(_this5.debug, 'Received new message', message);
+          utilsCommon_1.logEvent(_this6.debug, 'Received new message', message);
 
-          _this5.onMessageCallbacks.forEach(function (callback) {
+          _this6.onMessageCallbacks.forEach(function (callback) {
             return callback(message);
           });
         },
         onUnsubscribe: function onUnsubscribe() {
-          utilsCommon_1.logEvent(_this5.debug, 'Unsubscribed from messages', {
-            room: _this5.room,
-            client: _this5.client
+          utilsCommon_1.logEvent(_this6.debug, 'Unsubscribed from messages', {
+            room: _this6.room,
+            client: _this6.client
           });
         }
       });
@@ -7091,7 +7251,7 @@ function () {
   }, {
     key: "sendMessage",
     value: function sendMessage(params) {
-      var _this6 = this;
+      var _this7 = this;
 
       var text = params.text;
       var attachments = params.attachments && params.attachments.length ? Array.from(params.attachments).filter(function (file) {
@@ -7107,7 +7267,7 @@ function () {
           responseToMessageId: responseToMessageId,
           tempId: tempId
         }).then(function (message) {
-          utilsCommon_1.logEvent(_this6.debug, 'Sent message', {
+          utilsCommon_1.logEvent(_this7.debug, 'Sent message', {
             message: message,
             params: params,
             normalizedParams: {
@@ -7118,11 +7278,11 @@ function () {
             }
           });
 
-          _this6.typingStatusSubscription.dispatchTypedText(false);
+          _this7.typingStatusSubscription.dispatchTypedText(false);
 
           return message;
         }).catch(function (error) {
-          utilsCommon_1.logEvent(_this6.debug, 'Failed to send message', error, 'error');
+          utilsCommon_1.logEvent(_this7.debug, 'Failed to send message', error, 'error');
           throw error;
         });
       } else {
@@ -7151,7 +7311,7 @@ exports.ElixirChat = ElixirChat;
 if (typeof window !== 'undefined') {
   window.ElixirChat = ElixirChat;
 }
-},{"unique-names-generator":"Qz33","../utilsCommon":"EjGt","./MessagesSubscription":"y8vH","./TypingStatusSubscription":"QERd","./ScreenshotTaker":"CLsL","./GraphQLClient":"1fv+"}],"7QCb":[function(require,module,exports) {
+},{"unique-names-generator":"Qz33","../utilsCommon":"EjGt","./serializers/serializeUser":"1lqy","./MessagesSubscription":"y8vH","./TypingStatusSubscription":"QERd","./OperatorOnlineStatusSubscription":"zgd1","./ScreenshotTaker":"CLsL","./GraphQLClient":"1fv+"}],"7QCb":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
