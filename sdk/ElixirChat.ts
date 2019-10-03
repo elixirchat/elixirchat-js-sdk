@@ -50,6 +50,7 @@ export class ElixirChat {
   public connected: boolean;
   public isPrivate: boolean;
 
+  public areAnyOperatorsOnline: boolean = false;
   public widgetTitle: string = '';
   public defaultWidgetTitle: string = 'Служба поддержки';
 
@@ -243,6 +244,7 @@ export class ElixirChat {
             this.client.id = joinRoom.client.foreignId;
             this.elixirChatClientId = joinRoom.client.id;
             this.widgetTitle = joinRoom.company.widgetTitle || this.defaultWidgetTitle;
+            this.areAnyOperatorsOnline = joinRoom.company.working;
 
             this.room.id = joinRoom.room.foreignId;
             this.room.title = joinRoom.room.title;
@@ -285,6 +287,7 @@ export class ElixirChat {
 
   protected subscribeToOperatorOnlineStatusChange(): void {
     this.operatorOnlineStatusSubscription = new OperatorOnlineStatusSubscription({
+      isOnline: this.areAnyOperatorsOnline,
       socketUrl: this.socketUrl,
       token: this.authToken,
       onSubscribeSuccess: () => {
@@ -295,6 +298,7 @@ export class ElixirChat {
       },
       onStatusChange: (isOnline: boolean) => {
         logEvent(this.debug, isOnline ? 'Operators got back online' : 'All operators went');
+        this.areAnyOperatorsOnline = isOnline;
         this.onOperatorOnlineStatusChangeCallbacks.forEach(callback => callback(isOnline));
       },
       onUnsubscribe: () => {

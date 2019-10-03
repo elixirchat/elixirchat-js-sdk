@@ -4,6 +4,7 @@ import { gql } from './GraphQLClient';
 
 
 export interface IOperatorOnlineStatusSubscriptionConfig {
+  isOnline: boolean,
   socketUrl: string,
   token: string,
   onSubscribeSuccess?: (data: any) => void;
@@ -14,6 +15,7 @@ export interface IOperatorOnlineStatusSubscriptionConfig {
 
 export class OperatorOnlineStatusSubscription {
 
+  public isOnline: boolean;
   public socketUrl: string;
   public token: string;
   public onSubscribeSuccess?: (data: any) => void;
@@ -32,12 +34,13 @@ export class OperatorOnlineStatusSubscription {
   `;
 
   constructor(config: IOperatorOnlineStatusSubscriptionConfig) {
-    this.socketUrl = config.socketUrl;
-    this.token = config.token;
     this.onSubscribeSuccess = config.onSubscribeSuccess || function () {};
     this.onSubscribeError = config.onSubscribeError || function () {};
     this.onUnsubscribe = config.onUnsubscribe || function () {};
     this.onStatusChange = config.onStatusChange;
+    this.socketUrl = config.socketUrl;
+    this.token = config.token;
+    this.isOnline = config.isOnline;
     this.initialize();
   }
 
@@ -61,10 +64,10 @@ export class OperatorOnlineStatusSubscription {
           this.onSubscribeSuccess(notifier);
         }
       },
-      onResult: (data) => {
-        // TODO: figure out format & update
-        console.warn('OperatorOnlineStatusSubscription data', data);
-        this.onStatusChange(data);
+      onResult: ({ data }) => {
+        const isOnline = data && data.updateCompanyWorking;
+        this.onStatusChange(isOnline);
+        this.isOnline = isOnline;
       },
     })
   }
