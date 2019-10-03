@@ -160,7 +160,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
   render(): void {
     const { processedMessages, screenshotFallback } = this.state;
-    const { onReplyMessage, onSubmitRetry } = this.props;
+    const { elixirChatWidget, onReplyMessage, onSubmitRetry } = this.props;
 
     return (
       <div className="elixirchat-chat-messages">
@@ -307,7 +307,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                 <div className="elixirchat-chat-messages__balloon">
                   <div className="elixirchat-chat-messages__sender">
                     {message.sender.firstName} {message.sender.lastName}
-                    {(!message.sender.firstName && !message.sender.lastName) && 'Служба поддержки'}
+                    {(!message.sender.firstName && !message.sender.lastName) && elixirChatWidget.widgetTitle}
                   </div>
 
                   {message.systemData.type === 'SCREENSHOT_REQUESTED' && (
