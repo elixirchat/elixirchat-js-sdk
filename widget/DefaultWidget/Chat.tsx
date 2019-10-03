@@ -413,12 +413,10 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
         <h2 className="elixirchat-chat-header">
           {widgetTitle && (
             <Fragment>
-              <i className={cn({
-                'elixirchat-chat-header__indicator': true,
-                'elixirchat-chat-header__indicator--online': areOperatorsOnline,
-              })}/>
+              {areOperatorsOnline && (
+                <i className="elixirchat-chat-header__indicator"/>
+              )}
               {widgetTitle}
-              {!areOperatorsOnline && ' (не в сети)'}
             </Fragment>
           )}
           <button className="elixirchat-chat-header__close"
