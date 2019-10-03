@@ -64,7 +64,10 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
       fontFaceElixirIcons,
     ].join('\n');
 
+    // TODO: research why Safari ignoring @imported fonts if
+    //  elixirChatWidget.iframeStyles is put in the end of insideIframeStyles
     const insideIframeStyles = [
+      elixirChatWidget.iframeStyles,
       styles.icons,
       styles.Chat,
       styles.ChatMessages,
@@ -72,7 +75,6 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
       fontFaceGraphikNormal,
       fontFaceGraphikBold,
       fontFaceElixirIcons,
-      elixirChatWidget.iframeStyles,
     ].join('\n');
 
     return {

@@ -12509,8 +12509,10 @@ function (_react_1$Component) {
       var fontFaceGraphikNormal = utilsWidget_1.generateFontFaceRule('Graphik', 'normal', assets_1.default.fontGraphikRegularWeb);
       var fontFaceGraphikBold = utilsWidget_1.generateFontFaceRule('Graphik', 'bold', assets_1.default.fontGraphikBoldWeb);
       var fontFaceElixirIcons = utilsWidget_1.generateFontFaceRule('elixirchat-icons', null, assets_1.default.fontElixirchatIcons);
-      var outsideIframeStyles = [styles_1.default.icons, styles_1.default.Widget, styles_1.default.ImagePreview, fontFaceGraphikNormal, fontFaceElixirIcons].join('\n');
-      var insideIframeStyles = [styles_1.default.icons, styles_1.default.Chat, styles_1.default.ChatMessages, styles_1.default.ChatTextarea, fontFaceGraphikNormal, fontFaceGraphikBold, fontFaceElixirIcons, elixirChatWidget.iframeStyles].join('\n');
+      var outsideIframeStyles = [styles_1.default.icons, styles_1.default.Widget, styles_1.default.ImagePreview, fontFaceGraphikNormal, fontFaceElixirIcons].join('\n'); // TODO: research why Safari ignoring @imported fonts if
+      //  elixirChatWidget.iframeStyles is put in the end of insideIframeStyles
+
+      var insideIframeStyles = [elixirChatWidget.iframeStyles, styles_1.default.icons, styles_1.default.Chat, styles_1.default.ChatMessages, styles_1.default.ChatTextarea, fontFaceGraphikNormal, fontFaceGraphikBold, fontFaceElixirIcons].join('\n');
       return {
         outsideIframeStyles: outsideIframeStyles,
         insideIframeStyles: insideIframeStyles
