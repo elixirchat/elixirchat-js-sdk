@@ -28,7 +28,6 @@ const elixirChatWidget = new ElixirChatWidget({
 
 elixirChatWidget.appendWidget({
   container: document.getElementById('elixirchat-widget'),
-  visibleByDefault: true,
   iframeStyles: `
     /* Your iframe CSS */
   `

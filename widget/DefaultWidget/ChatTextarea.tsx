@@ -30,7 +30,7 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
     const { elixirChatWidget } = this.props;
 
     elixirChatWidget.onIFrameContentMounted(() => {
-      if (elixirChatWidget.visibleByDefault) {
+      if (elixirChatWidget.widgetIsVisible) {
         this.focusTextarea();
       }
     });

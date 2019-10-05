@@ -661,13 +661,12 @@ elixirChatWidget.onToggleChatVisibility((isVisible) => {
 <br/>
 <a id="widget-appendWidget"></a>
 
-#### `appendWidget({ container, visibleByDefault, iframeStyles })`
+#### `appendWidget({ container, iframeStyles })`
 Присоединить виджет ElixirChat в DOM-контейнер, при необходимости кастомизировать с помощью CSS.
 
 __Параметры аргумента {...}:__
 
 - `container: HTMLElement` - Элемент DOM, в конец которого будет присоединен виджет.
-- `visibleByDefault: boolean` `(по-умолчанию false)` - если _true_, то виджет будет открыт по умолчанию.
 - `iframeStyles: string` - Ваш кастомный CSS-код, примененный к виджету ElixirChat _внутри iframe_, так чтобы можно было легко изменить внешний вид окна чата.
 
 
@@ -693,7 +692,6 @@ elixirChatWidget.appendWidget({
 
 - <a id="widget-container"></a>`container: HTMLElement` - То же, что передано в [`appendWidget()`](#widget-appendWidget)
 - <a id="widget-iframeStyles"></a>`iframeStyles: string` - То же, что передано в [`appendWidget()`](#widget-appendWidget)
-- <a id="widget-visibleByDefault"></a>`visibleByDefault: boolean` - То же, что передано в [`appendWidget()`](#widget-appendWidget)
 - <a id="widget-widgetIsVisible"></a>`widgetIsVisible: boolean` - Флаг, указывающий, открыто ли в данный момент окно чата
 - <a id="widget-widgetIFrameDocument"></a>`widgetIFrameDocument: Document` - Document IFrame-элемента окна чата
 - <a id="widget-widgetChatReactComponent"></a>`widgetChatReactComponent: JSX.Element` - React-компонент виджета (отрендеренный внутри `<iframe>`)

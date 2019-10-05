@@ -19,14 +19,12 @@ if (!ElixirChat) {
 export interface IElixirChatWidgetAppendWidgetConfig {
   container: HTMLElement;
   iframeStyles?: string;
-  visibleByDefault?: boolean;
 }
 
 export class ElixirChatWidget extends ElixirChat {
 
   public container: HTMLElement;
   public iframeStyles: string;
-  public visibleByDefault: boolean;
 
   public widgetUnreadCount: number;
   public widgetIsVisible: boolean = false;
@@ -56,6 +54,7 @@ export class ElixirChatWidget extends ElixirChat {
     for (let i = 0; i < callbacks.length; i++) {
       await callbacks[i](this.widgetIsVisible);
     }
+    localStorage.setItem('elixirchat-widget-is-visible', JSON.stringify(this.widgetIsVisible));
   };
 
   public onToggleChatVisibility = (callback) => {
@@ -95,20 +94,24 @@ export class ElixirChatWidget extends ElixirChat {
     }
   };
 
-  public appendWidget = async ({ container, iframeStyles = '', visibleByDefault = false }: IElixirChatWidgetAppendWidgetConfig): void => {
+  public appendWidget = async ({ container, iframeStyles = '' }: IElixirChatWidgetAppendWidgetConfig): void => {
     if (!(container instanceof HTMLElement)) {
       const errorMessage = 'You must provide an HTMLElement as a "container" option to appendWidget() method';
-      logEvent(this.debug, errorMessage, { container, iframeStyles, visibleByDefault }, 'error');
+      logEvent(this.debug, errorMessage, { container, iframeStyles }, 'error');
       return;
     }
 
     this.container = container;
     this.iframeStyles = iframeStyles || '';
-    this.visibleByDefault = visibleByDefault;
     this.widgetChatReactComponent = renderWidgetReactComponent(this.container, this);
 
     this.onIFrameReady(() => {
-      if (this.visibleByDefault) {
+      let isWidgetVisible = false;
+      try {
+        isWidgetVisible = JSON.parse(localStorage.getItem('elixirchat-widget-is-visible'));
+      }
+      catch (e) {}
+      if (isWidgetVisible) {
         this.toggleChatVisibility();
       }
     });
