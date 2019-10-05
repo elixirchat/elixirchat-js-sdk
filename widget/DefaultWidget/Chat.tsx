@@ -1,6 +1,5 @@
 import React, { Component, Fragment } from 'react';
 import { _get, _last, randomDigitStringId } from '../../utilsCommon';
-import cn from 'classnames';
 import {
   unlockNotificationSoundAutoplay,
   playNotificationSound,
@@ -113,7 +112,6 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
     });
 
     elixirChatWidget.onOperatorOnlineStatusChange(areOperatorsOnline => {
-      console.log('%c__ IS ONLINE CHANGED', 'color: green', isOnline); // TODO: remove
       this.setState({ areOperatorsOnline });
     });
   }

@@ -328,8 +328,10 @@ function randomDigitStringId(idLength) {
 exports.randomDigitStringId = randomDigitStringId; // Lodash-like _.get
 
 function _get(object, path, defaultValue) {
+  var prefix = /^\[/i.test(path) ? 'object' : 'object.';
+
   try {
-    return eval('object.' + path);
+    return eval(prefix + path);
   } catch (e) {
     return defaultValue;
   }
@@ -365,7 +367,25 @@ function _round(num) {
   return +num.toFixed(2);
 }
 
-exports._round = _round;
+exports._round = _round; // Lodash-like _.flatten
+
+function _flatten(arr) {
+  var flattenedArray = [];
+
+  for (var i = 0; i < arr.length; i++) {
+    var item = arr[i];
+
+    if (item instanceof Array) {
+      flattenedArray = flattenedArray.concat(item);
+    } else {
+      flattenedArray.push(item);
+    }
+  }
+
+  return flattenedArray;
+}
+
+exports._flatten = _flatten;
 
 function detectPlatform() {
   return {
@@ -6558,9 +6578,6 @@ function () {
       _this.onUnsubscribe();
     };
 
-    this.socketUrl = config.socketUrl;
-    this.token = config.token;
-
     this.onSubscribeSuccess = config.onSubscribeSuccess || function () {};
 
     this.onSubscribeError = config.onSubscribeError || function () {};
@@ -6568,6 +6585,9 @@ function () {
     this.onUnsubscribe = config.onUnsubscribe || function () {};
 
     this.onStatusChange = config.onStatusChange;
+    this.socketUrl = config.socketUrl;
+    this.token = config.token;
+    this.isOnline = config.isOnline;
     this.initialize();
   }
 
@@ -6602,11 +6622,13 @@ function () {
             _this2.onSubscribeSuccess(notifier);
           }
         },
-        onResult: function onResult(data) {
-          // TODO: figure out format & update
-          console.warn('OperatorOnlineStatusSubscription data', data);
+        onResult: function onResult(_ref) {
+          var data = _ref.data;
+          var isOnline = data && data.updateCompanyWorking;
 
-          _this2.onStatusChange(data);
+          _this2.onStatusChange(isOnline);
+
+          _this2.isOnline = isOnline;
         }
       });
     }
@@ -6837,6 +6859,7 @@ function () {
 
     _classCallCheck(this, ElixirChat);
 
+    this.areAnyOperatorsOnline = false;
     this.widgetTitle = '';
     this.defaultWidgetTitle = 'Служба поддержки';
     this.joinRoomQuery = GraphQLClient_1.insertGraphQlFragments(GraphQLClient_1.gql(_templateObject()), {
@@ -7110,6 +7133,7 @@ function () {
             _this3.client.id = joinRoom.client.foreignId;
             _this3.elixirChatClientId = joinRoom.client.id;
             _this3.widgetTitle = joinRoom.company.widgetTitle || _this3.defaultWidgetTitle;
+            _this3.areAnyOperatorsOnline = joinRoom.company.working;
             _this3.room.id = joinRoom.room.foreignId;
             _this3.room.title = joinRoom.room.title;
             _this3.elixirChatRoomId = joinRoom.room.id;
@@ -7182,6 +7206,7 @@ function () {
       var _this5 = this;
 
       this.operatorOnlineStatusSubscription = new OperatorOnlineStatusSubscription_1.OperatorOnlineStatusSubscription({
+        isOnline: this.areAnyOperatorsOnline,
         socketUrl: this.socketUrl,
         token: this.authToken,
         onSubscribeSuccess: function onSubscribeSuccess() {
@@ -7192,6 +7217,7 @@ function () {
         },
         onStatusChange: function onStatusChange(isOnline) {
           utilsCommon_1.logEvent(_this5.debug, isOnline ? 'Operators got back online' : 'All operators went');
+          _this5.areAnyOperatorsOnline = isOnline;
 
           _this5.onOperatorOnlineStatusChangeCallbacks.forEach(function (callback) {
             return callback(isOnline);

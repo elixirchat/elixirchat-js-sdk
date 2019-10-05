@@ -15,10 +15,16 @@
     #elixirchat-widget .elixirchat-widget-button {
       background-color: #22BBD2;
     }
+
   </style>
+  <!-- TODO: remove fake HF styles-->
+  <link crossorigin="anonymous" href="https://demos-elixir-chat.firebaseapp.com/main.css" rel="stylesheet">
 </head>
-<body style="background: url('https://anxious-juice.surge.sh/zzz.png') right top no-repeat; background-size: 1280px 800px;">
+
+<!--TODO: remove fake HF background-->
+<body style="background: url('https://demos-elixir-chat.firebaseapp.com/bg.png') right top no-repeat; background-size: 1280px 800px;">
 <div>
+  <!-- TODO: restore default h3 title-->
   <div id="elixirchat-widget">
     <!-- Widget will be rendered here -->
   </div>
@@ -75,10 +81,26 @@
 
   elixirChatWidget.appendWidget({
     container: document.getElementById('elixirchat-widget'),
-    visibleByDefault: true,
+
+    // TODO: replace iframeStyles back w/ yellow styles
     iframeStyles: `
 
       /* Custom styles inside the iframe */
+
+      body,
+      input,
+      button,
+      textarea {
+        font: 14px/18px "Raleway Regular" !important;
+      }
+
+      .elixirchat-chat-header,
+      .elixirchat-chat-messages__date-title,
+      .elixirchat-chat-messages__sender,
+      .elixirchat-chat-typing {
+        font-family: "Raleway Bold" !important;
+        font-weight: 400 !important;
+      }
 
       .elixirchat-chat-messages__sender {
         color: #5951BD !important;
@@ -100,7 +122,17 @@
       .elixirchat-chat-messages__take-screenshot:hover {
         background-color: #1ea6ba !important;
       }
-    `
+    `,
+    extractFontsFromParentWindow: [
+      {
+        fontFamily: 'Raleway Regular',
+        fontWeight: '400',
+      },
+      {
+        fontFamily: 'Raleway Bold',
+        fontWeight: '400',
+      },
+    ],
   });
 </script>
 </body>

@@ -1,7 +1,9 @@
 import React, { Component, Fragment } from 'react';
 import ReactDOM from 'react-dom';
 import cn from 'classnames';
+import { _flatten } from '../../utilsCommon';
 import { generateFontFaceRule, unlockNotificationSoundAutoplay } from '../../utilsWidget';
+import { FontExtractor } from '../../sdk/FontExtractor';
 import { Chat } from './Chat';
 import { IFrameWrapper } from './IFrameWrapper';
 import { ImagePreview } from './ImagePreview';
@@ -30,6 +32,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
     isIFrameOpeningAnimation: false,
     outsideIframeStyles: null,
     insideIframeStyles: null,
+    extractedFontsStyles: null,
     unreadCount: 0,
     isImagePreviewOpen: false,
     currentImagePreview: {},
@@ -40,6 +43,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
     const { elixirChatWidget } = this.props;
     const { outsideIframeStyles, insideIframeStyles } = this.generateStyles();
     document.body.addEventListener('click', unlockNotificationSoundAutoplay);
+    window.addEventListener('load', this.onWindowLoad);
 
     this.setState({
       outsideIframeStyles,
@@ -50,11 +54,22 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
     elixirChatWidget.onSetUnreadCount((unreadCount) => this.setState({ unreadCount }));
   }
 
+  onWindowLoad = () => {
+    const { elixirChatWidget: { extractFontsFromParentWindow } } = this.props;
+
+    if (extractFontsFromParentWindow && extractFontsFromParentWindow.length) {
+      const fontExtractor = new FontExtractor(document);
+      const extractedFonts = _flatten(extractFontsFromParentWindow.map(fontExtractor.extract));
+      const extractedFontsStyles = extractedFonts.map(font => font.cssText).join('\n\n');
+      this.setState({ extractedFontsStyles });
+    }
+  };
+
   generateStyles = () => {
     const { elixirChatWidget } = this.props;
-    const fontFaceGraphikNormal = generateFontFaceRule('Graphik', 'normal', assets.fontGraphikRegularWeb);
-    const fontFaceGraphikBold = generateFontFaceRule('Graphik', 'bold', assets.fontGraphikBoldWeb);
-    const fontFaceElixirIcons = generateFontFaceRule('elixirchat-icons', null, assets.fontElixirchatIcons);
+    const fontFaceGraphikNormal = generateFontFaceRule('Graphik', 'normal', assets.fontGraphikRegularWeb, 'woff');
+    const fontFaceGraphikBold = generateFontFaceRule('Graphik', 'bold', assets.fontGraphikBoldWeb, 'woff');
+    const fontFaceElixirIcons = generateFontFaceRule('elixirchat-icons', null, assets.fontElixirchatIcons, 'woff');
 
     const outsideIframeStyles = [
       styles.icons,
@@ -116,6 +131,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
       isIFrameOpeningAnimation,
       outsideIframeStyles,
       insideIframeStyles,
+      extractedFontsStyles,
       unreadCount,
       currentImagePreview,
       imagePreviewGallery,
@@ -144,6 +160,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
           'elixirchat-widget-iframe--opening': isIFrameOpeningAnimation,
         })}>
           <Fragment>
+            <style dangerouslySetInnerHTML={{ __html: extractedFontsStyles }}/>
             <style dangerouslySetInnerHTML={{ __html: insideIframeStyles }}/>
             <Chat elixirChatWidget={elixirChatWidget}
               isImagePreviewOpen={isImagePreviewOpen}

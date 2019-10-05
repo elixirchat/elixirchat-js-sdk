@@ -62,11 +62,11 @@ export function playNotificationSound(): void {
 }
 
 
-export function generateFontFaceRule(fontFamily: string, fontWeight: string | null, fontUrl: string): string {
+export function generateFontFaceRule(fontFamily: string, fontWeight: string | null, fontUrl: string, format: string): string {
   return `@font-face {
     font-family: "${fontFamily}";
     ${fontWeight ? `font-weight: ${fontWeight};` : ''}
-    src: url("${fontUrl}") format("woff");
+    src: url("${fontUrl}") format("${format}");
   }`;
 }
 

@@ -1,6 +1,7 @@
 import 'babel-polyfill';
 import { logEvent } from '../utilsCommon';
 import { renderWidgetReactComponent } from './DefaultWidget/Widget';
+import { IFontExtractorExtractParams } from '../sdk/FontExtractor';
 
 let ElixirChat = window.ElixirChat;
 if (!window.ElixirChat) {
@@ -19,12 +20,14 @@ if (!ElixirChat) {
 export interface IElixirChatWidgetAppendWidgetConfig {
   container: HTMLElement;
   iframeStyles?: string;
+  extractFontsFromParentWindow?: Array<IFontExtractorExtractParams>;
 }
 
 export class ElixirChatWidget extends ElixirChat {
 
   public container: HTMLElement;
   public iframeStyles: string;
+  public extractFontsFromParentWindow: Array<IFontExtractorExtractParams>;
 
   public widgetUnreadCount: number;
   public widgetIsVisible: boolean = false;
@@ -94,15 +97,16 @@ export class ElixirChatWidget extends ElixirChat {
     }
   };
 
-  public appendWidget = async ({ container, iframeStyles = '' }: IElixirChatWidgetAppendWidgetConfig): void => {
+  public appendWidget = async ({ container, iframeStyles, extractFontsFromParentWindow }: IElixirChatWidgetAppendWidgetConfig): void => {
     if (!(container instanceof HTMLElement)) {
       const errorMessage = 'You must provide an HTMLElement as a "container" option to appendWidget() method';
-      logEvent(this.debug, errorMessage, { container, iframeStyles }, 'error');
+      logEvent(this.debug, errorMessage, { container, iframeStyles, extractFontsFromParentWindow }, 'error');
       return;
     }
 
     this.container = container;
     this.iframeStyles = iframeStyles || '';
+    this.extractFontsFromParentWindow = extractFontsFromParentWindow || [];
     this.widgetChatReactComponent = renderWidgetReactComponent(this.container, this);
 
     this.onIFrameReady(() => {

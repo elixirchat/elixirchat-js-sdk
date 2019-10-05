@@ -1,6 +1,6 @@
 import ElixirChatWidget from './widget';
 
-const elixirChatWidget = new ElixirChatWidget({
+window.elixirChatWidget = new ElixirChatWidget({
   apiUrl: 'http://localhost:4000',
   socketUrl: 'ws://localhost:4000/socket',
   backendStaticUrl: 'http://localhost:4000',
@@ -26,7 +26,7 @@ const elixirChatWidget = new ElixirChatWidget({
   debug: true,
 });
 
-elixirChatWidget.appendWidget({
+window.elixirChatWidget.appendWidget({
   container: document.getElementById('elixirchat-widget'),
   iframeStyles: `
     /* Your iframe CSS */

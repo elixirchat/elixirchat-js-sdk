@@ -82,6 +82,22 @@ export function _round(num: number): number {
 }
 
 
+// Lodash-like _.flatten
+export function _flatten(arr: Array): Array {
+  let flattenedArray = [];
+  for (let i = 0; i < arr.length; i++) {
+    const item = arr[i];
+    if (item instanceof Array) {
+      flattenedArray = flattenedArray.concat(item);
+    }
+    else {
+      flattenedArray.push(item);
+    }
+  }
+  return flattenedArray;
+}
+
+
 export function detectPlatform(): { isWindows: boolean, isMac: boolean } {
   return {
     isWindows: navigator.platform.indexOf('Win') > -1,
