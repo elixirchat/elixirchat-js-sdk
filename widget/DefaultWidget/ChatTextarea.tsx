@@ -12,7 +12,7 @@ export interface IDefaultWidgetTextareaProps {
 }
 
 export interface IDefaultWidgetTextareaState {
-  areTextareaActionsCollapsed: boolean;
+  screenshotFallback: null | object;
 }
 
 export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaultWidgetTextareaState> {
@@ -22,7 +22,6 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
   textarea: HTMLTextAreaElement = null;
 
   state = {
-    areTextareaActionsCollapsed: false,
     screenshotFallback: null,
   };
 
@@ -179,14 +178,11 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
       return;
     }
     const newHeight = containerElement.offsetHeight;
-    await this.setState({
-      areTextareaActionsCollapsed: newHeight < 60,
-    });
     onVerticalResize(newHeight, options);
   };
 
   render(): void {
-    const { areTextareaActionsCollapsed, screenshotFallback } = this.state;
+    const { screenshotFallback } = this.state;
     const {
       messages,
       textareaText,
@@ -225,10 +221,7 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
           </div>
         )}
 
-        <div className={cn({
-          'elixirchat-chat-textarea__actions': true,
-          'elixirchat-chat-textarea__actions--collapsed': areTextareaActionsCollapsed,
-        })}>
+        <div className="elixirchat-chat-textarea__actions">
           {!Boolean(screenshotFallback) && (
             <button className="elixirchat-chat-textarea__actions-screenshot"
               onClick={this.onScreenShotClick}
