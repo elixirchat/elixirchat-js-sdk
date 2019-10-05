@@ -82,8 +82,14 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     attachments.forEach(attachment => {
       const thumbnailUrl = _get(attachment, 'thumbnails[0].url', null);
       const thumbnailRatio = this.maxThumbnailSize / Math.max(attachment.width, attachment.height);
-      const thumbnailWidth = attachment.width * thumbnailRatio;
-      const thumbnailHeight = attachment.height * thumbnailRatio;
+
+      let thumbnailWidth = attachment.width;
+      let thumbnailHeight = attachment.height;
+
+      if (thumbnailRatio < 1) {
+        thumbnailWidth = attachment.width * thumbnailRatio;
+        thumbnailHeight = attachment.height * thumbnailRatio;
+      }
 
       if (isWebImage(attachment.contentType) && thumbnailWidth && thumbnailHeight) {
         images.push({
