@@ -12615,6 +12615,7 @@ function (_react_1$Component) {
       outsideIframeStyles: null,
       insideIframeStyles: null,
       extractedFontsStyles: null,
+      customIframeStyles: null,
       unreadCount: 0,
       isImagePreviewOpen: false,
       currentImagePreview: {},
@@ -12640,14 +12641,11 @@ function (_react_1$Component) {
     };
 
     _this.generateStyles = function () {
-      var elixirChatWidget = _this.props.elixirChatWidget;
       var fontFaceGraphikNormal = utilsWidget_1.generateFontFaceRule('Graphik', 'normal', assets_1.default.fontGraphikRegularWeb, 'woff');
       var fontFaceGraphikBold = utilsWidget_1.generateFontFaceRule('Graphik', 'bold', assets_1.default.fontGraphikBoldWeb, 'woff');
       var fontFaceElixirIcons = utilsWidget_1.generateFontFaceRule('elixirchat-icons', null, assets_1.default.fontElixirchatIcons, 'woff');
-      var outsideIframeStyles = [styles_1.default.icons, styles_1.default.Widget, styles_1.default.ImagePreview, fontFaceGraphikNormal, fontFaceElixirIcons].join('\n'); // TODO: research why Safari ignoring @imported fonts if
-      //  elixirChatWidget.iframeStyles is put in the end of insideIframeStyles
-
-      var insideIframeStyles = [elixirChatWidget.iframeStyles, styles_1.default.icons, styles_1.default.Chat, styles_1.default.ChatMessages, styles_1.default.ChatTextarea, fontFaceGraphikNormal, fontFaceGraphikBold, fontFaceElixirIcons].join('\n');
+      var outsideIframeStyles = [styles_1.default.icons, styles_1.default.Widget, styles_1.default.ImagePreview, fontFaceGraphikNormal, fontFaceElixirIcons].join('\n');
+      var insideIframeStyles = [styles_1.default.icons, styles_1.default.Chat, styles_1.default.ChatMessages, styles_1.default.ChatTextarea, fontFaceGraphikNormal, fontFaceGraphikBold, fontFaceElixirIcons].join('\n');
       return {
         outsideIframeStyles: outsideIframeStyles,
         insideIframeStyles: insideIframeStyles
@@ -12718,7 +12716,8 @@ function (_react_1$Component) {
       window.addEventListener('load', this.onWindowLoad);
       this.setState({
         outsideIframeStyles: outsideIframeStyles,
-        insideIframeStyles: insideIframeStyles
+        insideIframeStyles: insideIframeStyles,
+        customIframeStyles: elixirChatWidget.iframeStyles
       });
       elixirChatWidget.onToggleChatVisibility(this.onToggleButton);
       elixirChatWidget.onSetUnreadCount(function (unreadCount) {
@@ -12737,6 +12736,7 @@ function (_react_1$Component) {
           outsideIframeStyles = _this$state.outsideIframeStyles,
           insideIframeStyles = _this$state.insideIframeStyles,
           extractedFontsStyles = _this$state.extractedFontsStyles,
+          customIframeStyles = _this$state.customIframeStyles,
           unreadCount = _this$state.unreadCount,
           currentImagePreview = _this$state.currentImagePreview,
           imagePreviewGallery = _this$state.imagePreviewGallery,
@@ -12772,6 +12772,10 @@ function (_react_1$Component) {
       }), react_1.default.createElement("style", {
         dangerouslySetInnerHTML: {
           __html: insideIframeStyles
+        }
+      }), react_1.default.createElement("style", {
+        dangerouslySetInnerHTML: {
+          __html: customIframeStyles
         }
       }), react_1.default.createElement(Chat_1.Chat, {
         elixirChatWidget: elixirChatWidget,

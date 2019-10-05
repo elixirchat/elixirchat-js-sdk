@@ -19,6 +19,8 @@ export interface IWidgetState {
   isIFrameOpeningAnimation: boolean;
   outsideIframeStyles: null | string;
   insideIframeStyles: null | string;
+  extractedFontsStyles: null | string;
+  customIframeStyles: null | string;
   unreadCount: number;
   isImagePreviewOpen: boolean;
   currentImagePreview: any,
@@ -33,6 +35,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
     outsideIframeStyles: null,
     insideIframeStyles: null,
     extractedFontsStyles: null,
+    customIframeStyles: null,
     unreadCount: 0,
     isImagePreviewOpen: false,
     currentImagePreview: {},
@@ -48,6 +51,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
     this.setState({
       outsideIframeStyles,
       insideIframeStyles,
+      customIframeStyles: elixirChatWidget.iframeStyles,
     });
 
     elixirChatWidget.onToggleChatVisibility(this.onToggleButton);
@@ -66,7 +70,6 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
   };
 
   generateStyles = () => {
-    const { elixirChatWidget } = this.props;
     const fontFaceGraphikNormal = generateFontFaceRule('Graphik', 'normal', assets.fontGraphikRegularWeb, 'woff');
     const fontFaceGraphikBold = generateFontFaceRule('Graphik', 'bold', assets.fontGraphikBoldWeb, 'woff');
     const fontFaceElixirIcons = generateFontFaceRule('elixirchat-icons', null, assets.fontElixirchatIcons, 'woff');
@@ -79,10 +82,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
       fontFaceElixirIcons,
     ].join('\n');
 
-    // TODO: research why Safari ignoring @imported fonts if
-    //  elixirChatWidget.iframeStyles is put in the end of insideIframeStyles
     const insideIframeStyles = [
-      elixirChatWidget.iframeStyles,
       styles.icons,
       styles.Chat,
       styles.ChatMessages,
@@ -132,6 +132,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
       outsideIframeStyles,
       insideIframeStyles,
       extractedFontsStyles,
+      customIframeStyles,
       unreadCount,
       currentImagePreview,
       imagePreviewGallery,
@@ -162,6 +163,8 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
           <Fragment>
             <style dangerouslySetInnerHTML={{ __html: extractedFontsStyles }}/>
             <style dangerouslySetInnerHTML={{ __html: insideIframeStyles }}/>
+            <style dangerouslySetInnerHTML={{ __html: customIframeStyles }}/>
+
             <Chat elixirChatWidget={elixirChatWidget}
               isImagePreviewOpen={isImagePreviewOpen}
               onImagePreviewOpen={this.onImagePreviewOpen} />
