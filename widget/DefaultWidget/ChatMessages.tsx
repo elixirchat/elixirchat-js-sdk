@@ -50,15 +50,17 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
   }
 
   setProcessedMessages = (messages, highlightedMessageIds) => {
+    const { elixirChatWidget } = this.props;
     let imagePreviews = [];
+
     let processedMessages = messages.map((message, i) => {
       const processedMessage = { ...message };
       const previousMessage = messages[i - 1];
-      if (previousMessage) {
-        const isDayEarlier = dayjs(previousMessage.timestamp).isBefore(dayjs(message.timestamp).startOf('day'));
-        if (isDayEarlier) {
-          processedMessage.prependDateTitle = true;
-        }
+      const isFirstMessageInChat = !previousMessage && elixirChatWidget.reachedBeginningOfMessageHistory;
+      const isDayEarlier = previousMessage && dayjs(previousMessage.timestamp).isBefore(dayjs(message.timestamp).startOf('day'));
+
+      if (isDayEarlier || isFirstMessageInChat) {
+        processedMessage.prependDateTitle = true;
       }
       if (processedMessage.attachments.length) {
         const { files, images } = this.processAttachments(message.attachments, message.sender);

@@ -67,14 +67,14 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
       elixirChatWidget.fetchMessageHistory(this.messageChunkSize)
         .then(async messages => {
           if (messages.length < this.messageChunkSize) {
-            messages = [this.generateNewClientPlaceholderMessage(), ...messages];
+            messages = [this.generateNewClientPlaceholderMessage(messages), ...messages];
           }
           await this.setState({ messages, isLoading: false });
           this.scrollToBottom();
           this.updateUnseenRepliesCount();
           elixirChatWidget.setIFrameContentMounted();
         })
-        .catch(async e => {
+        .catch(async () => {
           await this.setState({
             isLoading: false,
             isLoadingError: true,
@@ -277,10 +277,13 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
     };
   };
 
-  generateNewClientPlaceholderMessage = () => {
+  generateNewClientPlaceholderMessage = (previousMessages) => {
+    const previousMessageTimestamp = _get(previousMessages, '[0].timestamp');
+    const timestamp = previousMessageTimestamp || new Date().toISOString();
+
     return {
+      timestamp,
       id: randomDigitStringId(6),
-      timestamp: new Date().toISOString(),
       isSystem: true,
       sender: {},
       attachments: [],
