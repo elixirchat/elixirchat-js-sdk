@@ -432,10 +432,10 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
 
         {isLoadingError && (
           <div className="elixirchat-chat-fatal-error">
-            {/* TODO: add webmaster email from config */}
             Ошибка загрузки. <br/>
             Пожалуйста, перезагрузите
-            страницу <span className="elixirchat-chat-fatal-error--nowrap">или свяжитесь с</span> администратором.
+            страницу <span className="elixirchat-chat-fatal-error--nowrap">или напишите</span> администратору
+            на support@elixir.chat.
           </div>
         )}
 
