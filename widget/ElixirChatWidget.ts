@@ -9,7 +9,17 @@ console.log('\n\n\n__ ElixirChatWidget.ts 0', { ElixirChat }, '\n\n\n');
 
 if (!ElixirChat) {
   ElixirChat = require('../sdk').default;
-  console.log('\n\n\n__ ElixirChatWidget.ts 1', __dirname, { ElixirChat }, '\n\n\n');
+  let ElixirChat2 = require('../sdk');
+  let ElixirChat3 = require('../build/sdk');
+  let ElixirChat4 = require(__dirname + '/../sdk');
+  let ElixirChat5 = require(__dirname + '/../sdk');
+  console.log('\n\n\n__ ElixirChatWidget.ts 1', __dirname, {
+    ElixirChat,
+    ElixirChat2,
+    ElixirChat3,
+    ElixirChat4,
+    ElixirChat5,
+  }, '\n\n\n');
 }
 if (!ElixirChat) {
   logEvent(
