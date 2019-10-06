@@ -7,7 +7,12 @@ export interface IScreenshot {
 
 export class ScreenshotTaker {
 
-  public mediaOptions: any = {};
+  public mediaOptions: any = {
+    video: {
+      width: screen.width * window.devicePixelRatio,
+      height: screen.height * window.devicePixelRatio,
+    },
+  };
   public width: number = 0;
   public height: number = 0;
 
@@ -20,7 +25,7 @@ export class ScreenshotTaker {
   }
 
   initialize(): void {
-    this.width = screen.width;
+    this.width = screen.width * window.devicePixelRatio;
     this.canvas = document.createElement('canvas');
     this.video = document.createElement('video');
   }
