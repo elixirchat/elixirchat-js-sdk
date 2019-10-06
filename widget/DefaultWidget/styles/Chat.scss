@@ -56,7 +56,6 @@ textarea {
 }
 
 .elixirchat-chat-header__close {
-  width: 53px;
   height: 53px;
   border: 0;
   opacity: .25;
@@ -66,13 +65,41 @@ textarea {
   transition: opacity 200ms;
   display: flex;
   align-items: center;
-  justify-content: center;
   font-size: 15px;
   background: none;
+  cursor: pointer;
+  padding: 0 18px 0 7px;
+
+  &:hover {
+    opacity: .4;
+  }
+
+  [class^=icon] {
+    -webkit-font-smoothing: initial;
+  }
+}
+
+.elixirchat-chat-header__mute {
+  background: none;
+  border: none;
+  position: absolute;
+  height: 53px;
+  padding: 0 8px 0 18px;
+  top: 1px;
+  right: 40px;
+  transition: opacity 200ms;
+  display: flex;
+  align-items: center;
+  font-size: 15px;
+  opacity: .27;
   cursor: pointer;
 
   &:hover {
     opacity: .4;
+  }
+
+  [class^=icon] {
+    -webkit-font-smoothing: initial;
   }
 }
 

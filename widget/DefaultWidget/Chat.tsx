@@ -29,6 +29,7 @@ export interface IDefaultWidgetState {
   isLoadingPreviousMessages: boolean;
   widgetTitle: string;
   areOperatorsOnline: boolean;
+  areNotificationsMuted: boolean;
 }
 
 export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
@@ -51,6 +52,7 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
     isLoadingPreviousMessages: false,
     widgetTitle: '',
     areOperatorsOnline: false,
+    areNotificationsMuted: false,
   };
 
   componentDidMount(): void {
@@ -99,7 +101,9 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
       }
       else {
         this.setState({ messages });
-        playNotificationSound();
+        if (!this.state.areNotificationsMuted) {
+          playNotificationSound();
+        }
       }
       if (!hasUserScroll) {
         this.scrollToBottom();
@@ -114,6 +118,13 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
     elixirChatWidget.onOperatorOnlineStatusChange(areOperatorsOnline => {
       this.setState({ areOperatorsOnline });
     });
+
+    let areNotificationsMuted = false;
+    try {
+      areNotificationsMuted = JSON.parse(localStorage.getItem('elixirchat-notifications-muted'))
+    }
+    catch (e) {}
+    this.setState({ areNotificationsMuted });
   }
 
   loadPreviousMessages = (callback): void => {
@@ -388,6 +399,12 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
     });
   };
 
+  toggleMute = () => {
+    const { areNotificationsMuted } = this.state;
+    localStorage.setItem('elixirchat-notifications-muted', JSON.stringify(!areNotificationsMuted));
+    this.setState({ areNotificationsMuted: !areNotificationsMuted });
+  };
+
   render(): void {
     const {
       elixirChatWidget,
@@ -406,6 +423,7 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
       isLoadingError,
       widgetTitle,
       areOperatorsOnline,
+      areNotificationsMuted,
     } = this.state;
 
     return (
@@ -420,6 +438,11 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
               {widgetTitle}
             </Fragment>
           )}
+
+          <button className="elixirchat-chat-header__mute" onClick={this.toggleMute}>
+            <i className={areNotificationsMuted ? 'icon-speaker-mute' : 'icon-speaker'}/>
+          </button>
+
           <button className="elixirchat-chat-header__close"
             title="Закрыть чат"
             onClick={elixirChatWidget.toggleChatVisibility}>
