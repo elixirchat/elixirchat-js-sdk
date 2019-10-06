@@ -483,7 +483,9 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
             </Fragment>
           )}
 
-          <button className="elixirchat-chat-header__mute" onClick={this.toggleMute}>
+          <button className="elixirchat-chat-header__mute"
+            title={areNotificationsMuted ? 'Включить звук уведомлений' : 'Выключить звук уведомлений'}
+            onClick={this.toggleMute}>
             <i className={areNotificationsMuted ? 'icon-speaker-mute' : 'icon-speaker'}/>
           </button>
 
