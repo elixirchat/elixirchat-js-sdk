@@ -4,8 +4,10 @@
  */
 
 
-import { ElixirChatWidget } from '../build/default-widget';
+// import { ElixirChatWidget } from '../build/default-widget';
+const ElixirChatWidget = require('../build/default-widget').default;
 
-console.log('\n\n\n__ ElixirChatWidget index.js 1', { ElixirChatWidget }, '\n\n\n');
+
+console.log('\n\n\n__ widget/index.js 1 (require)', { ElixirChatWidget }, '\n\n\n');
 
 export default ElixirChatWidget;
