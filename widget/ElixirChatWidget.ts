@@ -1,7 +1,7 @@
 import 'babel-polyfill';
 import { logEvent } from '../utilsCommon';
 import { renderWidgetReactComponent } from './DefaultWidget/Widget';
-import { IFontExtractorExtractParams } from '../sdk/FontExtractor';
+import { IFontExtractorExtractParams } from './FontExtractor';
 
 let ElixirChat = window.ElixirChat;
 if (!window.ElixirChat) {

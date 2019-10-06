@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import cn from 'classnames';
 import { _flatten } from '../../utilsCommon';
 import { generateFontFaceRule, unlockNotificationSoundAutoplay } from '../../utilsWidget';
-import { FontExtractor } from '../../sdk/FontExtractor';
+import { FontExtractor } from '../FontExtractor';
 import { Chat } from './Chat';
 import { IFrameWrapper } from './IFrameWrapper';
 import { ImagePreview } from './ImagePreview';
