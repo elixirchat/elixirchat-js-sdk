@@ -4,8 +4,12 @@ import { renderWidgetReactComponent } from './DefaultWidget/Widget';
 import { IFontExtractorExtractParams } from './FontExtractor';
 
 let ElixirChat = window.ElixirChat;
-if (!window.ElixirChat) {
+
+console.log('\n\n\n__ ElixirChatWidget.ts 0', { ElixirChat }, '\n\n\n');
+
+if (!ElixirChat) {
   ElixirChat = require('../sdk').default;
+  console.log('\n\n\n__ ElixirChatWidget.ts 1', __dirname, { ElixirChat }, '\n\n\n');
 }
 if (!ElixirChat) {
   logEvent(

@@ -3,5 +3,8 @@
  * import ElixirChat from 'elixirchat-js-sdk';
  */
 
-import { ElixirChatWidget } from '../build/sdk';
-export default ElixirChatWidget;
+import { ElixirChat } from '../build/sdk';
+
+console.log('\n\n\n__ ElixirChat index.js 2', { ElixirChat }, '\n\n\n');
+
+export default ElixirChat;
