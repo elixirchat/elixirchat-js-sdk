@@ -10,7 +10,7 @@
     "preinstall": "npm i node-sass@4.12.0",
     "postinstall": "./bin/postinstall.sh"
   },
-  "main": "build/sdk.js",
+  "main": "./sdk",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/elixirchat/elixirchat-js-sdk.git"
