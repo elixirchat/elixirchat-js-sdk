@@ -1,2 +1,2 @@
-import { ElixirChatWidget } from './ElixirChatWidget';
+import { ElixirChatWidget } from '../build/default-widget';
 export default ElixirChatWidget;

@@ -1,4 +1,4 @@
-import ElixirChatWidget from './widget';
+import { ElixirChatWidget } from './widget/ElixirChatWidget';
 
 window.elixirChatWidget = new ElixirChatWidget({
   apiUrl: 'http://localhost:4000',

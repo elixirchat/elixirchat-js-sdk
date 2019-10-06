@@ -6669,7 +6669,12 @@ function () {
 
     _classCallCheck(this, ScreenshotTaker);
 
-    this.mediaOptions = {};
+    this.mediaOptions = {
+      video: {
+        width: screen.width * window.devicePixelRatio,
+        height: screen.height * window.devicePixelRatio
+      }
+    };
     this.width = 0;
     this.height = 0;
 
@@ -6702,7 +6707,7 @@ function () {
   _createClass(ScreenshotTaker, [{
     key: "initialize",
     value: function initialize() {
-      this.width = screen.width;
+      this.width = screen.width * window.devicePixelRatio;
       this.canvas = document.createElement('canvas');
       this.video = document.createElement('video');
     }
