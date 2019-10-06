@@ -154,3 +154,36 @@ textarea {
     white-space: nowrap;
   }
 }
+
+.elixirchat-chat-draggable-backdrop {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 3;
+  opacity: .2;
+}
+
+.elixirchat-chat-draggable-area {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  background: $color-white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: lighten($color-gray-dark, 10);
+  font-size: 15px;
+  line-height: 21px;
+}
+
+.elixirchat-chat-draggable-area__icon {
+  font-size: 16px;
+  margin-bottom: 11px;
+}

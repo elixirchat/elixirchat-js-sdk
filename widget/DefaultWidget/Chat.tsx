@@ -27,6 +27,7 @@ export interface IDefaultWidgetState {
   isLoading: boolean;
   isLoadingError: boolean;
   isLoadingPreviousMessages: boolean;
+  isDraggingAttachments: boolean;
   widgetTitle: string;
   areOperatorsOnline: boolean;
   areNotificationsMuted: boolean;
@@ -50,16 +51,19 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
     isLoading: true,
     isLoadingError: false,
     isLoadingPreviousMessages: false,
+    isDraggingAttachments: false,
     widgetTitle: '',
     areOperatorsOnline: false,
     areNotificationsMuted: false,
   };
 
-  componentDidMount(): void {
+  componentDidMount() {
     const { elixirChatWidget } = this.props;
 
     elixirChatWidget.onIFrameReady(() => {
       elixirChatWidget.widgetIFrameDocument.body.addEventListener('click', unlockNotificationSoundAutoplay);
+      elixirChatWidget.widgetIFrameDocument.body.addEventListener('dragover', this.onBodyDrag);
+      elixirChatWidget.widgetIFrameDocument.body.addEventListener('drop', this.onBodyDrop);
     });
 
     elixirChatWidget.onConnectSuccess(() => {
@@ -126,6 +130,45 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
     catch (e) {}
     this.setState({ areNotificationsMuted });
   }
+
+  componentWillUnmount(){
+    elixirChatWidget.widgetIFrameDocument.body.removeEventListener('dragover', this.onBodyDrag);
+    elixirChatWidget.widgetIFrameDocument.body.removeEventListener('drop', this.onBodyDrop);
+  }
+
+  onBodyDrag = (e) => {
+    e.preventDefault();
+    this.setState({ isDraggingAttachments: true });
+  };
+
+  onBodyDrop = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    let textareaAttachments = [ ...this.state.textareaAttachments ];
+    let attachmentFiles;
+    if (e.dataTransfer.items) {
+      attachmentFiles = Array.from(e.dataTransfer.items)
+        .filter(item => item.kind === 'file')
+        .map(item => item.getAsFile());
+    }
+    else {
+      attachmentFiles = Array.from(e.dataTransfer.files);
+    }
+
+    for (let i = 0; i < attachmentFiles.length; i++) {
+      const file = attachmentFiles[i];
+      const imageBlobUrl = URL.createObjectURL(attachmentFiles[i]);
+      const dimensions = await getImageDimensions(imageBlobUrl);
+      textareaAttachments.push({
+        id: randomDigitStringId(6),
+        name: file.name,
+        file,
+        ...dimensions,
+      });
+    }
+    this.setState({ textareaAttachments, isDraggingAttachments: false });
+  };
 
   loadPreviousMessages = (callback): void => {
     const { messages, isLoadingPreviousMessages } = this.state;
@@ -421,6 +464,7 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
       currentlyTypingUsers,
       isLoading,
       isLoadingError,
+      isDraggingAttachments,
       widgetTitle,
       areOperatorsOnline,
       areNotificationsMuted,
@@ -490,6 +534,17 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
               elixirChatWidget={elixirChatWidget}/>
           </Fragment>
         )}
+
+        {isDraggingAttachments && (
+          <Fragment>
+            <div className="elixirchat-chat-draggable-backdrop"/>
+            <div className="elixirchat-chat-draggable-area">
+              <i className="elixirchat-chat-draggable-area__icon icon-file"/>
+              <div>Перетащите файлы для загрузки</div>
+            </div>
+          </Fragment>
+        )}
+
       </div>
     );
   }
