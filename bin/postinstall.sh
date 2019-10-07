@@ -11,16 +11,18 @@ export default ElixirChat;
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-
 node-sass --recursive widget/DefaultWidget/styles/ --output dist/styles/
 
 if [[ $SCRIPT_DIR =~ node_modules/elixirchat-js-sdk ]];
   then
     tput setaf 2
+    printf "\n"
     echo "elixirchat-js-sdk/bin/postinstall.sh SCRIPT_DIR: $SCRIPT_DIR"
+    printf "\n"
     echo "Confirmed elixirchat-js-sdk is being installed in ANOTHER project."
     echo "$SDK_JS_CONTENTS" > dist/sdk.js
 
+    printf "\n"
     echo "Created dist/sdk.js: $SDK_JS_CONTENTS"
     printf "\n"
     echo "Rebuilding default-widget.js..."

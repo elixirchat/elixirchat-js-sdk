@@ -20,6 +20,7 @@ if [[ $SCRIPT_DIR =~ node_modules/elixirchat-js-sdk ]];
 
     tput setaf 2
     echo "elixirchat-js-sdk/bin/preinstall.sh SCRIPT_DIR: $SCRIPT_DIR"
+    printf "\n"
     echo "Confirmed elixirchat-js-sdk is being installed in ANOTHER project."
     echo "Installing node-sass@$PARCEL_VERSION and parcel-bundler@$PARCEL_VERSION..."
     printf "\n"
