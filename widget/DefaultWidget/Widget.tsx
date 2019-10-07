@@ -21,7 +21,6 @@ export interface IWidgetState {
   insideIframeStyles: null | string;
   extractedFontsStyles: null | string;
   customIframeStyles: null | string;
-  // unreadCount: number;
   isImagePreviewOpen: boolean;
   currentImagePreview: any,
   imagePreviewGallery: Array<any>,
@@ -38,7 +37,6 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
     insideIframeStyles: null,
     extractedFontsStyles: null,
     customIframeStyles: null,
-    // unreadCount: 0,
     isImagePreviewOpen: false,
     currentImagePreview: {},
     imagePreviewGallery: [],
@@ -59,7 +57,6 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
     });
 
     elixirChatWidget.onToggleChatVisibility(this.onToggleButton);
-    // elixirChatWidget.onSetUnreadCount((unreadCount) => this.setState({ unreadCount }));
 
     elixirChatWidget.onUnreadMessagesChange(unreadMessagesCounter => {
       this.setState({ unreadMessagesCounter });

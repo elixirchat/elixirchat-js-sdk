@@ -44,10 +44,6 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
       const highlightedMessageIds = unreadMessages.map(message => message.id);
       this.setState({ highlightedMessageIds });
     });
-
-    // elixirChatWidget.onUnreadRepliesChange(unreadRepliesCount => {
-    //   this.setState({ unreadRepliesCount });
-    // });
   }
 
   componentDidUpdate(prevProps, prevState): void {

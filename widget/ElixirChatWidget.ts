@@ -15,7 +15,7 @@ if (!ElixirChat) {
    *  - When building SDK locally, dist/sdk.js is empty so that sdk.js is not included into default-widget.js bundle
    *  @see bin/build.sh
    *
-   *  - When 'elixirchat-js-sdk' in being installed via npm in another project, dist/sdk.js refers to build/sdk.js
+   *  - When 'elixirchat-js-sdk' in being installed via npm in another project, dist/sdk.js exports build/sdk.js
    *  so that it'd be possible to use `import ElixirChatWidget from 'elixirchat-js-sdk/widget'`
    *  @see bin/postinstall.sh
    */
@@ -43,7 +43,6 @@ export class ElixirChatWidget extends ElixirChat {
   public iframeStyles: string;
   public extractFontsFromParentWindow: Array<IFontExtractorExtractParams>;
 
-  // public widgetUnreadCount: number;
   public widgetIsVisible: boolean = false;
   public widgetIsIFrameReady: boolean = false;
   public widgetIsIFrameContentMounted: boolean = false;
@@ -52,18 +51,8 @@ export class ElixirChatWidget extends ElixirChat {
   public widgetIFrameDocument: Document = {};
 
   protected onToggleChatVisibilityCallbacks: Array<(isOpen: boolean) => void> = [];
-  // protected onSetUnreadCountCallbacks: Array<(count: boolean) => void> = [];
   protected onIFrameReadyCallbacks: Array<() => void> = [];
   protected onIFrameContentMountedCallbacks: Array<() => void> = [];
-
-  // public setUnreadCount = (count: number): void => {
-  //   this.widgetUnreadCount = +count || 0;
-  //   this.onSetUnreadCountCallbacks.forEach(callback => callback(this.widgetUnreadCount));
-  // };
-
-  // public onSetUnreadCount = (callback) => {
-  //   this.onSetUnreadCountCallbacks.push(callback);
-  // };
 
   public toggleChatVisibility = async (): void => {
     this.widgetIsVisible = !this.widgetIsVisible;

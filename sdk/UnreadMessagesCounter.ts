@@ -66,14 +66,6 @@ export class UnreadMessagesCounter {
       const { responseToMessage, sender } = message;
       const isSentByCurrentClient = sender.id === this.currentClientId;
       const isResponseToCurrentClient = _get(responseToMessage, 'sender.id') === this.currentClientId;
-
-      if (!isSentByCurrentClient && isResponseToCurrentClient) {
-        console.log('%c__ REPLY', 'color: green', message, this.currentClientId);
-      }
-      else {
-        console.warn('__ NOT REPLY', message);
-      }
-
       return isResponseToCurrentClient && !isSentByCurrentClient;
     });
   }
@@ -92,15 +84,13 @@ export class UnreadMessagesCounter {
 
   protected getUnreadMessages = (): Array<IMessage> => {
     const latestUnreadMessageId: string = localStorage.getItem('elixirchat-latest-unread-message-id');
-    const latestUnreadMessageIndex = this.receivedMessages
+    const notMineMessages = this.receivedMessages.filter(message => message.sender.id !== this.currentClientId);
+    const latestUnreadMessageIndex = notMineMessages
       .map((message): string => message.id)
       .indexOf(latestUnreadMessageId);
 
     return latestUnreadMessageIndex === -1
-      ? this.receivedMessages.filter(message => {
-          console.log('__ msg', message.sender.id !== this.currentClientId, this.currentClientId, message.sender);
-          return message.sender.id !== this.currentClientId;
-        })
-      : this.receivedMessages.slice(latestUnreadMessageIndex + 1);
+      ? notMineMessages
+      : notMineMessages.slice(latestUnreadMessageIndex + 1);
   };
 }

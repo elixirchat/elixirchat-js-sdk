@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-# When 'elixirchat-js-sdk' in being installed via npm in another project, dist/sdk.js refers to
-# build/sdk.js so that it'd be possible to use `import ElixirChatWidget from 'elixirchat-js-sdk/widget'`
+# When 'elixirchat-js-sdk' in being installed via npm in another project, dist/sdk.js exports build/sdk.js
+# so that it'd be possible to use `import ElixirChatWidget from 'elixirchat-js-sdk/widget'`
 # See: widget/ElixirChatWidget.ts:8
 
 SDK_JS_CONTENTS="""
