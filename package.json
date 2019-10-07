@@ -7,7 +7,7 @@
     "build": "./bin/build.sh",
     "examples": "./bin/examples.sh",
     "link-with-backend": "./bin/link-with-backend.sh",
-    "preinstall": "npm i node-sass@4.12.0",
+    "preinstall": "npm i node-sass@4.12.0 && npm i parcel-bundler@1.12.3",
     "postinstall": "./bin/postinstall.sh",
     "preversion": "./bin/build.sh"
   },
