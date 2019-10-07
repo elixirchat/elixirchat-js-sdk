@@ -6646,7 +6646,143 @@ function () {
 }();
 
 exports.OperatorOnlineStatusSubscription = OperatorOnlineStatusSubscription;
-},{"@absinthe/socket":"zTqj","phoenix":"XFqm","./GraphQLClient":"1fv+"}],"CLsL":[function(require,module,exports) {
+},{"@absinthe/socket":"zTqj","phoenix":"XFqm","./GraphQLClient":"1fv+"}],"xY1B":[function(require,module,exports) {
+"use strict";
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var utilsCommon_1 = require("../utilsCommon");
+
+var UnreadMessagesCounter =
+/*#__PURE__*/
+function () {
+  function UnreadMessagesCounter(_ref) {
+    var _this = this;
+
+    var currentClientId = _ref.currentClientId;
+
+    _classCallCheck(this, UnreadMessagesCounter);
+
+    this.unreadMessagesCount = 0;
+    this.unreadRepliesCount = 0;
+    this.unreadMessages = [];
+    this.unreadReplies = [];
+    this.receivedMessages = [];
+    this.currentClientId = null;
+    this.onUnreadMessagesChangeCallbacks = [];
+    this.onUnreadRepliesChangeCallbacks = [];
+
+    this.setReceivedMessages = function (receivedMessages) {
+      _this.receivedMessages = receivedMessages;
+
+      var unreadMessages = _this.getUnreadMessages();
+
+      var unreadReplies = _this.getUnreadRepliesToCurrentClient();
+
+      _this.triggerOnChangeCallbacks(unreadMessages, unreadReplies);
+    };
+
+    this.onUnreadMessagesChange = function (callback) {
+      _this.onUnreadMessagesChangeCallbacks.push(callback);
+    };
+
+    this.onUnreadRepliesChange = function (callback) {
+      _this.onUnreadRepliesChangeCallbacks.push(callback);
+    };
+
+    this.resetUnreadMessagesAndReplies = function () {
+      var allRepliesToCurrentClient = _this.getAllRepliesToCurrentClient();
+
+      var latestReplyToCurrentClient = utilsCommon_1._last(allRepliesToCurrentClient);
+
+      if (latestReplyToCurrentClient) {
+        localStorage.setItem('elixirchat-latest-unread-reply-id', latestReplyToCurrentClient.id);
+      }
+
+      var latestMessage = utilsCommon_1._last(_this.receivedMessages);
+
+      if (latestMessage) {
+        localStorage.setItem('elixirchat-latest-unread-message-id', latestMessage.id);
+      }
+
+      _this.triggerOnChangeCallbacks([], []);
+    };
+
+    this.getUnreadRepliesToCurrentClient = function () {
+      var allRepliesToCurrentClient = _this.getAllRepliesToCurrentClient();
+
+      var latestUnreadReplyId = localStorage.getItem('elixirchat-latest-unread-reply-id');
+      var latestUnreadReplyIndex = allRepliesToCurrentClient.map(function (message) {
+        return message.id;
+      }).indexOf(latestUnreadReplyId);
+      return latestUnreadReplyIndex === -1 ? allRepliesToCurrentClient : allRepliesToCurrentClient.slice(latestUnreadReplyIndex + 1);
+    };
+
+    this.getUnreadMessages = function () {
+      var latestUnreadMessageId = localStorage.getItem('elixirchat-latest-unread-message-id');
+
+      var notMineMessages = _this.receivedMessages.filter(function (message) {
+        return message.sender.id !== _this.currentClientId;
+      });
+
+      var latestUnreadMessageIndex = notMineMessages.map(function (message) {
+        return message.id;
+      }).indexOf(latestUnreadMessageId);
+      return latestUnreadMessageIndex === -1 ? notMineMessages : notMineMessages.slice(latestUnreadMessageIndex + 1);
+    };
+
+    this.currentClientId = currentClientId;
+  }
+
+  _createClass(UnreadMessagesCounter, [{
+    key: "triggerOnChangeCallbacks",
+    value: function triggerOnChangeCallbacks(unreadMessages, unreadReplies) {
+      if (this.unreadMessagesCount !== unreadMessages.length) {
+        this.onUnreadMessagesChangeCallbacks.forEach(function (callback) {
+          return callback(unreadMessages.length, unreadMessages);
+        });
+        this.unreadMessagesCount = unreadMessages.length;
+        this.unreadMessages = unreadMessages;
+      }
+
+      if (this.unreadRepliesCount !== unreadReplies.length) {
+        this.onUnreadRepliesChangeCallbacks.forEach(function (callback) {
+          return callback(unreadReplies.length, unreadReplies);
+        });
+        this.unreadRepliesCount = unreadReplies.length;
+        this.unreadReplies = unreadReplies;
+      }
+    }
+  }, {
+    key: "getAllRepliesToCurrentClient",
+    value: function getAllRepliesToCurrentClient() {
+      var _this2 = this;
+
+      return this.receivedMessages.filter(function (message) {
+        var responseToMessage = message.responseToMessage,
+            sender = message.sender;
+        var isSentByCurrentClient = sender.id === _this2.currentClientId;
+
+        var isResponseToCurrentClient = utilsCommon_1._get(responseToMessage, 'sender.id') === _this2.currentClientId;
+
+        return isResponseToCurrentClient && !isSentByCurrentClient;
+      });
+    }
+  }]);
+
+  return UnreadMessagesCounter;
+}();
+
+exports.UnreadMessagesCounter = UnreadMessagesCounter;
+},{"../utilsCommon":"EjGt"}],"CLsL":[function(require,module,exports) {
 "use strict";
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -6850,6 +6986,8 @@ var TypingStatusSubscription_1 = require("./TypingStatusSubscription");
 
 var OperatorOnlineStatusSubscription_1 = require("./OperatorOnlineStatusSubscription");
 
+var UnreadMessagesCounter_1 = require("./UnreadMessagesCounter");
+
 var ScreenshotTaker_1 = require("./ScreenshotTaker");
 
 var GraphQLClient_1 = require("./GraphQLClient");
@@ -6864,6 +7002,7 @@ function () {
 
     _classCallCheck(this, ElixirChat);
 
+    this.receivedMessages = [];
     this.areAnyOperatorsOnline = false;
     this.widgetTitle = '';
     this.defaultWidgetTitle = 'Служба поддержки';
@@ -6875,6 +7014,20 @@ function () {
     this.onConnectErrorCallbacks = [];
     this.onTypingCallbacks = [];
     this.onOperatorOnlineStatusChangeCallbacks = [];
+    this.onUnreadMessagesChangeCallbacks = [];
+    this.onUnreadRepliesChangeCallbacks = [];
+
+    this.onUnreadRepliesChange = function (callback) {
+      _this.onUnreadRepliesChangeCallbacks.push(callback);
+    };
+
+    this.onUnreadMessagesChange = function (callback) {
+      _this.onUnreadMessagesChangeCallbacks.push(callback);
+    };
+
+    this.resetUnreadMessagesAndReplies = function () {
+      _this.unreadMessagesCounter.resetUnreadMessagesAndReplies();
+    };
 
     this.dispatchTypedText = function (typedText) {
       _this.typingStatusSubscription.dispatchTypedText(typedText);
@@ -6952,6 +7105,10 @@ function () {
           beforeCursor: beforeCursor,
           messages: messages
         });
+        _this.receivedMessages = _this.receivedMessages.concat(messages);
+
+        _this.unreadMessagesCounter.setReceivedMessages(_this.receivedMessages);
+
         return messages;
       }).catch(function (data) {
         utilsCommon_1.logEvent(_this.debug, 'Could not fetch message history', data, 'error');
@@ -7003,6 +7160,8 @@ function () {
       this.setDefaultConfigValues();
       this.connectToRoom().then(function () {
         _this2.saveRoomClientToLocalStorage(_this2.room, _this2.client);
+
+        _this2.subscribeToUnreadMessagesCounter();
 
         _this2.subscribeToNewMessages();
 
@@ -7267,6 +7426,10 @@ function () {
         onMessage: function onMessage(message) {
           utilsCommon_1.logEvent(_this6.debug, 'Received new message', message);
 
+          _this6.receivedMessages.push(message);
+
+          _this6.unreadMessagesCounter.setReceivedMessages(_this6.receivedMessages);
+
           _this6.onMessageCallbacks.forEach(function (callback) {
             return callback(message);
           });
@@ -7328,6 +7491,53 @@ function () {
       }
     }
   }, {
+    key: "subscribeToUnreadMessagesCounter",
+    value: function subscribeToUnreadMessagesCounter() {
+      var _this8 = this;
+
+      this.unreadMessagesCounter = new UnreadMessagesCounter_1.UnreadMessagesCounter({
+        currentClientId: this.elixirChatClientId
+      });
+      this.unreadMessagesCounter.onUnreadMessagesChange(function (unreadMessagesCount, unreadMessages) {
+        utilsCommon_1.logEvent(_this8.debug, 'Unread messages count changed to ' + unreadMessagesCount, {
+          unreadMessages: unreadMessages
+        });
+
+        _this8.onUnreadMessagesChangeCallbacks.forEach(function (callback) {
+          return callback(unreadMessagesCount, unreadMessages);
+        });
+      });
+      this.unreadMessagesCounter.onUnreadRepliesChange(function (unreadRepliesCount, unreadReplies) {
+        utilsCommon_1.logEvent(_this8.debug, 'Unread replies count changed to ' + unreadRepliesCount, {
+          unreadReplies: unreadReplies
+        });
+
+        _this8.onUnreadRepliesChangeCallbacks.forEach(function (callback) {
+          return callback(unreadRepliesCount, unreadReplies);
+        });
+      });
+    }
+  }, {
+    key: "unreadMessagesCount",
+    get: function get() {
+      return this.unreadMessagesCounter ? this.unreadMessagesCounter.unreadMessagesCount : 0;
+    }
+  }, {
+    key: "unreadRepliesCount",
+    get: function get() {
+      return this.unreadMessagesCounter ? this.unreadMessagesCounter.unreadRepliesCount : 0;
+    }
+  }, {
+    key: "unreadMessages",
+    get: function get() {
+      return this.unreadMessagesCounter ? this.unreadMessagesCounter.unreadMessages : [];
+    }
+  }, {
+    key: "unreadReplies",
+    get: function get() {
+      return this.unreadMessagesCounter ? this.unreadMessagesCounter.unreadReplies : [];
+    }
+  }, {
     key: "reachedBeginningOfMessageHistory",
     get: function get() {
       return this.messagesSubscription ? this.messagesSubscription.reachedBeginningOfMessageHistory : false;
@@ -7342,7 +7552,7 @@ exports.ElixirChat = ElixirChat;
 if (typeof window !== 'undefined') {
   window.ElixirChat = ElixirChat;
 }
-},{"unique-names-generator":"Qz33","../utilsCommon":"EjGt","./serializers/serializeUser":"1lqy","./MessagesSubscription":"y8vH","./TypingStatusSubscription":"QERd","./OperatorOnlineStatusSubscription":"zgd1","./ScreenshotTaker":"CLsL","./GraphQLClient":"1fv+"}],"7QCb":[function(require,module,exports) {
+},{"unique-names-generator":"Qz33","../utilsCommon":"EjGt","./serializers/serializeUser":"1lqy","./MessagesSubscription":"y8vH","./TypingStatusSubscription":"QERd","./OperatorOnlineStatusSubscription":"zgd1","./UnreadMessagesCounter":"xY1B","./ScreenshotTaker":"CLsL","./GraphQLClient":"1fv+"}],"7QCb":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {

@@ -10262,7 +10262,8 @@ function (_react_1$Component) {
     _this.state = {
       processedMessages: [],
       imagePreviews: [],
-      screenshotFallback: null
+      screenshotFallback: null,
+      highlightedMessageIds: []
     };
     _this.maxThumbnailSize = 256;
 
@@ -10394,24 +10395,37 @@ function (_react_1$Component) {
   _createClass(ChatMessages, [{
     key: "componentDidMount",
     value: function componentDidMount() {
+      var _this2 = this;
+
       var _this$props2 = this.props,
-          messages = _this$props2.messages,
-          highlightedMessageIds = _this$props2.highlightedMessageIds;
+          elixirChatWidget = _this$props2.elixirChatWidget,
+          messages = _this$props2.messages;
       dayjs_1.default.locale('ru');
       dayjs_1.default.extend(calendar_1.default);
+      var highlightedMessageIds = elixirChatWidget.unreadMessages.map(function (message) {
+        return message.id;
+      });
       this.setProcessedMessages(messages, highlightedMessageIds);
       this.setState({
         screenshotFallback: ScreenshotTaker_1.getCompatibilityFallback()
       });
+      elixirChatWidget.onUnreadMessagesChange(function (unreadMessagesCounter, unreadMessages) {
+        var highlightedMessageIds = unreadMessages.map(function (message) {
+          return message.id;
+        });
+
+        _this2.setState({
+          highlightedMessageIds: highlightedMessageIds
+        });
+      });
     }
   }, {
     key: "componentDidUpdate",
-    value: function componentDidUpdate(prevProps) {
-      var _this$props3 = this.props,
-          messages = _this$props3.messages,
-          highlightedMessageIds = _this$props3.highlightedMessageIds;
+    value: function componentDidUpdate(prevProps, prevState) {
+      var messages = this.props.messages;
+      var highlightedMessageIds = this.state.highlightedMessageIds;
       var didMessagesChange = prevProps.messages !== messages;
-      var didHighlightedMessagesChange = prevProps.highlightedMessageIds !== highlightedMessageIds;
+      var didHighlightedMessagesChange = prevState.highlightedMessageIds !== highlightedMessageIds;
 
       if (didMessagesChange || didHighlightedMessagesChange) {
         this.setProcessedMessages(messages, highlightedMessageIds);
@@ -10420,15 +10434,15 @@ function (_react_1$Component) {
   }, {
     key: "render",
     value: function render() {
-      var _this2 = this;
+      var _this3 = this;
 
       var _this$state = this.state,
           processedMessages = _this$state.processedMessages,
           screenshotFallback = _this$state.screenshotFallback;
-      var _this$props4 = this.props,
-          elixirChatWidget = _this$props4.elixirChatWidget,
-          onReplyMessage = _this$props4.onReplyMessage,
-          onSubmitRetry = _this$props4.onSubmitRetry;
+      var _this$props3 = this.props,
+          elixirChatWidget = _this$props3.elixirChatWidget,
+          onReplyMessage = _this$props3.onReplyMessage,
+          onSubmitRetry = _this$props3.onSubmitRetry;
       return react_1.default.createElement("div", {
         className: "elixirchat-chat-messages"
       }, processedMessages.map(function (message) {
@@ -10449,7 +10463,7 @@ function (_react_1$Component) {
             'elixirchat-chat-messages__item--by-operator': message.sender.isOperator,
             'elixirchat-chat-messages__item--highlighted': message.isHighlighted
           })
-        }, !_this2.shouldHideMessageBalloon(message) && react_1.default.createElement("div", {
+        }, !_this3.shouldHideMessageBalloon(message) && react_1.default.createElement("div", {
           className: "elixirchat-chat-messages__balloon",
           onDoubleClick: function onDoubleClick() {
             return onReplyMessage(message.id);
@@ -10459,7 +10473,7 @@ function (_react_1$Component) {
         }, message.sender.firstName, " ", message.sender.lastName), Boolean(message.responseToMessage) && react_1.default.createElement("div", {
           className: "elixirchat-chat-messages__reply-message",
           onClick: function onClick() {
-            return _this2.scrollToMessage(message.responseToMessage);
+            return _this3.scrollToMessage(message.responseToMessage);
           }
         }, react_1.default.createElement("i", {
           className: "elixirchat-chat-messages__reply-message-icon icon-reply-right"
@@ -10512,7 +10526,7 @@ function (_react_1$Component) {
             href: image.url,
             target: "_blank",
             onClick: function onClick(e) {
-              return _this2.onImagePreviewClick(e, Object.assign({}, image, {
+              return _this3.onImagePreviewClick(e, Object.assign({}, image, {
                 sender: message.sender
               }));
             }
@@ -10545,7 +10559,8 @@ function (_react_1$Component) {
           className: classnames_1.default({
             'elixirchat-chat-messages__item': true,
             'elixirchat-chat-messages__item--by-operator': true,
-            'elixirchat-chat-messages__item--system': true
+            'elixirchat-chat-messages__item--system': true,
+            'elixirchat-chat-messages__item--highlighted': message.isHighlighted
           })
         }, react_1.default.createElement("div", {
           className: "elixirchat-chat-messages__balloon"
@@ -10553,9 +10568,9 @@ function (_react_1$Component) {
           className: "elixirchat-chat-messages__sender"
         }, message.sender.firstName, " ", message.sender.lastName, !message.sender.firstName && !message.sender.lastName && elixirChatWidget.widgetTitle), message.systemData.type === 'SCREENSHOT_REQUESTED' && react_1.default.createElement(react_1.Fragment, null, react_1.default.createElement("div", {
           className: "elixirchat-chat-messages__text"
-        }, "\u041F\u043E\u0436\u0430\u043B\u0443\u0439\u0441\u0442\u0430, \u043F\u0440\u0438\u0448\u043B\u0438\u0442\u0435 \u0441\u043A\u0440\u0438\u043D\u0448\u043E\u0442 \u0432\u0430\u0448\u0435\u0433\u043E \u044D\u043A\u0440\u0430\u043D\u0430.", Boolean(screenshotFallback) && Boolean(screenshotFallback.pressKey) && react_1.default.createElement(react_1.Fragment, null, "\xA0\u0414\u043B\u044F \u044D\u0442\u043E\u0433\u043E \u043D\u0430\u0436\u043C\u0438\u0442\u0435 ", _this2.renderKeyShortcut(screenshotFallback.pressKey), screenshotFallback.pressKeySecondary && react_1.default.createElement(react_1.Fragment, null, "\xA0(", _this2.renderKeyShortcut(screenshotFallback.pressKeySecondary), ")"), ", \u0430 \u0437\u0430\u0442\u0435\u043C \u0432\u0441\u0442\u0430\u0432\u044C\u0442\u0435 \u0440\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442 \u0432 \u0442\u0435\u043A\u0441\u0442\u043E\u0432\u043E\u0435 \u043F\u043E\u043B\u0435.")), !Boolean(screenshotFallback) && react_1.default.createElement("button", {
+        }, "\u041F\u043E\u0436\u0430\u043B\u0443\u0439\u0441\u0442\u0430, \u043F\u0440\u0438\u0448\u043B\u0438\u0442\u0435 \u0441\u043A\u0440\u0438\u043D\u0448\u043E\u0442 \u0432\u0430\u0448\u0435\u0433\u043E \u044D\u043A\u0440\u0430\u043D\u0430.", Boolean(screenshotFallback) && Boolean(screenshotFallback.pressKey) && react_1.default.createElement(react_1.Fragment, null, "\xA0\u0414\u043B\u044F \u044D\u0442\u043E\u0433\u043E \u043D\u0430\u0436\u043C\u0438\u0442\u0435 ", _this3.renderKeyShortcut(screenshotFallback.pressKey), screenshotFallback.pressKeySecondary && react_1.default.createElement(react_1.Fragment, null, "\xA0(", _this3.renderKeyShortcut(screenshotFallback.pressKeySecondary), ")"), ", \u0430 \u0437\u0430\u0442\u0435\u043C \u0432\u0441\u0442\u0430\u0432\u044C\u0442\u0435 \u0440\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442 \u0432 \u0442\u0435\u043A\u0441\u0442\u043E\u0432\u043E\u0435 \u043F\u043E\u043B\u0435.")), !Boolean(screenshotFallback) && react_1.default.createElement("button", {
           className: "elixirchat-chat-messages__take-screenshot",
-          onClick: _this2.onTakeScreenshotClick
+          onClick: _this3.onTakeScreenshotClick
         }, "\u0421\u0434\u0435\u043B\u0430\u0442\u044C \u0441\u043A\u0440\u0438\u043D\u0448\u043E\u0442")), message.systemData.type === 'NOBODY_WORKING' && react_1.default.createElement(react_1.Fragment, null, react_1.default.createElement("div", {
           className: "elixirchat-chat-messages__text"
         }, "\u041A \u0441\u043E\u0436\u0430\u043B\u0435\u043D\u0438\u044E, \u0432\u0441\u0435 \u043E\u043F\u0435\u0440\u0430\u0442\u043E\u0440\u044B \u043F\u043E\u0434\u0434\u0435\u0440\u0436\u043A\u0438 \u0441\u0435\u0439\u0447\u0430\u0441 \u043E\u0444\u0444\u043B\u0430\u0439\u043D", message.systemData.whenWouldWork && ', но будут снова в сети ' + utilsWidget_1.inflectDayJSWeekDays('ru-RU', dayjs_1.default(message.systemData.whenWouldWork).calendar(null, {
@@ -11870,45 +11885,6 @@ function (_react_1$Component) {
       }
     };
 
-    _this.updateUnseenRepliesCount = function () {
-      var elixirChatWidget = _this.props.elixirChatWidget;
-
-      var allRepliesToCurrentClient = _this.getRepliesToCurrentClient();
-
-      var latestUnseenReplyId = localStorage.getItem('elixirchat-latest-unseen-reply');
-      var latestUnseenReplyIndex = allRepliesToCurrentClient.map(function (message) {
-        return message.id;
-      }).indexOf(latestUnseenReplyId);
-      var unseenRepliesToCurrentClient = latestUnseenReplyIndex === -1 ? allRepliesToCurrentClient : allRepliesToCurrentClient.slice(latestUnseenReplyIndex + 1);
-      var highlightedMessageIds = unseenRepliesToCurrentClient.map(function (message) {
-        return message.id;
-      });
-
-      _this.setState({
-        highlightedMessageIds: highlightedMessageIds
-      });
-
-      elixirChatWidget.setUnreadCount(unseenRepliesToCurrentClient.length);
-    };
-
-    _this.resetUnseenRepliesCount = function () {
-      var elixirChatWidget = _this.props.elixirChatWidget;
-
-      var allRepliesToCurrentClient = _this.getRepliesToCurrentClient();
-
-      var latestReplyToCurrentClient = utilsCommon_1._last(allRepliesToCurrentClient);
-
-      if (latestReplyToCurrentClient) {
-        localStorage.setItem('elixirchat-latest-unseen-reply', latestReplyToCurrentClient.id);
-      }
-
-      elixirChatWidget.setUnreadCount(0);
-
-      _this.setState({
-        highlightedMessageIds: []
-      });
-    };
-
     _this.onTextareaChange = function (stateChange) {
       _this.setState(stateChange);
     };
@@ -12062,11 +12038,9 @@ function (_react_1$Component) {
                   case 3:
                     _this2.scrollToBottom();
 
-                    _this2.updateUnseenRepliesCount();
-
                     elixirChatWidget.setIFrameContentMounted();
 
-                  case 6:
+                  case 5:
                   case "end":
                     return _context5.stop();
                 }
@@ -12146,8 +12120,6 @@ function (_react_1$Component) {
         if (!hasUserScroll) {
           _this2.scrollToBottom();
         }
-
-        _this2.updateUnseenRepliesCount();
       });
       elixirChatWidget.onTyping(function (currentlyTypingUsers) {
         _this2.setState({
@@ -12172,6 +12144,7 @@ function (_react_1$Component) {
   }, {
     key: "componentWillUnmount",
     value: function componentWillUnmount() {
+      var elixirChatWidget = this.props.elixirChatWidget;
       elixirChatWidget.widgetIFrameDocument.body.removeEventListener('dragover', this.onBodyDrag);
       elixirChatWidget.widgetIFrameDocument.body.removeEventListener('drop', this.onBodyDrop);
     }
@@ -12198,7 +12171,7 @@ function (_react_1$Component) {
       return react_1.default.createElement("div", {
         className: "elixirchat-chat-container",
         ref: this.container,
-        onClick: this.resetUnseenRepliesCount
+        onClick: elixirChatWidget.resetUnreadMessagesAndReplies
       }, react_1.default.createElement("h2", {
         className: "elixirchat-chat-header"
       }, widgetTitle && react_1.default.createElement(react_1.Fragment, null, areOperatorsOnline && react_1.default.createElement("i", {
@@ -12731,10 +12704,11 @@ function (_react_1$Component) {
       insideIframeStyles: null,
       extractedFontsStyles: null,
       customIframeStyles: null,
-      unreadCount: 0,
       isImagePreviewOpen: false,
       currentImagePreview: {},
-      imagePreviewGallery: []
+      imagePreviewGallery: [],
+      unreadMessagesCounter: 0,
+      unreadRepliesCount: 0
     };
 
     _this.onWindowLoad = function () {
@@ -12835,9 +12809,18 @@ function (_react_1$Component) {
         customIframeStyles: elixirChatWidget.iframeStyles
       });
       elixirChatWidget.onToggleChatVisibility(this.onToggleButton);
-      elixirChatWidget.onSetUnreadCount(function (unreadCount) {
-        return _this2.setState({
-          unreadCount: unreadCount
+      elixirChatWidget.onUnreadMessagesChange(function (unreadMessagesCounter) {
+        _this2.setState({
+          unreadMessagesCounter: unreadMessagesCounter
+        });
+
+        _this2.setState({
+          highlightedMessageIds: []
+        });
+      });
+      elixirChatWidget.onUnreadRepliesChange(function (unreadRepliesCount) {
+        _this2.setState({
+          unreadRepliesCount: unreadRepliesCount
         });
       });
     }
@@ -12852,7 +12835,8 @@ function (_react_1$Component) {
           insideIframeStyles = _this$state.insideIframeStyles,
           extractedFontsStyles = _this$state.extractedFontsStyles,
           customIframeStyles = _this$state.customIframeStyles,
-          unreadCount = _this$state.unreadCount,
+          unreadMessagesCounter = _this$state.unreadMessagesCounter,
+          unreadRepliesCount = _this$state.unreadRepliesCount,
           currentImagePreview = _this$state.currentImagePreview,
           imagePreviewGallery = _this$state.imagePreviewGallery,
           isImagePreviewOpen = _this$state.isImagePreviewOpen;
@@ -12866,9 +12850,9 @@ function (_react_1$Component) {
       }, react_1.default.createElement("span", {
         className: classnames_1.default({
           'elixirchat-widget-button-counter': true,
-          'elixirchat-widget-button-counter--has-unread': unreadCount
+          'elixirchat-widget-button-counter--has-unread': unreadMessagesCounter
         })
-      }, Boolean(unreadCount) && unreadCount)), react_1.default.createElement(ImagePreview_1.ImagePreview, {
+      }, Boolean(unreadMessagesCounter) && unreadMessagesCounter)), react_1.default.createElement(ImagePreview_1.ImagePreview, {
         elixirChatWidget: elixirChatWidget,
         preview: currentImagePreview,
         gallery: imagePreviewGallery,
@@ -12961,7 +12945,7 @@ if (!ElixirChat) {
    *  - When building SDK locally, dist/sdk.js is empty so that sdk.js is not included into default-widget.js bundle
    *  @see bin/build.sh
    *
-   *  - When 'elixirchat-js-sdk' in being installed via npm in another project, dist/sdk.js refers to build/sdk.js
+   *  - When 'elixirchat-js-sdk' in being installed via npm in another project, dist/sdk.js exports build/sdk.js
    *  so that it'd be possible to use `import ElixirChatWidget from 'elixirchat-js-sdk/widget'`
    *  @see bin/postinstall.sh
    */
@@ -12990,22 +12974,8 @@ function (_ElixirChat) {
     _this.widgetChatReactComponent = {};
     _this.widgetIFrameDocument = {};
     _this.onToggleChatVisibilityCallbacks = [];
-    _this.onSetUnreadCountCallbacks = [];
     _this.onIFrameReadyCallbacks = [];
     _this.onIFrameContentMountedCallbacks = [];
-
-    _this.setUnreadCount = function (count) {
-      _this.widgetUnreadCount = +count || 0;
-
-      _this.onSetUnreadCountCallbacks.forEach(function (callback) {
-        return callback(_this.widgetUnreadCount);
-      });
-    };
-
-    _this.onSetUnreadCount = function (callback) {
-      _this.onSetUnreadCountCallbacks.push(callback);
-    };
-
     _this.toggleChatVisibility =
     /*#__PURE__*/
     _asyncToGenerator(
