@@ -14,7 +14,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 node-sass --recursive widget/DefaultWidget/styles/ --output dist/styles/
 
-if [[ $SCRIPT_DIR == node_modules/elixirchat-js-sdk ]];
+if [[ $SCRIPT_DIR =~ node_modules/elixirchat-js-sdk ]];
   then
     tput setaf 2
     echo "elixirchat-js-sdk/bin/postinstall.sh SCRIPT_DIR: $SCRIPT_DIR"

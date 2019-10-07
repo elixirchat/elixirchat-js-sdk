@@ -13,7 +13,7 @@ get_package_version () {
   cat package.json | python3 -c "import sys, json; print(json.load(sys.stdin)['devDependencies']['$1'])"
 }
 
-if [[ $SCRIPT_DIR == node_modules/elixirchat-js-sdk ]];
+if [[ $SCRIPT_DIR =~ node_modules/elixirchat-js-sdk ]];
   then
     PARCEL_VERSION=$(get_package_version "parcel-bundler")
     NODE_SAAS_VERSION=$(get_package_version "node-sass")
