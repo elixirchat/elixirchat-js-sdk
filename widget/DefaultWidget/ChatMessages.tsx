@@ -24,25 +24,37 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     processedMessages: [],
     imagePreviews: [],
     screenshotFallback: null,
+    highlightedMessageIds: [],
   };
 
   maxThumbnailSize = 256;
 
   componentDidMount(): void {
-    const { messages, highlightedMessageIds } = this.props;
+    const { elixirChatWidget, messages } = this.props;
     dayjs.locale('ru');
     dayjs.extend(dayjsCalendar);
 
+    const highlightedMessageIds = elixirChatWidget.unreadMessages.map(message => message.id);
     this.setProcessedMessages(messages, highlightedMessageIds);
     this.setState({
       screenshotFallback: getCompatibilityFallback(),
     });
+
+    elixirChatWidget.onUnreadMessagesChange((unreadMessagesCounter, unreadMessages) => {
+      const highlightedMessageIds = unreadMessages.map(message => message.id);
+      this.setState({ highlightedMessageIds });
+    });
+
+    // elixirChatWidget.onUnreadRepliesChange(unreadRepliesCount => {
+    //   this.setState({ unreadRepliesCount });
+    // });
   }
 
-  componentDidUpdate(prevProps): void {
-    const { messages, highlightedMessageIds } = this.props;
+  componentDidUpdate(prevProps, prevState): void {
+    const { messages } = this.props;
+    const { highlightedMessageIds } = this.state;
     const didMessagesChange = prevProps.messages !== messages;
-    const didHighlightedMessagesChange = prevProps.highlightedMessageIds !== highlightedMessageIds;
+    const didHighlightedMessagesChange = prevState.highlightedMessageIds !== highlightedMessageIds;
 
     if (didMessagesChange || didHighlightedMessagesChange) {
       this.setProcessedMessages(messages, highlightedMessageIds);
@@ -311,6 +323,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                 'elixirchat-chat-messages__item': true,
                 'elixirchat-chat-messages__item--by-operator': true,
                 'elixirchat-chat-messages__item--system': true,
+                'elixirchat-chat-messages__item--highlighted': message.isHighlighted,
               })}>
                 <div className="elixirchat-chat-messages__balloon">
                   <div className="elixirchat-chat-messages__sender">

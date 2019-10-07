@@ -21,10 +21,12 @@ export interface IWidgetState {
   insideIframeStyles: null | string;
   extractedFontsStyles: null | string;
   customIframeStyles: null | string;
-  unreadCount: number;
+  // unreadCount: number;
   isImagePreviewOpen: boolean;
   currentImagePreview: any,
   imagePreviewGallery: Array<any>,
+  unreadMessagesCounter: number,
+  unreadRepliesCount: number,
 }
 
 export class Widget extends Component<IWidgetProps, IWidgetState> {
@@ -36,10 +38,12 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
     insideIframeStyles: null,
     extractedFontsStyles: null,
     customIframeStyles: null,
-    unreadCount: 0,
+    // unreadCount: 0,
     isImagePreviewOpen: false,
     currentImagePreview: {},
     imagePreviewGallery: [],
+    unreadMessagesCounter: 0,
+    unreadRepliesCount: 0,
   };
 
   componentDidMount() {
@@ -55,7 +59,16 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
     });
 
     elixirChatWidget.onToggleChatVisibility(this.onToggleButton);
-    elixirChatWidget.onSetUnreadCount((unreadCount) => this.setState({ unreadCount }));
+    // elixirChatWidget.onSetUnreadCount((unreadCount) => this.setState({ unreadCount }));
+
+    elixirChatWidget.onUnreadMessagesChange(unreadMessagesCounter => {
+      this.setState({ unreadMessagesCounter });
+      this.setState({ highlightedMessageIds: [] });
+    });
+
+    elixirChatWidget.onUnreadRepliesChange(unreadRepliesCount => {
+      this.setState({ unreadRepliesCount });
+    });
   }
 
   onWindowLoad = () => {
@@ -133,7 +146,8 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
       insideIframeStyles,
       extractedFontsStyles,
       customIframeStyles,
-      unreadCount,
+      unreadMessagesCounter,
+      unreadRepliesCount, // TODO: figure out how to display
       currentImagePreview,
       imagePreviewGallery,
       isImagePreviewOpen,
@@ -145,8 +159,10 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
         <button className="elixirchat-widget-button" onClick={elixirChatWidget.toggleChatVisibility}>
           <span className={cn({
             'elixirchat-widget-button-counter': true,
-            'elixirchat-widget-button-counter--has-unread': unreadCount,
-          })}>{Boolean(unreadCount) && unreadCount}</span>
+            'elixirchat-widget-button-counter--has-unread': unreadMessagesCounter,
+          })}>
+            {Boolean(unreadMessagesCounter) && unreadMessagesCounter}
+          </span>
         </button>
 
         <ImagePreview

@@ -43,7 +43,7 @@ export class ElixirChatWidget extends ElixirChat {
   public iframeStyles: string;
   public extractFontsFromParentWindow: Array<IFontExtractorExtractParams>;
 
-  public widgetUnreadCount: number;
+  // public widgetUnreadCount: number;
   public widgetIsVisible: boolean = false;
   public widgetIsIFrameReady: boolean = false;
   public widgetIsIFrameContentMounted: boolean = false;
@@ -52,18 +52,18 @@ export class ElixirChatWidget extends ElixirChat {
   public widgetIFrameDocument: Document = {};
 
   protected onToggleChatVisibilityCallbacks: Array<(isOpen: boolean) => void> = [];
-  protected onSetUnreadCountCallbacks: Array<(count: boolean) => void> = [];
+  // protected onSetUnreadCountCallbacks: Array<(count: boolean) => void> = [];
   protected onIFrameReadyCallbacks: Array<() => void> = [];
   protected onIFrameContentMountedCallbacks: Array<() => void> = [];
 
-  public setUnreadCount = (count: number): void => {
-    this.widgetUnreadCount = +count || 0;
-    this.onSetUnreadCountCallbacks.forEach(callback => callback(this.widgetUnreadCount));
-  };
+  // public setUnreadCount = (count: number): void => {
+  //   this.widgetUnreadCount = +count || 0;
+  //   this.onSetUnreadCountCallbacks.forEach(callback => callback(this.widgetUnreadCount));
+  // };
 
-  public onSetUnreadCount = (callback) => {
-    this.onSetUnreadCountCallbacks.push(callback);
-  };
+  // public onSetUnreadCount = (callback) => {
+  //   this.onSetUnreadCountCallbacks.push(callback);
+  // };
 
   public toggleChatVisibility = async (): void => {
     this.widgetIsVisible = !this.widgetIsVisible;

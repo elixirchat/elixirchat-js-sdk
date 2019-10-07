@@ -5,6 +5,7 @@ import { fragmentClient } from './serializers/serializeUser';
 import { MessagesSubscription, ISentMessage } from './MessagesSubscription';
 import { TypingStatusSubscription } from './TypingStatusSubscription';
 import { OperatorOnlineStatusSubscription } from './OperatorOnlineStatusSubscription';
+import { UnreadMessagesCounter } from './UnreadMessagesCounter';
 import { ScreenshotTaker, IScreenshot } from './ScreenshotTaker';
 import { GraphQLClient, insertGraphQlFragments, gql } from './GraphQLClient';
 
@@ -49,20 +50,38 @@ export class ElixirChat {
   public authToken: string;
   public connected: boolean;
   public isPrivate: boolean;
+  public receivedMessages: Array<IElixirChatReceivedMessage> = [];
 
   public areAnyOperatorsOnline: boolean = false;
   public widgetTitle: string = '';
   public defaultWidgetTitle: string = 'Служба поддержки';
 
+  public get unreadMessagesCount(): number {
+    return this.unreadMessagesCounter ? this.unreadMessagesCounter.unreadMessagesCount : 0;
+  }
+
+  public get unreadRepliesCount(): number {
+    return this.unreadMessagesCounter ? this.unreadMessagesCounter.unreadRepliesCount : 0;
+  }
+
+  public get unreadMessages(): Array<IElixirChatReceivedMessage> {
+    return this.unreadMessagesCounter ? this.unreadMessagesCounter.unreadMessages : [];
+  }
+
+  public get unreadReplies(): Array<IElixirChatReceivedMessage> {
+    return this.unreadMessagesCounter ? this.unreadMessagesCounter.unreadReplies : [];
+  }
+
   public get reachedBeginningOfMessageHistory(): boolean {
     return this.messagesSubscription ? this.messagesSubscription.reachedBeginningOfMessageHistory : false;
   }
 
-  protected graphQLClient: any;
-  protected messagesSubscription: any;
-  protected operatorOnlineStatusSubscription: any;
-  protected typingStatusSubscription: any;
-  protected screenshotTaker: any;
+  protected graphQLClient: GraphQLClient;
+  protected messagesSubscription: MessagesSubscription;
+  protected operatorOnlineStatusSubscription: OperatorOnlineStatusSubscription;
+  protected typingStatusSubscription: TypingStatusSubscription;
+  protected unreadMessagesCounter: UnreadMessagesCounter;
+  protected screenshotTaker: ScreenshotTaker;
 
   protected joinRoomQuery: string = insertGraphQlFragments(gql`
     mutation($companyId: Uuid!, $room: ForeignRoom, $client: ForeignClient) {
@@ -89,6 +108,8 @@ export class ElixirChat {
   protected onConnectErrorCallbacks: Array<(e: any) => void> = [];
   protected onTypingCallbacks: Array<(typingUsers: Array<IElixirChatUser>) => void> = [];
   protected onOperatorOnlineStatusChangeCallbacks: Array<(isOnline: boolean) => void> = [];
+  protected onUnreadMessagesChangeCallbacks: Array<(unreadMessagesCount: number, unreadMessages: Array<IElixirChatReceivedMessage>) => {}> = [];
+  protected onUnreadRepliesChangeCallbacks: Array<(unreadRepliesCount: number, unreadReplies: Array<IElixirChatReceivedMessage>) => {}> = [];
 
   constructor(config: IElixirChatConfig) {
     this.apiUrl = config.apiUrl;
@@ -130,10 +151,12 @@ export class ElixirChat {
       client: this.client,
       debug: this.debug,
     });
+
     this.screenshotTaker = new ScreenshotTaker();
     this.setDefaultConfigValues();
     this.connectToRoom().then(() => {
       this.saveRoomClientToLocalStorage(this.room, this.client);
+      this.subscribeToUnreadMessagesCounter();
       this.subscribeToNewMessages();
       this.subscribeToTypingStatusChange();
       this.subscribeToOperatorOnlineStatusChange();
@@ -328,6 +351,8 @@ export class ElixirChat {
       },
       onMessage: (message: IElixirChatReceivedMessage) => {
         logEvent(this.debug, 'Received new message', message);
+        this.receivedMessages.push(message);
+        this.unreadMessagesCounter.setReceivedMessages(this.receivedMessages);
         this.onMessageCallbacks.forEach(callback => callback(message));
       },
       onUnsubscribe: () => {
@@ -376,6 +401,32 @@ export class ElixirChat {
       });
     }
   }
+
+  protected subscribeToUnreadMessagesCounter(){
+    this.unreadMessagesCounter = new UnreadMessagesCounter({
+      currentClientId: this.elixirChatClientId,
+    });
+    this.unreadMessagesCounter.onUnreadMessagesChange((unreadMessagesCount, unreadMessages) => {
+      logEvent(this.debug, 'Unread messages count changed to ' + unreadMessagesCount, { unreadMessages });
+      this.onUnreadMessagesChangeCallbacks.forEach(callback => callback(unreadMessagesCount, unreadMessages));
+    });
+    this.unreadMessagesCounter.onUnreadRepliesChange((unreadRepliesCount, unreadReplies) => {
+      logEvent(this.debug, 'Unread replies count changed to ' + unreadRepliesCount, { unreadReplies });
+      this.onUnreadRepliesChangeCallbacks.forEach(callback => callback(unreadRepliesCount, unreadReplies));
+    });
+  }
+
+  public onUnreadRepliesChange = (callback: (unreadRepliesCount: number) => {}): void => {
+    this.onUnreadRepliesChangeCallbacks.push(callback);
+  };
+
+  public onUnreadMessagesChange = (callback: (unreadMessagesCount: number) => {}): void => {
+    this.onUnreadMessagesChangeCallbacks.push(callback);
+  };
+
+  public resetUnreadMessagesAndReplies = (): void => {
+    this.unreadMessagesCounter.resetUnreadMessagesAndReplies();
+  };
 
   public dispatchTypedText = (typedText: string): void => {
     this.typingStatusSubscription.dispatchTypedText(typedText);
@@ -439,6 +490,8 @@ export class ElixirChat {
     return this.messagesSubscription.fetchMessageHistory(limit, beforeCursor)
       .then(messages => {
         logEvent(this.debug, 'Fetched message history', { limit, beforeCursor, messages });
+        this.receivedMessages = this.receivedMessages.concat(messages);
+        this.unreadMessagesCounter.setReceivedMessages(this.receivedMessages);
         return messages;
       })
       .catch(data => {

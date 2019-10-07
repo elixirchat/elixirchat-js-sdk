@@ -76,7 +76,7 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
           }
           await this.setState({ messages, isLoading: false });
           this.scrollToBottom();
-          this.updateUnseenRepliesCount();
+          // this.updateUnseenRepliesCount();
           elixirChatWidget.setIFrameContentMounted();
         })
         .catch(async () => {
@@ -112,7 +112,7 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
       if (!hasUserScroll) {
         this.scrollToBottom();
       }
-      this.updateUnseenRepliesCount();
+      // this.updateUnseenRepliesCount();
     });
 
     elixirChatWidget.onTyping(currentlyTypingUsers => {
@@ -132,6 +132,7 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
   }
 
   componentWillUnmount(){
+    const { elixirChatWidget } = this.props;
     elixirChatWidget.widgetIFrameDocument.body.removeEventListener('dragover', this.onBodyDrag);
     elixirChatWidget.widgetIFrameDocument.body.removeEventListener('drop', this.onBodyDrop);
   }
@@ -366,35 +367,35 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
     }
   };
 
-  updateUnseenRepliesCount = () => {
-    const { elixirChatWidget } = this.props;
+  // updateUnseenRepliesCount = () => {
+  //   const { elixirChatWidget } = this.props;
+  //
+  //   const allRepliesToCurrentClient = this.getRepliesToCurrentClient();
+  //   const latestUnseenReplyId = localStorage.getItem('elixirchat-latest-unseen-reply');
+  //   const latestUnseenReplyIndex = allRepliesToCurrentClient
+  //     .map(message => message.id)
+  //     .indexOf(latestUnseenReplyId);
+  //
+  //   const unseenRepliesToCurrentClient = latestUnseenReplyIndex === -1
+  //     ? allRepliesToCurrentClient
+  //     : allRepliesToCurrentClient.slice(latestUnseenReplyIndex + 1);
+  //
+  //   const highlightedMessageIds = unseenRepliesToCurrentClient.map(message => message.id);
+  //   this.setState({ highlightedMessageIds });
+  //
+  //   elixirChatWidget.setUnreadCount(unseenRepliesToCurrentClient.length);
+  // };
 
-    const allRepliesToCurrentClient = this.getRepliesToCurrentClient();
-    const latestUnseenReplyId = localStorage.getItem('elixirchat-latest-unseen-reply');
-    const latestUnseenReplyIndex = allRepliesToCurrentClient
-      .map(message => message.id)
-      .indexOf(latestUnseenReplyId);
-
-    const unseenRepliesToCurrentClient = latestUnseenReplyIndex === -1
-      ? allRepliesToCurrentClient
-      : allRepliesToCurrentClient.slice(latestUnseenReplyIndex + 1);
-
-    const highlightedMessageIds = unseenRepliesToCurrentClient.map(message => message.id);
-    this.setState({ highlightedMessageIds });
-
-    elixirChatWidget.setUnreadCount(unseenRepliesToCurrentClient.length);
-  };
-
-  resetUnseenRepliesCount = () => {
-    const { elixirChatWidget } = this.props;
-    const allRepliesToCurrentClient = this.getRepliesToCurrentClient();
-    const latestReplyToCurrentClient = _last(allRepliesToCurrentClient);
-    if (latestReplyToCurrentClient) {
-      localStorage.setItem('elixirchat-latest-unseen-reply', latestReplyToCurrentClient.id);
-    }
-    elixirChatWidget.setUnreadCount(0);
-    this.setState({ highlightedMessageIds: [] });
-  };
+  // resetUnseenRepliesCount = () => {
+  //   const { elixirChatWidget } = this.props;
+  //   const allRepliesToCurrentClient = this.getRepliesToCurrentClient();
+  //   const latestReplyToCurrentClient = _last(allRepliesToCurrentClient);
+  //   if (latestReplyToCurrentClient) {
+  //     localStorage.setItem('elixirchat-latest-unseen-reply', latestReplyToCurrentClient.id);
+  //   }
+  //   elixirChatWidget.setUnreadCount(0);
+  //   this.setState({ highlightedMessageIds: [] });
+  // };
 
   onTextareaChange = (stateChange) => {
     this.setState(stateChange);
@@ -471,7 +472,8 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
     } = this.state;
 
     return (
-      <div className="elixirchat-chat-container" ref={this.container} onClick={this.resetUnseenRepliesCount}>
+      <div className="elixirchat-chat-container" ref={this.container}
+        onClick={elixirChatWidget.resetUnreadMessagesAndReplies}>
 
         <h2 className="elixirchat-chat-header">
           {widgetTitle && (
