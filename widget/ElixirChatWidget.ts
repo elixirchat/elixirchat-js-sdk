@@ -4,18 +4,19 @@ import { renderWidgetReactComponent } from './DefaultWidget/Widget';
 import { IFontExtractorExtractParams } from './FontExtractor';
 
 let ElixirChat = window.ElixirChat;
-
+// building SDK
 console.log('\n\n\n__ ElixirChatWidget.ts 0', { ElixirChat }, '\n\n\n');
 
 if (!ElixirChat) {
-  ElixirChat = require('../sdk').default;
+  ElixirChat = require('../dist/sdk').default; // developing
   console.log('\n\n\n__ ElixirChatWidget.ts 1', { ElixirChat }, '\n\n\n');
 }
 
-if (!ElixirChat) {
-  ElixirChat = require('../build/sdk').default;
-  console.log('\n\n\n__ ElixirChatWidget.ts 2', { ElixirChat }, '\n\n\n');
-}
+// if (!ElixirChat) {
+//   // prepublish
+//   ElixirChat = require('../build/sdk333').default; // import from 'elixirchat-js-sdk/widget'
+//   console.log('\n\n\n__ ElixirChatWidget.ts 2', { ElixirChat }, '\n\n\n');
+// }
 
 if (!ElixirChat) {
   logEvent(

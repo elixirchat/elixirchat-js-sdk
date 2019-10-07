@@ -7348,6 +7348,7 @@ if (typeof window !== 'undefined') {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+console.log('__ fff');
 
 var ElixirChat_1 = require("./ElixirChat");
 
