@@ -4,19 +4,22 @@ import { renderWidgetReactComponent } from './DefaultWidget/Widget';
 import { IFontExtractorExtractParams } from './FontExtractor';
 
 let ElixirChat = window.ElixirChat;
-// building SDK
-console.log('\n\n\n__ ElixirChatWidget.ts 0', { ElixirChat }, '\n\n\n');
-
 if (!ElixirChat) {
-  ElixirChat = require('../dist/sdk').default; // developing
-  console.log('\n\n\n__ ElixirChatWidget.ts 1', { ElixirChat }, '\n\n\n');
+  ElixirChat = require('../dist/sdk').default;
+  /**
+   * dist/sdk.js is generated on fly depending on the context:
+   *
+   *  - When developing SDK locally, dist/sdk.js exports sdk/ElixirChat.ts
+   *  @see bin/dev.sh
+   *
+   *  - When building SDK locally, dist/sdk.js is empty so that sdk.js is not included into default-widget.js bundle
+   *  @see bin/build.sh
+   *
+   *  - When 'elixirchat-js-sdk' in being installed via npm in another project, dist/sdk.js refers to build/sdk.js
+   *  so that it'd be possible to use `import ElixirChatWidget from 'elixirchat-js-sdk/widget'`
+   *  @see bin/postinstall.sh
+   */
 }
-
-// if (!ElixirChat) {
-//   // prepublish
-//   ElixirChat = require('../build/sdk333').default; // import from 'elixirchat-js-sdk/widget'
-//   console.log('\n\n\n__ ElixirChatWidget.ts 2', { ElixirChat }, '\n\n\n');
-// }
 
 if (!ElixirChat) {
   logEvent(
