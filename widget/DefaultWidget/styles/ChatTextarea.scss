@@ -49,6 +49,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: calc(100% - 140px);
+  vertical-align: middle;
 }
 
 .elixirchat-chat-textarea__reply-to-icon {
@@ -57,10 +58,12 @@
 }
 
 .elixirchat-chat-textarea__reply-to-remove {
-  vertical-align: text-top;
+  vertical-align: middle;
   margin-left: 6px;
   font-size: 11px;
   line-height: 6px;
+  transform: translateY(1px);
+  display: inline-block;
 }
 
 .elixirchat-chat-textarea__actions {
