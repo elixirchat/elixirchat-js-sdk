@@ -17,7 +17,6 @@ export interface IDefaultWidgetProps {
 
 export interface IDefaultWidgetState {
   messages: Array<IMessage>;
-  highlightedMessageIds: Array<IMessage>;
   room: any;
   client: any;
   currentlyTypingUsers: Array<any>;
@@ -41,7 +40,6 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
 
   state = {
     messages: [],
-    highlightedMessageIds: [],
     room: {},
     client: {},
     currentlyTypingUsers: [],
@@ -405,7 +403,6 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
 
     const {
       messages,
-      highlightedMessageIds,
       textareaText,
       textareaResponseToMessageId,
       textareaAttachments,
@@ -468,7 +465,6 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
                 onReplyMessage={this.onReplyMessage}
                 onSubmitRetry={this.onSubmitRetry}
                 messages={messages}
-                highlightedMessageIds={highlightedMessageIds}
                 elixirChatWidget={elixirChatWidget}/>
             </div>
 

@@ -60,7 +60,6 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
 
     elixirChatWidget.onUnreadMessagesChange(unreadMessagesCounter => {
       this.setState({ unreadMessagesCounter });
-      this.setState({ highlightedMessageIds: [] });
     });
 
     elixirChatWidget.onUnreadRepliesChange(unreadRepliesCount => {
@@ -150,15 +149,17 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
       isImagePreviewOpen,
     } = this.state;
 
+    const visibleUnreadMessagesCounter = unreadMessagesCounter > 99 ? '99+' : unreadMessagesCounter;
+
     return (
       <Fragment>
         <style dangerouslySetInnerHTML={{ __html: outsideIframeStyles }}/>
         <button className="elixirchat-widget-button" onClick={elixirChatWidget.toggleChatVisibility}>
           <span className={cn({
             'elixirchat-widget-button-counter': true,
-            'elixirchat-widget-button-counter--has-unread': unreadMessagesCounter,
+            'elixirchat-widget-button-counter--has-unread': visibleUnreadMessagesCounter,
           })}>
-            {Boolean(unreadMessagesCounter) && unreadMessagesCounter}
+            {Boolean(visibleUnreadMessagesCounter) && visibleUnreadMessagesCounter}
           </span>
         </button>
 
