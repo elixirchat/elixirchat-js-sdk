@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-./build.sh
+./bin/build.sh
 
 git add build/default-widget.js
 git add build/default-widget.min.js
