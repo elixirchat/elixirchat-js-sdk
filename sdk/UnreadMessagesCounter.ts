@@ -42,11 +42,11 @@ export class UnreadMessagesCounter {
     if (latestReplyToCurrentClient) {
       localStorage.setItem('elixirchat-latest-unread-reply-id', latestReplyToCurrentClient.id);
     }
-    const latestMessage = _last(this.receivedMessages);
+    const notCurrentClientMessages = this.getAllMessagesByNotCurrentClient();
+    const latestMessage = _last(notCurrentClientMessages);
     if (latestMessage) {
       localStorage.setItem('elixirchat-latest-unread-message-id', latestMessage.id);
     }
-
     this.triggerOnChangeCallbacks([], []);
   };
 
@@ -72,6 +72,12 @@ export class UnreadMessagesCounter {
     });
   }
 
+  protected getAllMessagesByNotCurrentClient(): Array<IMessage> {
+    return this.receivedMessages.filter(message => {
+      return message.sender.id !== this.currentClientId;
+    });
+  }
+
   protected getUnreadRepliesToCurrentClient = () : Array<IMessage> => {
     const allRepliesToCurrentClient = this.getAllRepliesToCurrentClient();
     const latestUnreadReplyId: string = localStorage.getItem('elixirchat-latest-unread-reply-id');
@@ -86,13 +92,13 @@ export class UnreadMessagesCounter {
 
   protected getUnreadMessages = (): Array<IMessage> => {
     const latestUnreadMessageId: string = localStorage.getItem('elixirchat-latest-unread-message-id');
-    const notMineMessages = this.receivedMessages.filter(message => message.sender.id !== this.currentClientId);
-    const latestUnreadMessageIndex = notMineMessages
+    const notCurrentClientMessages = this.getAllMessagesByNotCurrentClient();
+    const latestUnreadMessageIndex = notCurrentClientMessages
       .map((message): string => message.id)
       .indexOf(latestUnreadMessageId);
 
     return latestUnreadMessageIndex === -1
-      ? notMineMessages
-      : notMineMessages.slice(latestUnreadMessageIndex + 1);
+      ? notCurrentClientMessages
+      : notCurrentClientMessages.slice(latestUnreadMessageIndex + 1);
   };
 }
