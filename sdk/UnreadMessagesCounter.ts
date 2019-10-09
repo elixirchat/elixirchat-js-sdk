@@ -14,13 +14,12 @@ export class UnreadMessagesCounter {
   protected onUnreadMessagesChangeCallbacks: Array<(unreadMessagesCount: number, unreadMessages: Array<IMessage>) => {}> = [];
   protected onUnreadRepliesChangeCallbacks: Array<(unreadRepliesCount: number, unreadReplies: Array<IMessage>) => {}> = [];
 
-  constructor({ currentClientId }){
+  public setCurrentClientId = (currentClientId: string) => {
     this.currentClientId = currentClientId;
-  }
+  };
 
   public setReceivedMessages = (receivedMessages: Array<IMessage>): void => {
     this.receivedMessages = receivedMessages;
-
     const unreadMessages = this.getUnreadMessages();
     const unreadReplies = this.getUnreadRepliesToCurrentClient();
     this.triggerOnChangeCallbacks(unreadMessages, unreadReplies);
