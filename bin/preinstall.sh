@@ -4,7 +4,7 @@
 # (meaning NOT simply running "npm install" within elixirchat-js-sdk folder)
 #
 # If elixirchat-js-sdk is being installed in ANOTHER project,
-# parcel-bunder and node-sass must be installed prior to launing bin/postinstall.sh
+# parcel-bunder and node-sass must be installed prior to launching bin/postinstall.sh
 # to avoid the bug when parcel-bunder or node-sass are not being found in bin/postinstall.sh
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"

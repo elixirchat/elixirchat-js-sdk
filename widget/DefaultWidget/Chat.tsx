@@ -344,27 +344,6 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
     };
   };
 
-  getRepliesToCurrentClient = () => {
-    const { elixirChatWidget } = this.props;
-    const { messages } = this.state;
-
-    if (elixirChatWidget.isPrivate) {
-      return messages.filter(message => {
-        const isSentByCurrentClient = message.sender.id !== elixirChatWidget.elixirChatClientId;
-        const isNewClientPlaceholder = _get(message, 'systemData.type') === 'NEW_CLIENT_PLACEHOLDER';
-        return !isSentByCurrentClient && !isNewClientPlaceholder;
-      });
-    }
-    else {
-      return messages.filter(message => {
-        const { responseToMessage, sender } = message;
-        const isSentByCurrentClient = sender.id !== elixirChatWidget.elixirChatClientId;
-        const isResponseToCurrentClient = responseToMessage && responseToMessage.sender.id === elixirChatWidget.elixirChatClientId;
-        return isResponseToCurrentClient && !isSentByCurrentClient;
-      });
-    }
-  };
-
   onTextareaChange = (stateChange) => {
     this.setState(stateChange);
   };
