@@ -299,7 +299,9 @@ function logEvent() {
     var additionalDataConsoleStyles = "font-weight: bold;";
     console.groupCollapsed("%cElixirChat: ".concat(message, " %cInfo%c\u25BE"), messageConsoleStyles, infoButtonConsoleStyles, arrowConsoleStyles);
 
-    if (_typeof(data) === 'object' && !(data instanceof Array)) {
+    if (type === 'error') {
+      console.error(data);
+    } else if (_typeof(data) === 'object' && !(data instanceof Array)) {
       Object.keys(data).forEach(function (key) {
         console.log("%c".concat(key, ":\n"), additionalDataConsoleStyles, data[key], '\n');
       });
@@ -6664,10 +6666,8 @@ var utilsCommon_1 = require("../utilsCommon");
 var UnreadMessagesCounter =
 /*#__PURE__*/
 function () {
-  function UnreadMessagesCounter(_ref) {
+  function UnreadMessagesCounter(params) {
     var _this = this;
-
-    var currentClientId = _ref.currentClientId;
 
     _classCallCheck(this, UnreadMessagesCounter);
 
@@ -6677,8 +6677,10 @@ function () {
     this.unreadReplies = [];
     this.receivedMessages = [];
     this.currentClientId = null;
-    this.onUnreadMessagesChangeCallbacks = [];
-    this.onUnreadRepliesChangeCallbacks = [];
+
+    this.setCurrentClientId = function (currentClientId) {
+      _this.currentClientId = currentClientId;
+    };
 
     this.setReceivedMessages = function (receivedMessages) {
       _this.receivedMessages = receivedMessages;
@@ -6690,14 +6692,6 @@ function () {
       _this.triggerOnChangeCallbacks(unreadMessages, unreadReplies);
     };
 
-    this.onUnreadMessagesChange = function (callback) {
-      _this.onUnreadMessagesChangeCallbacks.push(callback);
-    };
-
-    this.onUnreadRepliesChange = function (callback) {
-      _this.onUnreadRepliesChangeCallbacks.push(callback);
-    };
-
     this.resetUnreadMessagesAndReplies = function () {
       var allRepliesToCurrentClient = _this.getAllRepliesToCurrentClient();
 
@@ -6707,7 +6701,9 @@ function () {
         localStorage.setItem('elixirchat-latest-unread-reply-id', latestReplyToCurrentClient.id);
       }
 
-      var latestMessage = utilsCommon_1._last(_this.receivedMessages);
+      var notCurrentClientMessages = _this.getAllMessagesByNotCurrentClient();
+
+      var latestMessage = utilsCommon_1._last(notCurrentClientMessages);
 
       if (latestMessage) {
         localStorage.setItem('elixirchat-latest-unread-message-id', latestMessage.id);
@@ -6729,36 +6725,32 @@ function () {
     this.getUnreadMessages = function () {
       var latestUnreadMessageId = localStorage.getItem('elixirchat-latest-unread-message-id');
 
-      var notMineMessages = _this.receivedMessages.filter(function (message) {
-        return message.sender.id !== _this.currentClientId;
-      });
+      var notCurrentClientMessages = _this.getAllMessagesByNotCurrentClient();
 
-      var latestUnreadMessageIndex = notMineMessages.map(function (message) {
+      var latestUnreadMessageIndex = notCurrentClientMessages.map(function (message) {
         return message.id;
       }).indexOf(latestUnreadMessageId);
-      return latestUnreadMessageIndex === -1 ? notMineMessages : notMineMessages.slice(latestUnreadMessageIndex + 1);
+      return latestUnreadMessageIndex === -1 ? notCurrentClientMessages : notCurrentClientMessages.slice(latestUnreadMessageIndex + 1);
     };
 
-    this.currentClientId = currentClientId;
+    this.onUnreadMessagesChange = params.onUnreadMessagesChange || function () {};
+
+    this.onUnreadRepliesChange = params.onUnreadRepliesChange || function () {};
   }
 
   _createClass(UnreadMessagesCounter, [{
     key: "triggerOnChangeCallbacks",
     value: function triggerOnChangeCallbacks(unreadMessages, unreadReplies) {
       if (this.unreadMessagesCount !== unreadMessages.length) {
-        this.onUnreadMessagesChangeCallbacks.forEach(function (callback) {
-          return callback(unreadMessages.length, unreadMessages);
-        });
-        this.unreadMessagesCount = unreadMessages.length;
         this.unreadMessages = unreadMessages;
+        this.unreadMessagesCount = unreadMessages.length;
+        this.onUnreadMessagesChange(unreadMessages.length, unreadMessages);
       }
 
       if (this.unreadRepliesCount !== unreadReplies.length) {
-        this.onUnreadRepliesChangeCallbacks.forEach(function (callback) {
-          return callback(unreadReplies.length, unreadReplies);
-        });
-        this.unreadRepliesCount = unreadReplies.length;
         this.unreadReplies = unreadReplies;
+        this.unreadRepliesCount = unreadReplies.length;
+        this.onUnreadRepliesChange(unreadReplies.length, unreadReplies);
       }
     }
   }, {
@@ -6774,6 +6766,15 @@ function () {
         var isResponseToCurrentClient = utilsCommon_1._get(responseToMessage, 'sender.id') === _this2.currentClientId;
 
         return isResponseToCurrentClient && !isSentByCurrentClient;
+      });
+    }
+  }, {
+    key: "getAllMessagesByNotCurrentClient",
+    value: function getAllMessagesByNotCurrentClient() {
+      var _this3 = this;
+
+      return this.receivedMessages.filter(function (message) {
+        return message.sender.id !== _this3.currentClientId;
       });
     }
   }]);
@@ -7069,7 +7070,11 @@ function () {
 
       _this.operatorOnlineStatusSubscription.unsubscribe();
 
+      _this.unreadMessagesCounter.resetUnreadMessagesAndReplies();
+
       return _this.connectToRoom().then(function () {
+        _this.unreadMessagesCounter.setCurrentClientId(_this.elixirChatClientId);
+
         _this.saveRoomClientToLocalStorage(_this.room, _this.client);
 
         _this.subscribeToNewMessages();
@@ -7156,12 +7161,13 @@ function () {
         client: this.client,
         debug: this.debug
       });
-      this.screenshotTaker = new ScreenshotTaker_1.ScreenshotTaker();
       this.setDefaultConfigValues();
+      this.screenshotTaker = new ScreenshotTaker_1.ScreenshotTaker();
+      this.subscribeToUnreadCounterChangeChange();
       this.connectToRoom().then(function () {
-        _this2.saveRoomClientToLocalStorage(_this2.room, _this2.client);
+        _this2.unreadMessagesCounter.setCurrentClientId(_this2.elixirChatClientId);
 
-        _this2.subscribeToUnreadMessagesCounter();
+        _this2.saveRoomClientToLocalStorage(_this2.room, _this2.client);
 
         _this2.subscribeToNewMessages();
 
@@ -7393,9 +7399,35 @@ function () {
       });
     }
   }, {
+    key: "subscribeToUnreadCounterChangeChange",
+    value: function subscribeToUnreadCounterChangeChange() {
+      var _this6 = this;
+
+      this.unreadMessagesCounter = new UnreadMessagesCounter_1.UnreadMessagesCounter({
+        onUnreadMessagesChange: function onUnreadMessagesChange(unreadMessagesCount, unreadMessages) {
+          utilsCommon_1.logEvent(_this6.debug, 'Unread messages count changed to ' + unreadMessagesCount, {
+            unreadMessages: unreadMessages
+          });
+
+          _this6.onUnreadMessagesChangeCallbacks.forEach(function (callback) {
+            return callback(unreadMessagesCount, unreadMessages);
+          });
+        },
+        onUnreadRepliesChange: function onUnreadRepliesChange(unreadRepliesCount, unreadReplies) {
+          utilsCommon_1.logEvent(_this6.debug, 'Unread replies count changed to ' + unreadRepliesCount, {
+            unreadReplies: unreadReplies
+          });
+
+          _this6.onUnreadRepliesChangeCallbacks.forEach(function (callback) {
+            return callback(unreadRepliesCount, unreadReplies);
+          });
+        }
+      });
+    }
+  }, {
     key: "subscribeToNewMessages",
     value: function subscribeToNewMessages() {
-      var _this6 = this;
+      var _this7 = this;
 
       this.messagesSubscription = new MessagesSubscription_1.MessagesSubscription({
         apiUrl: this.apiUrl,
@@ -7405,39 +7437,39 @@ function () {
         currentClientId: this.client.id,
         onSubscribeSuccess: function onSubscribeSuccess() {
           var roomData = {
-            room: _this6.room,
-            client: _this6.client
+            room: _this7.room,
+            client: _this7.client
           };
-          utilsCommon_1.logEvent(_this6.debug, 'Successfully subscribed to messages', roomData);
+          utilsCommon_1.logEvent(_this7.debug, 'Successfully subscribed to messages', roomData);
 
-          _this6.onConnectSuccessCallbacks.forEach(function (callback) {
+          _this7.onConnectSuccessCallbacks.forEach(function (callback) {
             return callback(roomData);
           });
         },
         onSubscribeError: function onSubscribeError(data) {
-          utilsCommon_1.logEvent(_this6.debug, 'Failed to subscribe to messages', {
+          utilsCommon_1.logEvent(_this7.debug, 'Failed to subscribe to messages', {
             data: data
           }, 'error');
 
-          _this6.onConnectErrorCallbacks.forEach(function (callback) {
+          _this7.onConnectErrorCallbacks.forEach(function (callback) {
             return callback(data);
           });
         },
         onMessage: function onMessage(message) {
-          utilsCommon_1.logEvent(_this6.debug, 'Received new message', message);
+          utilsCommon_1.logEvent(_this7.debug, 'Received new message', message);
 
-          _this6.receivedMessages.push(message);
+          _this7.receivedMessages.push(message);
 
-          _this6.unreadMessagesCounter.setReceivedMessages(_this6.receivedMessages);
+          _this7.unreadMessagesCounter.setReceivedMessages(_this7.receivedMessages);
 
-          _this6.onMessageCallbacks.forEach(function (callback) {
+          _this7.onMessageCallbacks.forEach(function (callback) {
             return callback(message);
           });
         },
         onUnsubscribe: function onUnsubscribe() {
-          utilsCommon_1.logEvent(_this6.debug, 'Unsubscribed from messages', {
-            room: _this6.room,
-            client: _this6.client
+          utilsCommon_1.logEvent(_this7.debug, 'Unsubscribed from messages', {
+            room: _this7.room,
+            client: _this7.client
           });
         }
       });
@@ -7445,7 +7477,7 @@ function () {
   }, {
     key: "sendMessage",
     value: function sendMessage(params) {
-      var _this7 = this;
+      var _this8 = this;
 
       var text = params.text;
       var attachments = params.attachments && params.attachments.length ? Array.from(params.attachments).filter(function (file) {
@@ -7461,7 +7493,7 @@ function () {
           responseToMessageId: responseToMessageId,
           tempId: tempId
         }).then(function (message) {
-          utilsCommon_1.logEvent(_this7.debug, 'Sent message', {
+          utilsCommon_1.logEvent(_this8.debug, 'Sent message', {
             message: message,
             params: params,
             normalizedParams: {
@@ -7472,11 +7504,11 @@ function () {
             }
           });
 
-          _this7.typingStatusSubscription.dispatchTypedText(false);
+          _this8.typingStatusSubscription.dispatchTypedText(false);
 
           return message;
         }).catch(function (error) {
-          utilsCommon_1.logEvent(_this7.debug, 'Failed to send message', error, 'error');
+          utilsCommon_1.logEvent(_this8.debug, 'Failed to send message', error, 'error');
           throw error;
         });
       } else {
@@ -7491,56 +7523,29 @@ function () {
       }
     }
   }, {
-    key: "subscribeToUnreadMessagesCounter",
-    value: function subscribeToUnreadMessagesCounter() {
-      var _this8 = this;
-
-      this.unreadMessagesCounter = new UnreadMessagesCounter_1.UnreadMessagesCounter({
-        currentClientId: this.elixirChatClientId
-      });
-      this.unreadMessagesCounter.onUnreadMessagesChange(function (unreadMessagesCount, unreadMessages) {
-        utilsCommon_1.logEvent(_this8.debug, 'Unread messages count changed to ' + unreadMessagesCount, {
-          unreadMessages: unreadMessages
-        });
-
-        _this8.onUnreadMessagesChangeCallbacks.forEach(function (callback) {
-          return callback(unreadMessagesCount, unreadMessages);
-        });
-      });
-      this.unreadMessagesCounter.onUnreadRepliesChange(function (unreadRepliesCount, unreadReplies) {
-        utilsCommon_1.logEvent(_this8.debug, 'Unread replies count changed to ' + unreadRepliesCount, {
-          unreadReplies: unreadReplies
-        });
-
-        _this8.onUnreadRepliesChangeCallbacks.forEach(function (callback) {
-          return callback(unreadRepliesCount, unreadReplies);
-        });
-      });
-    }
-  }, {
     key: "unreadMessagesCount",
     get: function get() {
-      return this.unreadMessagesCounter ? this.unreadMessagesCounter.unreadMessagesCount : 0;
+      return utilsCommon_1._get(this.unreadMessagesCounter, 'unreadMessagesCount') || 0;
     }
   }, {
     key: "unreadRepliesCount",
     get: function get() {
-      return this.unreadMessagesCounter ? this.unreadMessagesCounter.unreadRepliesCount : 0;
+      return utilsCommon_1._get(this.unreadMessagesCounter, 'unreadRepliesCount') || 0;
     }
   }, {
     key: "unreadMessages",
     get: function get() {
-      return this.unreadMessagesCounter ? this.unreadMessagesCounter.unreadMessages : [];
+      return utilsCommon_1._get(this.unreadMessagesCounter, 'unreadMessages') || [];
     }
   }, {
     key: "unreadReplies",
     get: function get() {
-      return this.unreadMessagesCounter ? this.unreadMessagesCounter.unreadReplies : [];
+      return utilsCommon_1._get(this.unreadMessagesCounter, 'unreadReplies') || [];
     }
   }, {
     key: "reachedBeginningOfMessageHistory",
     get: function get() {
-      return this.messagesSubscription ? this.messagesSubscription.reachedBeginningOfMessageHistory : false;
+      return utilsCommon_1._get(this.messagesSubscription, 'reachedBeginningOfMessageHistory') || false;
     }
   }]);
 
