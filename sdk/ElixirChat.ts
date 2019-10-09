@@ -104,6 +104,8 @@ export class ElixirChat {
   protected onConnectErrorCallbacks: Array<(e: any) => void> = [];
   protected onTypingCallbacks: Array<(typingUsers: Array<IElixirChatUser>) => void> = [];
   protected onOperatorOnlineStatusChangeCallbacks: Array<(isOnline: boolean) => void> = [];
+  protected onUnreadMessagesChangeCallbacks: Array<(unreadMessagesCount: number, unreadMessages: Array<IElixirChatReceivedMessage>) => {}> = [];
+  protected onUnreadRepliesChangeCallbacks: Array<(unreadRepliesCount: number, unreadReplies: Array<IElixirChatReceivedMessage>) => {}> = [];
 
   constructor(config: IElixirChatConfig) {
     this.apiUrl = config.apiUrl;
@@ -146,17 +148,11 @@ export class ElixirChat {
       debug: this.debug,
     });
 
-    this.screenshotTaker = new ScreenshotTaker();
-
-    this.unreadMessagesCounter = new UnreadMessagesCounter();
-    this.unreadMessagesCounter.onUnreadMessagesChange((unreadMessagesCount, unreadMessages) => {
-      logEvent(this.debug, 'Unread messages count changed to ' + unreadMessagesCount, { unreadMessages });
-    });
-    this.unreadMessagesCounter.onUnreadRepliesChange((unreadRepliesCount, unreadReplies) => {
-      logEvent(this.debug, 'Unread replies count changed to ' + unreadRepliesCount, { unreadReplies });
-    });
-
     this.setDefaultConfigValues();
+
+    this.screenshotTaker = new ScreenshotTaker();
+    this.subscribeToUnreadCounterChangeChange();
+
     this.connectToRoom().then(() => {
       this.unreadMessagesCounter.setCurrentClientId(this.elixirChatClientId);
       this.saveRoomClientToLocalStorage(this.room, this.client);
@@ -333,6 +329,19 @@ export class ElixirChat {
     });
   }
 
+  protected subscribeToUnreadCounterChangeChange(){
+    this.unreadMessagesCounter = new UnreadMessagesCounter({
+      onUnreadMessagesChange: (unreadMessagesCount, unreadMessages) => {
+        logEvent(this.debug, 'Unread messages count changed to ' + unreadMessagesCount, { unreadMessages });
+        this.onUnreadMessagesChangeCallbacks.forEach(callback => callback(unreadMessagesCount, unreadMessages));
+      },
+      onUnreadRepliesChange: (unreadRepliesCount, unreadReplies) => {
+        logEvent(this.debug, 'Unread replies count changed to ' + unreadRepliesCount, { unreadReplies });
+        this.onUnreadRepliesChangeCallbacks.forEach(callback => callback(unreadRepliesCount, unreadReplies));
+      },
+    });
+  }
+
   protected subscribeToNewMessages(): void {
     this.messagesSubscription = new MessagesSubscription({
       apiUrl: this.apiUrl,
@@ -406,11 +415,11 @@ export class ElixirChat {
   }
 
   public onUnreadRepliesChange = (callback: (unreadRepliesCount: number) => {}): void => {
-    this.unreadMessagesCounter.onUnreadRepliesChange(callback);
+    this.onUnreadRepliesChangeCallbacks.push(callback);
   };
 
   public onUnreadMessagesChange = (callback: (unreadMessagesCount: number) => {}): void => {
-    this.unreadMessagesCounter.onUnreadMessagesChange(callback);
+    this.onUnreadMessagesChangeCallbacks.push(callback);
   };
 
   public resetUnreadMessagesAndReplies = (): void => {

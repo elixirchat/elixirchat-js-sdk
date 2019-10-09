@@ -18,7 +18,11 @@ export function logEvent(isDebug:boolean = false, message: string, data: any, ty
     const additionalDataConsoleStyles = `font-weight: bold;`;
 
     console.groupCollapsed(`%cElixirChat: ${message} %cInfo%c▾`, messageConsoleStyles, infoButtonConsoleStyles, arrowConsoleStyles);
-    if (typeof data === 'object' && !(data instanceof Array)) {
+
+    if (type === 'error') {
+      console.error(data);
+    }
+    else if (typeof data === 'object' && !(data instanceof Array)) {
       Object.keys(data).forEach(key => {
         console.log(`%c${key}:\n`, additionalDataConsoleStyles, data[key], '\n');
       });

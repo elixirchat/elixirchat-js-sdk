@@ -1,6 +1,11 @@
 import { _get, _last } from '../utilsCommon';
 import { IMessage } from './serializers/serializeMessage';
 
+interface IUnreadMessagesCounterConfig {
+  onUnreadMessagesChange: (unreadMessagesCount: number, unreadMessages: Array<IMessage>) => void;
+  onUnreadRepliesChange: (unreadRepliesCount: number, unreadReplies: Array<IMessage>) => void;
+}
+
 export class UnreadMessagesCounter {
 
   public unreadMessagesCount: number = 0;
@@ -9,10 +14,16 @@ export class UnreadMessagesCounter {
   public unreadMessages: Array<IMessage> = [];
   public unreadReplies: Array<IMessage> = [];
 
+  protected onUnreadMessagesChange: (unreadMessagesCount: number, unreadMessages: Array<IMessage>) => void;
+  protected onUnreadRepliesChange: (unreadRepliesCount: number, unreadReplies: Array<IMessage>) => void;
+
   protected receivedMessages: Array<IMessage> = [];
   protected currentClientId: null | string = null;
-  protected onUnreadMessagesChangeCallbacks: Array<(unreadMessagesCount: number, unreadMessages: Array<IMessage>) => {}> = [];
-  protected onUnreadRepliesChangeCallbacks: Array<(unreadRepliesCount: number, unreadReplies: Array<IMessage>) => {}> = [];
+
+  constructor(params: IUnreadMessagesCounterConfig){
+    this.onUnreadMessagesChange = params.onUnreadMessagesChange || function () {};
+    this.onUnreadRepliesChange = params.onUnreadRepliesChange || function () {};
+  }
 
   public setCurrentClientId = (currentClientId: string) => {
     this.currentClientId = currentClientId;
@@ -23,14 +34,6 @@ export class UnreadMessagesCounter {
     const unreadMessages = this.getUnreadMessages();
     const unreadReplies = this.getUnreadRepliesToCurrentClient();
     this.triggerOnChangeCallbacks(unreadMessages, unreadReplies);
-  };
-
-  public onUnreadMessagesChange = (callback: (unreadMessagesCount: number, unreadMessages: Array<IMessage>) => {}): void => {
-    this.onUnreadMessagesChangeCallbacks.push(callback);
-  };
-
-  public onUnreadRepliesChange = (callback: (unreadRepliesCount: number, unreadReplies: Array<IMessage>) => {}): void => {
-    this.onUnreadRepliesChangeCallbacks.push(callback);
   };
 
   public resetUnreadMessagesAndReplies = (): void => {
@@ -49,14 +52,14 @@ export class UnreadMessagesCounter {
 
   protected triggerOnChangeCallbacks(unreadMessages: Array<IMessage>, unreadReplies: Array<IMessage>): void {
     if (this.unreadMessagesCount !== unreadMessages.length) {
-      this.onUnreadMessagesChangeCallbacks.forEach(callback => callback(unreadMessages.length, unreadMessages));
-      this.unreadMessagesCount = unreadMessages.length;
       this.unreadMessages = unreadMessages;
+      this.unreadMessagesCount = unreadMessages.length;
+      this.onUnreadMessagesChange(unreadMessages.length, unreadMessages);
     }
     if (this.unreadRepliesCount !== unreadReplies.length) {
-      this.onUnreadRepliesChangeCallbacks.forEach(callback => callback(unreadReplies.length, unreadReplies));
-      this.unreadRepliesCount = unreadReplies.length;
       this.unreadReplies = unreadReplies;
+      this.unreadRepliesCount = unreadReplies.length;
+      this.onUnreadRepliesChange(unreadReplies.length, unreadReplies);
     }
   }
 
