@@ -79,6 +79,8 @@ export class ElixirChat {
     return _get(this.messagesSubscription, 'reachedBeginningOfMessageHistory') || false;
   }
 
+  protected eventCallbacks: object = {};
+
   protected graphQLClient: GraphQLClient;
   protected messagesSubscription: MessagesSubscription;
   protected operatorOnlineStatusSubscription: OperatorOnlineStatusSubscription;
@@ -123,16 +125,15 @@ export class ElixirChat {
     this.debug = config.debug || false;
     this.room = config.room;
     this.client = config.client;
-
     this.isPrivate = !this.room || !this.room.id;
 
-    const localValues = this.getRoomClientFromLocalStorage();
-    if (!this.room || !this.room.id) {
-      this.room = localValues.room;
-    }
-    if (!this.client || !this.client.id) {
-      this.client = localValues.client;
-    }
+    // const localValues = this.getRoomClientFromLocalStorage();
+    // if (!this.room || !this.room.id) {
+    //   this.room = localValues.room;
+    // }
+    // if (!this.client || !this.client.id) {
+    //   this.client = localValues.client;
+    // }
     this.initialize();
   }
 
@@ -156,21 +157,40 @@ export class ElixirChat {
       debug: this.debug,
     });
 
-    this.setDefaultConfigValues();
+    this.on('joinRoomSuccess', data => {
+      logEvent(this.debug, 'Joined room', data);
 
-    this.screenshotTaker = new ScreenshotTaker();
-    this.subscribeToUnreadCounterChangeChange();
-
-    this.connectToRoom().then(() => {
       this.unreadMessagesCounter.setCurrentClientId(this.elixirChatClientId);
-      this.saveRoomClientToLocalStorage(this.room, this.client);
+      // this.saveRoomAndClientToLocalStorage(this.room, this.client);
       this.subscribeToNewMessages();
       this.subscribeToTypingStatusChange();
       this.subscribeToOperatorOnlineStatusChange();
     });
+
+    this.on('joinRoomError', error => {
+      logEvent(this.debug, 'Failed to join room', { error, query, variables }, 'error');
+    });
+
+    this.screenshotTaker = new ScreenshotTaker();
+    this.setRoomAndClient();
+    this.subscribeToUnreadCounterChange();
+
+    this.unreadMessagesCounter = new UnreadMessagesCounter({
+      elixirChat: this,
+      onUnreadMessagesChange: (unreadMessagesCount, unreadMessages) => {
+        logEvent(this.debug, 'Unread messages count changed to ' + unreadMessagesCount, { unreadMessages });
+        this.onUnreadMessagesChangeCallbacks.forEach(callback => callback(unreadMessagesCount, unreadMessages));
+      },
+      onUnreadRepliesChange: (unreadRepliesCount, unreadReplies) => {
+        logEvent(this.debug, 'Unread replies count changed to ' + unreadRepliesCount, { unreadReplies });
+        this.onUnreadRepliesChangeCallbacks.forEach(callback => callback(unreadRepliesCount, unreadReplies));
+      },
+    });
+
+    this.connectToRoom();
   }
 
-  protected getDefaultClientData(): IElixirChatUser {
+  protected generateAnonymousClientData(): IElixirChatUser {
     const baseTitle = uniqueNamesGenerator({ length: 2, separator: ' ', dictionaries: null });
     const [firstName, lastName] = baseTitle.split(' ').map(capitalize);
     const randomFourDigitPostfix = randomDigitStringId(4);
@@ -184,41 +204,44 @@ export class ElixirChat {
     return clientData;
   }
 
-  protected getRoomClientFromLocalStorage(): { room?: IElixirChatRoom, client?: IElixirChatUser } {
-    const room: IElixirChatRoom = getJSONFromLocalStorage('elixirchat-room');
-    const client: IElixirChatUser = getJSONFromLocalStorage('elixirchat-client');
-    logEvent(this.debug, 'Fetched room, client values from localStorage', { room, client });
-    return {
-      room,
-      client,
-    };
-  }
+  // protected getRoomClientFromLocalStorage(): { room?: IElixirChatRoom, client?: IElixirChatUser } {
+  //   const room: IElixirChatRoom = getJSONFromLocalStorage('elixirchat-room');
+  //   const client: IElixirChatUser = getJSONFromLocalStorage('elixirchat-client');
+  //   logEvent(this.debug, 'Fetched room, client values from localStorage', { room, client });
+  //   return {
+  //     room,
+  //     client,
+  //   };
+  // }
 
-  protected saveRoomClientToLocalStorage(room: IElixirChatRoom, client: IElixirChatUser): void {
-    localStorage.setItem('elixirchat-room', JSON.stringify(room));
-    localStorage.setItem('elixirchat-client', JSON.stringify(client));
-  }
+  // protected saveRoomAndClientToLocalStorage(room: IElixirChatRoom, client: IElixirChatUser): void {
+  //   localStorage.setItem('elixirchat-room', JSON.stringify(room));
+  //   localStorage.setItem('elixirchat-client', JSON.stringify(client));
+  // }
 
-  protected setDefaultConfigValues(): void {
-    const client : any = this.client || {};
-    const room : any = this.room || {};
-    const defaultClientData = this.getDefaultClientData();
 
-    const clientId = client.id || defaultClientData.id;
-    let clientFirstName = client.firstName;
-    let clientLastName = client.lastName;
-    if (!clientFirstName && !clientLastName) {
-      clientFirstName = defaultClientData.firstName;
-      clientLastName = defaultClientData.lastName;
-    }
+
+
+  protected setRoomAndClient(data: { room?: IElixirChatRoom, client?: IElixirChatUser }): void {
+    let room: any = data.room || {};
+    let client: any = data.client || {};
+
+    const localStorageRoom: IElixirChatRoom = getJSONFromLocalStorage('elixirchat-room');
+    const localStorageClient: IElixirChatUser = getJSONFromLocalStorage('elixirchat-client');
+    const anonymousClientData = this.generateAnonymousClientData();
+
+    const clientId = client.id || localStorageClient.id || anonymousClientData.id;
+    const clientFirstName = client.firstName || localStorageClient.firstName || anonymousClientData.firstName;
+    const clientLastName = client.lastName || localStorageClient.lastName || anonymousClientData.lastName;
+
     this.client = {
       id: clientId,
       firstName: clientFirstName,
       lastName: clientLastName,
     };
 
-    const roomId = room.id || clientId;
-    const roomTitle = room.title || clientFirstName + ' ' + clientLastName;
+    const roomId = room.id || localStorageRoom.id || clientId;
+    const roomTitle = room.title || localStorageRoom.title || clientFirstName + ' ' + clientLastName;
     const roomData = room.data || {};
     this.room = {
       id: roomId,
@@ -226,11 +249,18 @@ export class ElixirChat {
       data: roomData,
     };
 
+    localStorage.setItem('elixirchat-room', JSON.stringify(room));
+    localStorage.setItem('elixirchat-client', JSON.stringify(client));
+
     logEvent(this.debug, 'Set room and client values', {
       room: this.room,
       client: this.client,
     });
   };
+
+
+
+
 
   serializeRoomData(data){
     const serializedData = {};
@@ -238,6 +268,27 @@ export class ElixirChat {
       serializedData[key] = data[key].toString();
     }
     return JSON.stringify(serializedData);
+  };
+
+  public triggerEvent = (eventName, ...params) => {
+    const callbacks = this.eventCallbacks[eventName];
+    if (callbacks && callbacks.length) {
+      callbacks.forEach(callback => callback(params));
+    }
+  };
+
+  public on = (eventName, callback) => {
+    if (!this.eventCallbacks[eventName]) {
+      this.eventCallbacks[eventName] = [];
+    }
+    this.eventCallbacks[eventName].push(callback);
+  };
+
+  public off = (eventName, callback) => {
+    let callbacks = this.eventCallbacks[eventName];
+    if (callbacks && callbacks.length) {
+      this.eventCallbacks[eventName] = callbacks.filter(currentCallback => currentCallback !== callback);
+    }
   };
 
   protected connectToRoom(): Promise<void> {
@@ -272,18 +323,21 @@ export class ElixirChat {
             this.room.title = joinRoom.room.title;
             this.elixirChatRoomId = joinRoom.room.id;
 
-            logEvent(this.debug, 'Joined room', { joinRoom, room: this.room, client: this.client });
-            resolve(joinRoom);
+            this.triggerEvent('joinRoomSuccess', { joinRoom, room: this.room, client: this.client });
+            // logEvent(this.debug, 'Joined room', { joinRoom, room: this.room, client: this.client });
+            // resolve(joinRoom);
           }
           else {
+            this.triggerEvent('joinRoomError', joinRoom);
             logEvent(this.debug, 'Failed to join room', { joinRoom, query, variables }, 'error');
-            this.onConnectErrorCallbacks.forEach(callback => callback(joinRoom));
-            reject(joinRoom);
+            // this.onConnectErrorCallbacks.forEach(callback => callback(joinRoom));
+            // reject(joinRoom);
           }
         }).catch((response: any) => {
-          logEvent(this.debug, 'Failed to join room', { response, query, variables }, 'error');
-          this.onConnectErrorCallbacks.forEach(callback => callback(response));
-          reject(response);
+          this.triggerEvent('joinRoomError', response);
+          // logEvent(this.debug, 'Failed to join room', { response, query, variables }, 'error');
+          // this.onConnectErrorCallbacks.forEach(callback => callback(response));
+          // reject(response);
         });
     });
   }
@@ -330,7 +384,7 @@ export class ElixirChat {
     });
   }
 
-  protected subscribeToUnreadCounterChangeChange(){
+  protected subscribeToUnreadCounterChange(){
     this.unreadMessagesCounter = new UnreadMessagesCounter({
       onUnreadMessagesChange: (unreadMessagesCount, unreadMessages) => {
         logEvent(this.debug, 'Unread messages count changed to ' + unreadMessagesCount, { unreadMessages });
@@ -365,7 +419,7 @@ export class ElixirChat {
       onMessage: (message: IElixirChatReceivedMessage) => {
         logEvent(this.debug, 'Received new message', message);
         this.receivedMessages.push(message);
-        this.unreadMessagesCounter.setReceivedMessages(this.receivedMessages);
+        this.unreadMessagesCounter.recount();
         this.onMessageCallbacks.forEach(callback => callback(message));
       },
       onUnsubscribe: () => {
@@ -424,7 +478,7 @@ export class ElixirChat {
   };
 
   public resetUnreadMessagesAndReplies = (): void => {
-    this.unreadMessagesCounter.resetUnreadMessagesAndReplies();
+    this.unreadMessagesCounter.reset();
   };
 
   public dispatchTypedText = (typedText: string): void => {
@@ -458,14 +512,14 @@ export class ElixirChat {
 
     this.isPrivate = !room || !room.id;
 
-    this.setDefaultConfigValues();
+    this.setRoomAndClient({ room, client });
     this.messagesSubscription.unsubscribe();
     this.operatorOnlineStatusSubscription.unsubscribe();
-    this.unreadMessagesCounter.resetUnreadMessagesAndReplies();
+    this.unreadMessagesCounter.reset();
 
     return this.connectToRoom().then(() => {
       this.unreadMessagesCounter.setCurrentClientId(this.elixirChatClientId);
-      this.saveRoomClientToLocalStorage(this.room, this.client);
+      // this.saveRoomAndClientToLocalStorage(this.room, this.client);
       this.subscribeToNewMessages();
       this.subscribeToOperatorOnlineStatusChange();
       this.typingStatusSubscription.resubscribeToAnotherRoom(this.room.id);
@@ -497,7 +551,7 @@ export class ElixirChat {
       .then(messages => {
         logEvent(this.debug, 'Fetched message history', { limit, beforeCursor, messages });
         this.receivedMessages = this.receivedMessages.concat(messages);
-        this.unreadMessagesCounter.setReceivedMessages(this.receivedMessages);
+        this.unreadMessagesCounter.recount();
         return messages;
       })
       .catch(data => {
