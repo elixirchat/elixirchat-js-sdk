@@ -107,7 +107,13 @@ export interface IGetCompatibilityFallback {
 }
 
 export const getCompatibilityFallback: IGetCompatibilityFallback = () => {
-  if (navigator.mediaDevices.getDisplayMedia) {
+  let getDisplayMedia;
+  try {
+    getDisplayMedia = navigator.mediaDevices.getDisplayMedia;
+  }
+  catch (e) {}
+
+  if (getDisplayMedia) {
     return null;
   }
   else {
