@@ -9,12 +9,13 @@ import {
 
 import { IMessage } from './serializers/serializeMessage';
 import { fragmentClient } from './serializers/serializeUser';
-import { MessagesSubscription, ISentMessage } from './MessagesSubscription';
+import { MessageSubscription, ISentMessage } from './MessageSubscription';
 import { TypingStatusSubscription } from './TypingStatusSubscription';
 import { OperatorOnlineStatusSubscription } from './OperatorOnlineStatusSubscription';
 import { UnreadMessagesCounter } from './UnreadMessagesCounter';
 import { ScreenshotTaker, IScreenshot } from './ScreenshotTaker';
 import { GraphQLClient, insertGraphQlFragments, gql } from './GraphQLClient';
+import {JOIN_ROOM, JOIN_ROOM_ERROR} from './ElixirChatEventTypes';
 
 export const API_REFERENCE_URL = 'https://github.com/elixirchat/elixirchat-js-sdk';
 
@@ -57,32 +58,35 @@ export class ElixirChat {
   public authToken: string;
   public connected: boolean;
   public isPrivate: boolean;
-  public receivedMessages: Array<IElixirChatReceivedMessage> = [];
+  public messageHistory: Array<IElixirChatReceivedMessage> = [];
 
-  public areAnyOperatorsOnline: boolean = false;
   public widgetTitle: string = '';
   public defaultWidgetTitle: string = 'Служба поддержки';
 
+  public get areAnyOperatorsOnline(): boolean {
+    return this.operatorOnlineStatusSubscription.areAnyOperatorsOnline;
+  };
   public get unreadMessagesCount(): number {
-    return _get(this.unreadMessagesCounter, 'unreadMessagesCount') || 0;
+    return this.unreadMessagesCounter.unreadMessagesCount;
   }
   public get unreadRepliesCount(): number {
-    return _get(this.unreadMessagesCounter, 'unreadRepliesCount') || 0;
+    return this.unreadMessagesCounter.unreadRepliesCount;
   }
   public get unreadMessages(): Array<IElixirChatReceivedMessage> {
-    return _get(this.unreadMessagesCounter, 'unreadMessages') || [];
+    return this.unreadMessagesCounter.unreadMessages;
   }
   public get unreadReplies(): Array<IElixirChatReceivedMessage> {
-    return _get(this.unreadMessagesCounter, 'unreadReplies') || [];
+    return this.unreadMessagesCounter.unreadReplies;
   }
+
   public get reachedBeginningOfMessageHistory(): boolean {
-    return _get(this.messagesSubscription, 'reachedBeginningOfMessageHistory') || false;
+    return _get(this.messageSubscription, 'reachedBeginningOfMessageHistory') || false;
   }
 
   protected eventCallbacks: object = {};
 
   protected graphQLClient: GraphQLClient;
-  protected messagesSubscription: MessagesSubscription;
+  protected messageSubscription: MessageSubscription;
   protected operatorOnlineStatusSubscription: OperatorOnlineStatusSubscription;
   protected typingStatusSubscription: TypingStatusSubscription;
   protected unreadMessagesCounter: UnreadMessagesCounter;
@@ -113,7 +117,6 @@ export class ElixirChat {
   protected onConnectErrorCallbacks: Array<(e: any) => void> = [];
   protected onTypingCallbacks: Array<(typingUsers: Array<IElixirChatUser>) => void> = [];
   protected onTypingStatusSubscribeCallbacks: Array<() => void> = [];
-  protected onOperatorOnlineStatusChangeCallbacks: Array<(isOnline: boolean) => void> = [];
   protected onUnreadMessagesChangeCallbacks: Array<(unreadMessagesCount: number, unreadMessages: Array<IElixirChatReceivedMessage>) => {}> = [];
   protected onUnreadRepliesChangeCallbacks: Array<(unreadRepliesCount: number, unreadReplies: Array<IElixirChatReceivedMessage>) => {}> = [];
 
@@ -157,37 +160,30 @@ export class ElixirChat {
       debug: this.debug,
     });
 
-    this.on('joinRoomSuccess', data => {
+    this.on(JOIN_ROOM, data => {
       logEvent(this.debug, 'Joined room', data);
+      const areAnyOperatorsOnline = _get(data, 'company.working');
 
-      this.unreadMessagesCounter.setCurrentClientId(this.elixirChatClientId);
-      // this.saveRoomAndClientToLocalStorage(this.room, this.client);
+      this.unreadMessagesCounter.recount();
+      this.operatorOnlineStatusSubscription.setStatus(areAnyOperatorsOnline);
+
+
       this.subscribeToNewMessages();
       this.subscribeToTypingStatusChange();
-      this.subscribeToOperatorOnlineStatusChange();
     });
 
-    this.on('joinRoomError', error => {
+    this.on(JOIN_ROOM_ERROR, error => {
       logEvent(this.debug, 'Failed to join room', { error, query, variables }, 'error');
     });
 
-    this.screenshotTaker = new ScreenshotTaker();
     this.setRoomAndClient();
-    this.subscribeToUnreadCounterChange();
 
-    this.unreadMessagesCounter = new UnreadMessagesCounter({
-      elixirChat: this,
-      onUnreadMessagesChange: (unreadMessagesCount, unreadMessages) => {
-        logEvent(this.debug, 'Unread messages count changed to ' + unreadMessagesCount, { unreadMessages });
-        this.onUnreadMessagesChangeCallbacks.forEach(callback => callback(unreadMessagesCount, unreadMessages));
-      },
-      onUnreadRepliesChange: (unreadRepliesCount, unreadReplies) => {
-        logEvent(this.debug, 'Unread replies count changed to ' + unreadRepliesCount, { unreadReplies });
-        this.onUnreadRepliesChangeCallbacks.forEach(callback => callback(unreadRepliesCount, unreadReplies));
-      },
-    });
+    this.screenshotTaker = new ScreenshotTaker({ elixirChat: this });
+    this.unreadMessagesCounter = new UnreadMessagesCounter({ elixirChat: this });
+    this.operatorOnlineStatusSubscription = new OperatorOnlineStatusSubscription({ elixirChat: this });
 
-    this.connectToRoom();
+
+    this.joinRoom();
   }
 
   protected generateAnonymousClientData(): IElixirChatUser {
@@ -262,7 +258,7 @@ export class ElixirChat {
 
 
 
-  serializeRoomData(data){
+  protected serializeRoomData(data){
     const serializedData = {};
     for (let key in data) {
       serializedData[key] = data[key].toString();
@@ -291,54 +287,43 @@ export class ElixirChat {
     }
   };
 
-  protected connectToRoom(): Promise<void> {
+  protected joinRoom(): Promise<void> {
     this.graphQLClient = new GraphQLClient({ url: this.apiUrl });
 
     const query = this.joinRoomQuery;
     const variables = {
       companyId: this.companyId,
+      client: this.client,
       room: {
         id: this.room.id,
         title: this.room.title,
         data: this.serializeRoomData(this.room.data)
       },
-      client: this.client,
     };
 
-    return new Promise((resolve, reject) => {
-      this.graphQLClient.query(query, variables)
-        .then(({ joinRoom }: any) => {
-          if (joinRoom) {
-            this.authToken = joinRoom.token;
-            this.connected = true;
+    return this.graphQLClient.query(query, variables)
+      .then(({ joinRoom }: any) => {
+        if (joinRoom) {
+          this.authToken = joinRoom.token;
+          this.connected = true;
+          this.widgetTitle = joinRoom.company.widgetTitle || this.defaultWidgetTitle;
 
-            this.client.firstName = joinRoom.client.firstName;
-            this.client.lastName = joinRoom.client.lastName;
-            this.client.id = joinRoom.client.foreignId;
-            this.elixirChatClientId = joinRoom.client.id;
-            this.widgetTitle = joinRoom.company.widgetTitle || this.defaultWidgetTitle;
-            this.areAnyOperatorsOnline = joinRoom.company.working;
+          this.client.firstName = joinRoom.client.firstName;
+          this.client.lastName = joinRoom.client.lastName;
+          this.client.id = joinRoom.client.foreignId;
+          this.elixirChatClientId = joinRoom.client.id;
 
-            this.room.id = joinRoom.room.foreignId;
-            this.room.title = joinRoom.room.title;
-            this.elixirChatRoomId = joinRoom.room.id;
+          this.room.id = joinRoom.room.foreignId;
+          this.room.title = joinRoom.room.title;
+          this.elixirChatRoomId = joinRoom.room.id;
 
-            this.triggerEvent('joinRoomSuccess', { joinRoom, room: this.room, client: this.client });
-            // logEvent(this.debug, 'Joined room', { joinRoom, room: this.room, client: this.client });
-            // resolve(joinRoom);
-          }
-          else {
-            this.triggerEvent('joinRoomError', joinRoom);
-            logEvent(this.debug, 'Failed to join room', { joinRoom, query, variables }, 'error');
-            // this.onConnectErrorCallbacks.forEach(callback => callback(joinRoom));
-            // reject(joinRoom);
-          }
-        }).catch((response: any) => {
-          this.triggerEvent('joinRoomError', response);
-          // logEvent(this.debug, 'Failed to join room', { response, query, variables }, 'error');
-          // this.onConnectErrorCallbacks.forEach(callback => callback(response));
-          // reject(response);
-        });
+          this.triggerEvent(JOIN_ROOM, { joinRoom, room: this.room, client: this.client });
+        }
+        else {
+          this.triggerEvent(JOIN_ROOM_ERROR, joinRoom);
+        }
+      }).catch((response) => {
+        this.triggerEvent(JOIN_ROOM_ERROR, response);
     });
   }
 
@@ -362,43 +347,8 @@ export class ElixirChat {
     });
   }
 
-  protected subscribeToOperatorOnlineStatusChange(): void {
-    this.operatorOnlineStatusSubscription = new OperatorOnlineStatusSubscription({
-      isOnline: this.areAnyOperatorsOnline,
-      socketUrl: this.socketUrl,
-      token: this.authToken,
-      onSubscribeSuccess: () => {
-        logEvent(this.debug, 'Successfully subscribed to operator online status change')
-      },
-      onSubscribeError: (data) => {
-        logEvent(this.debug, 'Failed to subscribe to operator online status change', data, 'error');
-      },
-      onStatusChange: (isOnline: boolean) => {
-        logEvent(this.debug, isOnline ? 'Operators got back online' : 'All operators went');
-        this.areAnyOperatorsOnline = isOnline;
-        this.onOperatorOnlineStatusChangeCallbacks.forEach(callback => callback(isOnline));
-      },
-      onUnsubscribe: () => {
-        logEvent(this.debug, 'Unsubscribed from  operator online status change');
-      },
-    });
-  }
-
-  protected subscribeToUnreadCounterChange(){
-    this.unreadMessagesCounter = new UnreadMessagesCounter({
-      onUnreadMessagesChange: (unreadMessagesCount, unreadMessages) => {
-        logEvent(this.debug, 'Unread messages count changed to ' + unreadMessagesCount, { unreadMessages });
-        this.onUnreadMessagesChangeCallbacks.forEach(callback => callback(unreadMessagesCount, unreadMessages));
-      },
-      onUnreadRepliesChange: (unreadRepliesCount, unreadReplies) => {
-        logEvent(this.debug, 'Unread replies count changed to ' + unreadRepliesCount, { unreadReplies });
-        this.onUnreadRepliesChangeCallbacks.forEach(callback => callback(unreadRepliesCount, unreadReplies));
-      },
-    });
-  }
-
   protected subscribeToNewMessages(): void {
-    this.messagesSubscription = new MessagesSubscription({
+    this.messageSubscription = new MessageSubscription({
       apiUrl: this.apiUrl,
       socketUrl: this.socketUrl,
       backendStaticUrl: this.backendStaticUrl,
@@ -418,7 +368,7 @@ export class ElixirChat {
       },
       onMessage: (message: IElixirChatReceivedMessage) => {
         logEvent(this.debug, 'Received new message', message);
-        this.receivedMessages.push(message);
+        this.messageHistory.push(message);
         this.unreadMessagesCounter.recount();
         this.onMessageCallbacks.forEach(callback => callback(message));
       },
@@ -440,7 +390,7 @@ export class ElixirChat {
     const tempId = params.tempId;
 
     if (text.trim() || attachments.length) {
-      return this.messagesSubscription.sendMessage({ text, attachments, responseToMessageId, tempId })
+      return this.messageSubscription.sendMessage({ text, attachments, responseToMessageId, tempId })
         .then(message => {
           logEvent(this.debug, 'Sent message', {
             message,
@@ -497,11 +447,10 @@ export class ElixirChat {
     this.onTypingStatusSubscribeCallbacks.push(callback);
   };
 
-  public onOperatorOnlineStatusChange = (callback: (isOnline: boolean) => void): void => {
-    this.onOperatorOnlineStatusChangeCallbacks.push(callback);
-  };
-
   public reconnect = ({ room, client }: { room?: IElixirChatRoom, client?: IElixirChatUser }): Promise<void> => {
+
+    // TODO: double check reconnect
+
     logEvent(this.debug, 'Attempting to reconnect to another room', { room, client });
     if (room) {
       this.room = room;
@@ -513,17 +462,11 @@ export class ElixirChat {
     this.isPrivate = !room || !room.id;
 
     this.setRoomAndClient({ room, client });
-    this.messagesSubscription.unsubscribe();
+    this.messageSubscription.unsubscribe();
     this.operatorOnlineStatusSubscription.unsubscribe();
     this.unreadMessagesCounter.reset();
 
-    return this.connectToRoom().then(() => {
-      this.unreadMessagesCounter.setCurrentClientId(this.elixirChatClientId);
-      // this.saveRoomAndClientToLocalStorage(this.room, this.client);
-      this.subscribeToNewMessages();
-      this.subscribeToOperatorOnlineStatusChange();
-      this.typingStatusSubscription.resubscribeToAnotherRoom(this.room.id);
-    });
+    // TODO: resubscribe on JOIN_ROOM?
   };
 
   public onConnectSuccess = (callback: () => void): void => {
@@ -535,22 +478,14 @@ export class ElixirChat {
   };
 
   public takeScreenshot = (): Promise<IElixirChatScreenshot> => {
-    return this.screenshotTaker.takeScreenshot()
-      .then(screenshot => {
-        logEvent(this.debug, 'Captured screenshot', screenshot);
-        return screenshot;
-      })
-      .catch(e => {
-        logEvent(this.debug, 'Could not capture screenshot', e, 'error');
-        throw e;
-      });
+    return this.screenshotTaker.takeScreenshot();
   };
 
   public fetchMessageHistory = (limit: number, beforeCursor?: string): Promise<[IElixirChatReceivedMessage]> => {
-    return this.messagesSubscription.fetchMessageHistory(limit, beforeCursor)
+    return this.messageSubscription.fetchMessageHistory(limit, beforeCursor)
       .then(messages => {
         logEvent(this.debug, 'Fetched message history', { limit, beforeCursor, messages });
-        this.receivedMessages = this.receivedMessages.concat(messages);
+        this.messageHistory = this.messageHistory.concat(messages);
         this.unreadMessagesCounter.recount();
         return messages;
       })

@@ -1,28 +1,21 @@
 import * as AbsintheSocket from '@absinthe/socket'
 import * as Phoenix from 'phoenix'
+import { ElixirChat } from './ElixirChat';
+import {
+  OPERATOR_ONLINE_STATUS_CHANGE,
+  OPERATOR_ONLINE_STATUS_SUBSCRIBE,
+  OPERATOR_ONLINE_STATUS_SUBSCRIBE_ABORT,
+} from './ElixirChatEventTypes';
+
 import { gql } from './GraphQLClient';
+import { logEvent } from '../utilsCommon';
 
-
-export interface IOperatorOnlineStatusSubscriptionConfig {
-  isOnline: boolean,
-  socketUrl: string,
-  token: string,
-  onSubscribeSuccess?: (data: any) => void;
-  onSubscribeError?: (data: any) => void;
-  onUnsubscribe?: () => void;
-  onStatusChange: (isOnline: boolean) => void;
-}
 
 export class OperatorOnlineStatusSubscription {
 
-  public isOnline: boolean;
-  public socketUrl: string;
-  public token: string;
-  public onSubscribeSuccess?: (data: any) => void;
-  public onSubscribeError?: (data: any) => void;
-  public onUnsubscribe?: () => void;
-  public onStatusChange: (inOnline: boolean) => void;
+  public areAnyOperatorsOnline: boolean;
 
+  protected elixirChat: ElixirChat;
   protected notifier: any;
   protected absintheSocket: any;
   protected isCurrentlySubscribed: boolean = false;
@@ -33,55 +26,52 @@ export class OperatorOnlineStatusSubscription {
     }
   `;
 
-  constructor(config: IOperatorOnlineStatusSubscriptionConfig) {
-    this.onSubscribeSuccess = config.onSubscribeSuccess || function () {};
-    this.onSubscribeError = config.onSubscribeError || function () {};
-    this.onUnsubscribe = config.onUnsubscribe || function () {};
-    this.onStatusChange = config.onStatusChange;
-    this.socketUrl = config.socketUrl;
-    this.token = config.token;
-    this.isOnline = config.isOnline;
+  constructor({ elixirChat }: { elixirChat: ElixirChat }) {
+    this.elixirChat = elixirChat;
     this.initialize();
   }
 
   protected initialize(): void {
+    const { socketUrl, authToken } = this.elixirChat;
     this.absintheSocket = AbsintheSocket.create(
-      new Phoenix.Socket(this.socketUrl, { params: { token: this.token }})
+      new Phoenix.Socket(socketUrl, { params: { token: authToken }})
     );
     this.subscribe();
   }
 
+  public setStatus = areAnyOperatorsOnline => {
+    this.areAnyOperatorsOnline = areAnyOperatorsOnline;
+  };
+
   protected subscribe(): void {
+    const { debug, triggerEvent } = this.elixirChat;
     const notifier = AbsintheSocket.send(this.absintheSocket, {
       operation: this.subscriptionQuery,
     });
+
     AbsintheSocket.observe(this.absintheSocket, notifier, {
-      onAbort: e => this.onSubscribeAbort(e),
+      onAbort: e => {
+        logEvent(debug, 'Failed to subscribe to operator online status change', e, 'error');
+        triggerEvent(OPERATOR_ONLINE_STATUS_SUBSCRIBE_ABORT, e);
+      },
       onStart: notifier => {
         this.notifier = notifier;
         if (!this.isCurrentlySubscribed) {
           this.isCurrentlySubscribed = true;
-          this.onSubscribeSuccess(notifier);
+          logEvent(debug, 'Successfully subscribed to operator online status change');
+          triggerEvent(OPERATOR_ONLINE_STATUS_SUBSCRIBE, notifier);
         }
       },
       onResult: ({ data }) => {
-        const isOnline = data && data.updateCompanyWorking;
-        this.onStatusChange(isOnline);
-        this.isOnline = isOnline;
+        this.areAnyOperatorsOnline = data && data.updateCompanyWorking;
+        logEvent(debug, this.areAnyOperatorsOnline ? 'Operators got back online' : 'All operators went offline');
+        triggerEvent(OPERATOR_ONLINE_STATUS_CHANGE, this.areAnyOperatorsOnline);
       },
     })
-  }
-
-  protected onSubscribeAbort(error: any): void {
-    this.onSubscribeError({
-      error,
-      graphQLQuery: this.subscriptionQuery
-    });
   }
 
   public unsubscribe = (): void => {
     this.absintheSocket = AbsintheSocket.cancel(this.absintheSocket, this.notifier);
     this.isCurrentlySubscribed = false;
-    this.onUnsubscribe();
   };
 }

@@ -1,7 +1,9 @@
 import React, { Component, Fragment } from 'react';
 import ReactDOM from 'react-dom';
 import cn from 'classnames';
+import { UNREAD_MESSAGES_CHANGE, UNREAD_REPLIES_CHANGE } from '../../sdk/ElixirChatEventTypes';
 import { _flatten } from '../../utilsCommon';
+import { ElixirChatWidget } from '../ElixirChatWidget';
 import { generateFontFaceRule, unlockNotificationSoundAutoplay } from '../../utilsWidget';
 import { FontExtractor } from '../FontExtractor';
 import { Chat } from './Chat';
@@ -11,7 +13,7 @@ import styles from './styles';
 import assets from './assets';
 
 export interface IWidgetProps {
-  elixirChatWidget: any;
+  elixirChatWidget: ElixirChatWidget;
 }
 
 export interface IWidgetState {
@@ -58,13 +60,21 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
 
     elixirChatWidget.onToggleChatVisibility(this.onToggleButton);
 
-    elixirChatWidget.onUnreadMessagesChange(unreadMessagesCounter => {
+    elixirChatWidget.on(UNREAD_MESSAGES_CHANGE, unreadMessagesCounter => {
       this.setState({ unreadMessagesCounter });
     });
 
-    elixirChatWidget.onUnreadRepliesChange(unreadRepliesCount => {
-      this.setState({ unreadRepliesCount });
+    elixirChatWidget.on(UNREAD_REPLIES_CHANGE, unreadMessagesCounter => {
+      this.setState({ unreadMessagesCounter });
     });
+
+    // elixirChatWidget.onUnreadMessagesChange(unreadMessagesCounter => {
+    //   this.setState({ unreadMessagesCounter });
+    // });
+    //
+    // elixirChatWidget.onUnreadRepliesChange(unreadRepliesCount => {
+    //   this.setState({ unreadRepliesCount });
+    // });
   }
 
   onWindowLoad = () => {

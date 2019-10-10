@@ -15,7 +15,7 @@ export interface ISentMessage {
   tempId?: string,
 }
 
-export interface IMessagesSubscriptionConfig {
+export interface IMessageSubscriptionConfig {
   apiUrl: string,
   socketUrl: string,
   backendStaticUrl: string,
@@ -27,7 +27,7 @@ export interface IMessagesSubscriptionConfig {
   onMessage: (message: IMessage) => void;
 }
 
-export class MessagesSubscription {
+export class MessageSubscription {
 
   public apiUrl: string;
   public socketUrl: string;
@@ -76,7 +76,7 @@ export class MessagesSubscription {
     }
   `, { fragmentMessage });
 
-  constructor(config: IMessagesSubscriptionConfig) {
+  constructor(config: IMessageSubscriptionConfig) {
     this.apiUrl = config.apiUrl;
     this.socketUrl = config.socketUrl;
     this.backendStaticUrl = config.backendStaticUrl;

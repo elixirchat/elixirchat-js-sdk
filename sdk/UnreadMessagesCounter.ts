@@ -1,4 +1,5 @@
-import { ElixirChat } from '../sdk/ElixirChat';
+import { ElixirChat } from './ElixirChat';
+import { UNREAD_MESSAGES_CHANGE, UNREAD_REPLIES_CHANGE } from './ElixirChatEventTypes';
 import { _get, _last, logEvent } from '../utilsCommon';
 import { IMessage } from './serializers/serializeMessage';
 
@@ -25,14 +26,10 @@ export class UnreadMessagesCounter {
   // protected currentClientId: null | string = null;
 
   constructor(params: IUnreadMessagesCounterConfig){
-    if (!params.elixirChat) {
-      logEvent(true, 'UnreadMessagesCounter: elixirChat must be passed to constructor', null, 'error');
-      return;
-    }
     this.elixirChat = params.elixirChat;
 
-    this.onUnreadMessagesChange = params.onUnreadMessagesChange || function () {};
-    this.onUnreadRepliesChange = params.onUnreadRepliesChange || function () {};
+    // this.onUnreadMessagesChange = params.onUnreadMessagesChange || function () {};
+    // this.onUnreadRepliesChange = params.onUnreadRepliesChange || function () {};
   }
 
   // public setCurrentClientId = (currentClientId: string) => {
@@ -49,7 +46,7 @@ export class UnreadMessagesCounter {
   public recount = () => {
     const { client, debug } = this.elixirChat;
     if (!client.id) {
-      logEvent(debug, 'UnreadMessagesCounter:triggerRecount — cannot find elixirChat.client.id', client, 'error');
+      logEvent(debug, 'UnreadMessagesCounter.recount: cannot find elixirChat.client.id', client, 'error');
       return;
     }
     const unreadMessages = this.getUnreadMessages();
@@ -63,8 +60,8 @@ export class UnreadMessagesCounter {
     if (latestReplyToCurrentClient) {
       localStorage.setItem('elixirchat-latest-unread-reply-id', latestReplyToCurrentClient.id);
     }
-    const notCurrentClientMessages = this.getAllMessagesByNotCurrentClient();
-    const latestMessage = _last(notCurrentClientMessages);
+    const notCurrentClientsMessages = this.getAllMessagesByNotCurrentClient();
+    const latestMessage = _last(notCurrentClientsMessages);
     if (latestMessage) {
       localStorage.setItem('elixirchat-latest-unread-message-id', latestMessage.id);
     }
@@ -80,7 +77,7 @@ export class UnreadMessagesCounter {
       this.unreadMessagesCount = unreadMessagesCount;
       this.unreadMessages = unreadMessages;
       logEvent(debug, 'Unread messages count changed to ' + unreadMessagesCount, { unreadMessages });
-      triggerEvent('unreadMessagesChange', unreadMessagesCount, unreadMessages);
+      triggerEvent(UNREAD_MESSAGES_CHANGE, unreadMessagesCount, unreadMessages);
 
       // this.onUnreadMessagesChange(unreadMessages.length, unreadMessages);
     }
@@ -88,24 +85,26 @@ export class UnreadMessagesCounter {
       this.unreadRepliesCount = unreadRepliesCount;
       this.unreadReplies = unreadReplies;
       logEvent(debug, 'Unread replies count changed to ' + unreadRepliesCount, { unreadReplies });
-      triggerEvent('unreadMessagesChange', unreadRepliesCount, unreadReplies);
+      triggerEvent(UNREAD_REPLIES_CHANGE, unreadRepliesCount, unreadReplies);
 
       // this.onUnreadRepliesChange(unreadReplies.length, unreadReplies);
     }
   }
 
   protected getAllRepliesToCurrentClient(): Array<IMessage> {
-    return this.receivedMessages.filter(message => {
+    const { messageHistory, client } = this.elixirChat;
+    return messageHistory.filter(message => {
       const { responseToMessage, sender } = message;
-      const isSentByCurrentClient = sender.id === this.elixirChat.client.id;
-      const isResponseToCurrentClient = _get(responseToMessage, 'sender.id') === this.elixirChat.client.id;
+      const isSentByCurrentClient = sender.id === client.id;
+      const isResponseToCurrentClient = _get(responseToMessage, 'sender.id') === client.id;
       return isResponseToCurrentClient && !isSentByCurrentClient;
     });
   }
 
   protected getAllMessagesByNotCurrentClient(): Array<IMessage> {
-    return this.receivedMessages.filter(message => {
-      return message.sender.id !== this.elixirChat.client.id;
+    const { messageHistory, client } = this.elixirChat;
+    return messageHistory.filter(message => {
+      return message.sender.id !== client.id;
     });
   }
 

@@ -10,6 +10,7 @@ import {
 import { IMessage } from '../../sdk/serializers/serializeMessage';
 import { ChatMessages } from './ChatMessages';
 import { ChatTextarea } from './ChatTextarea';
+import {OPERATOR_ONLINE_STATUS_CHANGE} from '../../sdk/ElixirChatEventTypes';
 
 export interface IDefaultWidgetProps {
   elixirChatWidget: any;
@@ -122,7 +123,7 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
       this.setState({ currentlyTypingUsers });
     });
 
-    elixirChatWidget.onOperatorOnlineStatusChange(areOperatorsOnline => {
+    elixirChatWidget.on(OPERATOR_ONLINE_STATUS_CHANGE, areOperatorsOnline => {
       this.setState({ areOperatorsOnline });
     });
 

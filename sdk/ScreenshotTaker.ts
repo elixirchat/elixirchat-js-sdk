@@ -1,4 +1,5 @@
-import { detectPlatform } from '../utilsCommon';
+import { ElixirChat } from './ElixirChat';
+import { detectPlatform, logEvent } from '../utilsCommon';
 
 export interface IScreenshot {
   dataUrl: string,
@@ -16,11 +17,13 @@ export class ScreenshotTaker {
   public width: number = 0;
   public height: number = 0;
 
+  protected elixirChat: ElixirChat;
   protected stream: MediaStream;
   protected canvas: HTMLCanvasElement;
   protected video: HTMLVideoElement;
 
-  constructor() {
+  constructor({ elixirChat }: { elixirChat: ElixirChat }) {
+    this.elixirChat = elixirChat;
     this.initialize();
   }
 
@@ -70,6 +73,8 @@ export class ScreenshotTaker {
   }
 
   public takeScreenshot = (): Promise<IScreenshot> => {
+    const { debug } = this.elixirChat;
+
     return new Promise((resolve, reject) => {
       this.getMediaStream().then(stream => {
         this.stream = stream;
@@ -79,11 +84,16 @@ export class ScreenshotTaker {
           setTimeout(() => {
             const screenshot: IScreenshot = this.captureVideoFrame();
             this.stopMediaStream();
+            logEvent(debug, 'Captured screenshot', screenshot);
             resolve(screenshot);
           }, 500);
         };
         this.video.play();
-      }).catch(reject);
+
+      }).catch(error => {
+        logEvent(debug, 'Could not capture screenshot', error, 'error');
+        reject(error);
+      });
     });
   };
 
