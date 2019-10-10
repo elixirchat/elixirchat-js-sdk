@@ -1,5 +1,5 @@
 import 'babel-polyfill';
-import { logEvent } from '../utilsCommon';
+import { getJSONFromLocalStorage, logEvent } from '../utilsCommon';
 import { renderWidgetReactComponent } from './DefaultWidget/Widget';
 import { IFontExtractorExtractParams } from './FontExtractor';
 
@@ -113,11 +113,7 @@ export class ElixirChatWidget extends ElixirChat {
     this.widgetChatReactComponent = renderWidgetReactComponent(this.container, this);
 
     this.onIFrameReady(() => {
-      let isWidgetVisible = false;
-      try {
-        isWidgetVisible = JSON.parse(localStorage.getItem('elixirchat-widget-is-visible'));
-      }
-      catch (e) {}
+      const isWidgetVisible = getJSONFromLocalStorage('elixirchat-widget-is-visible', false);
       if (isWidgetVisible) {
         this.toggleChatVisibility();
       }

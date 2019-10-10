@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { _get, _last, randomDigitStringId } from '../../utilsCommon';
+import {_get, _last, getJSONFromLocalStorage, randomDigitStringId} from '../../utilsCommon';
 import {
   unlockNotificationSoundAutoplay,
   playNotificationSound,
@@ -92,6 +92,13 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
       });
     });
 
+    elixirChatWidget.onTypingStatusSubscribe(() => {
+      console.log('__ onTypingStatusSubscribe');
+      const textareaText = localStorage.getItem('elixirchat-typed-text') || '';
+      elixirChatWidget.dispatchTypedText(textareaText);
+      this.setState({ textareaText });
+    });
+
     elixirChatWidget.onMessage(message => {
       const hasUserScroll = this.hasUserScroll();
       const messages = [...this.state.messages, message];
@@ -119,11 +126,7 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
       this.setState({ areOperatorsOnline });
     });
 
-    let areNotificationsMuted = false;
-    try {
-      areNotificationsMuted = JSON.parse(localStorage.getItem('elixirchat-notifications-muted'))
-    }
-    catch (e) {}
+    const areNotificationsMuted = getJSONFromLocalStorage('elixirchat-notifications-muted', false);
     this.setState({ areNotificationsMuted });
   }
 
@@ -248,6 +251,8 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
           });
           elixirChatWidget.dispatchTypedText(false);
         });
+
+      localStorage.removeItem('elixirchat-typed-text');
     }
   };
 
@@ -343,6 +348,9 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
   };
 
   onTextareaChange = (stateChange) => {
+    if (this.state.textareaText !== stateChange.textareaText) {
+      localStorage.setItem('elixirchat-typed-text', stateChange.textareaText);
+    }
     this.setState(stateChange);
   };
 

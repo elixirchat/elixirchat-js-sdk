@@ -1,5 +1,12 @@
 import { uniqueNamesGenerator } from 'unique-names-generator';
-import { logEvent, capitalize, randomDigitStringId, _get } from '../utilsCommon';
+import {
+  getJSONFromLocalStorage,
+  randomDigitStringId,
+  capitalize,
+  logEvent,
+  _get,
+} from '../utilsCommon';
+
 import { IMessage } from './serializers/serializeMessage';
 import { fragmentClient } from './serializers/serializeUser';
 import { MessagesSubscription, ISentMessage } from './MessagesSubscription';
@@ -103,6 +110,7 @@ export class ElixirChat {
   protected onConnectSuccessCallbacks: Array<(data?: any) => void> = [];
   protected onConnectErrorCallbacks: Array<(e: any) => void> = [];
   protected onTypingCallbacks: Array<(typingUsers: Array<IElixirChatUser>) => void> = [];
+  protected onTypingStatusSubscribeCallbacks: Array<() => void> = [];
   protected onOperatorOnlineStatusChangeCallbacks: Array<(isOnline: boolean) => void> = [];
   protected onUnreadMessagesChangeCallbacks: Array<(unreadMessagesCount: number, unreadMessages: Array<IElixirChatReceivedMessage>) => {}> = [];
   protected onUnreadRepliesChangeCallbacks: Array<(unreadRepliesCount: number, unreadReplies: Array<IElixirChatReceivedMessage>) => {}> = [];
@@ -177,16 +185,8 @@ export class ElixirChat {
   }
 
   protected getRoomClientFromLocalStorage(): { room?: IElixirChatRoom, client?: IElixirChatUser } {
-    let room: IElixirChatRoom;
-    let client: IElixirChatUser;
-    try {
-      room = JSON.parse(localStorage.getItem('elixirchat-room'));
-    }
-    catch (e) {}
-    try {
-      client = JSON.parse(localStorage.getItem('elixirchat-client'));
-    }
-    catch (e) {}
+    const room: IElixirChatRoom = getJSONFromLocalStorage('elixirchat-room');
+    const client: IElixirChatUser = getJSONFromLocalStorage('elixirchat-client');
     logEvent(this.debug, 'Fetched room, client values from localStorage', { room, client });
     return {
       room,
@@ -294,8 +294,9 @@ export class ElixirChat {
       token: this.authToken,
       roomId: this.elixirChatRoomId,
       clientId: this.elixirChatClientId,
-      onSubscribeSuccess: () => {
-        logEvent(this.debug, 'Successfully subscribed to typing status change', { roomId: this.elixirChatRoomId })
+      onSubscribeSuccess: (data) => {
+        logEvent(this.debug, 'Successfully subscribed to typing status change', data);
+        this.onTypingStatusSubscribeCallbacks.forEach(callback => callback());
       },
       onSubscribeError: (data) => {
         logEvent(this.debug, 'Failed to subscribe to typing status change', data, 'error');
@@ -436,6 +437,10 @@ export class ElixirChat {
 
   public onTyping = (callback: (peopleWhoAreTyping: Array<IElixirChatUser>) => void): void => {
     this.onTypingCallbacks.push(callback);
+  };
+
+  public onTypingStatusSubscribe = (callback: () => void): void => {
+    this.onTypingStatusSubscribeCallbacks.push(callback);
   };
 
   public onOperatorOnlineStatusChange = (callback: (isOnline: boolean) => void): void => {

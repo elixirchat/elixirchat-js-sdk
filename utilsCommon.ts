@@ -108,3 +108,13 @@ export function detectPlatform(): { isWindows: boolean, isMac: boolean } {
     isMac: navigator.platform.indexOf('Mac') > -1,
   };
 }
+
+
+export function getJSONFromLocalStorage(key: string, defaultValue: any = ''): any {
+  let value = defaultValue;
+  try {
+    value = JSON.parse(localStorage.getItem(key));
+  }
+  catch (e) {}
+  return value;
+}
