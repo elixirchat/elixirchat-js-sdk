@@ -43,6 +43,11 @@ export class OperatorOnlineStatusSubscription {
     this.areAnyOperatorsOnline = areAnyOperatorsOnline;
   };
 
+  public unsubscribe = (): void => {
+    this.absintheSocket = AbsintheSocket.cancel(this.absintheSocket, this.notifier);
+    this.isCurrentlySubscribed = false;
+  };
+
   protected subscribe(): void {
     const { debug, triggerEvent } = this.elixirChat;
     const notifier = AbsintheSocket.send(this.absintheSocket, {
@@ -68,10 +73,5 @@ export class OperatorOnlineStatusSubscription {
         triggerEvent(OPERATOR_ONLINE_STATUS_CHANGE, this.areAnyOperatorsOnline);
       },
     })
-  }
-
-  public unsubscribe = (): void => {
-    this.absintheSocket = AbsintheSocket.cancel(this.absintheSocket, this.notifier);
-    this.isCurrentlySubscribed = false;
   };
 }

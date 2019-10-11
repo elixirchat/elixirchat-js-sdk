@@ -3,45 +3,19 @@ import { UNREAD_MESSAGES_CHANGE, UNREAD_REPLIES_CHANGE } from './ElixirChatEvent
 import { _get, _last, logEvent } from '../utilsCommon';
 import { IMessage } from './serializers/serializeMessage';
 
-interface IUnreadMessagesCounterConfig {
-  elixirChat: ElixirChat;
-  // onUnreadMessagesChange: (unreadMessagesCount: number, unreadMessages: Array<IMessage>) => void;
-  // onUnreadRepliesChange: (unreadRepliesCount: number, unreadReplies: Array<IMessage>) => void;
-}
 
 export class UnreadMessagesCounter {
 
-  protected elixirChat: ElixirChat;
-
   public unreadMessagesCount: number = 0;
   public unreadRepliesCount: number = 0;
-
   public unreadMessages: Array<IMessage> = [];
   public unreadReplies: Array<IMessage> = [];
 
-  // protected onUnreadMessagesChange: (unreadMessagesCount: number, unreadMessages: Array<IMessage>) => void;
-  // protected onUnreadRepliesChange: (unreadRepliesCount: number, unreadReplies: Array<IMessage>) => void;
+  protected elixirChat: ElixirChat;
 
-  protected receivedMessages: Array<IMessage> = [];
-  // protected currentClientId: null | string = null;
-
-  constructor(params: IUnreadMessagesCounterConfig){
-    this.elixirChat = params.elixirChat;
-
-    // this.onUnreadMessagesChange = params.onUnreadMessagesChange || function () {};
-    // this.onUnreadRepliesChange = params.onUnreadRepliesChange || function () {};
+  constructor({ elixirChat }: { elixirChat: ElixirChat }){
+    this.elixirChat = elixirChat;
   }
-
-  // public setCurrentClientId = (currentClientId: string) => {
-  //   this.currentClientId = currentClientId;
-  // };
-
-  // public setReceivedMessages = (receivedMessages: Array<IMessage>): void => {
-  //   this.receivedMessages = receivedMessages;
-  //   const unreadMessages = this.getUnreadMessages();
-  //   const unreadReplies = this.getUnreadRepliesToCurrentClient();
-  //   this.triggerOnChangeEvent(unreadMessages, unreadReplies);
-  // };
 
   public recount = () => {
     const { client, debug } = this.elixirChat;
@@ -78,16 +52,12 @@ export class UnreadMessagesCounter {
       this.unreadMessages = unreadMessages;
       logEvent(debug, 'Unread messages count changed to ' + unreadMessagesCount, { unreadMessages });
       triggerEvent(UNREAD_MESSAGES_CHANGE, unreadMessagesCount, unreadMessages);
-
-      // this.onUnreadMessagesChange(unreadMessages.length, unreadMessages);
     }
     if (this.unreadRepliesCount !== unreadRepliesCount) {
       this.unreadRepliesCount = unreadRepliesCount;
       this.unreadReplies = unreadReplies;
       logEvent(debug, 'Unread replies count changed to ' + unreadRepliesCount, { unreadReplies });
       triggerEvent(UNREAD_REPLIES_CHANGE, unreadRepliesCount, unreadReplies);
-
-      // this.onUnreadRepliesChange(unreadReplies.length, unreadReplies);
     }
   }
 

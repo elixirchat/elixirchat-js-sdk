@@ -115,8 +115,6 @@ export class ElixirChat {
   protected onMessageCallbacks: Array<(message: IElixirChatReceivedMessage) => void> = [];
   protected onConnectSuccessCallbacks: Array<(data?: any) => void> = [];
   protected onConnectErrorCallbacks: Array<(e: any) => void> = [];
-  protected onTypingCallbacks: Array<(typingUsers: Array<IElixirChatUser>) => void> = [];
-  protected onTypingStatusSubscribeCallbacks: Array<() => void> = [];
   protected onUnreadMessagesChangeCallbacks: Array<(unreadMessagesCount: number, unreadMessages: Array<IElixirChatReceivedMessage>) => {}> = [];
   protected onUnreadRepliesChangeCallbacks: Array<(unreadRepliesCount: number, unreadReplies: Array<IElixirChatReceivedMessage>) => {}> = [];
 
@@ -165,11 +163,11 @@ export class ElixirChat {
       const areAnyOperatorsOnline = _get(data, 'company.working');
 
       this.unreadMessagesCounter.recount();
+      this.typingStatusSubscription.subscribe();
       this.operatorOnlineStatusSubscription.setStatus(areAnyOperatorsOnline);
 
 
       this.subscribeToNewMessages();
-      this.subscribeToTypingStatusChange();
     });
 
     this.on(JOIN_ROOM_ERROR, error => {
@@ -180,6 +178,7 @@ export class ElixirChat {
 
     this.screenshotTaker = new ScreenshotTaker({ elixirChat: this });
     this.unreadMessagesCounter = new UnreadMessagesCounter({ elixirChat: this });
+    this.typingStatusSubscription = new TypingStatusSubscription({ elixirChat: this });
     this.operatorOnlineStatusSubscription = new OperatorOnlineStatusSubscription({ elixirChat: this });
 
 
@@ -304,18 +303,18 @@ export class ElixirChat {
     return this.graphQLClient.query(query, variables)
       .then(({ joinRoom }: any) => {
         if (joinRoom) {
-          this.authToken = joinRoom.token;
           this.connected = true;
+          this.authToken = joinRoom.token;
           this.widgetTitle = joinRoom.company.widgetTitle || this.defaultWidgetTitle;
-
-          this.client.firstName = joinRoom.client.firstName;
-          this.client.lastName = joinRoom.client.lastName;
-          this.client.id = joinRoom.client.foreignId;
           this.elixirChatClientId = joinRoom.client.id;
-
-          this.room.id = joinRoom.room.foreignId;
-          this.room.title = joinRoom.room.title;
           this.elixirChatRoomId = joinRoom.room.id;
+
+          // this.client.firstName = joinRoom.client.firstName;
+          // this.client.lastName = joinRoom.client.lastName;
+          // this.client.id = joinRoom.client.foreignId;
+
+          // this.room.id = joinRoom.room.foreignId;
+          // this.room.title = joinRoom.room.title;
 
           this.triggerEvent(JOIN_ROOM, { joinRoom, room: this.room, client: this.client });
         }
@@ -324,26 +323,6 @@ export class ElixirChat {
         }
       }).catch((response) => {
         this.triggerEvent(JOIN_ROOM_ERROR, response);
-    });
-  }
-
-  protected subscribeToTypingStatusChange(): void {
-    this.typingStatusSubscription = new TypingStatusSubscription({
-      socketUrl: this.socketUrl,
-      token: this.authToken,
-      roomId: this.elixirChatRoomId,
-      clientId: this.elixirChatClientId,
-      onSubscribeSuccess: (data) => {
-        logEvent(this.debug, 'Successfully subscribed to typing status change', data);
-        this.onTypingStatusSubscribeCallbacks.forEach(callback => callback());
-      },
-      onSubscribeError: (data) => {
-        logEvent(this.debug, 'Failed to subscribe to typing status change', data, 'error');
-      },
-      onChange: (peopleWhoAreTyping: Array<IElixirChatUser>) => {
-        logEvent(this.debug, 'Some users started/stopped typing', { peopleWhoAreTyping });
-        this.onTypingCallbacks.forEach(callback => callback(peopleWhoAreTyping));
-      }
     });
   }
 
@@ -419,14 +398,6 @@ export class ElixirChat {
     }
   }
 
-  public onUnreadRepliesChange = (callback: (unreadRepliesCount: number) => {}): void => {
-    this.onUnreadRepliesChangeCallbacks.push(callback);
-  };
-
-  public onUnreadMessagesChange = (callback: (unreadMessagesCount: number) => {}): void => {
-    this.onUnreadMessagesChangeCallbacks.push(callback);
-  };
-
   public resetUnreadMessagesAndReplies = (): void => {
     this.unreadMessagesCounter.reset();
   };
@@ -437,14 +408,6 @@ export class ElixirChat {
 
   public onMessage = (callback: (message: IElixirChatReceivedMessage) => void): void => {
     this.onMessageCallbacks.push(callback);
-  };
-
-  public onTyping = (callback: (peopleWhoAreTyping: Array<IElixirChatUser>) => void): void => {
-    this.onTypingCallbacks.push(callback);
-  };
-
-  public onTypingStatusSubscribe = (callback: () => void): void => {
-    this.onTypingStatusSubscribeCallbacks.push(callback);
   };
 
   public reconnect = ({ room, client }: { room?: IElixirChatRoom, client?: IElixirChatUser }): Promise<void> => {

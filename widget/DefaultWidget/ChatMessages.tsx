@@ -7,6 +7,7 @@ import AutoLinkText from 'react-autolink-text2';
 import { _get, _round } from '../../utilsCommon';
 import { isWebImage, getHumanReadableFileSize, inflectDayJSWeekDays } from '../../utilsWidget';
 import { getCompatibilityFallback } from '../../sdk/ScreenshotTaker';
+import {UNREAD_MESSAGES_CHANGE} from '../../sdk/ElixirChatEventTypes';
 
 export interface IDefaultWidgetMessagesProps {
   elixirChatWidget: any;
@@ -40,7 +41,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
       screenshotFallback: getCompatibilityFallback(),
     });
 
-    elixirChatWidget.onUnreadMessagesChange((unreadMessagesCounter, unreadMessages) => {
+    elixirChatWidget.on(UNREAD_MESSAGES_CHANGE, (unreadMessagesCounter, unreadMessages) => {
       const highlightedMessageIds = unreadMessages.map(message => message.id);
       this.setState({ highlightedMessageIds });
     });

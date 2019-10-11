@@ -10,7 +10,11 @@ import {
 import { IMessage } from '../../sdk/serializers/serializeMessage';
 import { ChatMessages } from './ChatMessages';
 import { ChatTextarea } from './ChatTextarea';
-import {OPERATOR_ONLINE_STATUS_CHANGE} from '../../sdk/ElixirChatEventTypes';
+import {
+  OPERATOR_ONLINE_STATUS_CHANGE,
+  TYPING_STATUS_CHANGE,
+  TYPING_STATUS_SUBSCRIBE
+} from '../../sdk/ElixirChatEventTypes';
 
 export interface IDefaultWidgetProps {
   elixirChatWidget: any;
@@ -29,7 +33,7 @@ export interface IDefaultWidgetState {
   isLoadingPreviousMessages: boolean;
   isDraggingAttachments: boolean;
   widgetTitle: string;
-  areOperatorsOnline: boolean;
+  areAnyOperatorsOnline: boolean;
   areNotificationsMuted: boolean;
 }
 
@@ -52,7 +56,7 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
     isLoadingPreviousMessages: false,
     isDraggingAttachments: false,
     widgetTitle: '',
-    areOperatorsOnline: false,
+    areAnyOperatorsOnline: false,
     areNotificationsMuted: false,
   };
 
@@ -93,13 +97,6 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
       });
     });
 
-    elixirChatWidget.onTypingStatusSubscribe(() => {
-      console.log('__ onTypingStatusSubscribe');
-      const textareaText = localStorage.getItem('elixirchat-typed-text') || '';
-      elixirChatWidget.dispatchTypedText(textareaText);
-      this.setState({ textareaText });
-    });
-
     elixirChatWidget.onMessage(message => {
       const hasUserScroll = this.hasUserScroll();
       const messages = [...this.state.messages, message];
@@ -119,12 +116,22 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
       }
     });
 
-    elixirChatWidget.onTyping(currentlyTypingUsers => {
+    // elixirChatWidget.onTyping(currentlyTypingUsers => {
+    //   this.setState({ currentlyTypingUsers });
+    // });
+
+    elixirChatWidget.on(TYPING_STATUS_SUBSCRIBE, () => {
+      const textareaText = localStorage.getItem('elixirchat-typed-text') || '';
+      elixirChatWidget.dispatchTypedText(textareaText);
+      this.setState({ textareaText });
+    });
+
+    elixirChatWidget.on(TYPING_STATUS_CHANGE, currentlyTypingUsers => {
       this.setState({ currentlyTypingUsers });
     });
 
-    elixirChatWidget.on(OPERATOR_ONLINE_STATUS_CHANGE, areOperatorsOnline => {
-      this.setState({ areOperatorsOnline });
+    elixirChatWidget.on(OPERATOR_ONLINE_STATUS_CHANGE, areAnyOperatorsOnline => {
+      this.setState({ areAnyOperatorsOnline });
     });
 
     const areNotificationsMuted = getJSONFromLocalStorage('elixirchat-notifications-muted', false);
@@ -420,7 +427,7 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
       isLoadingError,
       isDraggingAttachments,
       widgetTitle,
-      areOperatorsOnline,
+      areAnyOperatorsOnline,
       areNotificationsMuted,
     } = this.state;
 
@@ -431,7 +438,7 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
         <h2 className="elixirchat-chat-header">
           {widgetTitle && (
             <Fragment>
-              {areOperatorsOnline && (
+              {areAnyOperatorsOnline && (
                 <i className="elixirchat-chat-header__indicator"/>
               )}
               {widgetTitle}
