@@ -1,3 +1,4 @@
+import { ElixirChat } from '../ElixirChat';
 import { gql } from '../GraphQLClient';
 import { _get } from '../../utilsCommon';
 
@@ -39,7 +40,7 @@ export interface ISerializeUserOptions {
   currentClientId?: string;
 }
 
-export function serializeUser(user: any, options?: ISerializeUserOptions): IUser {
+export function serializeUser(user: any, elixirChat: ElixirChat): IUser {
   const elixirChatId = _get(user, 'foreignId') || null;
   const isOperator = _get(user, '__typename') !== 'Client';
   const id = isOperator ? _get(user, 'employee.id') : _get(user, 'id');
@@ -48,7 +49,7 @@ export function serializeUser(user: any, options?: ISerializeUserOptions): IUser
     id: id || null,
     firstName: _get(user, 'firstName') || _get(user, 'employee.firstName') || '',
     lastName: _get(user, 'lastName') || _get(user, 'employee.lastName') || '',
-    isCurrentClient: elixirChatId === options.currentClientId,
+    isCurrentClient: elixirChatId === elixirChat.client.id,
     isOperator,
     elixirChatId,
   };

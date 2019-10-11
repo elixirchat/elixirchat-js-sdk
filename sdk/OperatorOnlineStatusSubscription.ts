@@ -3,8 +3,8 @@ import * as Phoenix from 'phoenix'
 import { ElixirChat } from './ElixirChat';
 import {
   OPERATOR_ONLINE_STATUS_CHANGE,
-  OPERATOR_ONLINE_STATUS_SUBSCRIBE,
-  OPERATOR_ONLINE_STATUS_SUBSCRIBE_ABORT,
+  OPERATOR_ONLINE_STATUS_SUBSCRIBE_SUCCESS,
+  OPERATOR_ONLINE_STATUS_SUBSCRIBE_ERROR,
 } from './ElixirChatEventTypes';
 
 import { gql } from './GraphQLClient';
@@ -57,14 +57,14 @@ export class OperatorOnlineStatusSubscription {
     AbsintheSocket.observe(this.absintheSocket, notifier, {
       onAbort: e => {
         logEvent(debug, 'Failed to subscribe to operator online status change', e, 'error');
-        triggerEvent(OPERATOR_ONLINE_STATUS_SUBSCRIBE_ABORT, e);
+        triggerEvent(OPERATOR_ONLINE_STATUS_SUBSCRIBE_ERROR, e);
       },
       onStart: notifier => {
         this.notifier = notifier;
         if (!this.isCurrentlySubscribed) {
           this.isCurrentlySubscribed = true;
           logEvent(debug, 'Successfully subscribed to operator online status change');
-          triggerEvent(OPERATOR_ONLINE_STATUS_SUBSCRIBE, notifier);
+          triggerEvent(OPERATOR_ONLINE_STATUS_SUBSCRIBE_SUCCESS, notifier);
         }
       },
       onResult: ({ data }) => {

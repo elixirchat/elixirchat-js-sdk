@@ -11,9 +11,10 @@ import { IMessage } from '../../sdk/serializers/serializeMessage';
 import { ChatMessages } from './ChatMessages';
 import { ChatTextarea } from './ChatTextarea';
 import {
+  JOIN_ROOM_SUCCESS, MESSAGES_NEW, MESSAGES_SUBSCRIBE_ERROR, MESSAGES_SUBSCRIBE_SUCCESS,
   OPERATOR_ONLINE_STATUS_CHANGE,
   TYPING_STATUS_CHANGE,
-  TYPING_STATUS_SUBSCRIBE
+  TYPING_STATUS_SUBSCRIBE_SUCCESS
 } from '../../sdk/ElixirChatEventTypes';
 
 export interface IDefaultWidgetProps {
@@ -69,9 +70,11 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
       elixirChatWidget.widgetIFrameDocument.body.addEventListener('drop', this.onBodyDrop);
     });
 
-    elixirChatWidget.onConnectSuccess(() => {
+    elixirChatWidget.on(JOIN_ROOM_SUCCESS, () => {
       this.setState({ widgetTitle: elixirChatWidget.widgetTitle });
+    });
 
+    elixirChatWidget.on(MESSAGES_SUBSCRIBE_SUCCESS, () => {
       elixirChatWidget.fetchMessageHistory(this.messageChunkSize)
         .then(async messages => {
           if (messages.length < this.messageChunkSize) {
@@ -90,14 +93,14 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
         });
     });
 
-    elixirChatWidget.onConnectError(async () => {
+    elixirChatWidget.on(MESSAGES_SUBSCRIBE_ERROR, async () => {
       await this.setState({
         isLoading: false,
         isLoadingError: true,
       });
     });
 
-    elixirChatWidget.onMessage(message => {
+    elixirChatWidget.on(MESSAGES_NEW, message => {
       const hasUserScroll = this.hasUserScroll();
       const messages = [...this.state.messages, message];
       const isMessageSentByCurrentClient = message.sender.isCurrentClient;
@@ -116,11 +119,7 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
       }
     });
 
-    // elixirChatWidget.onTyping(currentlyTypingUsers => {
-    //   this.setState({ currentlyTypingUsers });
-    // });
-
-    elixirChatWidget.on(TYPING_STATUS_SUBSCRIBE, () => {
+    elixirChatWidget.on(TYPING_STATUS_SUBSCRIBE_SUCCESS, () => {
       const textareaText = localStorage.getItem('elixirchat-typed-text') || '';
       elixirChatWidget.dispatchTypedText(textareaText);
       this.setState({ textareaText });
@@ -433,7 +432,7 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
 
     return (
       <div className="elixirchat-chat-container" ref={this.container}
-        onClick={elixirChatWidget.resetUnreadMessagesAndReplies}>
+        onClick={elixirChatWidget.resetUnreadMessagesCounter}>
 
         <h2 className="elixirchat-chat-header">
           {widgetTitle && (

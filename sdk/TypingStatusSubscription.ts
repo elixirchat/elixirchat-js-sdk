@@ -2,7 +2,7 @@ import * as Phoenix from 'phoenix';
 import { ElixirChat } from './ElixirChat';
 import {
   TYPING_STATUS_CHANGE,
-  TYPING_STATUS_SUBSCRIBE,
+  TYPING_STATUS_SUBSCRIBE_SUCCESS,
   TYPING_STATUS_SUBSCRIBE_ERROR,
 } from './ElixirChatEventTypes';
 
@@ -106,7 +106,7 @@ export class TypingStatusSubscription {
       .receive('ok', (data) => {
         this.channel.on('presence_diff', this.onPresenceDiff);
         logEvent(debug, 'Successfully subscribed to typing status change', data);
-        triggerEvent(TYPING_STATUS_SUBSCRIBE, data);
+        triggerEvent(TYPING_STATUS_SUBSCRIBE_SUCCESS, data);
       })
   };
 
@@ -123,7 +123,7 @@ export class TypingStatusSubscription {
     }
     catch (e) {}
 
-    if (!userId || !userData || userId === elixirChatClientId) {
+    if (!userMeta || userId === elixirChatClientId) {
       return;
     }
 

@@ -96,11 +96,15 @@ export const simplifyGraphQLJSON: ISimplifyGraphQLJSON = (graphQLJSON) => {
  * It's only designed to trigger WebStorm Plugin "JS GraphQL" highlight strings as graphql queries
  */
 export interface IGql {
-  (queryParts: Array<string>): string
+  (queryParts: Array<string>, ...variables: Array<any>): string
 }
 
-export const gql: IGql = (queryParts) => {
-  return queryParts.join('');
+export const gql: IGql = (queryParts, ...variables) => {
+  let str = '';
+  for (let i = 0; i < queryParts.length; i ++) {
+    str += queryParts[i] + (variables[i] || '');
+  }
+  return str;
 };
 
 

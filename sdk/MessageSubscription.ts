@@ -1,5 +1,14 @@
 import * as AbsintheSocket from '@absinthe/socket'
 import * as Phoenix from 'phoenix'
+import { ElixirChat } from './ElixirChat';
+import {
+  MESSAGES_FETCH_HISTORY,
+  MESSAGES_NEW,
+  MESSAGES_SUBSCRIBE_ERROR,
+  MESSAGES_SUBSCRIBE_SUCCESS,
+} from './ElixirChatEventTypes';
+
+import { logEvent } from '../utilsCommon';
 import { serializeMessage, IMessage, fragmentMessage } from './serializers/serializeMessage';
 import {
   insertGraphQlFragments,
@@ -8,6 +17,7 @@ import {
   gql,
 } from './GraphQLClient';
 
+
 export interface ISentMessage {
   text?: string,
   attachments?: Array<File>,
@@ -15,33 +25,22 @@ export interface ISentMessage {
   tempId?: string,
 }
 
-export interface IMessageSubscriptionConfig {
-  apiUrl: string,
-  socketUrl: string,
-  backendStaticUrl: string,
-  token: string,
-  currentClientId: string;
-  onSubscribeSuccess?: (data: any) => void;
-  onSubscribeError?: (data: any) => void;
-  onUnsubscribe?: () => void;
-  onMessage: (message: IMessage) => void;
+export interface ISentMessageSerialized {
+  variables: {
+    text: string,
+    tempId: string | null,
+    attachments: Array<string>,
+    responseToMessageId: string | null,
+  },
+  binaries: object,
 }
 
 export class MessageSubscription {
 
-  public apiUrl: string;
-  public socketUrl: string;
-  public backendStaticUrl: string;
-  public token: string;
-  public currentClientId: string;
-  public onSubscribeSuccess?: (data: any) => void;
-  public onSubscribeError?: (data: any) => void;
-  public onUnsubscribe?: () => void;
-  public onMessage: (message: IMessage) => void;
-
+  protected elixirChat: ElixirChat;
+  protected graphQLClient: GraphQLClient;
   protected notifier: any;
   protected absintheSocket: any;
-  protected graphQLClient: any;
 
   protected latestMessageHistoryCursorsCache: Array<IMessage> = [];
   protected reachedBeginningOfMessageHistory: boolean = false;
@@ -76,113 +75,131 @@ export class MessageSubscription {
     }
   `, { fragmentMessage });
 
-  constructor(config: IMessageSubscriptionConfig) {
-    this.apiUrl = config.apiUrl;
-    this.socketUrl = config.socketUrl;
-    this.backendStaticUrl = config.backendStaticUrl;
-    this.token = config.token;
-    this.currentClientId = config.currentClientId;
-    this.onSubscribeSuccess = config.onSubscribeSuccess || function () {};
-    this.onSubscribeError = config.onSubscribeError || function () {};
-    this.onUnsubscribe = config.onUnsubscribe || function () {};
-    this.onMessage = config.onMessage;
+  constructor({ elixirChat }: { elixirChat: ElixirChat }) {
+    this.elixirChat = elixirChat;
     this.initialize();
   }
 
   protected initialize(): void {
+    const { apiUrl, socketUrl, authToken } = this.elixirChat;
     this.absintheSocket = AbsintheSocket.create(
-      new Phoenix.Socket(this.socketUrl, {params: { token: this.token }})
+      new Phoenix.Socket(socketUrl, {
+        params: {
+          token: authToken,
+        }
+      })
     );
     this.graphQLClient = new GraphQLClient({
-      url: this.apiUrl,
-      token: this.token,
+      url: apiUrl,
+      token: authToken,
     });
     this.subscribe();
   }
 
-  protected subscribe(): void {
+  public subscribe(): void {
+    const { debug, triggerEvent, client, backendStaticUrl } = this.elixirChat;
+
     const notifier = AbsintheSocket.send(this.absintheSocket, {
       operation: this.subscriptionQuery,
     });
+
     AbsintheSocket.observe(this.absintheSocket, notifier, {
-      onAbort: e => this.onSubscribeAbort(e),
+      onAbort: error => {
+        logEvent(debug, 'Failed to subscribe to messages', error, 'error');
+        triggerEvent(MESSAGES_SUBSCRIBE_ERROR, error);
+      },
       onStart: notifier => {
         this.notifier = notifier;
         if (!this.isCurrentlySubscribed) {
           this.isCurrentlySubscribed = true;
-          this.onSubscribeSuccess(notifier);
+          logEvent(debug, 'Successfully subscribed to messages', notifier);
+          triggerEvent(MESSAGES_SUBSCRIBE_SUCCESS, notifier);
         }
       },
       onResult: ({ data }) => {
         if (data && data.newMessage) {
-          const message = serializeMessage(data.newMessage, {
-            backendStaticUrl: this.backendStaticUrl,
-            currentClientId: this.currentClientId,
-          });
-          this.onMessage(message);
+          const message = serializeMessage(data.newMessage, { backendStaticUrl, client });
+          logEvent(debug, 'Received new message', message);
+          triggerEvent(MESSAGES_NEW, message);
         }
       },
     })
   }
 
-  protected onSubscribeAbort(error: any): void {
-    this.onSubscribeError({
-      error,
-      graphQLQuery: this.subscriptionQuery
-    });
-  }
+  // public unsubscribe = (): void => {
+  //   this.absintheSocket = AbsintheSocket.cancel(this.absintheSocket, this.notifier);
+  //   this.latestMessageHistoryCursorsCache = [];
+  //   this.reachedBeginningOfMessageHistory = false;
+  //   this.isCurrentlySubscribed = false;
+  //   this.onUnsubscribe();
+  // };
 
-  public unsubscribe = (): void => {
-    this.absintheSocket = AbsintheSocket.cancel(this.absintheSocket, this.notifier);
-    this.latestMessageHistoryCursorsCache = [];
-    this.reachedBeginningOfMessageHistory = false;
-    this.isCurrentlySubscribed = false;
-    this.onUnsubscribe();
+  protected serializeSendMessageParams = (params: ISentMessage): ISentMessageSerialized => {
+    const text = typeof params.text === 'string' ? text.trim() : '';
+    const tempId = params.tempId;
+    const responseToMessageId = typeof params.responseToMessageId === 'string' ? params.responseToMessageId : null;
+    const attachments = [];
+    const binaries = {};
+
+    try {
+      params.attachments.forEach(file => {
+        attachments.push(file.name);
+        binaries[file.name] = file;
+      });
+    }
+    catch (e) {}
+
+    return {
+      variables: {
+        text,
+        tempId,
+        attachments,
+        responseToMessageId,
+      },
+      binaries,
+    };
   };
 
-  public sendMessage = ({ text, attachments, responseToMessageId, tempId }: ISentMessage): Promise<IMessage> => {
-    const query = this.sendMessageQuery;
-    const attachmentFileNames = [];
-    const binaryAttachmentsObject = {};
-
-    attachments.forEach(file => {
-      attachmentFileNames.push(file.name);
-      binaryAttachmentsObject[file.name] = file;
-    });
-
-    const variables = {
-      text,
-      attachments: attachmentFileNames,
-      responseToMessageId,
-      tempId,
-    };
+  public sendMessage = (params: ISentMessage): Promise<IMessage> => {
+    const { backendStaticUrl, client, debug } = this.elixirChat;
+    const { variables, binaries } = this.serializeSendMessageParams(params);
 
     return new Promise((resolve, reject) => {
+
+      if (!variables.text || !variables.attachments.length) {
+        const message = 'Either "text" or "attachment" property must not be empty';
+        logEvent(debug, message, { variables }, 'error');
+        reject({ message });
+        return;
+      }
+
       this.graphQLClient
-        .query(query, variables, binaryAttachmentsObject)
+        .query(this.sendMessageQuery, variables, binaries)
         .then(data => {
           if (data && data.sendMessage) {
-            const message = serializeMessage(data.sendMessage, {
-              backendStaticUrl: this.backendStaticUrl,
-              currentClientId: this.currentClientId,
-            });
+            const message = serializeMessage(data.sendMessage, { backendStaticUrl, client });
+            logEvent(this.debug, 'Sent message', { params, variables, message });
             resolve(message);
           }
           else {
-            reject({ error: data, variables, query });
+            logEvent(debug, 'Failed to send message', { data }, 'error');
+            reject(data);
           }
         })
         .catch(error => {
-          reject({ error, variables, query });
+          logEvent(debug, 'Failed to send message', { error }, 'error');
+          reject(error);
         });
     });
   };
 
   public fetchMessageHistory = (limit: number, beforeCursor: string): Promise<[IMessage] | any[]> => {
+    const { backendStaticUrl, client, triggerEvent, debug } = this.elixirChat;
     const query = this.messageHistoryQuery;
     const variables = { limit, beforeCursor };
 
     return new Promise((resolve, reject) => {
+
       if (this.reachedBeginningOfMessageHistory) {
         resolve([]);
         return;
@@ -192,13 +209,9 @@ export class MessageSubscription {
         .then(response => {
           if (response.messages) {
 
+            // TODO: remove latestMessageHistoryCursorsCache?
             const messages = <[IMessage]>simplifyGraphQLJSON(response.messages)
-              .map(message => {
-                return serializeMessage(message, {
-                  backendStaticUrl: this.backendStaticUrl,
-                  currentClientId: this.currentClientId,
-                });
-              })
+              .map(message => serializeMessage(message, { backendStaticUrl, client }))
               .filter(message => !this.latestMessageHistoryCursorsCache.includes(message.cursor));
 
             this.latestMessageHistoryCursorsCache = [
@@ -209,13 +222,18 @@ export class MessageSubscription {
             if (messages.length < limit) {
               this.reachedBeginningOfMessageHistory = true;
             }
+
+            logEvent(debug, 'Fetched message history', { messages, limit, beforeCursor });
+            triggerEvent(MESSAGES_FETCH_HISTORY, messages);
             resolve(messages);
           }
           else {
+            logEvent(debug, 'Failed to fetch message history', { response }, 'error');
             reject({ response, limit, beforeCursor, query, variables });
           }
         })
         .catch(error => {
+          logEvent(debug, 'Failed to fetch message history', { error }, 'error');
           reject({ error, limit, beforeCursor, query, variables });
         });
     });

@@ -1,3 +1,4 @@
+import { ElixirChat } from '../ElixirChat';
 import { gql, insertGraphQlFragments } from '../GraphQLClient';
 import { _get } from '../../utilsCommon';
 import {
@@ -80,18 +81,18 @@ export interface ISerializeMessageOptions {
   currentClientId?: string;
 }
 
-export function serializeMessage(message: any, options?: ISerializeMessageOptions): IMessage {
+export function serializeMessage(message: any, elixirChat: ElixirChat): IMessage {
   let { sender = {}, attachments, data = {} } = message;
   let { responseToMessage, author = {} } = data;
 
-  const serializedSender = serializeUser({ ...sender, ...author }, options);
-  const serializedAttachments = (attachments || []).map(attachment => serializeFile(attachment, options));
+  const serializedSender = serializeUser({ ...sender, ...author }, elixirChat);
+  const serializedAttachments = (attachments || []).map(attachment => serializeFile(attachment, elixirChat));
 
   const responseToMessageSender = _get(responseToMessage, 'sender', {});
   const serializedResponseToMessage = {
     id: _get(responseToMessage, 'id') || null,
     text: _get(responseToMessage, 'text') || '',
-    sender: serializeUser(responseToMessageSender, options),
+    sender: serializeUser(responseToMessageSender, elixirChat),
   };
 
   const isSystem = _get(message, 'system', false);

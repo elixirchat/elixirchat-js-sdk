@@ -9,13 +9,18 @@ import {
 
 import { IMessage } from './serializers/serializeMessage';
 import { fragmentClient } from './serializers/serializeUser';
-import { MessageSubscription, ISentMessage } from './MessageSubscription';
+import { ScreenshotTaker, IScreenshot } from './ScreenshotTaker';
+import { UnreadMessagesCounter } from './UnreadMessagesCounter';
 import { TypingStatusSubscription } from './TypingStatusSubscription';
 import { OperatorOnlineStatusSubscription } from './OperatorOnlineStatusSubscription';
-import { UnreadMessagesCounter } from './UnreadMessagesCounter';
-import { ScreenshotTaker, IScreenshot } from './ScreenshotTaker';
+import { MessageSubscription, ISentMessageSerialized } from './MessageSubscription';
 import { GraphQLClient, insertGraphQlFragments, gql } from './GraphQLClient';
-import {JOIN_ROOM, JOIN_ROOM_ERROR} from './ElixirChatEventTypes';
+import {
+  JOIN_ROOM_SUCCESS,
+  JOIN_ROOM_ERROR,
+  MESSAGES_NEW,
+  MESSAGES_FETCH_HISTORY,
+} from './ElixirChatEventTypes';
 
 export const API_REFERENCE_URL = 'https://github.com/elixirchat/elixirchat-js-sdk';
 
@@ -40,10 +45,6 @@ export interface IElixirChatConfig {
   debug?: boolean,
 }
 
-export interface IElixirChatReceivedMessage extends IMessage {}
-export interface IElixirChatSentMessage extends ISentMessage {}
-export interface IElixirChatScreenshot extends IScreenshot {}
-
 export class ElixirChat {
   public apiUrl: string;
   public socketUrl: string;
@@ -58,7 +59,7 @@ export class ElixirChat {
   public authToken: string;
   public connected: boolean;
   public isPrivate: boolean;
-  public messageHistory: Array<IElixirChatReceivedMessage> = [];
+  public messageHistory: Array<IMessage> = [];
 
   public widgetTitle: string = '';
   public defaultWidgetTitle: string = 'Служба поддержки';
@@ -72,19 +73,17 @@ export class ElixirChat {
   public get unreadRepliesCount(): number {
     return this.unreadMessagesCounter.unreadRepliesCount;
   }
-  public get unreadMessages(): Array<IElixirChatReceivedMessage> {
+  public get unreadMessages(): Array<IMessage> {
     return this.unreadMessagesCounter.unreadMessages;
   }
-  public get unreadReplies(): Array<IElixirChatReceivedMessage> {
+  public get unreadReplies(): Array<IMessage> {
     return this.unreadMessagesCounter.unreadReplies;
   }
-
   public get reachedBeginningOfMessageHistory(): boolean {
-    return _get(this.messageSubscription, 'reachedBeginningOfMessageHistory') || false;
+    return this.messageSubscription.reachedBeginningOfMessageHistory;
   }
 
   protected eventCallbacks: object = {};
-
   protected graphQLClient: GraphQLClient;
   protected messageSubscription: MessageSubscription;
   protected operatorOnlineStatusSubscription: OperatorOnlineStatusSubscription;
@@ -112,12 +111,6 @@ export class ElixirChat {
     }
   `, { fragmentClient });
 
-  protected onMessageCallbacks: Array<(message: IElixirChatReceivedMessage) => void> = [];
-  protected onConnectSuccessCallbacks: Array<(data?: any) => void> = [];
-  protected onConnectErrorCallbacks: Array<(e: any) => void> = [];
-  protected onUnreadMessagesChangeCallbacks: Array<(unreadMessagesCount: number, unreadMessages: Array<IElixirChatReceivedMessage>) => {}> = [];
-  protected onUnreadRepliesChangeCallbacks: Array<(unreadRepliesCount: number, unreadReplies: Array<IElixirChatReceivedMessage>) => {}> = [];
-
   constructor(config: IElixirChatConfig) {
     this.apiUrl = config.apiUrl;
     this.socketUrl = config.socketUrl;
@@ -127,25 +120,14 @@ export class ElixirChat {
     this.room = config.room;
     this.client = config.client;
     this.isPrivate = !this.room || !this.room.id;
-
-    // const localValues = this.getRoomClientFromLocalStorage();
-    // if (!this.room || !this.room.id) {
-    //   this.room = localValues.room;
-    // }
-    // if (!this.client || !this.client.id) {
-    //   this.client = localValues.client;
-    // }
     this.initialize();
   }
 
   protected initialize(): void {
     if (!this.companyId) {
-      logEvent(
-        this.debug,
-        `Required parameter companyId is not provided: \nSee more: ${API_REFERENCE_URL}#config-companyid`,
-        null,
-        'error'
-      );
+      // TODO: count all required params
+      const message = `Required parameter companyId is not provided: \nSee more: ${API_REFERENCE_URL}#config-companyid`;
+      logEvent(this.debug, message, null, 'error');
       return;
     }
     logEvent(this.debug, 'Initializing ElixirChat', {
@@ -158,64 +140,36 @@ export class ElixirChat {
       debug: this.debug,
     });
 
-    this.on(JOIN_ROOM, data => {
+    this.on(JOIN_ROOM_SUCCESS, data => {
       logEvent(this.debug, 'Joined room', data);
       const areAnyOperatorsOnline = _get(data, 'company.working');
-
-      this.unreadMessagesCounter.recount();
+      this.messageSubscription.subscribe();
       this.typingStatusSubscription.subscribe();
       this.operatorOnlineStatusSubscription.setStatus(areAnyOperatorsOnline);
-
-
-      this.subscribeToNewMessages();
     });
 
     this.on(JOIN_ROOM_ERROR, error => {
       logEvent(this.debug, 'Failed to join room', { error, query, variables }, 'error');
     });
 
-    this.setRoomAndClient();
+    this.on(MESSAGES_NEW, message => {
+      this.messageHistory.push(message);
+      this.unreadMessagesCounter.recount();
+    });
 
+    this.on(MESSAGES_FETCH_HISTORY, messages => {
+      this.messageHistory = this.messageHistory.concat(messages);
+      this.unreadMessagesCounter.recount();
+    });
+
+    this.setRoomAndClient();
     this.screenshotTaker = new ScreenshotTaker({ elixirChat: this });
+    this.messageSubscription = new MessageSubscription({ elixirChat: this });
     this.unreadMessagesCounter = new UnreadMessagesCounter({ elixirChat: this });
     this.typingStatusSubscription = new TypingStatusSubscription({ elixirChat: this });
     this.operatorOnlineStatusSubscription = new OperatorOnlineStatusSubscription({ elixirChat: this });
-
-
     this.joinRoom();
   }
-
-  protected generateAnonymousClientData(): IElixirChatUser {
-    const baseTitle = uniqueNamesGenerator({ length: 2, separator: ' ', dictionaries: null });
-    const [firstName, lastName] = baseTitle.split(' ').map(capitalize);
-    const randomFourDigitPostfix = randomDigitStringId(4);
-    const uniqueId = baseTitle.replace(' ', '-') + '-' + randomFourDigitPostfix;
-    const clientData = {
-      id: uniqueId,
-      firstName,
-      lastName,
-    };
-    logEvent(this.debug, 'Generated default client data', clientData);
-    return clientData;
-  }
-
-  // protected getRoomClientFromLocalStorage(): { room?: IElixirChatRoom, client?: IElixirChatUser } {
-  //   const room: IElixirChatRoom = getJSONFromLocalStorage('elixirchat-room');
-  //   const client: IElixirChatUser = getJSONFromLocalStorage('elixirchat-client');
-  //   logEvent(this.debug, 'Fetched room, client values from localStorage', { room, client });
-  //   return {
-  //     room,
-  //     client,
-  //   };
-  // }
-
-  // protected saveRoomAndClientToLocalStorage(room: IElixirChatRoom, client: IElixirChatUser): void {
-  //   localStorage.setItem('elixirchat-room', JSON.stringify(room));
-  //   localStorage.setItem('elixirchat-client', JSON.stringify(client));
-  // }
-
-
-
 
   protected setRoomAndClient(data: { room?: IElixirChatRoom, client?: IElixirChatUser }): void {
     let room: any = data.room || {};
@@ -253,9 +207,17 @@ export class ElixirChat {
     });
   };
 
-
-
-
+  protected generateAnonymousClientData(): IElixirChatUser {
+    const baseTitle = uniqueNamesGenerator({ length: 2, separator: ' ', dictionaries: null });
+    const [firstName, lastName] = baseTitle.split(' ').map(capitalize);
+    const randomFourDigitPostfix = randomDigitStringId(4);
+    const uniqueId = baseTitle.replace(' ', '-') + '-' + randomFourDigitPostfix;
+    return {
+      id: uniqueId,
+      firstName,
+      lastName,
+    };
+  }
 
   protected serializeRoomData(data){
     const serializedData = {};
@@ -308,15 +270,7 @@ export class ElixirChat {
           this.widgetTitle = joinRoom.company.widgetTitle || this.defaultWidgetTitle;
           this.elixirChatClientId = joinRoom.client.id;
           this.elixirChatRoomId = joinRoom.room.id;
-
-          // this.client.firstName = joinRoom.client.firstName;
-          // this.client.lastName = joinRoom.client.lastName;
-          // this.client.id = joinRoom.client.foreignId;
-
-          // this.room.id = joinRoom.room.foreignId;
-          // this.room.title = joinRoom.room.title;
-
-          this.triggerEvent(JOIN_ROOM, { joinRoom, room: this.room, client: this.client });
+          this.triggerEvent(JOIN_ROOM_SUCCESS, { joinRoom, room: this.room, client: this.client });
         }
         else {
           this.triggerEvent(JOIN_ROOM_ERROR, joinRoom);
@@ -326,88 +280,25 @@ export class ElixirChat {
     });
   }
 
-  protected subscribeToNewMessages(): void {
-    this.messageSubscription = new MessageSubscription({
-      apiUrl: this.apiUrl,
-      socketUrl: this.socketUrl,
-      backendStaticUrl: this.backendStaticUrl,
-      token: this.authToken,
-      currentClientId: this.client.id,
-      onSubscribeSuccess: () => {
-        const roomData = {
-          room: this.room,
-          client: this.client,
-        };
-        logEvent(this.debug, 'Successfully subscribed to messages', roomData);
-        this.onConnectSuccessCallbacks.forEach(callback => callback(roomData));
-      },
-      onSubscribeError: (data) => {
-        logEvent(this.debug, 'Failed to subscribe to messages', { data }, 'error');
-        this.onConnectErrorCallbacks.forEach(callback => callback(data));
-      },
-      onMessage: (message: IElixirChatReceivedMessage) => {
-        logEvent(this.debug, 'Received new message', message);
-        this.messageHistory.push(message);
-        this.unreadMessagesCounter.recount();
-        this.onMessageCallbacks.forEach(callback => callback(message));
-      },
-      onUnsubscribe: () => {
-        logEvent(this.debug, 'Unsubscribed from messages', {
-          room: this.room,
-          client: this.client,
-        });
-      },
-    });
-  }
+  public sendMessage = (params: ISentMessageSerialized): Promise<IMessage> => {
+    this.typingStatusSubscription.dispatchTypedText(false);
+    return this.messageSubscription.sendMessage(params);
+  };
 
-  public sendMessage(params: IElixirChatSentMessage): Promise<IElixirChatReceivedMessage> {
-    const text = params.text;
-    const attachments = params.attachments && params.attachments.length
-      ? Array.from(params.attachments).filter(file => file)
-      : [];
-    const responseToMessageId = typeof params.responseToMessageId === 'string' ? params.responseToMessageId : null;
-    const tempId = params.tempId;
-
-    if (text.trim() || attachments.length) {
-      return this.messageSubscription.sendMessage({ text, attachments, responseToMessageId, tempId })
-        .then(message => {
-          logEvent(this.debug, 'Sent message', {
-            message,
-            params,
-            normalizedParams: {
-              text,
-              attachments,
-              responseToMessageId,
-              tempId,
-            }
-          });
-          this.typingStatusSubscription.dispatchTypedText(false);
-          return message;
-        })
-        .catch(error => {
-          logEvent(this.debug, 'Failed to send message', error, 'error');
-          throw error;
-        });
-    }
-    else {
-      const errorMessage = 'Either "text" or "attachment" property must not be empty';
-      logEvent(this.debug, errorMessage, params, 'error');
-      return new Promise((resolve, reject) => {
-        reject({ message: errorMessage, params });
-      });
-    }
-  }
-
-  public resetUnreadMessagesAndReplies = (): void => {
-    this.unreadMessagesCounter.reset();
+  public fetchMessageHistory = (limit: number, beforeCursor?: string): Promise<[IMessage]> => {
+    return this.messageSubscription.fetchMessageHistory(limit, beforeCursor);
   };
 
   public dispatchTypedText = (typedText: string): void => {
     this.typingStatusSubscription.dispatchTypedText(typedText);
   };
 
-  public onMessage = (callback: (message: IElixirChatReceivedMessage) => void): void => {
-    this.onMessageCallbacks.push(callback);
+  public resetUnreadMessagesCounter = (): void => {
+    this.unreadMessagesCounter.reset();
+  };
+
+  public takeScreenshot = (): Promise<IScreenshot> => {
+    return this.screenshotTaker.takeScreenshot();
   };
 
   public reconnect = ({ room, client }: { room?: IElixirChatRoom, client?: IElixirChatUser }): Promise<void> => {
@@ -430,32 +321,6 @@ export class ElixirChat {
     this.unreadMessagesCounter.reset();
 
     // TODO: resubscribe on JOIN_ROOM?
-  };
-
-  public onConnectSuccess = (callback: () => void): void => {
-    this.onConnectSuccessCallbacks.push(callback);
-  };
-
-  public onConnectError = (callback: () => void): void => {
-    this.onConnectErrorCallbacks.push(callback);
-  };
-
-  public takeScreenshot = (): Promise<IElixirChatScreenshot> => {
-    return this.screenshotTaker.takeScreenshot();
-  };
-
-  public fetchMessageHistory = (limit: number, beforeCursor?: string): Promise<[IElixirChatReceivedMessage]> => {
-    return this.messageSubscription.fetchMessageHistory(limit, beforeCursor)
-      .then(messages => {
-        logEvent(this.debug, 'Fetched message history', { limit, beforeCursor, messages });
-        this.messageHistory = this.messageHistory.concat(messages);
-        this.unreadMessagesCounter.recount();
-        return messages;
-      })
-      .catch(data => {
-        logEvent(this.debug, 'Could not fetch message history', data, 'error');
-        throw data;
-      });
   };
 }
 
