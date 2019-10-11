@@ -634,8 +634,8 @@ Programmatically show or hide the widget chat window.
 
 ```js
 // Example:
-elixirChatWidget.toggleChatVisibility();
-console.log('Chat window is now ', elixirChatWidget.widgetIsVisible ? 'open' : 'closed');
+elixirChatWidget.togglePopup();
+console.log('Chat window is now ', elixirChatWidget.isWidgetPopupOpen ? 'open' : 'closed');
 ```
 
 <br/>
@@ -694,11 +694,11 @@ elixirChatWidget.appendWidget({
 
 ```js
 // Examples:
-console.log('Widget React component state is', elixirChatWidget.widgetChatReactComponent.state);
+console.log('Widget React component state is', elixirChatWidget.widgetReactComponent.state);
 
 elixirChatWidget.widgetIFrameDocument.body.style = 'background: yellow';
 
-if (elixirChatWidget.widgetIsVisible) {
+if (elixirChatWidget.isWidgetPopupOpen) {
   document.getElementById('my-app-column').className = 'shrinked';
 }
 ```

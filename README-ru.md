@@ -637,8 +637,8 @@ elixirChat.onConnectSuccess(() => {
 
 ```js
 // Пример:
-elixirChatWidget.toggleChatVisibility();
-console.log('Окно чата теперь ', elixirChatWidget.widgetIsVisible ? 'открыто' : 'закрыто');
+elixirChatWidget.togglePopup();
+console.log('Окно чата теперь ', elixirChatWidget.isWidgetPopupOpen ? 'открыто' : 'закрыто');
 ```
 
 <br/>
@@ -700,11 +700,11 @@ elixirChatWidget.appendWidget({
 
 ```js
 // Примеры:
-console.log('state React-компонента виджета:', elixirChatWidget.widgetChatReactComponent.state);
+console.log('state React-компонента виджета:', elixirChatWidget.widgetReactComponent.state);
 
 elixirChatWidget.widgetIFrameDocument.body.style = 'background: yellow';
 
-if (elixirChatWidget.widgetIsVisible) {
+if (elixirChatWidget.isWidgetPopupOpen) {
   document.getElementById('my-app-column').className = 'shrinked';
 }
 ```

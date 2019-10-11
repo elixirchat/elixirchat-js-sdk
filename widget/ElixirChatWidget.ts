@@ -2,6 +2,13 @@ import 'babel-polyfill';
 import { getJSONFromLocalStorage, logEvent } from '../utilsCommon';
 import { renderWidgetReactComponent } from './DefaultWidget/Widget';
 import { IFontExtractorExtractParams } from './FontExtractor';
+import {
+  WIDGET_IFRAME_READY,
+  WIDGET_POPUP_CLOSE,
+  WIDGET_POPUP_OPEN,
+  WIDGET_POPUP_TOGGLE,
+  WIDGET_RENDERED,
+} from './ElixirChatWidgetEventTypes';
 
 let ElixirChat = window.ElixirChat;
 if (!ElixirChat) {
@@ -9,15 +16,17 @@ if (!ElixirChat) {
   /**
    * dist/sdk.js is generated on fly depending on the context:
    *
-   *  - When developing SDK locally, dist/sdk.js exports sdk/ElixirChat.ts
-   *  @see bin/dev.sh
+   *  - When developing SDK locally (npm run dev), dist/sdk.js exports sdk/ElixirChat.ts
+   *    @see bin/dev.sh
    *
-   *  - When building SDK locally, dist/sdk.js is empty so that sdk.js is not included into default-widget.js bundle
-   *  @see bin/build.sh
+   *  - When building SDK locally (npm run build), dist/sdk.js is empty
+   *    so that sdk.js is not included into default-widget.js bundle
+   *    @see bin/build.sh
    *
-   *  - When 'elixirchat-js-sdk' in being installed via npm in another project, dist/sdk.js exports build/sdk.js
-   *  so that it'd be possible to use `import ElixirChatWidget from 'elixirchat-js-sdk/widget'`
-   *  @see bin/postinstall.sh
+   *  - When 'elixirchat-js-sdk' in being installed via npm in another project (npm install elixirchat-js-sdk),
+   *    dist/sdk.js exports build/sdk.js so that sdk.js IS included into default-widget.js bundle
+   *    and it'd be possible to use `import ElixirChatWidget from 'elixirchat-js-sdk/widget'`
+   *    @see bin/postinstall.sh
    */
 }
 
@@ -43,61 +52,20 @@ export class ElixirChatWidget extends ElixirChat {
   public iframeStyles: string;
   public extractFontsFromParentWindow: Array<IFontExtractorExtractParams>;
 
-  public widgetIsVisible: boolean = false;
-  public widgetIsIFrameReady: boolean = false;
-  public widgetIsIFrameContentMounted: boolean = false;
+  public isWidgetPopupOpen: boolean = false;
+  public isWidgetIFrameReady: boolean = false;
+  public isWidgetRendered: boolean = false;
 
-  public widgetChatReactComponent: any = {};
+  public widgetReactComponent: any;
   public widgetIFrameDocument: Document = {};
 
-  protected onToggleChatVisibilityCallbacks: Array<(isOpen: boolean) => void> = [];
-  protected onIFrameReadyCallbacks: Array<() => void> = [];
-  protected onIFrameContentMountedCallbacks: Array<() => void> = [];
+  public togglePopup = async (): void => {
+    this.isWidgetPopupOpen = !this.isWidgetPopupOpen;
+    localStorage.setItem('elixirchat-widget-is-visible', JSON.stringify(this.isWidgetPopupOpen));
 
-  public toggleChatVisibility = async (): void => {
-    this.widgetIsVisible = !this.widgetIsVisible;
-    const callbacks = this.onToggleChatVisibilityCallbacks;
-    for (let i = 0; i < callbacks.length; i++) {
-      await callbacks[i](this.widgetIsVisible);
-    }
-    localStorage.setItem('elixirchat-widget-is-visible', JSON.stringify(this.widgetIsVisible));
-  };
-
-  public onToggleChatVisibility = (callback) => {
-    this.onToggleChatVisibilityCallbacks.push(callback);
-  };
-
-  public setIFrameReady = async (iframeDocument): void => {
-    this.widgetIsIFrameReady = true;
-    this.widgetIFrameDocument = iframeDocument;
-
-    const callbacks = this.onIFrameReadyCallbacks;
-    for (let i = 0; i < callbacks.length; i++) {
-      await callbacks[i]();
-    }
-  };
-
-  public onIFrameReady = (callback) => {
-    this.onIFrameReadyCallbacks.push(callback);
-    if (this.widgetIsIFrameReady) {
-      callback();
-    }
-  };
-
-  public setIFrameContentMounted = async (): void => {
-    this.widgetIsIFrameContentMounted = true;
-
-    const callbacks = this.onIFrameContentMountedCallbacks;
-    for (let i = 0; i < callbacks.length; i++) {
-      await callbacks[i]();
-    }
-  };
-
-  public onIFrameContentMounted = (callback) => {
-    this.onIFrameContentMountedCallbacks.push(callback);
-    if (this.widgetIsIFrameContentMounted) {
-      callback();
-    }
+    logEvent(this.debug, (this.isWidgetPopupOpen ? 'Opened' : 'Closed') + 'widget popup');
+    this.triggerEvent(WIDGET_POPUP_TOGGLE, this.isWidgetPopupOpen);
+    this.triggerEvent(this.isWidgetPopupOpen ? WIDGET_POPUP_OPEN : WIDGET_POPUP_CLOSE);
   };
 
   public appendWidget = async ({ container, iframeStyles, extractFontsFromParentWindow }: IElixirChatWidgetAppendWidgetConfig): void => {
@@ -110,17 +78,24 @@ export class ElixirChatWidget extends ElixirChat {
     this.container = container;
     this.iframeStyles = iframeStyles || '';
     this.extractFontsFromParentWindow = extractFontsFromParentWindow || [];
-    this.widgetChatReactComponent = renderWidgetReactComponent(this.container, this);
+    this.widgetReactComponent = renderWidgetReactComponent(this.container, this);
 
-    this.onIFrameReady(() => {
+    this.on(WIDGET_IFRAME_READY, iframeDocument => {
+      this.isWidgetIFrameReady = true;
+      this.widgetIFrameDocument = iframeDocument;
+
       const isWidgetVisible = getJSONFromLocalStorage('elixirchat-widget-is-visible', false);
       if (isWidgetVisible) {
-        this.toggleChatVisibility();
+        this.togglePopup();
       }
     });
 
+    this.on(WIDGET_RENDERED, () => {
+      this.isWidgetRendered = true;
+    });
+
     logEvent(this.debug, 'Appended ElixirChat default widget', { container });
-    return this.widgetChatReactComponent;
+    return this.widgetReactComponent;
   };
 }
 

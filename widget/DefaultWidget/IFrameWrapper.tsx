@@ -1,7 +1,17 @@
 import React, { Component } from 'react';
 import { createPortal } from 'react-dom';
+import { ElixirChatWidget } from '../ElixirChatWidget';
+import { WIDGET_IFRAME_READY } from '../ElixirChatWidgetEventTypes';
 
-export class IFrameWrapper extends Component {
+export interface IIFrameWrapperProps {
+  elixirChatWidget: ElixirChatWidget;
+}
+
+export interface IIFrameWrapperState {
+  isIframeReady: boolean;
+}
+
+export class IFrameWrapper extends Component<IIFrameWrapperProps, IIFrameWrapperState> {
 
   iframeContentContainer = null;
   iframe = React.createRef();
@@ -16,7 +26,7 @@ export class IFrameWrapper extends Component {
       this.iframeContentContainer = iframeDocument.createElement('main');
       iframeDocument.body.appendChild(this.iframeContentContainer);
       this.setState({ isIframeReady: true });
-      elixirChatWidget.setIFrameReady(iframeDocument);
+      elixirChatWidget.triggerEvent(WIDGET_IFRAME_READY, iframeDocument);
     });
   }
 

@@ -16,6 +16,7 @@ import {
   TYPING_STATUS_CHANGE,
   TYPING_STATUS_SUBSCRIBE_SUCCESS
 } from '../../sdk/ElixirChatEventTypes';
+import {WIDGET_IFRAME_READY, WIDGET_RENDERED} from '../ElixirChatWidgetEventTypes';
 
 export interface IDefaultWidgetProps {
   elixirChatWidget: any;
@@ -64,7 +65,7 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
   componentDidMount() {
     const { elixirChatWidget } = this.props;
 
-    elixirChatWidget.onIFrameReady(() => {
+    elixirChatWidget.on(WIDGET_IFRAME_READY, () => {
       elixirChatWidget.widgetIFrameDocument.body.addEventListener('click', unlockNotificationSoundAutoplay);
       elixirChatWidget.widgetIFrameDocument.body.addEventListener('dragover', this.onBodyDrag);
       elixirChatWidget.widgetIFrameDocument.body.addEventListener('drop', this.onBodyDrop);
@@ -82,14 +83,11 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
           }
           await this.setState({ messages, isLoading: false });
           this.scrollToBottom();
-          elixirChatWidget.setIFrameContentMounted();
+          elixirChatWidget.triggerEvent(WIDGET_RENDERED);
         })
         .catch(async () => {
-          await this.setState({
-            isLoading: false,
-            isLoadingError: true,
-          });
-          elixirChatWidget.setIFrameContentMounted();
+          await this.setState({ isLoading: false, isLoadingError: true });
+          elixirChatWidget.triggerEvent(WIDGET_RENDERED);
         });
     });
 

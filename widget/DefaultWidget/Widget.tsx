@@ -1,9 +1,9 @@
 import React, { Component, Fragment } from 'react';
 import ReactDOM from 'react-dom';
 import cn from 'classnames';
+import { ElixirChatWidget } from '../ElixirChatWidget';
 import { UNREAD_MESSAGES_CHANGE, UNREAD_REPLIES_CHANGE } from '../../sdk/ElixirChatEventTypes';
 import { _flatten } from '../../utilsCommon';
-import { ElixirChatWidget } from '../ElixirChatWidget';
 import { generateFontFaceRule, unlockNotificationSoundAutoplay } from '../../utilsWidget';
 import { FontExtractor } from '../FontExtractor';
 import { Chat } from './Chat';
@@ -11,6 +11,7 @@ import { IFrameWrapper } from './IFrameWrapper';
 import { ImagePreview } from './ImagePreview';
 import styles from './styles';
 import assets from './assets';
+import {WIDGET_POPUP_TOGGLE} from '../ElixirChatWidgetEventTypes';
 
 export interface IWidgetProps {
   elixirChatWidget: ElixirChatWidget;
@@ -58,7 +59,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
       customIframeStyles: elixirChatWidget.iframeStyles,
     });
 
-    elixirChatWidget.onToggleChatVisibility(this.onToggleButton);
+    elixirChatWidget.on(WIDGET_POPUP_TOGGLE, this.onToggleButton);
 
     elixirChatWidget.on(UNREAD_MESSAGES_CHANGE, unreadMessagesCounter => {
       this.setState({ unreadMessagesCounter });

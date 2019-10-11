@@ -1,8 +1,10 @@
 import React, { Component } from 'react';
 import cn from 'classnames';
+import { ElixirChatWidget } from '../ElixirChatWidget';
+import { WIDGET_IFRAME_READY } from '../ElixirChatWidgetEventTypes';
 
 export interface IImagePreviewProps {
-  elixirChatWidget: any;
+  elixirChatWidget: ElixirChatWidget;
 }
 
 export interface IImagePreviewState {
@@ -34,7 +36,8 @@ export class ImagePreview extends Component<IImagePreviewProps, IImagePreviewSta
 
   componentDidMount() {
     const { elixirChatWidget } = this.props;
-    elixirChatWidget.onIFrameReady(() => {
+
+    elixirChatWidget.on(WIDGET_IFRAME_READY, () => {
       elixirChatWidget.widgetIFrameDocument.body.addEventListener('keyup', this.onIframeBodyKeyup);
     });
   }

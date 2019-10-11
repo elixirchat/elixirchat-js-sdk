@@ -1,12 +1,14 @@
 import React, { Component } from 'react';
 import cn from 'classnames';
 import TextareaAutosize from 'react-textarea-autosize';
+import { ElixirChatWidget } from '../ElixirChatWidget';
 import { randomDigitStringId } from '../../utilsCommon';
 import { inflect, getImageDimensions } from '../../utilsWidget';
 import { getCompatibilityFallback } from '../../sdk/ScreenshotTaker';
+import {WIDGET_POPUP_OPEN, WIDGET_RENDERED} from '../ElixirChatWidgetEventTypes';
 
 export interface IDefaultWidgetTextareaProps {
-  elixirChatWidget: any;
+  elixirChatWidget: ElixirChatWidget;
   currentlyTypingUsers: Array<any>;
   onVerticalResize: any;
 }
@@ -28,17 +30,15 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
   componentDidMount(): void {
     const { elixirChatWidget } = this.props;
 
-    elixirChatWidget.onIFrameContentMounted(() => {
-      if (elixirChatWidget.widgetIsVisible) {
+    elixirChatWidget.on(WIDGET_RENDERED, () => {
+      if (elixirChatWidget.isWidgetPopupOpen) {
         this.focusTextarea();
       }
     });
 
-    elixirChatWidget.onToggleChatVisibility((isOpen) => {
-      if (isOpen) {
-        this.updateVerticalHeight({ forceScrollToBottom: true });
-        this.focusTextarea();
-      }
+    elixirChatWidget.on(WIDGET_POPUP_OPEN, () => {
+      this.updateVerticalHeight({ forceScrollToBottom: true });
+      this.focusTextarea();
     });
 
     this.setState({
