@@ -22,8 +22,6 @@ import {
   MESSAGES_FETCH_HISTORY,
 } from './ElixirChatEventTypes';
 
-export const API_REFERENCE_URL = 'https://github.com/elixirchat/elixirchat-js-sdk';
-
 export interface IElixirChatRoom {
   id: string;
   title?: string;
@@ -118,19 +116,25 @@ export class ElixirChat {
     this.companyId = config.companyId;
     this.debug = config.debug || false;
 
-
-    if (!this.companyId) {
-      // TODO: count all required params
-      const message = `Required parameter companyId is not provided: \nSee more: ${API_REFERENCE_URL}#config-companyid`;
-      logEvent(this.debug, message, null, 'error');
-      return;
+    if (this.hasAllRequiredConfigParameters()) {
+      this.initialize(config);
     }
-
-
-
-
-    this.initialize(config);
   }
+
+  protected hasAllRequiredConfigParameters(): boolean {
+    const requiredParams = ['apiUrl', 'socketUrl', 'backendStaticUrl', 'companyId'];
+    const missingRequiredParams = requiredParams.filter(paramKey => {
+      return !this[paramKey];
+    });
+    if (missingRequiredParams.length) {
+      const message = `Required parameters ${missingRequiredParams.join(', ')} not provided: \nSee more: https://github.com/elixirchat/elixirchat-js-sdk#config`;
+      logEvent(this.debug, message, null, 'error');
+      return false;
+    }
+    else {
+      return  true;
+    }
+  };
 
   protected initialize(config: IElixirChatConfig): void {
     logEvent(this.debug, 'Initializing ElixirChat', {
@@ -149,7 +153,8 @@ export class ElixirChat {
 
       this.messageSubscription.subscribe();
       this.typingStatusSubscription.subscribe();
-      // this.operatorOnlineStatusSubscription.setStatus(areAnyOperatorsOnline);
+      this.operatorOnlineStatusSubscription.subscribe(areAnyOperatorsOnline);
+      // unreadMessagesCounter?
     });
 
     this.on(JOIN_ROOM_ERROR, error => {
@@ -171,7 +176,7 @@ export class ElixirChat {
     this.messageSubscription = new MessageSubscription({ elixirChat: this });
     this.unreadMessagesCounter = new UnreadMessagesCounter({ elixirChat: this });
     this.typingStatusSubscription = new TypingStatusSubscription({ elixirChat: this });
-    // this.operatorOnlineStatusSubscription = new OperatorOnlineStatusSubscription({ elixirChat: this });
+    this.operatorOnlineStatusSubscription = new OperatorOnlineStatusSubscription({ elixirChat: this });
     this.joinRoom();
   }
 
@@ -234,9 +239,7 @@ export class ElixirChat {
   };
 
   public triggerEvent = (eventName, ...params) => {
-
     console.warn('%c' + eventName, 'color: green', ...params);
-
     const callbacks = this.eventCallbacks[eventName];
     if (callbacks && callbacks.length) {
       callbacks.forEach(callback => callback(...params));
@@ -322,8 +325,8 @@ export class ElixirChat {
     this.setRoomAndClient({ room, client });
     this.messageSubscription.unsubscribe();
     this.typingStatusSubscription.unsubscribe();
+    this.operatorOnlineStatusSubscription.unsubscribe();
 
-    // this.operatorOnlineStatusSubscription.unsubscribe();
     // this.unreadMessagesCounter.reset();
 
     this.joinRoom();

@@ -166,12 +166,12 @@ export class TypingStatusSubscription {
     }, 2000);
   };
 
-  protected triggerOnChangeEvent(currentlyTypingUsers): void {
+  protected triggerOnChangeEvent(updatedTypingUsers): void {
     const { triggerEvent, debug } = this.elixirChat;
 
-    if (currentlyTypingUsers.length || this.currentlyTypingUsers.length) {
-      const didStopTyping = this.currentlyTypingUsers.length > currentlyTypingUsers.length;
-      this.currentlyTypingUsers = currentlyTypingUsers;
+    if (updatedTypingUsers.length || this.currentlyTypingUsers.length) {
+      const didStopTyping = this.currentlyTypingUsers.length > updatedTypingUsers.length;
+      this.currentlyTypingUsers = updatedTypingUsers;
 
       logEvent(debug, `Some users ${didStopTyping ? 'stopped' : 'started'} typing`, this.currentlyTypingUsers);
       triggerEvent(TYPING_STATUS_CHANGE, this.currentlyTypingUsers);

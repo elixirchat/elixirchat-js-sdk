@@ -28,45 +28,54 @@ export class OperatorOnlineStatusSubscription {
 
   constructor({ elixirChat }: { elixirChat: ElixirChat }) {
     this.elixirChat = elixirChat;
-    this.initialize();
   }
 
-  protected initialize(): void {
-    const { socketUrl, authToken } = this.elixirChat;
-    this.absintheSocket = AbsintheSocket.create(
-      new Phoenix.Socket(socketUrl, { params: { token: authToken }})
-    );
-    this.subscribe();
-  }
-
-  public setStatus = areAnyOperatorsOnline => {
+  public subscribe = (areAnyOperatorsOnline): void => {
     const { triggerEvent } = this.elixirChat;
     this.areAnyOperatorsOnline = areAnyOperatorsOnline;
     triggerEvent(OPERATOR_ONLINE_STATUS_CHANGE, this.areAnyOperatorsOnline);
+
+    this.initializeSocket();
+    this.initializeObserver();
   };
 
   public unsubscribe = (): void => {
-    this.absintheSocket = AbsintheSocket.cancel(this.absintheSocket, this.notifier);
+    const { debug } = this.elixirChat;
+    logEvent(debug, 'Unsubscribing from operator online status change...');
+    AbsintheSocket.cancel(this.absintheSocket, this.notifier);
+    this.notifier = null;
+    this.absintheSocket = null;
     this.isCurrentlySubscribed = false;
   };
 
-  protected subscribe(): void {
-    const { debug, triggerEvent } = this.elixirChat;
-    const notifier = AbsintheSocket.send(this.absintheSocket, {
+  protected initializeSocket(): void {
+    const { socketUrl, authToken } = this.elixirChat;
+
+    this.absintheSocket = AbsintheSocket.create(
+      new Phoenix.Socket(socketUrl, {
+        params: {
+          token: authToken
+        }
+      })
+    );
+    this.notifier = AbsintheSocket.send(this.absintheSocket, {
       operation: this.subscriptionQuery,
     });
+  };
 
-    AbsintheSocket.observe(this.absintheSocket, notifier, {
+  protected initializeObserver(): void {
+    const { debug, triggerEvent } = this.elixirChat;
+
+    AbsintheSocket.observe(this.absintheSocket, this.notifier, {
       onAbort: e => {
         logEvent(debug, 'Failed to subscribe to operator online status change', e, 'error');
         triggerEvent(OPERATOR_ONLINE_STATUS_SUBSCRIBE_ERROR, e);
       },
-      onStart: notifier => {
-        this.notifier = notifier;
+      onStart: () => {
         if (!this.isCurrentlySubscribed) {
           this.isCurrentlySubscribed = true;
           logEvent(debug, 'Successfully subscribed to operator online status change');
-          triggerEvent(OPERATOR_ONLINE_STATUS_SUBSCRIBE_SUCCESS, notifier);
+          triggerEvent(OPERATOR_ONLINE_STATUS_SUBSCRIBE_SUCCESS);
         }
       },
       onResult: ({ data }) => {
@@ -74,6 +83,6 @@ export class OperatorOnlineStatusSubscription {
         logEvent(debug, this.areAnyOperatorsOnline ? 'Operators got back online' : 'All operators went offline');
         triggerEvent(OPERATOR_ONLINE_STATUS_CHANGE, this.areAnyOperatorsOnline);
       },
-    })
+    });
   };
 }
