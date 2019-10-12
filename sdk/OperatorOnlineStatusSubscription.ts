@@ -8,6 +8,7 @@ import {
 } from './ElixirChatEventTypes';
 
 import { gql } from './GraphQLClient';
+import { GraphQLClientSocket } from './GraphQLClientSocket';
 import { logEvent } from '../utilsCommon';
 
 
@@ -16,9 +17,7 @@ export class OperatorOnlineStatusSubscription {
   public areAnyOperatorsOnline: boolean;
 
   protected elixirChat: ElixirChat;
-  protected notifier: any;
-  protected absintheSocket: any;
-  protected isCurrentlySubscribed: boolean = false;
+  protected graphQLClientSocket: GraphQLClientSocket;
 
   protected subscriptionQuery: string = gql`
     subscription {
@@ -34,49 +33,31 @@ export class OperatorOnlineStatusSubscription {
     const { triggerEvent } = this.elixirChat;
     this.areAnyOperatorsOnline = areAnyOperatorsOnline;
     triggerEvent(OPERATOR_ONLINE_STATUS_CHANGE, this.areAnyOperatorsOnline);
-
-    this.initializeSocket();
-    this.initializeObserver();
+    this.initializeSocketClient();
   };
 
   public unsubscribe = (): void => {
     const { debug } = this.elixirChat;
     logEvent(debug, 'Unsubscribing from operator online status change...');
-    AbsintheSocket.cancel(this.absintheSocket, this.notifier);
-    this.notifier = null;
-    this.absintheSocket = null;
-    this.isCurrentlySubscribed = false;
+
+    this.graphQLClientSocket.unsubscribe();
+    this.graphQLClientSocket = null;
   };
 
-  protected initializeSocket(): void {
-    const { socketUrl, authToken } = this.elixirChat;
+  protected initializeSocketClient(): void {
+    const { socketUrl, authToken, debug, triggerEvent } = this.elixirChat;
 
-    this.absintheSocket = AbsintheSocket.create(
-      new Phoenix.Socket(socketUrl, {
-        params: {
-          token: authToken
-        }
-      })
-    );
-    this.notifier = AbsintheSocket.send(this.absintheSocket, {
-      operation: this.subscriptionQuery,
-    });
-  };
-
-  protected initializeObserver(): void {
-    const { debug, triggerEvent } = this.elixirChat;
-
-    AbsintheSocket.observe(this.absintheSocket, this.notifier, {
-      onAbort: e => {
-        logEvent(debug, 'Failed to subscribe to operator online status change', e, 'error');
-        triggerEvent(OPERATOR_ONLINE_STATUS_SUBSCRIBE_ERROR, e);
+    this.graphQLClientSocket = new GraphQLClientSocket({
+      socketUrl,
+      authToken,
+      query: this.subscriptionQuery,
+      onAbort: error => {
+        logEvent(debug, 'Failed to subscribe to operator online status change', error, 'error');
+        triggerEvent(OPERATOR_ONLINE_STATUS_SUBSCRIBE_ERROR, error);
       },
       onStart: () => {
-        if (!this.isCurrentlySubscribed) {
-          this.isCurrentlySubscribed = true;
-          logEvent(debug, 'Successfully subscribed to operator online status change');
-          triggerEvent(OPERATOR_ONLINE_STATUS_SUBSCRIBE_SUCCESS);
-        }
+        logEvent(debug, 'Successfully subscribed to operator online status change');
+        triggerEvent(OPERATOR_ONLINE_STATUS_SUBSCRIBE_SUCCESS);
       },
       onResult: ({ data }) => {
         this.areAnyOperatorsOnline = data && data.updateCompanyWorking;

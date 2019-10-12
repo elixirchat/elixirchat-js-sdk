@@ -1,5 +1,3 @@
-import * as AbsintheSocket from '@absinthe/socket'
-import * as Phoenix from 'phoenix'
 import { ElixirChat } from './ElixirChat';
 import {
   MESSAGES_FETCH_HISTORY,
@@ -16,6 +14,7 @@ import {
   GraphQLClient,
   gql,
 } from './GraphQLClient';
+import {GraphQLClientSocket} from './GraphQLClientSocket';
 
 
 export interface ISentMessage {
@@ -39,12 +38,10 @@ export class MessageSubscription {
 
   protected elixirChat: ElixirChat;
   protected graphQLClient: GraphQLClient;
-  protected notifier: any;
-  protected absintheSocket: any;
+  protected graphQLClientSocket: GraphQLClientSocket;
 
   protected latestMessageHistoryCursorsCache: Array<IMessage> = [];
   protected reachedBeginningOfMessageHistory: boolean = false;
-  protected isCurrentlySubscribed: boolean = false;
 
   protected subscriptionQuery: string = insertGraphQlFragments(gql`
     subscription {
@@ -85,39 +82,23 @@ export class MessageSubscription {
       url: apiUrl,
       token: authToken,
     });
-    this.initializeSocket();
-    this.initializeObserver();
+    this.initializeSocketClient();
   };
 
-  protected initializeSocket(): void {
-    const { socketUrl, authToken } = this.elixirChat;
+  protected initializeSocketClient(): void {
+    const { socketUrl, authToken, backendStaticUrl, client, debug, triggerEvent } = this.elixirChat;
 
-    this.absintheSocket = AbsintheSocket.create(
-      new Phoenix.Socket(socketUrl, {
-        params: {
-          token: authToken,
-        }
-      })
-    );
-    this.notifier = AbsintheSocket.send(this.absintheSocket, {
-      operation: this.subscriptionQuery,
-    });
-  };
-
-  protected initializeObserver(): void {
-    const { backendStaticUrl, client, debug, triggerEvent } = this.elixirChat;
-
-    AbsintheSocket.observe(this.absintheSocket, this.notifier, {
+    this.graphQLClientSocket = new GraphQLClientSocket({
+      socketUrl,
+      authToken,
+      query: this.subscriptionQuery,
       onAbort: error => {
         logEvent(debug, 'Failed to subscribe to messages', error, 'error');
         triggerEvent(MESSAGES_SUBSCRIBE_ERROR, error);
       },
       onStart: () => {
-        if (!this.isCurrentlySubscribed) {
-          this.isCurrentlySubscribed = true;
-          logEvent(debug, 'Successfully subscribed to messages');
-          triggerEvent(MESSAGES_SUBSCRIBE_SUCCESS);
-        }
+        logEvent(debug, 'Successfully subscribed to messages');
+        triggerEvent(MESSAGES_SUBSCRIBE_SUCCESS);
       },
       onResult: ({ data }) => {
         if (data && data.newMessage) {
@@ -235,10 +216,9 @@ export class MessageSubscription {
   public unsubscribe = (): void => {
     const { debug } = this.elixirChat;
     logEvent(debug, 'Unsubscribing from messages...');
-    AbsintheSocket.cancel(this.absintheSocket, this.notifier);
+
+    this.graphQLClientSocket.unsubscribe();
+    this.graphQLClientSocket = null;
     this.graphQLClient = null;
-    this.notifier = null;
-    this.absintheSocket = null;
-    this.isCurrentlySubscribed = false;
   };
 }
