@@ -11,6 +11,7 @@ import { IMessage } from '../../sdk/serializers/serializeMessage';
 import { ChatMessages } from './ChatMessages';
 import { ChatTextarea } from './ChatTextarea';
 import {
+  JOIN_ROOM_ERROR,
   JOIN_ROOM_SUCCESS, MESSAGES_NEW, MESSAGES_SUBSCRIBE_ERROR, MESSAGES_SUBSCRIBE_SUCCESS,
   OPERATOR_ONLINE_STATUS_CHANGE,
   TYPING_STATUS_CHANGE,
@@ -75,12 +76,11 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
       this.setState({ widgetTitle: elixirChatWidget.widgetTitle });
     });
 
-    elixirChatWidget.on(MESSAGES_SUBSCRIBE_SUCCESS, this.onMessageSubscriptionSuccess);
-
-    elixirChatWidget.on(MESSAGES_SUBSCRIBE_ERROR, async () => {
+    elixirChatWidget.on([JOIN_ROOM_ERROR, MESSAGES_SUBSCRIBE_ERROR], async () => {
       await this.setState({ isLoading: false, isLoadingError: true });
     });
 
+    elixirChatWidget.on(MESSAGES_SUBSCRIBE_SUCCESS, this.onMessageSubscriptionSuccess);
     elixirChatWidget.on(MESSAGES_NEW, this.onNewMessage);
 
     elixirChatWidget.on(TYPING_STATUS_SUBSCRIBE_SUCCESS, () => {

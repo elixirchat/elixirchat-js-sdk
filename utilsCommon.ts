@@ -1,19 +1,25 @@
-export function logEvent(isDebug:boolean = false, message: string, data: any, type?: 'info' | 'error' = 'info'): void {
+export function logEvent(isDebug:boolean = false, message: string, data: any, type?: 'info' | 'event' | 'error' = 'info'): void {
   if (isDebug && window.console) {
-    const color = type === 'error' ? '#EB3223;' : '';
+    let color = '';
+    if (type === 'error') {
+      color = '#EB3223';
+    }
+    else if (type === 'event') {
+      color = '#5ee9eb';
+    }
     const messageConsoleStyles = `
        font-weight: bold;
-       color: ${color}
+       color: ${color};
     `;
     const infoButtonConsoleStyles = `
       font-weight: normal;
       text-decoration: underline;
-      color: ${color}
+      color: ${color};
     `;
     const arrowConsoleStyles = `
       font: 10px Arial;
       padding-left: 3px;
-      color: ${color}
+      color: ${color};
     `;
     const additionalDataConsoleStyles = `font-weight: bold;`;
 
@@ -22,13 +28,15 @@ export function logEvent(isDebug:boolean = false, message: string, data: any, ty
     if (type === 'error') {
       console.error(data);
     }
-    else if (typeof data === 'object' && !(data instanceof Array)) {
-      Object.keys(data).forEach(key => {
-        console.log(`%c${key}:\n`, additionalDataConsoleStyles, data[key], '\n');
-      });
-    }
-    else {
-      console.log('%c\nData:\n', additionalDataConsoleStyles, data);
+    else if (type === 'info') {
+      if (data && typeof data === 'object' && !(data instanceof Array)) {
+        Object.keys(data).forEach(key => {
+          console.log(`%c${key}:\n`, additionalDataConsoleStyles, data[key], '\n');
+        });
+      }
+      else {
+        console.log('%c\nData:\n', additionalDataConsoleStyles, data);
+      }
     }
     console.log('%c\nStacktrace:', additionalDataConsoleStyles);
     console.trace();

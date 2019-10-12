@@ -3,15 +3,6 @@ export interface IGraphQLClientConfig {
   token?: string;
 }
 
-export interface IGraphQLClientQuery {
-  (
-    query: string,
-    variables?: object,
-    binaryFiles?: object,
-  ): void
-}
-
-
 export class GraphQLClient {
   public url: string;
   public token?: string;
@@ -39,7 +30,7 @@ export class GraphQLClient {
     return formData;
   };
 
-  public query(query, variables, binaryFiles): IGraphQLClientQuery {
+  public query(query: string, variables: object, binaryFiles: object): Promise<any> {
     let headers;
     let body;
 

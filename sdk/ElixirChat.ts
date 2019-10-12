@@ -10,7 +10,7 @@ import {
 import { IMessage } from './serializers/serializeMessage';
 import { fragmentClient } from './serializers/serializeUser';
 import { ScreenshotTaker, IScreenshot } from './ScreenshotTaker';
-import { UnreadMessagesCounter } from './UnreadMessagesCounter';
+import {IUnreadMessagesCounterData, UnreadMessagesCounter} from './UnreadMessagesCounter';
 import { TypingStatusSubscription } from './TypingStatusSubscription';
 import { OperatorOnlineStatusSubscription } from './OperatorOnlineStatusSubscription';
 import { MessageSubscription, ISentMessageSerialized } from './MessageSubscription';
@@ -152,23 +152,24 @@ export class ElixirChat {
       const areAnyOperatorsOnline = _get(data, 'company.working');
 
       this.messageSubscription.subscribe();
+      this.unreadMessagesCounter.subscribe();
       this.typingStatusSubscription.subscribe();
       this.operatorOnlineStatusSubscription.subscribe(areAnyOperatorsOnline);
       // unreadMessagesCounter?
     });
 
     this.on(JOIN_ROOM_ERROR, error => {
-      logEvent(this.debug, 'Failed to join room', { error, query, variables }, 'error');
+      logEvent(this.debug, 'Failed to join room', { error }, 'error');
     });
 
     this.on(MESSAGES_NEW, message => {
       this.messageHistory.push(message);
-      this.unreadMessagesCounter.recount();
+      // this.unreadMessagesCounter.recount();
     });
 
     this.on(MESSAGES_FETCH_HISTORY, messages => {
       this.messageHistory = this.messageHistory.concat(messages);
-      this.unreadMessagesCounter.recount();
+      // this.unreadMessagesCounter.recount();
     });
 
     this.setRoomAndClient({ room: config.room, client: config.client });
@@ -239,7 +240,8 @@ export class ElixirChat {
   };
 
   public triggerEvent = (eventName, ...params) => {
-    console.warn('%c' + eventName, 'color: green', ...params);
+    // console.warn('%c' + eventName, 'color: green', ...params);
+    logEvent(this.debug, eventName, null, 'event');
     const callbacks = this.eventCallbacks[eventName];
     if (callbacks && callbacks.length) {
       callbacks.forEach(callback => callback(...params));
@@ -247,10 +249,15 @@ export class ElixirChat {
   };
 
   public on = (eventName, callback) => {
-    if (!this.eventCallbacks[eventName]) {
-      this.eventCallbacks[eventName] = [];
+    if (eventName instanceof Array) {
+      eventName.map(singleEventName => this.on(singleEventName, callback));
     }
-    this.eventCallbacks[eventName].push(callback);
+    else {
+      if (!this.eventCallbacks[eventName]) {
+        this.eventCallbacks[eventName] = [];
+      }
+      this.eventCallbacks[eventName].push(callback);
+    }
   };
 
   public off = (eventName, callback) => {
@@ -309,6 +316,10 @@ export class ElixirChat {
     this.unreadMessagesCounter.reset();
   };
 
+  public setLastReadMessage = (messageId: string): Promise<IUnreadMessagesCounterData> => {
+    return this.unreadMessagesCounter.setLastReadMessage(messageId);
+  };
+
   public takeScreenshot = (): Promise<IScreenshot> => {
     return this.screenshotTaker.takeScreenshot();
   };
@@ -324,10 +335,9 @@ export class ElixirChat {
 
     this.setRoomAndClient({ room, client });
     this.messageSubscription.unsubscribe();
+    this.unreadMessagesCounter.unsubscribe();
     this.typingStatusSubscription.unsubscribe();
     this.operatorOnlineStatusSubscription.unsubscribe();
-
-    // this.unreadMessagesCounter.reset();
 
     this.joinRoom();
 

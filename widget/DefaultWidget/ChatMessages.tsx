@@ -210,6 +210,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                     {!message.sender.isCurrentClient && (
                       <div className="elixirchat-chat-messages__sender">
                         {message.sender.firstName} {message.sender.lastName}
+                        {(!message.sender.firstName && !message.sender.lastName) && elixirChatWidget.widgetTitle}
                       </div>
                     )}
 
