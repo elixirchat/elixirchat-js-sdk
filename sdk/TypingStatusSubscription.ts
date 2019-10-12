@@ -108,7 +108,7 @@ export class TypingStatusSubscription {
       .receive('ok', (data) => {
         this.channel.on('presence_diff', this.onPresenceDiff);
         logEvent(debug, 'Successfully subscribed to typing status change', data);
-        triggerEvent(TYPING_STATUS_SUBSCRIBE_SUCCESS, data);
+        setTimeout(() => triggerEvent(TYPING_STATUS_SUBSCRIBE_SUCCESS, data));
       })
   };
 

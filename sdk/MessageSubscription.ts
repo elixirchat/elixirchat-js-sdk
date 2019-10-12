@@ -130,7 +130,7 @@ export class MessageSubscription {
   };
 
   protected serializeSendMessageParams(params: ISentMessage): ISentMessageSerialized {
-    const text = typeof params.text === 'string' ? text.trim() : '';
+    const text = typeof params.text === 'string' ? params.text.trim() : '';
     const tempId = params.tempId;
     const responseToMessageId = typeof params.responseToMessageId === 'string' ? params.responseToMessageId : null;
     const attachments = [];
@@ -160,8 +160,8 @@ export class MessageSubscription {
     const { variables, binaries } = this.serializeSendMessageParams(params);
 
     return new Promise((resolve, reject) => {
-      if (!variables.text || !variables.attachments.length) {
-        const message = 'Either "text" or "attachment" parameter must not be empty';
+      if (!variables.text && !variables.attachments.length) {
+        const message = 'Either "text" or "attachments" parameter must not be empty';
         logEvent(debug, message, { variables }, 'error');
         reject({ message });
         return;
