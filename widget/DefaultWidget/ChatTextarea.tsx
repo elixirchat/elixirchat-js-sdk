@@ -5,7 +5,7 @@ import { ElixirChatWidget } from '../ElixirChatWidget';
 import { randomDigitStringId } from '../../utilsCommon';
 import { inflect, getImageDimensions } from '../../utilsWidget';
 import { getCompatibilityFallback } from '../../sdk/ScreenshotTaker';
-import {WIDGET_POPUP_OPEN, WIDGET_RENDERED} from '../ElixirChatWidgetEventTypes';
+import { WIDGET_POPUP_OPEN, WIDGET_RENDERED } from '../ElixirChatWidgetEventTypes';
 
 export interface IDefaultWidgetTextareaProps {
   elixirChatWidget: ElixirChatWidget;
@@ -145,7 +145,7 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
 
   onScreenShotClick = () => {
     const { elixirChatWidget, onChange, textareaText } = this.props;
-    elixirChatWidget.toggleChatVisibility();
+    elixirChatWidget.togglePopup();
     elixirChatWidget.takeScreenshot().then(screenshot => {
       this.addAttachments([{
         name: 'Скриншот экрана',
@@ -155,10 +155,10 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
 
       const updatedText = textareaText.trim() ? textareaText : 'Вот скриншот моего экрана';
       onChange({ textareaText: updatedText });
-      elixirChatWidget.toggleChatVisibility();
+      elixirChatWidget.togglePopup();
 
     }).catch(() => {
-      elixirChatWidget.toggleChatVisibility();
+      elixirChatWidget.togglePopup();
     });
   };
 
@@ -171,14 +171,16 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
     this.inputFile.current.value = '';
   };
 
-  updateVerticalHeight = async (options: { forceScrollToBottom: boolean }) => {
+  updateVerticalHeight = (options: { forceScrollToBottom: boolean }) => {
     const { onVerticalResize } = this.props;
-    const containerElement = this.container.current;
-    if (!containerElement) {
-      return;
-    }
-    const newHeight = containerElement.offsetHeight;
-    onVerticalResize(newHeight, options);
+    setTimeout(() => {
+      const containerElement = this.container.current;
+      if (!containerElement) {
+        return;
+      }
+      const newHeight = containerElement.offsetHeight;
+      onVerticalResize(newHeight, options);
+    });
   };
 
   render(): void {

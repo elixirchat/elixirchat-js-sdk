@@ -157,7 +157,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
     return (
       <Fragment>
         <style dangerouslySetInnerHTML={{ __html: outsideIframeStyles }}/>
-        <button className="elixirchat-widget-button" onClick={elixirChatWidget.toggleChatVisibility}>
+        <button className="elixirchat-widget-button" onClick={elixirChatWidget.togglePopup}>
           <span className={cn({
             'elixirchat-widget-button-counter': true,
             'elixirchat-widget-button-counter--has-unread': visibleUnreadMessagesCounter,

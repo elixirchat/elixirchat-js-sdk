@@ -455,7 +455,7 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
 
           <button className="elixirchat-chat-header__close"
             title="Закрыть чат"
-            onClick={elixirChatWidget.toggleChatVisibility}>
+            onClick={elixirChatWidget.togglePopup}>
             <i className="icon-close-thin"/>
           </button>
         </h2>

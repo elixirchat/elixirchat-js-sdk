@@ -63,7 +63,7 @@ export class ElixirChatWidget extends ElixirChat {
     this.isWidgetPopupOpen = !this.isWidgetPopupOpen;
     localStorage.setItem('elixirchat-widget-is-visible', JSON.stringify(this.isWidgetPopupOpen));
 
-    logEvent(this.debug, (this.isWidgetPopupOpen ? 'Opened' : 'Closed') + 'widget popup');
+    logEvent(this.debug, (this.isWidgetPopupOpen ? 'Opened' : 'Closed') + ' widget popup');
     this.triggerEvent(WIDGET_POPUP_TOGGLE, this.isWidgetPopupOpen);
     this.triggerEvent(this.isWidgetPopupOpen ? WIDGET_POPUP_OPEN : WIDGET_POPUP_CLOSE);
   };

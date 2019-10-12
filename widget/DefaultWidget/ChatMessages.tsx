@@ -7,10 +7,11 @@ import AutoLinkText from 'react-autolink-text2';
 import { _get, _round } from '../../utilsCommon';
 import { isWebImage, getHumanReadableFileSize, inflectDayJSWeekDays } from '../../utilsWidget';
 import { getCompatibilityFallback } from '../../sdk/ScreenshotTaker';
-import {UNREAD_MESSAGES_CHANGE} from '../../sdk/ElixirChatEventTypes';
+import { ElixirChat } from '../../sdk/ElixirChat';
+import { UNREAD_MESSAGES_CHANGE } from '../../sdk/ElixirChatEventTypes';
 
 export interface IDefaultWidgetMessagesProps {
-  elixirChatWidget: any;
+  elixirChatWidget: ElixirChat;
   messages: Array<any>;
   onLoadPreviousMessages: any;
 }
@@ -152,12 +153,12 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
   onTakeScreenshotClick = () => {
     const { elixirChatWidget, onScreenshotRequestFulfilled } = this.props;
-    elixirChatWidget.toggleChatVisibility();
+    elixirChatWidget.togglePopup();
     elixirChatWidget.takeScreenshot().then(screenshot => {
       onScreenshotRequestFulfilled(screenshot);
-      elixirChatWidget.toggleChatVisibility();
+      elixirChatWidget.togglePopup();
     }).catch(() => {
-      elixirChatWidget.toggleChatVisibility();
+      elixirChatWidget.togglePopup();
     });
   };
 
