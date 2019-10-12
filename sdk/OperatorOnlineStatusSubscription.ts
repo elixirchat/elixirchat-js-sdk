@@ -40,7 +40,9 @@ export class OperatorOnlineStatusSubscription {
   }
 
   public setStatus = areAnyOperatorsOnline => {
+    const { triggerEvent } = this.elixirChat;
     this.areAnyOperatorsOnline = areAnyOperatorsOnline;
+    triggerEvent(OPERATOR_ONLINE_STATUS_CHANGE, this.areAnyOperatorsOnline);
   };
 
   public unsubscribe = (): void => {

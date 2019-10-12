@@ -37,17 +37,18 @@ export class TypingStatusSubscription {
     });
   };
 
-  public resubscribe = () => {
-    const { triggerEvent, debug } = this.elixirChat;
-    if (this.channel) {
-      this.channel.leave()
-        .receive('ok', () => {
-          this.joinChannel();
-        })
-        .receive('error', error => {
-          logEvent(debug, 'Failed to unsubscribe from typing status change: channel received error', error, 'error');
-        });
-    }
+  public unsubscribe = () => {
+    const { debug } = this.elixirChat;
+    logEvent(debug, 'Unsubscribing from typing status change...');
+
+    this.channel.leave();
+    this.phoenixSocket = null;
+    this.channel = null;
+    this.currentlyTypingUsers = [];
+    this.hasConnectErrorOccurred = false;
+    Object.values(this.typingTimeouts).forEach(timeout => clearTimeout(timeout));
+    this.typingTimeouts = [];
+    this.typedText = '';
   };
 
   public dispatchTypedText = (typedText: string | false): void => {
@@ -72,11 +73,13 @@ export class TypingStatusSubscription {
 
   protected initializeSocket(callback: () => void = function () {}): void {
     const { triggerEvent, debug, socketUrl, authToken } = this.elixirChat;
+
     this.phoenixSocket = new Phoenix.Socket(socketUrl, {
       params: {
         token: authToken
       }
     });
+
     this.phoenixSocket.onError(error => {
       if (!this.hasConnectErrorOccurred) {
         const message = 'Failed to subscribe to typing status change: could not open connection via Phoenix.Socket';
@@ -91,9 +94,8 @@ export class TypingStatusSubscription {
 
   protected joinChannel(): void {
     const { triggerEvent, debug, elixirChatRoomId } = this.elixirChat;
-    const { phoenixSocket } = this;
 
-    this.channel = phoenixSocket.channel('public:room:' + elixirChatRoomId, {});
+    this.channel = this.phoenixSocket.channel('public:room:' + elixirChatRoomId, {});
     this.channel.join()
       .receive('error', error => {
         logEvent(debug, 'Failed to subscribe to typing status change: channel received error', error, 'error');
@@ -110,8 +112,8 @@ export class TypingStatusSubscription {
       })
   };
 
-  protected onPresenceDiff(diff: any): void {
-    const { elixirChatClientId, triggerEvent, debug } = this.elixirChat;
+  protected onPresenceDiff = (diff: any): void => {
+    const { elixirChatClientId } = this.elixirChat;
     let userId;
     let userData;
     let userMeta;
@@ -138,25 +140,41 @@ export class TypingStatusSubscription {
       }
     };
 
-    if (this.typingTimeouts[userId]) {
-      clearTimeout(this.typingTimeouts[userId]);
+    if (userMeta.typing) {
+      this.removeFromCurrentlyTypingUsersAfterTimeout(userId, userFullName);
     }
 
     if (userMeta.typing && !currentlyTypingUserIds.includes(userId)) {
-      this.currentlyTypingUsers.push(serializedUserData);
-      logEvent(debug, `${userFullName} started typing`, this.currentlyTypingUsers);
-      triggerEvent(TYPING_STATUS_CHANGE, this.currentlyTypingUsers);
-
-      this.typingTimeouts[userId] = setTimeout(() => {
-        this.currentlyTypingUsers = this.currentlyTypingUsers.filter(user => user.id !== userId);
-        logEvent(debug, `${userFullName} stopped typing (no activity within 2 seconds)`, this.currentlyTypingUsers);
-        triggerEvent(TYPING_STATUS_CHANGE, this.currentlyTypingUsers);
-      }, 2000);
+      this.triggerOnChangeEvent(
+        [...this.currentlyTypingUsers, serializedUserData]
+      );
     }
     else if (!userMeta.typing && currentlyTypingUserIds.includes(userId)) {
-      this.currentlyTypingUsers = this.currentlyTypingUsers.filter(user => user.id !== userId);
-      logEvent(debug, `${userFullName} stopped typing`, this.currentlyTypingUsers);
-      triggerEvent(TYPING_STATUS_CHANGE, this.currentlyTypingUsers);
+      this.triggerOnChangeEvent(
+        this.currentlyTypingUsers.filter(user => user.id !== userId)
+      );
     }
   };
+
+  protected removeFromCurrentlyTypingUsersAfterTimeout(userId, userFullName): void {
+    clearTimeout(this.typingTimeouts[userId]);
+
+    this.typingTimeouts[userId] = setTimeout(() => {
+      this.triggerOnChangeEvent(
+        this.currentlyTypingUsers.filter(user => user.id !== userId)
+      );
+    }, 2000);
+  };
+
+  protected triggerOnChangeEvent(currentlyTypingUsers): void {
+    const { triggerEvent, debug } = this.elixirChat;
+
+    if (currentlyTypingUsers.length || this.currentlyTypingUsers.length) {
+      const didStopTyping = this.currentlyTypingUsers.length > currentlyTypingUsers.length;
+      this.currentlyTypingUsers = currentlyTypingUsers;
+
+      logEvent(debug, `Some users ${didStopTyping ? 'stopped' : 'started'} typing`, this.currentlyTypingUsers);
+      triggerEvent(TYPING_STATUS_CHANGE, this.currentlyTypingUsers);
+    }
+  }
 }

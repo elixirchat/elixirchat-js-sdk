@@ -77,11 +77,21 @@ export class MessageSubscription {
 
   constructor({ elixirChat }: { elixirChat: ElixirChat }) {
     this.elixirChat = elixirChat;
-    this.initialize();
   }
 
-  protected initialize(): void {
-    const { apiUrl, socketUrl, authToken } = this.elixirChat;
+  public subscribe = (): void => {
+    const { apiUrl, authToken } = this.elixirChat;
+    this.graphQLClient = new GraphQLClient({
+      url: apiUrl,
+      token: authToken,
+    });
+    this.initializeSocket();
+    this.initializeObserver();
+  };
+
+  protected initializeSocket(): void {
+    const { socketUrl, authToken } = this.elixirChat;
+
     this.absintheSocket = AbsintheSocket.create(
       new Phoenix.Socket(socketUrl, {
         params: {
@@ -89,31 +99,24 @@ export class MessageSubscription {
         }
       })
     );
-    this.graphQLClient = new GraphQLClient({
-      url: apiUrl,
-      token: authToken,
-    });
-    this.subscribe();
-  }
-
-  public subscribe(): void {
-    const { debug, triggerEvent, client, backendStaticUrl } = this.elixirChat;
-
-    const notifier = AbsintheSocket.send(this.absintheSocket, {
+    this.notifier = AbsintheSocket.send(this.absintheSocket, {
       operation: this.subscriptionQuery,
     });
+  };
 
-    AbsintheSocket.observe(this.absintheSocket, notifier, {
+  protected initializeObserver(): void {
+    const { backendStaticUrl, client, debug, triggerEvent } = this.elixirChat;
+
+    AbsintheSocket.observe(this.absintheSocket, this.notifier, {
       onAbort: error => {
         logEvent(debug, 'Failed to subscribe to messages', error, 'error');
         triggerEvent(MESSAGES_SUBSCRIBE_ERROR, error);
       },
-      onStart: notifier => {
-        this.notifier = notifier;
+      onStart: () => {
         if (!this.isCurrentlySubscribed) {
           this.isCurrentlySubscribed = true;
-          logEvent(debug, 'Successfully subscribed to messages', notifier);
-          triggerEvent(MESSAGES_SUBSCRIBE_SUCCESS, notifier);
+          logEvent(debug, 'Successfully subscribed to messages');
+          triggerEvent(MESSAGES_SUBSCRIBE_SUCCESS);
         }
       },
       onResult: ({ data }) => {
@@ -123,18 +126,10 @@ export class MessageSubscription {
           triggerEvent(MESSAGES_NEW, message);
         }
       },
-    })
-  }
+    });
+  };
 
-  // public unsubscribe = (): void => {
-  //   this.absintheSocket = AbsintheSocket.cancel(this.absintheSocket, this.notifier);
-  //   this.latestMessageHistoryCursorsCache = [];
-  //   this.reachedBeginningOfMessageHistory = false;
-  //   this.isCurrentlySubscribed = false;
-  //   this.onUnsubscribe();
-  // };
-
-  protected serializeSendMessageParams = (params: ISentMessage): ISentMessageSerialized => {
+  protected serializeSendMessageParams(params: ISentMessage): ISentMessageSerialized {
     const text = typeof params.text === 'string' ? text.trim() : '';
     const tempId = params.tempId;
     const responseToMessageId = typeof params.responseToMessageId === 'string' ? params.responseToMessageId : null;
@@ -165,14 +160,12 @@ export class MessageSubscription {
     const { variables, binaries } = this.serializeSendMessageParams(params);
 
     return new Promise((resolve, reject) => {
-
       if (!variables.text || !variables.attachments.length) {
-        const message = 'Either "text" or "attachment" property must not be empty';
+        const message = 'Either "text" or "attachment" parameter must not be empty';
         logEvent(debug, message, { variables }, 'error');
         reject({ message });
         return;
       }
-
       this.graphQLClient
         .query(this.sendMessageQuery, variables, binaries)
         .then(data => {
@@ -237,5 +230,15 @@ export class MessageSubscription {
           reject({ error, limit, beforeCursor, query, variables });
         });
     });
+  };
+
+  public unsubscribe = (): void => {
+    const { debug } = this.elixirChat;
+    logEvent(debug, 'Unsubscribing from messages...');
+    AbsintheSocket.cancel(this.absintheSocket, this.notifier);
+    this.graphQLClient = null;
+    this.notifier = null;
+    this.absintheSocket = null;
+    this.isCurrentlySubscribed = false;
   };
 }

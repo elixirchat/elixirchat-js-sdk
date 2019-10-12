@@ -22,10 +22,11 @@ export class IFrameWrapper extends Component<IIFrameWrapperProps, IIFrameWrapper
 
   componentDidMount(){
     const { elixirChatWidget } = this.props;
-    this.onIframeReady().then(iframeDocument => {
+
+    this.onIframeReady().then(async iframeDocument => {
       this.iframeContentContainer = iframeDocument.createElement('main');
       iframeDocument.body.appendChild(this.iframeContentContainer);
-      this.setState({ isIframeReady: true });
+      await this.setState({ isIframeReady: true });
       elixirChatWidget.triggerEvent(WIDGET_IFRAME_READY, iframeDocument);
     });
   }

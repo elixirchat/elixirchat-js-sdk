@@ -117,19 +117,22 @@ export class ElixirChat {
     this.backendStaticUrl = config.backendStaticUrl;
     this.companyId = config.companyId;
     this.debug = config.debug || false;
-    this.room = config.room;
-    this.client = config.client;
-    this.isPrivate = !this.room || !this.room.id;
-    this.initialize();
-  }
 
-  protected initialize(): void {
+
     if (!this.companyId) {
       // TODO: count all required params
       const message = `Required parameter companyId is not provided: \nSee more: ${API_REFERENCE_URL}#config-companyid`;
       logEvent(this.debug, message, null, 'error');
       return;
     }
+
+
+
+
+    this.initialize(config);
+  }
+
+  protected initialize(config: IElixirChatConfig): void {
     logEvent(this.debug, 'Initializing ElixirChat', {
       apiUrl: this.apiUrl,
       socketUrl: this.socketUrl,
@@ -143,9 +146,10 @@ export class ElixirChat {
     this.on(JOIN_ROOM_SUCCESS, data => {
       logEvent(this.debug, 'Joined room', data);
       const areAnyOperatorsOnline = _get(data, 'company.working');
+
       this.messageSubscription.subscribe();
       this.typingStatusSubscription.subscribe();
-      this.operatorOnlineStatusSubscription.setStatus(areAnyOperatorsOnline);
+      // this.operatorOnlineStatusSubscription.setStatus(areAnyOperatorsOnline);
     });
 
     this.on(JOIN_ROOM_ERROR, error => {
@@ -162,12 +166,12 @@ export class ElixirChat {
       this.unreadMessagesCounter.recount();
     });
 
-    this.setRoomAndClient();
+    this.setRoomAndClient({ room: config.room, client: config.client });
     this.screenshotTaker = new ScreenshotTaker({ elixirChat: this });
     this.messageSubscription = new MessageSubscription({ elixirChat: this });
     this.unreadMessagesCounter = new UnreadMessagesCounter({ elixirChat: this });
     this.typingStatusSubscription = new TypingStatusSubscription({ elixirChat: this });
-    this.operatorOnlineStatusSubscription = new OperatorOnlineStatusSubscription({ elixirChat: this });
+    // this.operatorOnlineStatusSubscription = new OperatorOnlineStatusSubscription({ elixirChat: this });
     this.joinRoom();
   }
 
@@ -182,12 +186,13 @@ export class ElixirChat {
     const clientId = client.id || localStorageClient.id || anonymousClientData.id;
     const clientFirstName = client.firstName || localStorageClient.firstName || anonymousClientData.firstName;
     const clientLastName = client.lastName || localStorageClient.lastName || anonymousClientData.lastName;
-
     this.client = {
       id: clientId,
       firstName: clientFirstName,
       lastName: clientLastName,
     };
+
+    this.isPrivate = !(room.id || localStorageRoom.id);
 
     const roomId = room.id || localStorageRoom.id || clientId;
     const roomTitle = room.title || localStorageRoom.title || clientFirstName + ' ' + clientLastName;
@@ -204,6 +209,7 @@ export class ElixirChat {
     logEvent(this.debug, 'Set room and client values', {
       room: this.room,
       client: this.client,
+      isPrivate: this.isPrivate,
     });
   };
 
@@ -228,9 +234,12 @@ export class ElixirChat {
   };
 
   public triggerEvent = (eventName, ...params) => {
+
+    console.warn('%c' + eventName, 'color: green', ...params);
+
     const callbacks = this.eventCallbacks[eventName];
     if (callbacks && callbacks.length) {
-      callbacks.forEach(callback => callback(params));
+      callbacks.forEach(callback => callback(...params));
     }
   };
 
@@ -270,7 +279,7 @@ export class ElixirChat {
           this.widgetTitle = joinRoom.company.widgetTitle || this.defaultWidgetTitle;
           this.elixirChatClientId = joinRoom.client.id;
           this.elixirChatRoomId = joinRoom.room.id;
-          this.triggerEvent(JOIN_ROOM_SUCCESS, { joinRoom, room: this.room, client: this.client });
+          this.triggerEvent(JOIN_ROOM_SUCCESS, joinRoom);
         }
         else {
           this.triggerEvent(JOIN_ROOM_ERROR, joinRoom);
@@ -302,9 +311,6 @@ export class ElixirChat {
   };
 
   public reconnect = ({ room, client }: { room?: IElixirChatRoom, client?: IElixirChatUser }): Promise<void> => {
-
-    // TODO: double check reconnect
-
     logEvent(this.debug, 'Attempting to reconnect to another room', { room, client });
     if (room) {
       this.room = room;
@@ -313,12 +319,14 @@ export class ElixirChat {
       this.client = client;
     }
 
-    this.isPrivate = !room || !room.id;
-
     this.setRoomAndClient({ room, client });
     this.messageSubscription.unsubscribe();
-    this.operatorOnlineStatusSubscription.unsubscribe();
-    this.unreadMessagesCounter.reset();
+    this.typingStatusSubscription.unsubscribe();
+
+    // this.operatorOnlineStatusSubscription.unsubscribe();
+    // this.unreadMessagesCounter.reset();
+
+    this.joinRoom();
 
     // TODO: resubscribe on JOIN_ROOM?
   };

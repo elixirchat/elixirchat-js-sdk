@@ -75,11 +75,6 @@ export class ElixirChatWidget extends ElixirChat {
       return;
     }
 
-    this.container = container;
-    this.iframeStyles = iframeStyles || '';
-    this.extractFontsFromParentWindow = extractFontsFromParentWindow || [];
-    this.widgetReactComponent = renderWidgetReactComponent(this.container, this);
-
     this.on(WIDGET_IFRAME_READY, iframeDocument => {
       this.isWidgetIFrameReady = true;
       this.widgetIFrameDocument = iframeDocument;
@@ -93,6 +88,11 @@ export class ElixirChatWidget extends ElixirChat {
     this.on(WIDGET_RENDERED, () => {
       this.isWidgetRendered = true;
     });
+
+    this.container = container;
+    this.iframeStyles = iframeStyles || '';
+    this.extractFontsFromParentWindow = extractFontsFromParentWindow || [];
+    this.widgetReactComponent = renderWidgetReactComponent(this.container, this);
 
     logEvent(this.debug, 'Appended ElixirChat default widget', { container });
     return this.widgetReactComponent;

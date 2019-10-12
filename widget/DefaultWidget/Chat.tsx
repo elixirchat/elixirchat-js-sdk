@@ -75,47 +75,13 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
       this.setState({ widgetTitle: elixirChatWidget.widgetTitle });
     });
 
-    elixirChatWidget.on(MESSAGES_SUBSCRIBE_SUCCESS, () => {
-      elixirChatWidget.fetchMessageHistory(this.messageChunkSize)
-        .then(async messages => {
-          if (messages.length < this.messageChunkSize) {
-            messages = [this.generateNewClientPlaceholderMessage(messages), ...messages];
-          }
-          await this.setState({ messages, isLoading: false });
-          this.scrollToBottom();
-          elixirChatWidget.triggerEvent(WIDGET_RENDERED);
-        })
-        .catch(async () => {
-          await this.setState({ isLoading: false, isLoadingError: true });
-          elixirChatWidget.triggerEvent(WIDGET_RENDERED);
-        });
-    });
+    elixirChatWidget.on(MESSAGES_SUBSCRIBE_SUCCESS, this.onMessageSubscriptionSuccess);
 
     elixirChatWidget.on(MESSAGES_SUBSCRIBE_ERROR, async () => {
-      await this.setState({
-        isLoading: false,
-        isLoadingError: true,
-      });
+      await this.setState({ isLoading: false, isLoadingError: true });
     });
 
-    elixirChatWidget.on(MESSAGES_NEW, message => {
-      const hasUserScroll = this.hasUserScroll();
-      const messages = [...this.state.messages, message];
-      const isMessageSentByCurrentClient = message.sender.isCurrentClient;
-
-      if (isMessageSentByCurrentClient) {
-        this.replaceTemporaryMessageWithActualOne(message);
-      }
-      else {
-        this.setState({ messages });
-        if (!this.state.areNotificationsMuted) {
-          playNotificationSound();
-        }
-      }
-      if (!hasUserScroll) {
-        this.scrollToBottom();
-      }
-    });
+    elixirChatWidget.on(MESSAGES_NEW, this.onNewMessage);
 
     elixirChatWidget.on(TYPING_STATUS_SUBSCRIBE_SUCCESS, () => {
       const textareaText = localStorage.getItem('elixirchat-typed-text') || '';
@@ -173,6 +139,45 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
       });
     }
     this.setState({ textareaAttachments, isDraggingAttachments: false });
+  };
+
+  onMessageSubscriptionSuccess = () => {
+    const { elixirChatWidget } = this.props;
+
+    if (!elixirChatWidget.reachedBeginningOfMessageHistory) {
+      elixirChatWidget.fetchMessageHistory(this.messageChunkSize)
+        .then(async messages => {
+          if (messages.length < this.messageChunkSize) {
+            messages = [this.generateNewClientPlaceholderMessage(messages), ...messages];
+          }
+          await this.setState({ messages, isLoading: false });
+          this.scrollToBottom();
+          elixirChatWidget.triggerEvent(WIDGET_RENDERED);
+        })
+        .catch(async () => {
+          await this.setState({ isLoading: false, isLoadingError: true });
+          elixirChatWidget.triggerEvent(WIDGET_RENDERED);
+        });
+    }
+  };
+
+  onNewMessage = (message) => {
+    const hasUserScroll = this.hasUserScroll();
+    const messages = [...this.state.messages, message];
+    const isMessageSentByCurrentClient = message.sender.isCurrentClient;
+
+    if (isMessageSentByCurrentClient) {
+      this.replaceTemporaryMessageWithActualOne(message);
+    }
+    else {
+      this.setState({ messages });
+      if (!this.state.areNotificationsMuted) {
+        playNotificationSound();
+      }
+    }
+    if (!hasUserScroll) {
+      this.scrollToBottom();
+    }
   };
 
   loadPreviousMessages = (callback): void => {
