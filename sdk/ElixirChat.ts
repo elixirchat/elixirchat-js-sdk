@@ -240,8 +240,7 @@ export class ElixirChat {
   };
 
   public triggerEvent = (eventName, ...params) => {
-    // console.warn('%c' + eventName, 'color: green', ...params);
-    logEvent(this.debug, eventName, null, 'event');
+    logEvent(this.debug, eventName, { params }, 'event');
     const callbacks = this.eventCallbacks[eventName];
     if (callbacks && callbacks.length) {
       callbacks.forEach(callback => callback(...params));

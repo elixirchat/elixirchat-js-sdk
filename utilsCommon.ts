@@ -28,15 +28,13 @@ export function logEvent(isDebug:boolean = false, message: string, data: any, ty
     if (type === 'error') {
       console.error(data);
     }
-    else if (type === 'info') {
-      if (data && typeof data === 'object' && !(data instanceof Array)) {
-        Object.keys(data).forEach(key => {
-          console.log(`%c${key}:\n`, additionalDataConsoleStyles, data[key], '\n');
-        });
-      }
-      else {
-        console.log('%c\nData:\n', additionalDataConsoleStyles, data);
-      }
+    else if (data && typeof data === 'object' && !(data instanceof Array)) {
+      Object.keys(data).forEach(key => {
+        console.log(`%c${key}:\n`, additionalDataConsoleStyles, data[key], '\n');
+      });
+    }
+    else {
+      console.log('%c\nData:\n', additionalDataConsoleStyles, data);
     }
     console.log('%c\nStacktrace:', additionalDataConsoleStyles);
     console.trace();
