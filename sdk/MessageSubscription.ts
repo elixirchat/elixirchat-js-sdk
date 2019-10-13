@@ -243,16 +243,18 @@ export class MessageSubscription {
               }
             });
 
+            const isSettingMessageHistoryFromScratch = !beforeCursor;
             this.messageHistory = this.messageHistory.concat(messages);
 
-            if (beforeCursor) {
-              logEvent(debug, 'Fetched additional message history', { messages, limit, beforeCursor });
-              triggerEvent(MESSAGES_HISTORY_ADD_MANY, messages, this.messageHistory);
-            }
-            else {
-              logEvent(debug, 'Fetched new message history', { messages, limit });
+            logEvent(debug, `Fetched ${isSettingMessageHistoryFromScratch ? 'new' : 'additional'} message history`, {
+              messages,
+              limit,
+              beforeCursor,
+            });
+
+            triggerEvent(MESSAGES_HISTORY_ADD_MANY, messages, this.messageHistory);
+            if (isSettingMessageHistoryFromScratch) {
               triggerEvent(MESSAGES_HISTORY_SET, this.messageHistory);
-              triggerEvent(MESSAGES_HISTORY_ADD_MANY, messages, this.messageHistory);
             }
             triggerEvent(MESSAGES_FETCH_HISTORY_SUCCESS, messages);
             resolve(messages);
