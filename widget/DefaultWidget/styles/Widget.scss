@@ -157,8 +157,10 @@
   z-index: 2;
   box-shadow: 0 4px 8px rgba(0,0,0,.15);
   margin-bottom: 40px;
+  transition: transform 200ms;
 
-  &--loading {
-    display: none;
+  &--animated {
+    transform: translateX(-100px);
+    opacity: 0;
   }
 }

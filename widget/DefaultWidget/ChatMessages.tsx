@@ -10,10 +10,12 @@ import { getCompatibilityFallback } from '../../sdk/ScreenshotTaker';
 import { ElixirChat } from '../../sdk/ElixirChat';
 import {
   JOIN_ROOM_ERROR,
+  MESSAGES_FETCH_HISTORY_SUCCESS,
   MESSAGES_FETCH_HISTORY_ERROR,
-  MESSAGES_FETCH_HISTORY_SUCCESS, MESSAGES_SUBSCRIBE_ERROR,
+  MESSAGES_SUBSCRIBE_ERROR,
   MESSAGES_UNREAD_STATUS_CHANGED,
 } from '../../sdk/ElixirChatEventTypes';
+import {IMAGE_PREVIEW_OPEN} from '../ElixirChatWidgetEventTypes';
 
 export interface IDefaultWidgetMessagesProps {
   elixirChatWidget: ElixirChat;
@@ -119,9 +121,9 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
   };
 
   onImagePreviewClick = (e, preview) => {
-    const { onImagePreviewOpen } = this.props;
+    const { elixirChatWidget } = this.props;
     const { imagePreviews } = this.state;
-    onImagePreviewOpen(preview, imagePreviews);
+    elixirChatWidget.triggerEvent(IMAGE_PREVIEW_OPEN, preview, imagePreviews);
     e.preventDefault();
   };
 

@@ -1,34 +1,36 @@
 import React, { Component } from 'react';
 import cn from 'classnames';
 import { ElixirChatWidget } from '../ElixirChatWidget';
-import { WIDGET_IFRAME_READY } from '../ElixirChatWidgetEventTypes';
+import {IMAGE_PREVIEW_CLOSE, IMAGE_PREVIEW_OPEN, WIDGET_IFRAME_READY} from '../ElixirChatWidgetEventTypes';
 
 export interface IImagePreviewProps {
   elixirChatWidget: ElixirChatWidget;
 }
 
 export interface IImagePreviewState {
-  currentPreview: {},
+  preview: object,
+  gallery: Array<object>,
   displaySize: {
     width: number;
     height: number;
   };
   marginTop: number;
   isVisible: boolean;
-  isLoading: boolean;
+  isSlideAnimation: boolean;
 }
 
 export class ImagePreview extends Component<IImagePreviewProps, IImagePreviewState> {
 
   state = {
-    currentPreview: {},
+    preview: {},
+    gallery: [],
     displaySize: {
       width: 0,
       height: 0,
     },
     marginTop: 0,
     isVisible: false,
-    isLoading: false,
+    isSlideAnimation: false,
   };
 
   previewHorizontalPaddings = 100;
@@ -40,6 +42,11 @@ export class ImagePreview extends Component<IImagePreviewProps, IImagePreviewSta
     elixirChatWidget.on(WIDGET_IFRAME_READY, () => {
       elixirChatWidget.widgetIFrameDocument.body.addEventListener('keyup', this.onIframeBodyKeyup);
     });
+
+    elixirChatWidget.on(IMAGE_PREVIEW_OPEN, (preview, gallery) => {
+      this.setState({ preview, gallery, isVisible: true });
+      this.updatePreviewDimensions(preview);
+    });
   }
 
   componentWillUnmount() {
@@ -47,37 +54,13 @@ export class ImagePreview extends Component<IImagePreviewProps, IImagePreviewSta
     elixirChatWidget.widgetIFrameDocument.body.removeEventListener('keyup', this.onIframeBodyKeyup);
   }
 
-  componentDidUpdate(prevProps) {
-    const { preview } = this.props;
-    if (prevProps.preview.url !== preview.url) {
-      this.setPreview(preview);
-    }
-  }
-
-  setPreview = (preview) => {
+  updatePreviewDimensions = (preview) => {
     const { width, height, url } = preview;
     if (preview && url && width && height) {
       const displaySize = this.calculateImagePreviewSize(width, height);
       const marginTop = this.calculateImagePreviewTopMargin(displaySize.height);
-      this.setState({
-        currentPreview: preview,
-        displaySize,
-        marginTop,
-        isVisible: true,
-        isLoading: true,
-      });
-    }
-    else {
-      this.setState({
-        currentPreview: {},
-        displaySize: {
-          width: 0,
-          height: 0,
-        },
-        marginTop: 0,
-        isVisible: false,
-        isLoading: false,
-      });
+      this.setState({ displaySize, marginTop });
+      this.animateSlide();
     }
   };
 
@@ -116,13 +99,12 @@ export class ImagePreview extends Component<IImagePreviewProps, IImagePreviewSta
   };
 
   onArrowNavigation = (delta) => {
-    const { gallery } = this.props;
-    const { isVisible, currentPreview } = this.state;
+    const { isVisible, preview, gallery } = this.state;
 
     if (!isVisible) {
       return false;
     }
-    const currentPreviewIndex = gallery.map(image => image.id).indexOf(currentPreview.id);
+    const currentPreviewIndex = gallery.map(image => image.id).indexOf(preview.id);
     let nextPreviewIndex = currentPreviewIndex + delta;
     if (nextPreviewIndex < 0) {
       nextPreviewIndex = gallery.length - 1;
@@ -130,25 +112,30 @@ export class ImagePreview extends Component<IImagePreviewProps, IImagePreviewSta
     else if (nextPreviewIndex >= gallery.length) {
       nextPreviewIndex = 0;
     }
-    this.setPreview(gallery[nextPreviewIndex]);
+    this.setState({ preview: gallery[nextPreviewIndex] });
+    this.updatePreviewDimensions(gallery[nextPreviewIndex]);
+    this.animateSlide();
+  };
+
+  animateSlide = () => {
+    this.setState({ isSlideAnimation: true });
+    setTimeout(() => {
+      this.setState({ isSlideAnimation: false });
+    }, 200);
   };
 
   onClose = () => {
-    const { onClose } = this.props;
+    const { elixirChatWidget } = this.props;
+    elixirChatWidget.triggerEvent(IMAGE_PREVIEW_CLOSE);
     this.setState({ isVisible: false });
-    onClose();
-  };
-
-  onImageLoad = () => {
-    this.setState({ isLoading: false });
   };
 
   render() {
     const {
-      currentPreview,
+      preview,
       displaySize,
       marginTop,
-      isLoading,
+      isSlideAnimation,
       isVisible,
     } = this.state;
 
@@ -158,17 +145,16 @@ export class ImagePreview extends Component<IImagePreviewProps, IImagePreviewSta
         'elixirchat-widget-image-preview--visible': isVisible,
       })} onClick={this.onClose}>
         <div className="elixirchat-widget-image-preview__inner">
-          {currentPreview.url && (
+          {preview.url && (
             <img className={cn({
               'elixirchat-widget-image-preview__img': true,
-              'elixirchat-widget-image-preview__img--loading': isLoading,
+              'elixirchat-widget-image-preview__img--animated': isSlideAnimation,
             })}
-              onLoad={this.onImageLoad}
               style={{ marginTop: marginTop }}
               width={displaySize.width}
               height={displaySize.height}
-              src={currentPreview.url}
-              alt={currentPreview.name}/>
+              src={preview.url}
+              alt={preview.name}/>
           )}
         </div>
       </div>

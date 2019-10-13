@@ -371,14 +371,8 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
   };
 
   render(): void {
+    const { elixirChatWidget } = this.props;
     const {
-      elixirChatWidget,
-      onImagePreviewOpen,
-      isImagePreviewOpen,
-    } = this.props;
-
-    const {
-      messages,
       textareaText,
       textareaResponseToMessageId,
       textareaAttachments,
@@ -417,7 +411,6 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
         <div className="elixirchat-chat-scroll" ref={this.scrollBlock} onScroll={this.onMessagesScroll}>
           <ChatMessages
             onLoadPreviousMessages={this.loadPreviousMessages}
-            onImagePreviewOpen={onImagePreviewOpen}
             onReplyMessage={this.onReplyMessage}
             onSubmitRetry={this.onSubmitRetry}
             elixirChatWidget={elixirChatWidget}/>
@@ -426,7 +419,6 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
         <ChatTextarea
           onChange={this.onTextareaChange}
           onSubmit={this.onMessageSubmit}
-          isImagePreviewOpen={isImagePreviewOpen}
           textareaText={textareaText}
           textareaResponseToMessageId={textareaResponseToMessageId}
           textareaAttachments={textareaAttachments}

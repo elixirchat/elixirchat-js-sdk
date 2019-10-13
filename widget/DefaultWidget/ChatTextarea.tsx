@@ -5,7 +5,7 @@ import { ElixirChatWidget } from '../ElixirChatWidget';
 import { randomDigitStringId } from '../../utilsCommon';
 import { inflect, getImageDimensions } from '../../utilsWidget';
 import { getCompatibilityFallback } from '../../sdk/ScreenshotTaker';
-import { WIDGET_POPUP_OPEN, WIDGET_RENDERED } from '../ElixirChatWidgetEventTypes';
+import {IMAGE_PREVIEW_CLOSE, WIDGET_POPUP_OPEN, WIDGET_RENDERED} from '../ElixirChatWidgetEventTypes';
 import {TYPING_STATUS_CHANGE} from '../../sdk/ElixirChatEventTypes';
 
 export interface IDefaultWidgetTextareaProps {
@@ -47,21 +47,19 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
       this.setState({ currentlyTypingUsers });
     });
 
+    elixirChatWidget.on(IMAGE_PREVIEW_CLOSE, () => this.focusTextarea);
+
     this.setState({
       screenshotFallback: getCompatibilityFallback(),
     });
   }
 
   componentDidUpdate(prevProps) {
-    const { textareaAttachments, textareaResponseToMessageId, isImagePreviewOpen } = this.props;
+    const { textareaAttachments, textareaResponseToMessageId } = this.props;
     const didResponseToMessageIdChange = textareaResponseToMessageId !== prevProps.textareaResponseToMessageId;
     const didAttachmentsChange = textareaAttachments !== prevProps.textareaAttachments;
-    const didImagePreviewClose = !isImagePreviewOpen && prevProps.isImagePreviewOpen;
     if (didResponseToMessageIdChange || didAttachmentsChange) {
       this.updateVerticalHeight();
-      this.focusTextarea();
-    }
-    if (didImagePreviewClose) {
       this.focusTextarea();
     }
   }

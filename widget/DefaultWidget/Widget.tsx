@@ -11,7 +11,7 @@ import { IFrameWrapper } from './IFrameWrapper';
 import { ImagePreview } from './ImagePreview';
 import styles from './styles';
 import assets from './assets';
-import {WIDGET_POPUP_TOGGLE} from '../ElixirChatWidgetEventTypes';
+import { WIDGET_POPUP_TOGGLE } from '../ElixirChatWidgetEventTypes';
 
 export interface IWidgetProps {
   elixirChatWidget: ElixirChatWidget;
@@ -24,11 +24,7 @@ export interface IWidgetState {
   insideIframeStyles: null | string;
   extractedFontsStyles: null | string;
   customIframeStyles: null | string;
-  isImagePreviewOpen: boolean;
-  currentImagePreview: any,
-  imagePreviewGallery: Array<any>,
   unreadMessagesCounter: number,
-  unreadRepliesCount: number,
 }
 
 export class Widget extends Component<IWidgetProps, IWidgetState> {
@@ -40,11 +36,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
     insideIframeStyles: null,
     extractedFontsStyles: null,
     customIframeStyles: null,
-    isImagePreviewOpen: false,
-    currentImagePreview: {},
-    imagePreviewGallery: [],
     unreadMessagesCounter: 0,
-    unreadRepliesCount: 0,
   };
 
   componentDidMount() {
@@ -59,14 +51,10 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
       customIframeStyles: elixirChatWidget.iframeStyles,
     });
 
-    elixirChatWidget.on(WIDGET_POPUP_TOGGLE, this.onToggleButton);
+    elixirChatWidget.on(WIDGET_POPUP_TOGGLE, this.onPopupToggle);
 
     elixirChatWidget.on(UNREAD_MESSAGES_CHANGE, unreadMessagesCounter => {
       this.setState({ unreadMessagesCounter });
-    });
-
-    elixirChatWidget.on(UNREAD_REPLIES_CHANGE, unreadRepliesCounter => {
-      this.setState({ unreadRepliesCounter });
     });
   }
 
@@ -110,29 +98,13 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
     };
   };
 
-  onToggleButton = async () => {
+  onPopupToggle = async () => {
     await this.setState({
       isIFrameOpen: !this.state.isIFrameOpen,
       isIFrameOpeningAnimation: true,
     });
     setTimeout(() => {
       this.setState({ isIFrameOpeningAnimation: false });
-    });
-  };
-
-  onImagePreviewOpen = (currentImagePreview, imagePreviewGallery) => {
-    this.setState({
-      isImagePreviewOpen: true,
-      currentImagePreview,
-      imagePreviewGallery,
-    });
-  };
-
-  onImagePreviewClose = () => {
-    this.setState({
-      isImagePreviewOpen: false,
-      currentImagePreview: {},
-      imagePreviewGallery: [],
     });
   };
 
@@ -146,10 +118,6 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
       extractedFontsStyles,
       customIframeStyles,
       unreadMessagesCounter,
-      unreadRepliesCount, // TODO: figure out how to display
-      currentImagePreview,
-      imagePreviewGallery,
-      isImagePreviewOpen,
     } = this.state;
 
     const visibleUnreadMessagesCounter = unreadMessagesCounter > 99 ? '99+' : unreadMessagesCounter;
@@ -166,11 +134,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
           </span>
         </button>
 
-        <ImagePreview
-          elixirChatWidget={elixirChatWidget}
-          preview={currentImagePreview}
-          gallery={imagePreviewGallery}
-          onClose={this.onImagePreviewClose}/>
+        <ImagePreview elixirChatWidget={elixirChatWidget}/>
 
         <IFrameWrapper elixirChatWidget={elixirChatWidget} className={cn({
           'elixirchat-widget-iframe': true,
@@ -181,10 +145,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
             <style dangerouslySetInnerHTML={{ __html: extractedFontsStyles }}/>
             <style dangerouslySetInnerHTML={{ __html: insideIframeStyles }}/>
             <style dangerouslySetInnerHTML={{ __html: customIframeStyles }}/>
-
-            <Chat elixirChatWidget={elixirChatWidget}
-              isImagePreviewOpen={isImagePreviewOpen}
-              onImagePreviewOpen={this.onImagePreviewOpen} />
+            <Chat elixirChatWidget={elixirChatWidget}/>
           </Fragment>
         </IFrameWrapper>
       </Fragment>
