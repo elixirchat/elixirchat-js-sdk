@@ -12,12 +12,17 @@ import { ChatMessages } from './ChatMessages';
 import { ChatTextarea } from './ChatTextarea';
 import {
   JOIN_ROOM_ERROR,
-  JOIN_ROOM_SUCCESS, MESSAGES_NEW, MESSAGES_SUBSCRIBE_ERROR, MESSAGES_SUBSCRIBE_SUCCESS,
+  JOIN_ROOM_SUCCESS,
+  MESSAGES_FETCH_HISTORY_ERROR,
+  MESSAGES_FETCH_HISTORY_SUCCESS,
+  MESSAGES_NEW,
+  MESSAGES_SUBSCRIBE_ERROR,
+  MESSAGES_SUBSCRIBE_SUCCESS,
   OPERATOR_ONLINE_STATUS_CHANGE,
   TYPING_STATUS_CHANGE,
   TYPING_STATUS_SUBSCRIBE_SUCCESS
 } from '../../sdk/ElixirChatEventTypes';
-import {WIDGET_IFRAME_READY, WIDGET_RENDERED} from '../ElixirChatWidgetEventTypes';
+import {SCREENSHOT_REQUEST_SUCCESS, WIDGET_IFRAME_READY, WIDGET_RENDERED} from '../ElixirChatWidgetEventTypes';
 
 export interface IDefaultWidgetProps {
   elixirChatWidget: any;
@@ -27,12 +32,9 @@ export interface IDefaultWidgetState {
   messages: Array<IMessage>;
   room: any;
   client: any;
-  currentlyTypingUsers: Array<any>;
   textareaText: string;
   textareaResponseToMessageId: string | null;
   textareaAttachments: Array<{ id: string, file: File, name: string, isScreenshot: boolean }>;
-  isLoading: boolean;
-  isLoadingError: boolean;
   isLoadingPreviousMessages: boolean;
   isDraggingAttachments: boolean;
   widgetTitle: string;
@@ -44,18 +46,15 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
 
   container: { current: HTMLElement } = React.createRef();
   scrollBlock: { current: HTMLElement } = React.createRef();
-  messageChunkSize: number = 100; // TODO: reduce to 20 when unread message count implemented in server-side
+  messageChunkSize: number = 20;
 
   state = {
     messages: [],
     room: {},
     client: {},
-    currentlyTypingUsers: [],
     textareaText: '',
     textareaResponseToMessageId: null,
     textareaAttachments: [],
-    isLoading: true,
-    isLoadingError: false,
     isLoadingPreviousMessages: false,
     isDraggingAttachments: false,
     widgetTitle: '',
@@ -74,13 +73,10 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
 
     elixirChatWidget.on(JOIN_ROOM_SUCCESS, () => {
       this.setState({ widgetTitle: elixirChatWidget.widgetTitle });
+      elixirChatWidget.fetchMessageHistory(this.messageChunkSize);
     });
 
-    elixirChatWidget.on([JOIN_ROOM_ERROR, MESSAGES_SUBSCRIBE_ERROR], async () => {
-      await this.setState({ isLoading: false, isLoadingError: true });
-    });
-
-    elixirChatWidget.on(MESSAGES_SUBSCRIBE_SUCCESS, this.onMessageSubscriptionSuccess);
+    elixirChatWidget.on(MESSAGES_FETCH_HISTORY_SUCCESS, this.scrollToBottom);
     elixirChatWidget.on(MESSAGES_NEW, this.onNewMessage);
 
     elixirChatWidget.on(TYPING_STATUS_SUBSCRIBE_SUCCESS, () => {
@@ -89,13 +85,11 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
       this.setState({ textareaText });
     });
 
-    elixirChatWidget.on(TYPING_STATUS_CHANGE, currentlyTypingUsers => {
-      this.setState({ currentlyTypingUsers });
-    });
-
     elixirChatWidget.on(OPERATOR_ONLINE_STATUS_CHANGE, areAnyOperatorsOnline => {
       this.setState({ areAnyOperatorsOnline });
     });
+
+    elixirChatWidget.on(SCREENSHOT_REQUEST_SUCCESS, this.onScreenshotRequestFulfilled);
 
     const areNotificationsMuted = getJSONFromLocalStorage('elixirchat-notifications-muted', false);
     this.setState({ areNotificationsMuted });
@@ -139,26 +133,6 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
       });
     }
     this.setState({ textareaAttachments, isDraggingAttachments: false });
-  };
-
-  onMessageSubscriptionSuccess = () => {
-    const { elixirChatWidget } = this.props;
-
-    if (!elixirChatWidget.reachedBeginningOfMessageHistory) {
-      elixirChatWidget.fetchMessageHistory(this.messageChunkSize)
-        .then(async messages => {
-          if (messages.length < this.messageChunkSize) {
-            messages = [this.generateNewClientPlaceholderMessage(messages), ...messages];
-          }
-          await this.setState({ messages, isLoading: false });
-          this.scrollToBottom();
-          elixirChatWidget.triggerEvent(WIDGET_RENDERED);
-        })
-        .catch(async () => {
-          await this.setState({ isLoading: false, isLoadingError: true });
-          elixirChatWidget.triggerEvent(WIDGET_RENDERED);
-        });
-    }
   };
 
   onNewMessage = (message) => {
@@ -341,22 +315,6 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
     };
   };
 
-  generateNewClientPlaceholderMessage = (previousMessages) => {
-    const previousMessageTimestamp = _get(previousMessages, '[0].timestamp');
-    const timestamp = previousMessageTimestamp || new Date().toISOString();
-
-    return {
-      timestamp,
-      id: randomDigitStringId(6),
-      isSystem: true,
-      sender: {},
-      attachments: [],
-      systemData: {
-        type: 'NEW_CLIENT_PLACEHOLDER'
-      },
-    };
-  };
-
   onTextareaChange = (stateChange) => {
     if (this.state.textareaText !== stateChange.textareaText) {
       localStorage.setItem('elixirchat-typed-text', stateChange.textareaText);
@@ -424,9 +382,6 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
       textareaText,
       textareaResponseToMessageId,
       textareaAttachments,
-      currentlyTypingUsers,
-      isLoading,
-      isLoadingError,
       isDraggingAttachments,
       widgetTitle,
       areAnyOperatorsOnline,
@@ -434,8 +389,7 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
     } = this.state;
 
     return (
-      <div className="elixirchat-chat-container" ref={this.container}
-        onClick={elixirChatWidget.resetUnreadMessagesCounter}>
+      <div className="elixirchat-chat-container" ref={this.container}>
 
         <h2 className="elixirchat-chat-header">
           {widgetTitle && (
@@ -460,45 +414,25 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
           </button>
         </h2>
 
-        {isLoading && (
-          <i className="elixirchat-chat-spinner"/>
-        )}
+        <div className="elixirchat-chat-scroll" ref={this.scrollBlock} onScroll={this.onMessagesScroll}>
+          <ChatMessages
+            onLoadPreviousMessages={this.loadPreviousMessages}
+            onImagePreviewOpen={onImagePreviewOpen}
+            onReplyMessage={this.onReplyMessage}
+            onSubmitRetry={this.onSubmitRetry}
+            elixirChatWidget={elixirChatWidget}/>
+        </div>
 
-        {isLoadingError && (
-          <div className="elixirchat-chat-fatal-error">
-            Ошибка загрузки. <br/>
-            Пожалуйста, перезагрузите
-            страницу <span className="elixirchat-chat-fatal-error--nowrap">или напишите</span> администратору
-            на support@elixir.chat.
-          </div>
-        )}
+        <ChatTextarea
+          onChange={this.onTextareaChange}
+          onSubmit={this.onMessageSubmit}
+          isImagePreviewOpen={isImagePreviewOpen}
+          textareaText={textareaText}
+          textareaResponseToMessageId={textareaResponseToMessageId}
+          textareaAttachments={textareaAttachments}
+          onVerticalResize={this.onTextareaVerticalResize}
+          elixirChatWidget={elixirChatWidget}/>
 
-        {(!isLoading && !isLoadingError) && (
-          <Fragment>
-            <div className="elixirchat-chat-scroll" ref={this.scrollBlock} onScroll={this.onMessagesScroll}>
-              <ChatMessages
-                onLoadPreviousMessages={this.loadPreviousMessages}
-                onScreenshotRequestFulfilled={this.onScreenshotRequestFulfilled}
-                onImagePreviewOpen={onImagePreviewOpen}
-                onReplyMessage={this.onReplyMessage}
-                onSubmitRetry={this.onSubmitRetry}
-                messages={messages}
-                elixirChatWidget={elixirChatWidget}/>
-            </div>
-
-            <ChatTextarea
-              onMessageSubmit={this.onMessageSubmit}
-              onChange={this.onTextareaChange}
-              messages={messages}
-              textareaText={textareaText}
-              isImagePreviewOpen={isImagePreviewOpen}
-              textareaResponseToMessageId={textareaResponseToMessageId}
-              textareaAttachments={textareaAttachments}
-              currentlyTypingUsers={currentlyTypingUsers}
-              onVerticalResize={this.onTextareaVerticalResize}
-              elixirChatWidget={elixirChatWidget}/>
-          </Fragment>
-        )}
 
         {isDraggingAttachments && (
           <Fragment>

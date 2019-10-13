@@ -21,6 +21,7 @@ export const fragmentMessage = insertGraphQlFragments(gql`
     text
     timestamp
     system
+    unread
     sender {
       ... on Client { ...fragmentClient }
       ... on CompanyEmployee { ...fragmentCompanyEmployee }
@@ -68,6 +69,7 @@ export interface IMessage {
     sender: IUser;
   };
   isSystem: boolean;
+  isUnread: boolean;
   systemData: null | {
     type: string | null;
   },
@@ -108,6 +110,7 @@ export function serializeMessage(message: any, elixirChat: ElixirChat): IMessage
     attachments: serializedAttachments,
     isSubmitting: _get(message, 'isSubmitting') || false,
     isSubmissionError: _get(message, 'isSubmissionError') || false,
+    isUnread: _get(message, 'unread') || false,
     isSystem,
     systemData: !isSystem ? null : {
       type: _get(message, 'data.type') || null,

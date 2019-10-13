@@ -1,5 +1,6 @@
 import { ElixirChat } from './ElixirChat';
 import { detectPlatform, logEvent } from '../utilsCommon';
+import {SCREENSHOT_REQUEST_ERROR, SCREENSHOT_REQUEST_SUCCESS} from '../widget/ElixirChatWidgetEventTypes';
 
 export interface IScreenshot {
   dataUrl: string,
@@ -73,7 +74,7 @@ export class ScreenshotTaker {
   }
 
   public takeScreenshot = (): Promise<IScreenshot> => {
-    const { debug } = this.elixirChat;
+    const { debug, triggerEvent } = this.elixirChat;
 
     return new Promise((resolve, reject) => {
       this.getMediaStream().then(stream => {
@@ -85,6 +86,7 @@ export class ScreenshotTaker {
             const screenshot: IScreenshot = this.captureVideoFrame();
             this.stopMediaStream();
             logEvent(debug, 'Captured screenshot', screenshot);
+            triggerEvent(SCREENSHOT_REQUEST_SUCCESS, screenshot);
             resolve(screenshot);
           }, 500);
         };
@@ -92,6 +94,7 @@ export class ScreenshotTaker {
 
       }).catch(error => {
         logEvent(debug, 'Could not capture screenshot', error, 'error');
+        triggerEvent(SCREENSHOT_REQUEST_ERROR, error);
         reject(error);
       });
     });

@@ -1,12 +1,13 @@
 import { ElixirChat } from './ElixirChat';
 import {
-  MESSAGES_FETCH_HISTORY,
+  MESSAGES_FETCH_HISTORY_ERROR,
+  MESSAGES_FETCH_HISTORY_SUCCESS,
   MESSAGES_NEW,
   MESSAGES_SUBSCRIBE_ERROR,
   MESSAGES_SUBSCRIBE_SUCCESS,
 } from './ElixirChatEventTypes';
 
-import { logEvent } from '../utilsCommon';
+import {_get, logEvent, randomDigitStringId} from '../utilsCommon';
 import { serializeMessage, IMessage, fragmentMessage } from './serializers/serializeMessage';
 import {
   insertGraphQlFragments,
@@ -104,6 +105,12 @@ export class MessageSubscription {
         if (data && data.newMessage) {
           const message = serializeMessage(data.newMessage, { backendStaticUrl, client });
           logEvent(debug, 'Received new message', message);
+
+          // TODO: unread - remove
+          if (!message.sender.isCurrentClient) {
+            message.isUnread = true;
+          }
+
           triggerEvent(MESSAGES_NEW, message);
         }
       },
@@ -135,6 +142,22 @@ export class MessageSubscription {
       binaries,
     };
   };
+
+  protected generateNewClientPlaceholderMessage(messageHistory): IMessage {
+    const firstMessageTimestamp = _get(messageHistory, '[0].timestamp');
+    const timestamp = firstMessageTimestamp || new Date().toISOString();
+    return {
+      timestamp,
+      id: randomDigitStringId(6),
+      isSystem: true,
+      sender: {},
+      attachments: [],
+      systemData: {
+        type: 'NEW_CLIENT_PLACEHOLDER'
+      },
+    };
+  };
+
 
   public sendMessage = (params: ISentMessage): Promise<IMessage> => {
     const { backendStaticUrl, client, debug } = this.elixirChat;
@@ -184,7 +207,7 @@ export class MessageSubscription {
           if (response.messages) {
 
             // TODO: remove latestMessageHistoryCursorsCache?
-            const messages = <[IMessage]>simplifyGraphQLJSON(response.messages)
+            let messages = <[IMessage]>simplifyGraphQLJSON(response.messages)
               .map(message => serializeMessage(message, { backendStaticUrl, client }))
               .filter(message => !this.latestMessageHistoryCursorsCache.includes(message.cursor));
 
@@ -195,20 +218,36 @@ export class MessageSubscription {
 
             if (messages.length < limit) {
               this.reachedBeginningOfMessageHistory = true;
+              messages = [
+                this.generateNewClientPlaceholderMessage(messages),
+                ...messages,
+              ];
             }
 
+
+            // TODO: unread - remove
+            let notMineMessages = messages.filter(message => !message.sender.isCurrentClient);
+            notMineMessages.forEach((message, index) => {
+              if (index > notMineMessages.length - 5) {
+                message.isUnread = true;
+              }
+            });
+
+
             logEvent(debug, 'Fetched message history', { messages, limit, beforeCursor });
-            triggerEvent(MESSAGES_FETCH_HISTORY, messages);
+            triggerEvent(MESSAGES_FETCH_HISTORY_SUCCESS, messages);
             resolve(messages);
           }
           else {
             logEvent(debug, 'Failed to fetch message history', { response }, 'error');
-            reject({ response, limit, beforeCursor, query, variables });
+            triggerEvent(MESSAGES_FETCH_HISTORY_ERROR, response);
+            reject(response);
           }
         })
         .catch(error => {
           logEvent(debug, 'Failed to fetch message history', { error }, 'error');
-          reject({ error, limit, beforeCursor, query, variables });
+          triggerEvent(MESSAGES_FETCH_HISTORY_ERROR, error);
+          reject(error);
         });
     });
   };

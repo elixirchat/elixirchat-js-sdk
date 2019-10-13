@@ -8,7 +8,12 @@ import { _get, _round } from '../../utilsCommon';
 import { isWebImage, getHumanReadableFileSize, inflectDayJSWeekDays } from '../../utilsWidget';
 import { getCompatibilityFallback } from '../../sdk/ScreenshotTaker';
 import { ElixirChat } from '../../sdk/ElixirChat';
-import { UNREAD_MESSAGES_CHANGE } from '../../sdk/ElixirChatEventTypes';
+import {
+  JOIN_ROOM_ERROR,
+  MESSAGES_FETCH_HISTORY_ERROR,
+  MESSAGES_FETCH_HISTORY_SUCCESS, MESSAGES_SUBSCRIBE_ERROR,
+  MESSAGES_UNREAD_STATUS_CHANGED,
+} from '../../sdk/ElixirChatEventTypes';
 
 export interface IDefaultWidgetMessagesProps {
   elixirChatWidget: ElixirChat;
@@ -23,6 +28,8 @@ export interface IDefaultWidgetMessagesState {
 export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaultWidgetMessagesState> {
 
   state = {
+    isLoading: true,
+    isLoadingError: false,
     processedMessages: [],
     imagePreviews: [],
     screenshotFallback: null,
@@ -32,34 +39,25 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
   maxThumbnailSize = 256;
 
   componentDidMount(): void {
-    const { elixirChatWidget, messages } = this.props;
+    const { elixirChatWidget } = this.props;
     dayjs.locale('ru');
     dayjs.extend(dayjsCalendar);
 
-    const highlightedMessageIds = elixirChatWidget.unreadMessages.map(message => message.id);
-    this.setProcessedMessages(messages, highlightedMessageIds);
     this.setState({
       screenshotFallback: getCompatibilityFallback(),
     });
 
-    elixirChatWidget.on(UNREAD_MESSAGES_CHANGE, (unreadMessagesCounter, unreadMessages) => {
-      const highlightedMessageIds = unreadMessages.map(message => message.id);
-      this.setState({ highlightedMessageIds });
+    elixirChatWidget.on([MESSAGES_FETCH_HISTORY_SUCCESS, MESSAGES_UNREAD_STATUS_CHANGED], messageHistory => {
+      this.setProcessedMessages(messageHistory);
+      this.setState({ isLoading: false });
+    });
+
+    elixirChatWidget.on([JOIN_ROOM_ERROR, MESSAGES_SUBSCRIBE_ERROR, MESSAGES_FETCH_HISTORY_ERROR], () => {
+      this.setState({ isLoading: false, isLoadingError: true });
     });
   }
 
-  componentDidUpdate(prevProps, prevState): void {
-    const { messages } = this.props;
-    const { highlightedMessageIds } = this.state;
-    const didMessagesChange = prevProps.messages !== messages;
-    const didHighlightedMessagesChange = prevState.highlightedMessageIds !== highlightedMessageIds;
-
-    if (didMessagesChange || didHighlightedMessagesChange) {
-      this.setProcessedMessages(messages, highlightedMessageIds);
-    }
-  }
-
-  setProcessedMessages = (messages, highlightedMessageIds) => {
+  setProcessedMessages = (messages) => {
     const { elixirChatWidget } = this.props;
     let imagePreviews = [];
 
@@ -67,9 +65,10 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
       const processedMessage = { ...message };
       const previousMessage = messages[i - 1];
       const isFirstMessageInChat = !previousMessage && elixirChatWidget.reachedBeginningOfMessageHistory;
-      const isDayEarlier = previousMessage && dayjs(previousMessage.timestamp).isBefore(dayjs(message.timestamp).startOf('day'));
+      const isNextDayAfterPreviousMessage = previousMessage && dayjs(previousMessage.timestamp)
+        .isBefore(dayjs(message.timestamp).startOf('day'));
 
-      if (isDayEarlier || isFirstMessageInChat) {
+      if (isNextDayAfterPreviousMessage || isFirstMessageInChat) {
         processedMessage.prependDateTitle = true;
       }
       if (processedMessage.attachments.length) {
@@ -77,9 +76,6 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
         imagePreviews = imagePreviews.concat(images);
         processedMessage.files = files;
         processedMessage.images = images;
-      }
-      if (highlightedMessageIds.includes(processedMessage.id)) {
-        processedMessage.isHighlighted = true;
       }
       return processedMessage;
     });
@@ -136,14 +132,20 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     return message.sender.isCurrentClient && !hasText && !hasReply && !hasFiles;
   };
 
-  scrollToMessage = (message) => {
-    const highlightedClassName = 'elixirchat-chat-messages__item--highlighted';
-    const messageDOMElement = this.refs[`message-${message.id}`];
+  scrollToMessage = (messageId) => {
+    const messageDOMElement = this.refs[`message-${messageId}`];
     if (messageDOMElement) {
       messageDOMElement.scrollIntoView({
         behavior: 'smooth',
         block: 'center',
       });
+    }
+  };
+
+  flashMessage = (messageId) => {
+    const highlightedClassName = 'elixirchat-chat-messages__item--highlighted';
+    const messageDOMElement = this.refs[`message-${messageId}`];
+    if (messageDOMElement) {
       messageDOMElement.classList.add(highlightedClassName);
       setTimeout(() => {
         messageDOMElement.classList.remove(highlightedClassName);
@@ -152,10 +154,9 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
   };
 
   onTakeScreenshotClick = () => {
-    const { elixirChatWidget, onScreenshotRequestFulfilled } = this.props;
+    const { elixirChatWidget } = this.props;
     elixirChatWidget.togglePopup();
-    elixirChatWidget.takeScreenshot().then(screenshot => {
-      onScreenshotRequestFulfilled(screenshot);
+    elixirChatWidget.takeScreenshot().then(() => {
       elixirChatWidget.togglePopup();
     }).catch(() => {
       elixirChatWidget.togglePopup();
@@ -177,11 +178,30 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
   };
 
   render(): void {
-    const { processedMessages, screenshotFallback } = this.state;
     const { elixirChatWidget, onReplyMessage, onSubmitRetry } = this.props;
+    const {
+      processedMessages,
+      screenshotFallback,
+      isLoading,
+      isLoadingError,
+    } = this.state;
 
     return (
       <div className="elixirchat-chat-messages">
+
+        {isLoading && (
+          <i className="elixirchat-chat-spinner"/>
+        )}
+
+        {isLoadingError && (
+          <div className="elixirchat-chat-fatal-error">
+            Ошибка загрузки. <br/>
+            Пожалуйста, перезагрузите
+            страницу <span className="elixirchat-chat-fatal-error--nowrap">или напишите</span> администратору
+            на support@elixir.chat.
+          </div>
+        )}
+
         {processedMessages.map(message => (
           <Fragment key={message.id}>
 
@@ -201,7 +221,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                 'elixirchat-chat-messages__item': true,
                 'elixirchat-chat-messages__item--by-me': message.sender.isCurrentClient,
                 'elixirchat-chat-messages__item--by-operator': message.sender.isOperator,
-                'elixirchat-chat-messages__item--highlighted': message.isHighlighted,
+                'elixirchat-chat-messages__item--highlighted': message.isUnread,
               })}>
 
                 {!this.shouldHideMessageBalloon(message) && (
@@ -216,7 +236,10 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
                     {Boolean(message.responseToMessage) && (
                       <div className="elixirchat-chat-messages__reply-message"
-                        onClick={() => this.scrollToMessage(message.responseToMessage)}>
+                        onClick={() => {
+                          this.scrollToMessage(message.responseToMessage.id);
+                          this.flashMessage(message.responseToMessage.id);
+                        }}>
 
                         <i className="elixirchat-chat-messages__reply-message-icon icon-reply-right"/>
                         {message.responseToMessage.sender.firstName}&nbsp;
@@ -322,7 +345,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                 'elixirchat-chat-messages__item': true,
                 'elixirchat-chat-messages__item--by-operator': true,
                 'elixirchat-chat-messages__item--system': true,
-                'elixirchat-chat-messages__item--highlighted': message.isHighlighted,
+                'elixirchat-chat-messages__item--highlighted': message.isUnread,
               })}>
                 <div className="elixirchat-chat-messages__balloon">
                   <div className="elixirchat-chat-messages__sender">

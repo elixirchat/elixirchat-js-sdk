@@ -65,8 +65,8 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
       this.setState({ unreadMessagesCounter });
     });
 
-    elixirChatWidget.on(UNREAD_REPLIES_CHANGE, unreadMessagesCounter => {
-      this.setState({ unreadMessagesCounter });
+    elixirChatWidget.on(UNREAD_REPLIES_CHANGE, unreadRepliesCounter => {
+      this.setState({ unreadRepliesCounter });
     });
   }
 

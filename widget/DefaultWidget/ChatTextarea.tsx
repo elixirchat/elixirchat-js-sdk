@@ -6,6 +6,7 @@ import { randomDigitStringId } from '../../utilsCommon';
 import { inflect, getImageDimensions } from '../../utilsWidget';
 import { getCompatibilityFallback } from '../../sdk/ScreenshotTaker';
 import { WIDGET_POPUP_OPEN, WIDGET_RENDERED } from '../ElixirChatWidgetEventTypes';
+import {TYPING_STATUS_CHANGE} from '../../sdk/ElixirChatEventTypes';
 
 export interface IDefaultWidgetTextareaProps {
   elixirChatWidget: ElixirChatWidget;
@@ -25,6 +26,7 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
 
   state = {
     screenshotFallback: null,
+    currentlyTypingUsers: [],
   };
 
   componentDidMount(): void {
@@ -39,6 +41,10 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
     elixirChatWidget.on(WIDGET_POPUP_OPEN, () => {
       this.updateVerticalHeight({ forceScrollToBottom: true });
       this.focusTextarea();
+    });
+
+    elixirChatWidget.on(TYPING_STATUS_CHANGE, currentlyTypingUsers => {
+      this.setState({ currentlyTypingUsers });
     });
 
     this.setState({
@@ -75,7 +81,7 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
 
   onTextareaKeyDown = (e) => {
     const {
-      onMessageSubmit,
+      onSubmit,
       onChange,
       textareaText,
       textareaResponseToMessageId,
@@ -85,7 +91,7 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
     if(e.keyCode === 13 && e.shiftKey === false) { // Press "Enter" without holding Shift
       e.preventDefault();
       if (textareaText.trim() || textareaAttachments.length) {
-        onMessageSubmit({ textareaText, textareaResponseToMessageId, textareaAttachments });
+        onSubmit({ textareaText, textareaResponseToMessageId, textareaAttachments });
         onChange({
           textareaText: '',
           textareaResponseToMessageId: null,
@@ -184,16 +190,15 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
   };
 
   render(): void {
-    const { screenshotFallback } = this.state;
+    const { screenshotFallback, currentlyTypingUsers } = this.state;
     const {
-      messages,
       textareaText,
       textareaResponseToMessageId,
       textareaAttachments,
-      currentlyTypingUsers,
+      elixirChatWidget,
     } = this.props;
 
-    const responseToMessage = messages.filter(message => {
+    const responseToMessage = elixirChatWidget.messageHistory.filter(message => {
       return message.id === textareaResponseToMessageId;
     })[0];
 

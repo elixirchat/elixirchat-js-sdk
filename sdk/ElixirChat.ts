@@ -1,26 +1,23 @@
-import { uniqueNamesGenerator } from 'unique-names-generator';
-import {
-  getJSONFromLocalStorage,
-  randomDigitStringId,
-  capitalize,
-  logEvent,
-  _get,
-} from '../utilsCommon';
+import {uniqueNamesGenerator} from 'unique-names-generator';
+import {_get, capitalize, getJSONFromLocalStorage, logEvent, randomDigitStringId,} from '../utilsCommon';
 
-import { IMessage } from './serializers/serializeMessage';
-import { fragmentClient } from './serializers/serializeUser';
-import { ScreenshotTaker, IScreenshot } from './ScreenshotTaker';
+import {IMessage} from './serializers/serializeMessage';
+import {fragmentClient} from './serializers/serializeUser';
+import {IScreenshot, ScreenshotTaker} from './ScreenshotTaker';
 import {IUnreadMessagesCounterData, UnreadMessagesCounter} from './UnreadMessagesCounter';
-import { TypingStatusSubscription } from './TypingStatusSubscription';
-import { OperatorOnlineStatusSubscription } from './OperatorOnlineStatusSubscription';
-import { MessageSubscription, ISentMessageSerialized } from './MessageSubscription';
-import { GraphQLClient, insertGraphQlFragments, gql } from './GraphQLClient';
+import {TypingStatusSubscription} from './TypingStatusSubscription';
+import {OperatorOnlineStatusSubscription} from './OperatorOnlineStatusSubscription';
+import {ISentMessageSerialized, MessageSubscription} from './MessageSubscription';
+import {gql, GraphQLClient, insertGraphQlFragments} from './GraphQLClient';
 import {
-  JOIN_ROOM_SUCCESS,
   JOIN_ROOM_ERROR,
+  JOIN_ROOM_SUCCESS,
+  LAST_READ_MESSAGE_CHANGE, MESSAGES_FETCH_HISTORY_ERROR,
+  MESSAGES_FETCH_HISTORY_SUCCESS,
   MESSAGES_NEW,
-  MESSAGES_FETCH_HISTORY,
+  MESSAGES_UNREAD_STATUS_CHANGED,
 } from './ElixirChatEventTypes';
+import {WIDGET_RENDERED} from '../widget/ElixirChatWidgetEventTypes';
 
 export interface IElixirChatRoom {
   id: string;
@@ -155,7 +152,6 @@ export class ElixirChat {
       this.unreadMessagesCounter.subscribe();
       this.typingStatusSubscription.subscribe();
       this.operatorOnlineStatusSubscription.subscribe(areAnyOperatorsOnline);
-      // unreadMessagesCounter?
     });
 
     this.on(JOIN_ROOM_ERROR, error => {
@@ -164,13 +160,19 @@ export class ElixirChat {
 
     this.on(MESSAGES_NEW, message => {
       this.messageHistory.push(message);
-      // this.unreadMessagesCounter.recount();
     });
 
-    this.on(MESSAGES_FETCH_HISTORY, messages => {
-      this.messageHistory = this.messageHistory.concat(messages);
-      // this.unreadMessagesCounter.recount();
+    this.on([MESSAGES_FETCH_HISTORY_SUCCESS, MESSAGES_FETCH_HISTORY_ERROR], () => {
+      if (!this.messageHistory.length) {
+        this.triggerEvent(WIDGET_RENDERED);
+      }
     });
+
+    this.on(MESSAGES_FETCH_HISTORY_SUCCESS, messageHistory => {
+      this.messageHistory = messageHistory;
+    });
+
+    this.on(LAST_READ_MESSAGE_CHANGE, this.markPrecedingMessagesRead);
 
     this.setRoomAndClient({ room: config.room, client: config.client });
     this.screenshotTaker = new ScreenshotTaker({ elixirChat: this });
@@ -180,6 +182,17 @@ export class ElixirChat {
     this.operatorOnlineStatusSubscription = new OperatorOnlineStatusSubscription({ elixirChat: this });
     this.joinRoom();
   }
+
+  protected markPrecedingMessagesRead = (lastReadMessageId: string): Array<IMessage> => {
+    const messageIds = this.messageHistory.map(message => message.id);
+    const lastReadMessageIndex = messageIds.indexOf(lastReadMessageId);
+    this.messageHistory.forEach((message, index) => {
+      if (lastReadMessageIndex >= index) {
+        message.isUnread = false;
+      }
+    });
+    this.triggerEvent(MESSAGES_UNREAD_STATUS_CHANGED, this.messageHistory);
+  };
 
   protected setRoomAndClient(data: { room?: IElixirChatRoom, client?: IElixirChatUser }): void {
     let room: any = data.room || {};
@@ -309,10 +322,6 @@ export class ElixirChat {
 
   public dispatchTypedText = (typedText: string): void => {
     this.typingStatusSubscription.dispatchTypedText(typedText);
-  };
-
-  public resetUnreadMessagesCounter = (): void => {
-    this.unreadMessagesCounter.reset();
   };
 
   public setLastReadMessage = (messageId: string): Promise<IUnreadMessagesCounterData> => {
