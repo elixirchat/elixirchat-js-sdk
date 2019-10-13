@@ -13,7 +13,7 @@ import {
   MESSAGES_FETCH_HISTORY_SUCCESS,
   MESSAGES_FETCH_HISTORY_ERROR,
   MESSAGES_SUBSCRIBE_ERROR,
-  MESSAGES_UNREAD_STATUS_CHANGED,
+  MESSAGES_HISTORY_UNREAD_STATUS_CHANGED, MESSAGES_HISTORY_ADD_MANY, MESSAGES_HISTORY_SET,
 } from '../../sdk/ElixirChatEventTypes';
 import {IMAGE_PREVIEW_OPEN} from '../ElixirChatWidgetEventTypes';
 
@@ -49,8 +49,14 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
       screenshotFallback: getCompatibilityFallback(),
     });
 
-    elixirChatWidget.on([MESSAGES_FETCH_HISTORY_SUCCESS, MESSAGES_UNREAD_STATUS_CHANGED], messageHistory => {
-      this.setProcessedMessages(messageHistory);
+    // elixirChatWidget.on([MESSAGES_FETCH_HISTORY_SUCCESS, MESSAGES_HISTORY_UNREAD_STATUS_CHANGED], messageHistory => {
+    //   this.setProcessedMessages(messageHistory);
+    //   this.setState({ isLoading: false });
+    // });
+
+
+    elixirChatWidget.on(MESSAGES_HISTORY_ADD_MANY, (newMessages, allMessages) => {
+      this.setProcessedMessages(allMessages);
       this.setState({ isLoading: false });
     });
 

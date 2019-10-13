@@ -21,7 +21,7 @@ import {
   MESSAGES_NEW,
   MESSAGES_FETCH_HISTORY_SUCCESS,
   OPERATOR_ONLINE_STATUS_CHANGE,
-  TYPING_STATUS_SUBSCRIBE_SUCCESS
+  TYPING_STATUS_SUBSCRIBE_SUCCESS, MESSAGES_HISTORY_SET
 } from '../../sdk/ElixirChatEventTypes';
 
 import {
@@ -81,8 +81,9 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
       elixirChatWidget.fetchMessageHistory(this.messageChunkSize);
     });
 
-    elixirChatWidget.on(MESSAGES_FETCH_HISTORY_SUCCESS, this.scrollToBottom);
-    elixirChatWidget.on(MESSAGES_NEW, this.onNewMessage);
+    elixirChatWidget.on(MESSAGES_HISTORY_SET, this.scrollToBottom);
+    // elixirChatWidget.on(MESSAGES_FETCH_HISTORY_SUCCESS, this.scrollToBottom);
+    // elixirChatWidget.on(MESSAGES_NEW, this.onNewMessage);
 
     elixirChatWidget.on(TYPING_STATUS_SUBSCRIBE_SUCCESS, () => {
       const textareaText = localStorage.getItem('elixirchat-typed-text') || '';
@@ -160,17 +161,14 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
   };
 
   loadPreviousMessages = (callback): void => {
-    const { messages, isLoadingPreviousMessages } = this.state;
     const { elixirChatWidget } = this.props;
+    const { isLoadingPreviousMessages } = this.state;
+    const firstMessageCursor = elixirChatWidget.messageHistory[0].cursor;
 
     if (!isLoadingPreviousMessages && !elixirChatWidget.reachedBeginningOfMessageHistory) {
       this.setState({ isLoadingPreviousMessages: true });
-      elixirChatWidget.fetchMessageHistory(this.messageChunkSize, messages[0].cursor).then(history => {
-        const updatedMessages = [...history, ...messages];
-        this.setState({
-          messages: updatedMessages,
-          isLoadingPreviousMessages: false,
-        }, callback);
+      elixirChatWidget.fetchMessageHistory(this.messageChunkSize, firstMessageCursor).then(() => {
+        this.setState({ isLoadingPreviousMessages: false }, callback);
       });
     }
   };
@@ -229,9 +227,9 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
       }
       elixirChatWidget.sendMessage({
         text: textareaText,
-        responseToMessageId: textareaResponseToMessageId,
-        attachments: textareaAttachments.map(attachment => attachment.file),
         tempId: temporaryMessage.tempId,
+        attachments: textareaAttachments.map(attachment => attachment.file),
+        responseToMessageId: textareaResponseToMessageId,
       })
         .catch(() => {
           this.changeMessageById(temporaryMessage.id, {

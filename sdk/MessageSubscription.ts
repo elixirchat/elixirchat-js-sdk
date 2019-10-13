@@ -1,7 +1,7 @@
 import { ElixirChat } from './ElixirChat';
 import {
   MESSAGES_FETCH_HISTORY_ERROR,
-  MESSAGES_FETCH_HISTORY_SUCCESS,
+  MESSAGES_FETCH_HISTORY_SUCCESS, MESSAGES_HISTORY_ADD_MANY, MESSAGES_HISTORY_ADD_ONE, MESSAGES_HISTORY_SET,
   MESSAGES_NEW,
   MESSAGES_SUBSCRIBE_ERROR,
   MESSAGES_SUBSCRIBE_SUCCESS,
@@ -41,6 +41,7 @@ export class MessageSubscription {
   protected graphQLClient: GraphQLClient;
   protected graphQLClientSocket: GraphQLClientSocket;
 
+  public messageHistory: Array<IMessage> = [];
   protected latestMessageHistoryCursorsCache: Array<IMessage> = [];
   protected reachedBeginningOfMessageHistory: boolean = false;
 
@@ -87,7 +88,14 @@ export class MessageSubscription {
   };
 
   protected initializeSocketClient(): void {
-    const { socketUrl, authToken, backendStaticUrl, client, debug, triggerEvent } = this.elixirChat;
+    const {
+      socketUrl,
+      authToken,
+      backendStaticUrl,
+      client,
+      debug,
+      triggerEvent,
+    } = this.elixirChat;
 
     this.graphQLClientSocket = new GraphQLClientSocket({
       socketUrl,
@@ -104,13 +112,15 @@ export class MessageSubscription {
       onResult: ({ data }) => {
         if (data && data.newMessage) {
           const message = serializeMessage(data.newMessage, { backendStaticUrl, client });
-          logEvent(debug, 'Received new message', message);
 
           // TODO: unread - remove
           if (!message.sender.isCurrentClient) {
             message.isUnread = true;
           }
 
+          this.messageHistory.push(message);
+          logEvent(debug, 'Received new message', message);
+          triggerEvent(MESSAGES_HISTORY_ADD_ONE, message, this.messageHistory);
           triggerEvent(MESSAGES_NEW, message);
         }
       },
@@ -233,8 +243,17 @@ export class MessageSubscription {
               }
             });
 
+            this.messageHistory = this.messageHistory.concat(messages);
 
-            logEvent(debug, 'Fetched message history', { messages, limit, beforeCursor });
+            if (beforeCursor) {
+              logEvent(debug, 'Fetched additional message history', { messages, limit, beforeCursor });
+              triggerEvent(MESSAGES_HISTORY_ADD_MANY, messages, this.messageHistory);
+            }
+            else {
+              logEvent(debug, 'Fetched new message history', { messages, limit });
+              triggerEvent(MESSAGES_HISTORY_SET, this.messageHistory);
+              triggerEvent(MESSAGES_HISTORY_ADD_MANY, messages, this.messageHistory);
+            }
             triggerEvent(MESSAGES_FETCH_HISTORY_SUCCESS, messages);
             resolve(messages);
           }

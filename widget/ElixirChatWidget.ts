@@ -9,6 +9,11 @@ import {
   WIDGET_POPUP_TOGGLE,
   WIDGET_RENDERED,
 } from './ElixirChatWidgetEventTypes';
+import {
+  MESSAGES_FETCH_HISTORY_ERROR,
+  MESSAGES_FETCH_HISTORY_SUCCESS,
+  MESSAGES_HISTORY_SET
+} from '../sdk/ElixirChatEventTypes';
 
 let ElixirChat = window.ElixirChat;
 if (!ElixirChat) {
@@ -109,8 +114,9 @@ export class ElixirChatWidget extends ElixirChat {
       }
     });
 
-    this.on(WIDGET_RENDERED, () => {
+    this.on([MESSAGES_HISTORY_SET, MESSAGES_FETCH_HISTORY_ERROR], () => {
       this.isWidgetRendered = true;
+      this.triggerEvent(WIDGET_RENDERED);
     });
 
     this.container = container;

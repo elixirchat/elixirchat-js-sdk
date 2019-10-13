@@ -15,9 +15,8 @@ import {
   LAST_READ_MESSAGE_CHANGE, MESSAGES_FETCH_HISTORY_ERROR,
   MESSAGES_FETCH_HISTORY_SUCCESS,
   MESSAGES_NEW,
-  MESSAGES_UNREAD_STATUS_CHANGED,
+  MESSAGES_HISTORY_UNREAD_STATUS_CHANGED,
 } from './ElixirChatEventTypes';
-import {WIDGET_RENDERED} from '../widget/ElixirChatWidgetEventTypes';
 
 export interface IElixirChatRoom {
   id: string;
@@ -54,7 +53,6 @@ export class ElixirChat {
   public authToken: string;
   public connected: boolean;
   public isPrivate: boolean;
-  public messageHistory: Array<IMessage> = [];
 
   public widgetTitle: string = '';
   public defaultWidgetTitle: string = 'Служба поддержки';
@@ -68,11 +66,8 @@ export class ElixirChat {
   public get unreadRepliesCount(): number {
     return this.unreadMessagesCounter.unreadRepliesCount;
   }
-  public get unreadMessages(): Array<IMessage> {
-    return this.unreadMessagesCounter.unreadMessages;
-  }
-  public get unreadReplies(): Array<IMessage> {
-    return this.unreadMessagesCounter.unreadReplies;
+  public get messageHistory(): boolean {
+    return this.messageSubscription.messageHistory;
   }
   public get reachedBeginningOfMessageHistory(): boolean {
     return this.messageSubscription.reachedBeginningOfMessageHistory;
@@ -158,19 +153,19 @@ export class ElixirChat {
       logEvent(this.debug, 'Failed to join room', { error }, 'error');
     });
 
-    this.on(MESSAGES_NEW, message => {
-      this.messageHistory.push(message);
-    });
+    // this.on(MESSAGES_NEW, message => {
+    //   this.messageHistory.push(message);
+    // });
 
-    this.on([MESSAGES_FETCH_HISTORY_SUCCESS, MESSAGES_FETCH_HISTORY_ERROR], () => {
-      if (!this.messageHistory.length) {
-        this.triggerEvent(WIDGET_RENDERED);
-      }
-    });
+    // this.on([MESSAGES_FETCH_HISTORY_SUCCESS, MESSAGES_FETCH_HISTORY_ERROR], () => {
+    //   if (!this.messageHistory.length) {
+    //     this.triggerEvent(WIDGET_RENDERED);
+    //   }
+    // });
 
-    this.on(MESSAGES_FETCH_HISTORY_SUCCESS, messageHistory => {
-      this.messageHistory = messageHistory;
-    });
+    // this.on(MESSAGES_FETCH_HISTORY_SUCCESS, messageHistory => {
+    //   this.messageHistory = messageHistory;
+    // });
 
     this.on(LAST_READ_MESSAGE_CHANGE, this.markPrecedingMessagesRead);
 
@@ -191,7 +186,7 @@ export class ElixirChat {
         message.isUnread = false;
       }
     });
-    this.triggerEvent(MESSAGES_UNREAD_STATUS_CHANGED, this.messageHistory);
+    this.triggerEvent(MESSAGES_HISTORY_UNREAD_STATUS_CHANGED, this.messageHistory);
   };
 
   protected setRoomAndClient(data: { room?: IElixirChatRoom, client?: IElixirChatUser }): void {
