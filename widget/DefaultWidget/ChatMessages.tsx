@@ -171,7 +171,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
         {keySequence.split(/\+/).map((key, index) => {
           return (
             <Fragment key={index}>
-              {!!index && '+'}<kbd>{key}</kbd>
+              {Boolean(index) && '+'}<kbd>{key}</kbd>
             </Fragment>
           )
         })}
@@ -242,10 +242,8 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                           this.scrollToMessage(message.responseToMessage.id);
                           this.flashMessage(message.responseToMessage.id);
                         }}>
-
-                        <i className="elixirchat-chat-messages__reply-message-icon icon-reply-right"/>
-                        {message.responseToMessage.sender.firstName}&nbsp;
-                        {message.responseToMessage.sender.lastName}&nbsp;
+                        {message.responseToMessage.sender.firstName ? message.responseToMessage.sender.firstName + ' ' : ''}
+                        {message.responseToMessage.sender.lastName ? message.responseToMessage.sender.lastName + ' ' : ''}
                         <span title={message.responseToMessage.text}>
                             {message.responseToMessage.text.substr(0, 100)}
                           </span>

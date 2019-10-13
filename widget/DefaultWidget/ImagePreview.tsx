@@ -112,8 +112,10 @@ export class ImagePreview extends Component<IImagePreviewProps, IImagePreviewSta
     else if (nextPreviewIndex >= gallery.length) {
       nextPreviewIndex = 0;
     }
-    this.setState({ preview: gallery[nextPreviewIndex] });
-    this.updatePreviewDimensions(gallery[nextPreviewIndex]);
+
+    const nextPreview = gallery[nextPreviewIndex];
+    this.setState({ preview: nextPreview });
+    this.updatePreviewDimensions(nextPreview);
     this.animateSlide();
   };
 

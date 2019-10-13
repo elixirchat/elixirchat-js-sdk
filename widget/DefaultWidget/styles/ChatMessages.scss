@@ -74,19 +74,18 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  position: relative;
   color: $color-gray-dark;
-  margin: 2px 0 4px 0;
   cursor: default;
+  border-left: 3px solid;
+  padding: 3px 0 0 8px;
+  line-height: 15px;
+  margin: 2px 0 5px 0;
 
   .elixirchat-chat-messages__item--by-me & {
     color: rgba(255,255,255,.65);
+    border-left-color: rgba(255,255,255,.5);
   }
-}
-
-.elixirchat-chat-messages__reply-message-icon {
-  margin-right: 7px;
-  opacity: .9;
-  vertical-align: text-bottom;
 }
 
 .elixirchat-chat-messages__text {

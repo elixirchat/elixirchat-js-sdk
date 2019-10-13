@@ -137,13 +137,13 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
 
   onNewMessage = (message) => {
     const hasUserScroll = this.hasUserScroll();
-    const messages = [...this.state.messages, message];
     const isMessageSentByCurrentClient = message.sender.isCurrentClient;
 
     if (isMessageSentByCurrentClient) {
       this.replaceTemporaryMessageWithActualOne(message);
     }
     else {
+      const messages = [...this.state.messages, message];
       this.setState({ messages });
       if (!this.state.areNotificationsMuted) {
         playNotificationSound();
