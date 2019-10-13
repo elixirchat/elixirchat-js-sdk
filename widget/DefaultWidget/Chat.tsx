@@ -1,28 +1,33 @@
 import React, { Component, Fragment } from 'react';
-import {_get, _last, getJSONFromLocalStorage, randomDigitStringId} from '../../utilsCommon';
 import {
-  unlockNotificationSoundAutoplay,
-  playNotificationSound,
-  getImageDimensions,
+  _get,
+  _last,
+  randomDigitStringId,
+  getJSONFromLocalStorage,
+} from '../../utilsCommon';
+
+import {
   isWebImage,
+  getImageDimensions,
+  playNotificationSound,
+  unlockNotificationSoundAutoplay,
 } from '../../utilsWidget';
 
 import { IMessage } from '../../sdk/serializers/serializeMessage';
 import { ChatMessages } from './ChatMessages';
 import { ChatTextarea } from './ChatTextarea';
 import {
-  JOIN_ROOM_ERROR,
   JOIN_ROOM_SUCCESS,
-  MESSAGES_FETCH_HISTORY_ERROR,
-  MESSAGES_FETCH_HISTORY_SUCCESS,
   MESSAGES_NEW,
-  MESSAGES_SUBSCRIBE_ERROR,
-  MESSAGES_SUBSCRIBE_SUCCESS,
+  MESSAGES_FETCH_HISTORY_SUCCESS,
   OPERATOR_ONLINE_STATUS_CHANGE,
-  TYPING_STATUS_CHANGE,
   TYPING_STATUS_SUBSCRIBE_SUCCESS
 } from '../../sdk/ElixirChatEventTypes';
-import {SCREENSHOT_REQUEST_SUCCESS, WIDGET_IFRAME_READY, WIDGET_RENDERED} from '../ElixirChatWidgetEventTypes';
+
+import {
+  WIDGET_IFRAME_READY,
+  SCREENSHOT_REQUEST_SUCCESS,
+} from '../ElixirChatWidgetEventTypes';
 
 export interface IDefaultWidgetProps {
   elixirChatWidget: any;

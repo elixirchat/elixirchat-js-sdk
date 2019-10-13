@@ -3,8 +3,8 @@ import { getJSONFromLocalStorage, logEvent } from '../utilsCommon';
 import { renderWidgetReactComponent } from './DefaultWidget/Widget';
 import { IFontExtractorExtractParams } from './FontExtractor';
 import {
-  WIDGET_IFRAME_READY,
-  WIDGET_POPUP_CLOSE,
+  WIDGET_IFRAME_READY, WIDGET_POPUP_BLUR,
+  WIDGET_POPUP_CLOSE, WIDGET_POPUP_FOCUS,
   WIDGET_POPUP_OPEN,
   WIDGET_POPUP_TOGGLE,
   WIDGET_RENDERED,
@@ -55,17 +55,32 @@ export class ElixirChatWidget extends ElixirChat {
   public isWidgetPopupOpen: boolean = false;
   public isWidgetIFrameReady: boolean = false;
   public isWidgetRendered: boolean = false;
+  public isWidgetPopupFocused: boolean = false;
 
   public widgetReactComponent: any;
+  public widgetIFrameWindow: Window = {};
   public widgetIFrameDocument: Document = {};
 
-  public togglePopup = async (): void => {
+  public togglePopup = (): void => {
     this.isWidgetPopupOpen = !this.isWidgetPopupOpen;
+    this.onToggleChatFocus(this.isWidgetPopupOpen);
     localStorage.setItem('elixirchat-widget-is-visible', JSON.stringify(this.isWidgetPopupOpen));
 
     logEvent(this.debug, (this.isWidgetPopupOpen ? 'Opened' : 'Closed') + ' widget popup');
     this.triggerEvent(WIDGET_POPUP_TOGGLE, this.isWidgetPopupOpen);
     this.triggerEvent(this.isWidgetPopupOpen ? WIDGET_POPUP_OPEN : WIDGET_POPUP_CLOSE);
+  };
+
+  protected onToggleChatFocus = (isFocused) => {
+    if (isFocused !== this.isWidgetPopupFocused) {
+      this.isWidgetPopupFocused = isFocused;
+      if (this.isWidgetPopupFocused) {
+        this.triggerEvent(WIDGET_POPUP_FOCUS);
+      }
+      else {
+        this.triggerEvent(WIDGET_POPUP_BLUR);
+      }
+    }
   };
 
   public appendWidget = async ({ container, iframeStyles, extractFontsFromParentWindow }: IElixirChatWidgetAppendWidgetConfig): void => {
@@ -75,9 +90,18 @@ export class ElixirChatWidget extends ElixirChat {
       return;
     }
 
-    this.on(WIDGET_IFRAME_READY, iframeDocument => {
+    this.on(WIDGET_IFRAME_READY, (iframeWindow) => {
       this.isWidgetIFrameReady = true;
-      this.widgetIFrameDocument = iframeDocument;
+      this.widgetIFrameWindow = iframeWindow;
+      this.widgetIFrameDocument = iframeWindow.document;
+
+      this.widgetIFrameWindow.addEventListener('focus', () => {
+        this.onToggleChatFocus(true);
+      });
+
+      this.widgetIFrameWindow.addEventListener('blur', () => {
+        this.onToggleChatFocus(false);
+      });
 
       const isWidgetVisible = getJSONFromLocalStorage('elixirchat-widget-is-visible', false);
       if (isWidgetVisible) {

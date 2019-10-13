@@ -43,7 +43,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
     const { elixirChatWidget } = this.props;
     const { outsideIframeStyles, insideIframeStyles } = this.generateStyles();
     document.body.addEventListener('click', unlockNotificationSoundAutoplay);
-    window.addEventListener('load', this.onWindowLoad);
+    window.addEventListener('load', this.onParentWindowLoad);
 
     this.setState({
       outsideIframeStyles,
@@ -58,7 +58,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
     });
   }
 
-  onWindowLoad = () => {
+  onParentWindowLoad = () => {
     const { elixirChatWidget: { extractFontsFromParentWindow } } = this.props;
 
     if (extractFontsFromParentWindow && extractFontsFromParentWindow.length) {
