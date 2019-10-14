@@ -95,7 +95,7 @@ export class UnreadMessagesCounter {
     });
   };
   
-  protected onSocketResult(response: any): void {
+  protected onSocketResult = (response: any): void => {
     const { debug, triggerEvent } = this.elixirChat;
     const data: IUnreadMessagesCounterData = _get(response, 'data.updateReadMessages') || {};
     const { unreadMessagesCount, unreadRepliesCount, lastReadMessageId } = data;
@@ -119,26 +119,29 @@ export class UnreadMessagesCounter {
     }
   };
 
-
   // TODO: unread - remove manually triggering UNREAD_MESSAGES_CHANGE, UNREAD_REPLIES_CHANGE, LAST_READ_MESSAGE_CHANGE
   public __tempTriggerChange = (messages, replies, messageLastIndex = 0) => {
     const { messageHistory } = this.elixirChat;
     const notMineMessages = messageHistory.filter(message => !message.sender.isCurrentClient);
     const lastMessage = notMineMessages[notMineMessages.length - 1 - messageLastIndex];
+
     if (typeof messages !== 'number') {
-      messages = this.unreadMessagesCount;
-    }
-    if (typeof replies !== 'number') {
-      replies = this.unreadRepliesCount;
-    }
-    this.onSocketResult({
-      data: {
-        updateReadMessages: {
-          unreadMessagesCount: messages,
-          unreadRepliesCount: replies,
-          lastReadMessageId: lastMessage.id,
+      this.onSocketResult({
+        data: {
+          updateReadMessages: { unreadMessagesCount: messages }
         }
-      }
-    });
+      });
+    }
+
+    if (typeof replies !== 'number') {
+      this.onSocketResult({
+        data: {
+          updateReadMessages: { unreadRepliesCount: replies }
+        }
+      });
+    }
+
+    console.log('%c lastMessage', 'color: green', lastMessage);
+    this.setLastReadMessage(lastMessage.id);
   };
 }

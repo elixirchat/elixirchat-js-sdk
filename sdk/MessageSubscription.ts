@@ -241,11 +241,12 @@ export class MessageSubscription {
 
             // TODO: unread - remove
             let notMineMessages = messages.filter(message => !message.sender.isCurrentClient);
-            notMineMessages.forEach((message, index) => {
+            isSettingMessageHistoryFromScratch && notMineMessages.forEach((message, index) => {
               if (index > notMineMessages.length - 5) {
                 message.isUnread = true;
               }
             });
+
 
             logEvent(debug, `Fetched ${isSettingMessageHistoryFromScratch ? 'new' : 'additional'} message history`, {
               messages,

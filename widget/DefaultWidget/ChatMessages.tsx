@@ -60,6 +60,8 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
       this.setState({ isLoading: false });
     });
 
+    elixirChatWidget.on(MESSAGES_HISTORY_UNREAD_STATUS_CHANGED, this.setProcessedMessages);
+
     elixirChatWidget.on([JOIN_ROOM_ERROR, MESSAGES_SUBSCRIBE_ERROR, MESSAGES_FETCH_HISTORY_ERROR], () => {
       this.setState({ isLoading: false, isLoadingError: true });
     });
