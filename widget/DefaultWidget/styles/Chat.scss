@@ -1,6 +1,8 @@
 @import "./variables";
 @import "./mixins";
 
+$chat-header-height: 53px;
+
 body {
   margin: 0;
   padding: 0;
@@ -28,7 +30,7 @@ textarea {
 .elixirchat-chat-header {
   margin: 0;
   font-size: 16px;
-  height: 53px;
+  height: $chat-header-height;
   box-sizing: border-box;
   box-shadow: 0 1px 0 rgba(0,0,0,.15);
   padding: 19px 72px 0 30px;
@@ -56,7 +58,7 @@ textarea {
 }
 
 .elixirchat-chat-header__close {
-  height: 53px;
+  height: $chat-header-height;
   border: 0;
   opacity: .25;
   position: absolute;
@@ -83,7 +85,7 @@ textarea {
   background: none;
   border: none;
   position: absolute;
-  height: 53px;
+  height: $chat-header-height;
   padding: 0 8px 0 18px;
   top: 1px;
   right: 40px;
@@ -105,13 +107,26 @@ textarea {
 
 .elixirchat-chat-scroll {
   position: fixed;
-  top: 53px;
+  top: $chat-header-height;
   left: 0;
   right: 0;
   bottom: 110px;
   overflow-x: hidden;
   overflow-y: auto;
   padding: 20px 30px;
+}
+
+.elixirchat-chat-scroll-progress-bar {
+  width: 0;
+  height: 1px;
+  background: rgba(0,0,0,.4);
+  position: fixed;
+  top: $chat-header-height;
+
+  &--animating {
+    width: 100%;
+    transition: width 500ms;
+  }
 }
 
 .elixirchat-chat-spinner {

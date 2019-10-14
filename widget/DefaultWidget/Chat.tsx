@@ -1,4 +1,5 @@
 import React, { Component, Fragment } from 'react';
+import cn from 'classnames';
 import {
   _get,
   _last,
@@ -126,7 +127,6 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
     else {
       attachmentFiles = Array.from(e.dataTransfer.files);
     }
-
     for (let i = 0; i < attachmentFiles.length; i++) {
       const file = attachmentFiles[i];
       const imageBlobUrl = URL.createObjectURL(attachmentFiles[i]);
@@ -168,7 +168,8 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
     if (!isLoadingPreviousMessages && !elixirChatWidget.reachedBeginningOfMessageHistory) {
       this.setState({ isLoadingPreviousMessages: true });
       elixirChatWidget.fetchMessageHistory(this.messageChunkSize, firstMessageCursor).then(() => {
-        this.setState({ isLoadingPreviousMessages: false }, callback);
+        this.setState({ isLoadingPreviousMessages: false });
+        callback();
       });
     }
   };
@@ -178,9 +179,7 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
     if (scrollBlock.scrollTop <= 0) {
       const initialScrollHeight = scrollBlock.scrollHeight;
       this.loadPreviousMessages(() => {
-        setTimeout(() => {
-          scrollBlock.scrollTop = scrollBlock.scrollHeight - initialScrollHeight;
-        }, 0);
+        scrollBlock.scrollTop = scrollBlock.scrollHeight - initialScrollHeight;
       });
     }
   };
@@ -383,6 +382,7 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
       widgetTitle,
       areAnyOperatorsOnline,
       areNotificationsMuted,
+      isLoadingPreviousMessages,
     } = this.state;
 
     return (
@@ -410,6 +410,11 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
             <i className="icon-close-thin"/>
           </button>
         </h2>
+
+        <i className={cn({
+          'elixirchat-chat-scroll-progress-bar': true,
+          'elixirchat-chat-scroll-progress-bar--animating': isLoadingPreviousMessages,
+        })}/>
 
         <div className="elixirchat-chat-scroll" ref={this.scrollBlock} onScroll={this.onMessagesScroll}>
           <ChatMessages

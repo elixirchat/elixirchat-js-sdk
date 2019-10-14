@@ -235,6 +235,10 @@ export class MessageSubscription {
             }
 
 
+            const isSettingMessageHistoryFromScratch = !beforeCursor;
+            this.messageHistory = messages.concat(this.messageHistory);
+
+
             // TODO: unread - remove
             let notMineMessages = messages.filter(message => !message.sender.isCurrentClient);
             notMineMessages.forEach((message, index) => {
@@ -242,9 +246,6 @@ export class MessageSubscription {
                 message.isUnread = true;
               }
             });
-
-            const isSettingMessageHistoryFromScratch = !beforeCursor;
-            this.messageHistory = this.messageHistory.concat(messages);
 
             logEvent(debug, `Fetched ${isSettingMessageHistoryFromScratch ? 'new' : 'additional'} message history`, {
               messages,
