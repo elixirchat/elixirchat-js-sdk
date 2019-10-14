@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 import dayjsCalendar from 'dayjs/plugin/calendar';
 import 'dayjs/locale/ru';
 import AutoLinkText from 'react-autolink-text2';
-import { _get, _round } from '../../utilsCommon';
+import {_get, _last, _round} from '../../utilsCommon';
 import { isWebImage, getHumanReadableFileSize, inflectDayJSWeekDays } from '../../utilsWidget';
 import { getCompatibilityFallback } from '../../sdk/ScreenshotTaker';
 import { ElixirChat } from '../../sdk/ElixirChat';
@@ -13,7 +13,7 @@ import {
   MESSAGES_FETCH_HISTORY_SUCCESS,
   MESSAGES_FETCH_HISTORY_ERROR,
   MESSAGES_SUBSCRIBE_ERROR,
-  MESSAGES_HISTORY_UNREAD_STATUS_CHANGED, MESSAGES_HISTORY_ADD_MANY, MESSAGES_HISTORY_SET,
+  MESSAGES_HISTORY_UNREAD_STATUS_CHANGED, MESSAGES_HISTORY_ADD_MANY, MESSAGES_HISTORY_SET, MESSAGES_HISTORY_ADD_ONE,
 } from '../../sdk/ElixirChatEventTypes';
 import {IMAGE_PREVIEW_OPEN} from '../ElixirChatWidgetEventTypes';
 
@@ -42,6 +42,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
   componentDidMount(): void {
     const { elixirChatWidget } = this.props;
+    const { processedMessages, imagePreviews } = this.state;
     dayjs.locale('ru');
     dayjs.extend(dayjsCalendar);
 
@@ -49,18 +50,16 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
       screenshotFallback: getCompatibilityFallback(),
     });
 
-    // elixirChatWidget.on([MESSAGES_FETCH_HISTORY_SUCCESS, MESSAGES_HISTORY_UNREAD_STATUS_CHANGED], messageHistory => {
-    //   this.setProcessedMessages(messageHistory);
-    //   this.setState({ isLoading: false });
-    // });
+    elixirChatWidget.on(MESSAGES_HISTORY_ADD_ONE, message => {
+      console.log('__ new', message);
+      this.appendProcessedMessages([message]);
+    });
+    elixirChatWidget.on(MESSAGES_HISTORY_ADD_MANY, this.appendProcessedMessages);
+    elixirChatWidget.on(MESSAGES_HISTORY_UNREAD_STATUS_CHANGED, this.setProcessedMessages);
 
-
-    elixirChatWidget.on(MESSAGES_HISTORY_ADD_MANY, (newMessages, allMessages) => {
-      this.setProcessedMessages(allMessages);
+    elixirChatWidget.on(MESSAGES_FETCH_HISTORY_SUCCESS, () => {
       this.setState({ isLoading: false });
     });
-
-    elixirChatWidget.on(MESSAGES_HISTORY_UNREAD_STATUS_CHANGED, this.setProcessedMessages);
 
     elixirChatWidget.on([JOIN_ROOM_ERROR, MESSAGES_SUBSCRIBE_ERROR, MESSAGES_FETCH_HISTORY_ERROR], () => {
       this.setState({ isLoading: false, isLoadingError: true });
@@ -68,12 +67,29 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
   }
 
   setProcessedMessages = (messages) => {
-    const { elixirChatWidget } = this.props;
-    let imagePreviews = [];
+    const { processedMessages, imagePreviews } = this.processMessages(messages);
+    this.setState({ processedMessages, imagePreviews });
+  };
 
+  appendProcessedMessages = (messages) => {
+    const { processedMessages: previousProcessedMessages, imagePreviews: previousImagePreviews } = this.state;
+    const processed = this.processMessages(messages, _last(previousProcessedMessages));
+    const { processedMessages: newProcessedMessages, imagePreviews: newImagePreviews } = processed;
+
+    this.setState({
+      processedMessages: newProcessedMessages.concat(previousProcessedMessages),
+      imagePreviews: newImagePreviews.concat(previousImagePreviews),
+    });
+  };
+
+
+  processMessages = (messages, previousMessage) => {
+    const { elixirChatWidget } = this.props;
+
+    let imagePreviews = [];
     let processedMessages = messages.map((message, i) => {
       const processedMessage = { ...message };
-      const previousMessage = messages[i - 1];
+      const previousMessage = messages[i - 1] || previousMessage;
       const isFirstMessageInChat = !previousMessage && elixirChatWidget.reachedBeginningOfMessageHistory;
       const isNextDayAfterPreviousMessage = previousMessage && dayjs(previousMessage.timestamp)
         .isBefore(dayjs(message.timestamp).startOf('day'));
@@ -90,7 +106,10 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
       return processedMessage;
     });
 
-    this.setState({ processedMessages, imagePreviews });
+    return {
+      processedMessages,
+      imagePreviews
+    };
   };
 
   processAttachments = (attachments, sender) => {
