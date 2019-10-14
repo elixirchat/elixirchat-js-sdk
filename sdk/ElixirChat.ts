@@ -12,9 +12,7 @@ import {gql, GraphQLClient, insertGraphQlFragments} from './GraphQLClient';
 import {
   JOIN_ROOM_ERROR,
   JOIN_ROOM_SUCCESS,
-  LAST_READ_MESSAGE_CHANGE, MESSAGES_FETCH_HISTORY_ERROR,
-  MESSAGES_FETCH_HISTORY_SUCCESS,
-  MESSAGES_NEW,
+  LAST_READ_MESSAGE_CHANGE,
   MESSAGES_HISTORY_UNREAD_STATUS_CHANGED,
 } from './ElixirChatEventTypes';
 
@@ -152,20 +150,6 @@ export class ElixirChat {
     this.on(JOIN_ROOM_ERROR, error => {
       logEvent(this.debug, 'Failed to join room', { error }, 'error');
     });
-
-    // this.on(MESSAGES_NEW, message => {
-    //   this.messageHistory.push(message);
-    // });
-
-    // this.on([MESSAGES_FETCH_HISTORY_SUCCESS, MESSAGES_FETCH_HISTORY_ERROR], () => {
-    //   if (!this.messageHistory.length) {
-    //     this.triggerEvent(WIDGET_RENDERED);
-    //   }
-    // });
-
-    // this.on(MESSAGES_FETCH_HISTORY_SUCCESS, messageHistory => {
-    //   this.messageHistory = messageHistory;
-    // });
 
     this.on(LAST_READ_MESSAGE_CHANGE, this.markPrecedingMessagesRead);
 

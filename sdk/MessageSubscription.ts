@@ -1,7 +1,7 @@
 import { ElixirChat } from './ElixirChat';
 import {
   MESSAGES_FETCH_HISTORY_ERROR,
-  MESSAGES_FETCH_HISTORY_SUCCESS, MESSAGES_HISTORY_ADD_MANY, MESSAGES_HISTORY_ADD_ONE, MESSAGES_HISTORY_SET,
+  MESSAGES_FETCH_HISTORY_SUCCESS, MESSAGES_HISTORY_PREPEND_MANY, MESSAGES_HISTORY_APPEND_ONE, MESSAGES_HISTORY_SET,
   MESSAGES_NEW,
   MESSAGES_SUBSCRIBE_ERROR,
   MESSAGES_SUBSCRIBE_SUCCESS,
@@ -120,7 +120,7 @@ export class MessageSubscription {
 
           this.messageHistory.push(message);
           logEvent(debug, 'Received new message', message);
-          triggerEvent(MESSAGES_HISTORY_ADD_ONE, message, this.messageHistory);
+          triggerEvent(MESSAGES_HISTORY_APPEND_ONE, message, this.messageHistory);
           triggerEvent(MESSAGES_NEW, message);
         }
       },
@@ -254,7 +254,7 @@ export class MessageSubscription {
               beforeCursor,
             });
 
-            triggerEvent(MESSAGES_HISTORY_ADD_MANY, messages, this.messageHistory);
+            triggerEvent(MESSAGES_HISTORY_PREPEND_MANY, messages, this.messageHistory);
             if (isSettingMessageHistoryFromScratch) {
               triggerEvent(MESSAGES_HISTORY_SET, this.messageHistory);
             }

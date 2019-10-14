@@ -6,19 +6,19 @@ import 'dayjs/locale/ru';
 import AutoLinkText from 'react-autolink-text2';
 import {_get, _last, _round} from '../../utilsCommon';
 import { isWebImage, getHumanReadableFileSize, inflectDayJSWeekDays } from '../../utilsWidget';
-import { getCompatibilityFallback } from '../../sdk/ScreenshotTaker';
-import { ElixirChat } from '../../sdk/ElixirChat';
+import { getScreenshotCompatibilityFallback } from '../../sdk/ScreenshotTaker';
+import { ElixirChatWidget } from '../ElixirChatWidget';
 import {
   JOIN_ROOM_ERROR,
   MESSAGES_FETCH_HISTORY_SUCCESS,
   MESSAGES_FETCH_HISTORY_ERROR,
   MESSAGES_SUBSCRIBE_ERROR,
-  MESSAGES_HISTORY_UNREAD_STATUS_CHANGED, MESSAGES_HISTORY_ADD_MANY, MESSAGES_HISTORY_SET, MESSAGES_HISTORY_ADD_ONE,
+  MESSAGES_HISTORY_UNREAD_STATUS_CHANGED, MESSAGES_HISTORY_PREPEND_MANY, MESSAGES_HISTORY_SET, MESSAGES_HISTORY_APPEND_ONE,
 } from '../../sdk/ElixirChatEventTypes';
 import {IMAGE_PREVIEW_OPEN} from '../ElixirChatWidgetEventTypes';
 
 export interface IDefaultWidgetMessagesProps {
-  elixirChatWidget: ElixirChat;
+  elixirChatWidget: ElixirChatWidget;
   messages: Array<any>;
   onLoadPreviousMessages: any;
 }
@@ -42,20 +42,22 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
   componentDidMount(): void {
     const { elixirChatWidget } = this.props;
-    const { processedMessages, imagePreviews } = this.state;
     dayjs.locale('ru');
     dayjs.extend(dayjsCalendar);
 
     this.setState({
-      screenshotFallback: getCompatibilityFallback(),
+      screenshotFallback: getScreenshotCompatibilityFallback(),
     });
 
-    elixirChatWidget.on(MESSAGES_HISTORY_ADD_ONE, message => {
-      console.log('__ new', message);
-      this.appendProcessedMessages([message]);
+    elixirChatWidget.on(MESSAGES_HISTORY_APPEND_ONE, message => {
+      this.setProcessedMessages([message], { insertAfter: true });
     });
-    elixirChatWidget.on(MESSAGES_HISTORY_ADD_MANY, this.appendProcessedMessages);
-    elixirChatWidget.on(MESSAGES_HISTORY_UNREAD_STATUS_CHANGED, this.setProcessedMessages);
+    elixirChatWidget.on(MESSAGES_HISTORY_PREPEND_MANY, messages => {
+      this.setProcessedMessages(messages, { insertBefore: true });
+    });
+    elixirChatWidget.on(MESSAGES_HISTORY_UNREAD_STATUS_CHANGED, messages => {
+      this.setProcessedMessages(messages)
+    });
 
     elixirChatWidget.on(MESSAGES_FETCH_HISTORY_SUCCESS, () => {
       this.setState({ isLoading: false });
@@ -66,22 +68,34 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     });
   }
 
-  setProcessedMessages = (messages) => {
-    const { processedMessages, imagePreviews } = this.processMessages(messages);
-    this.setState({ processedMessages, imagePreviews });
-  };
+  setProcessedMessages = (messages, params = {}) => {
+    const { insertBefore, insertAfter } = params;
+    const previousProcessedMessages = this.state.processedMessages;
+    const previousImagePreviews = this.state.imagePreviews;
+    const { processedMessages, imagePreviews } = this.processMessages(
+      messages,
+      insertAfter ? _last(previousProcessedMessages) : null
+    );
+    let updatedProcessedMessages;
+    let updatedImagePreviews;
 
-  appendProcessedMessages = (messages) => {
-    const { processedMessages: previousProcessedMessages, imagePreviews: previousImagePreviews } = this.state;
-    const processed = this.processMessages(messages, _last(previousProcessedMessages));
-    const { processedMessages: newProcessedMessages, imagePreviews: newImagePreviews } = processed;
-
+    if (insertBefore) {
+      updatedProcessedMessages = [...processedMessages, ...previousProcessedMessages];
+      updatedImagePreviews = [...imagePreviews, ...previousImagePreviews];
+    }
+    else if (insertAfter) {
+      updatedProcessedMessages = [...previousProcessedMessages, ...processedMessages];
+      updatedImagePreviews = [...previousImagePreviews, ...imagePreviews];
+    }
+    else {
+      updatedProcessedMessages = processedMessages;
+      updatedImagePreviews = imagePreviews;
+    }
     this.setState({
-      processedMessages: newProcessedMessages.concat(previousProcessedMessages),
-      imagePreviews: newImagePreviews.concat(previousImagePreviews),
+      processedMessages: updatedProcessedMessages,
+      imagePreviews: updatedImagePreviews,
     });
   };
-
 
   processMessages = (messages, previousMessage) => {
     const { elixirChatWidget } = this.props;

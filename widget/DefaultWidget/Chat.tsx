@@ -19,8 +19,6 @@ import { ChatMessages } from './ChatMessages';
 import { ChatTextarea } from './ChatTextarea';
 import {
   JOIN_ROOM_SUCCESS,
-  MESSAGES_NEW,
-  MESSAGES_FETCH_HISTORY_SUCCESS,
   OPERATOR_ONLINE_STATUS_CHANGE,
   TYPING_STATUS_SUBSCRIBE_SUCCESS, MESSAGES_HISTORY_SET
 } from '../../sdk/ElixirChatEventTypes';
@@ -83,8 +81,6 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
     });
 
     elixirChatWidget.on(MESSAGES_HISTORY_SET, this.scrollToBottom);
-    // elixirChatWidget.on(MESSAGES_FETCH_HISTORY_SUCCESS, this.scrollToBottom);
-    // elixirChatWidget.on(MESSAGES_NEW, this.onNewMessage);
 
     elixirChatWidget.on(TYPING_STATUS_SUBSCRIBE_SUCCESS, () => {
       const textareaText = localStorage.getItem('elixirchat-typed-text') || '';

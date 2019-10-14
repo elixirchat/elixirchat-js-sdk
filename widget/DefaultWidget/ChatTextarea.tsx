@@ -4,7 +4,7 @@ import TextareaAutosize from 'react-textarea-autosize';
 import { ElixirChatWidget } from '../ElixirChatWidget';
 import { randomDigitStringId } from '../../utilsCommon';
 import { inflect, getImageDimensions } from '../../utilsWidget';
-import { getCompatibilityFallback } from '../../sdk/ScreenshotTaker';
+import { getScreenshotCompatibilityFallback } from '../../sdk/ScreenshotTaker';
 import {IMAGE_PREVIEW_CLOSE, WIDGET_POPUP_OPEN, WIDGET_RENDERED} from '../ElixirChatWidgetEventTypes';
 import {TYPING_STATUS_CHANGE} from '../../sdk/ElixirChatEventTypes';
 
@@ -50,7 +50,7 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
     elixirChatWidget.on(IMAGE_PREVIEW_CLOSE, () => this.focusTextarea);
 
     this.setState({
-      screenshotFallback: getCompatibilityFallback(),
+      screenshotFallback: getScreenshotCompatibilityFallback(),
     });
   }
 

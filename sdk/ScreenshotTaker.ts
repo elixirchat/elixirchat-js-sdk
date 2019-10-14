@@ -119,7 +119,7 @@ export interface IGetCompatibilityFallback {
   (): null | { pressKey: null | string }
 }
 
-export const getCompatibilityFallback: IGetCompatibilityFallback = () => {
+export const getScreenshotCompatibilityFallback: IGetCompatibilityFallback = () => {
   let getDisplayMedia;
   try {
     getDisplayMedia = navigator.mediaDevices.getDisplayMedia;
