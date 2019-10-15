@@ -4,18 +4,20 @@ import dayjs from 'dayjs';
 import dayjsCalendar from 'dayjs/plugin/calendar';
 import 'dayjs/locale/ru';
 import AutoLinkText from 'react-autolink-text2';
-import {_get, _last, _round} from '../../utilsCommon';
+import { _get, _last, _round } from '../../utilsCommon';
 import { isWebImage, getHumanReadableFileSize, inflectDayJSWeekDays } from '../../utilsWidget';
 import { getScreenshotCompatibilityFallback } from '../../sdk/ScreenshotTaker';
 import { ElixirChatWidget } from '../ElixirChatWidget';
+import { IMAGE_PREVIEW_OPEN } from '../ElixirChatWidgetEventTypes';
 import {
   JOIN_ROOM_ERROR,
   MESSAGES_FETCH_HISTORY_SUCCESS,
   MESSAGES_FETCH_HISTORY_ERROR,
   MESSAGES_SUBSCRIBE_ERROR,
-  MESSAGES_HISTORY_UNREAD_STATUS_CHANGED, MESSAGES_HISTORY_PREPEND_MANY, MESSAGES_HISTORY_SET, MESSAGES_HISTORY_APPEND_ONE,
+  MESSAGES_HISTORY_PREPEND_MANY,
+  MESSAGES_HISTORY_APPEND_ONE,
+  MESSAGES_HISTORY_CHANGE_MANY,
 } from '../../sdk/ElixirChatEventTypes';
-import {IMAGE_PREVIEW_OPEN} from '../ElixirChatWidgetEventTypes';
 
 export interface IDefaultWidgetMessagesProps {
   elixirChatWidget: ElixirChatWidget;
@@ -55,14 +57,13 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     elixirChatWidget.on(MESSAGES_HISTORY_PREPEND_MANY, messages => {
       this.setProcessedMessages(messages, { insertBefore: true });
     });
-    elixirChatWidget.on(MESSAGES_HISTORY_UNREAD_STATUS_CHANGED, messages => {
+    elixirChatWidget.on(MESSAGES_HISTORY_CHANGE_MANY, messages => {
       this.setProcessedMessages(messages)
     });
 
     elixirChatWidget.on(MESSAGES_FETCH_HISTORY_SUCCESS, () => {
       this.setState({ isLoading: false });
     });
-
     elixirChatWidget.on([JOIN_ROOM_ERROR, MESSAGES_SUBSCRIBE_ERROR, MESSAGES_FETCH_HISTORY_ERROR], () => {
       this.setState({ isLoading: false, isLoadingError: true });
     });

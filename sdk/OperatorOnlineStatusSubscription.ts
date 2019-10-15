@@ -1,5 +1,3 @@
-import * as AbsintheSocket from '@absinthe/socket'
-import * as Phoenix from 'phoenix'
 import { ElixirChat } from './ElixirChat';
 import {
   OPERATOR_ONLINE_STATUS_CHANGE,

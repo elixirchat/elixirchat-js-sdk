@@ -20,7 +20,6 @@ import { ChatTextarea } from './ChatTextarea';
 import {
   JOIN_ROOM_SUCCESS,
   OPERATOR_ONLINE_STATUS_CHANGE,
-  TYPING_STATUS_SUBSCRIBE_SUCCESS, MESSAGES_HISTORY_SET
 } from '../../sdk/ElixirChatEventTypes';
 
 import {
@@ -80,13 +79,7 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
       elixirChatWidget.fetchMessageHistory(this.messageChunkSize);
     });
 
-    elixirChatWidget.on(MESSAGES_HISTORY_SET, this.scrollToBottom);
-
-    elixirChatWidget.on(TYPING_STATUS_SUBSCRIBE_SUCCESS, () => {
-      const textareaText = localStorage.getItem('elixirchat-typed-text') || '';
-      elixirChatWidget.dispatchTypedText(textareaText);
-      this.setState({ textareaText });
-    });
+    // elixirChatWidget.on(MESSAGES_HISTORY_SET, this.scrollToBottom);// TODO: replace w/ FETCH_INITIAL
 
     elixirChatWidget.on(OPERATOR_ONLINE_STATUS_CHANGE, areAnyOperatorsOnline => {
       this.setState({ areAnyOperatorsOnline });
@@ -189,54 +182,55 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
     this.scrollBlock.current.scrollTop = this.scrollBlock.current.scrollHeight;
   };
 
-  onTextareaVerticalResize = (newTextareaHeight: number, options: { forceScrollToBottom: boolean } = {}) => {
+  onTextareaVerticalResize = (newTextareaHeight) => {
     const hasUserScroll = this.hasUserScroll();
     this.scrollBlock.current.style.bottom = newTextareaHeight + 'px';
 
-    if (!hasUserScroll || options.forceScrollToBottom) {
+    if (!hasUserScroll) {
       this.scrollToBottom();
     }
   };
 
-  onMessageSubmit = async () => {
-    const { elixirChatWidget } = this.props;
-    const {
-      textareaText,
-      textareaResponseToMessageId,
-      textareaAttachments,
-      messages,
-    } = this.state;
-
-    if (textareaText.trim() || textareaAttachments.length) {
-      const hasUserScroll = this.hasUserScroll();
-      const temporaryMessage = this.generateTemporaryMessage({
-        textareaText,
-        textareaResponseToMessageId,
-        textareaAttachments,
-      });
-      await this.setState({
-        messages: [...messages, temporaryMessage],
-      });
-      if (!hasUserScroll) {
-        this.scrollToBottom();
-      }
-      elixirChatWidget.sendMessage({
-        text: textareaText,
-        tempId: temporaryMessage.tempId,
-        attachments: textareaAttachments.map(attachment => attachment.file),
-        responseToMessageId: textareaResponseToMessageId,
-      })
-        .catch(() => {
-          this.changeMessageById(temporaryMessage.id, {
-            isSubmitting: false,
-            isSubmissionError: true,
-          });
-          elixirChatWidget.dispatchTypedText(false);
-        });
-
-      localStorage.removeItem('elixirchat-typed-text');
-    }
-  };
+  // onMessageSubmit = async () => {
+  //   const { elixirChatWidget } = this.props;
+  //   const {
+  //     textareaText,
+  //     textareaResponseToMessageId,
+  //     textareaAttachments,
+  //     // messages,
+  //   } = this.state;
+  //
+  //   if (textareaText.trim() || textareaAttachments.length) {
+  //     const hasUserScroll = this.hasUserScroll();
+  //     const temporaryMessage = this.generateTemporaryMessage({
+  //       textareaText,
+  //       textareaResponseToMessageId,
+  //       textareaAttachments,
+  //     });
+  //
+  //     // await this.setState({
+  //     //   messages: [...messages, temporaryMessage],
+  //     // });
+  //     if (!hasUserScroll) {
+  //       this.scrollToBottom();
+  //     }
+  //     elixirChatWidget.sendMessage({
+  //       text: textareaText,
+  //       tempId: temporaryMessage.tempId,
+  //       attachments: textareaAttachments.map(attachment => attachment.file),
+  //       responseToMessageId: textareaResponseToMessageId,
+  //     })
+  //       .catch(() => {
+  //         this.changeMessageById(temporaryMessage.id, {
+  //           isSubmitting: false,
+  //           isSubmissionError: true,
+  //         });
+  //         elixirChatWidget.dispatchTypedText(false);
+  //       });
+  //
+  //     localStorage.removeItem('elixirchat-typed-text');
+  //   }
+  // };
 
   changeMessageById = (messageId, data) => {
     const { messages } = this.state;
@@ -270,55 +264,55 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
     }
   };
 
-  generateTemporaryMessage = ({ textareaText, textareaResponseToMessageId, textareaAttachments }) => {
-    const { messages } = this.state;
-    const responseToMessage = messages.filter(message => {
-      return message.id === textareaResponseToMessageId;
-    })[0];
+  // generateTemporaryMessage = ({ textareaText, textareaResponseToMessageId, textareaAttachments }) => {
+  //   const { messages } = this.state;
+  //   const responseToMessage = messages.filter(message => {
+  //     return message.id === textareaResponseToMessageId;
+  //   })[0];
+  //
+  //   const attachments = textareaAttachments.map(attachment => {
+  //     const id = randomDigitStringId(6);
+  //     const originalFileObject = attachment.file;
+  //     const contentType = originalFileObject.type;
+  //     const url = URL.createObjectURL(originalFileObject);
+  //     let thumbnails = [];
+  //     if (isWebImage(contentType) && attachment.width && attachment.height) {
+  //       thumbnails = [{ id, url }];
+  //     }
+  //     return {
+  //       id,
+  //       url,
+  //       originalFileObject,
+  //       contentType,
+  //       thumbnails,
+  //       name: attachment.name,
+  //       width: attachment.width,
+  //       height: attachment.height,
+  //       bytesSize: originalFileObject.size,
+  //     };
+  //   });
+  //
+  //   return  {
+  //     id: randomDigitStringId(6),
+  //     tempId: randomDigitStringId(6),
+  //     text: textareaText.trim() || '',
+  //     timestamp: new Date().toISOString(),
+  //     sender: {
+  //       isOperator: false,
+  //       isCurrentClient: true,
+  //     },
+  //     responseToMessage: responseToMessage || null,
+  //     attachments: attachments,
+  //     isSubmitting: true,
+  //   };
+  // };
 
-    const attachments = textareaAttachments.map(attachment => {
-      const id = randomDigitStringId(6);
-      const originalFileObject = attachment.file;
-      const contentType = originalFileObject.type;
-      const url = URL.createObjectURL(originalFileObject);
-      let thumbnails = [];
-      if (isWebImage(contentType) && attachment.width && attachment.height) {
-        thumbnails = [{ id, url }];
-      }
-      return {
-        id,
-        url,
-        originalFileObject,
-        contentType,
-        thumbnails,
-        name: attachment.name,
-        width: attachment.width,
-        height: attachment.height,
-        bytesSize: originalFileObject.size,
-      };
-    });
-
-    return  {
-      id: randomDigitStringId(6),
-      tempId: randomDigitStringId(6),
-      text: textareaText.trim() || '',
-      timestamp: new Date().toISOString(),
-      sender: {
-        isOperator: false,
-        isCurrentClient: true,
-      },
-      responseToMessage: responseToMessage || null,
-      attachments: attachments,
-      isSubmitting: true,
-    };
-  };
-
-  onTextareaChange = (stateChange) => {
-    if (this.state.textareaText !== stateChange.textareaText) {
-      localStorage.setItem('elixirchat-typed-text', stateChange.textareaText);
-    }
-    this.setState(stateChange);
-  };
+  // onTextareaChange = (stateChange) => {
+  //   if (this.state.textareaText !== stateChange.textareaText) {
+  //     localStorage.setItem('elixirchat-typed-text', stateChange.textareaText);
+  //   }
+  //   this.setState(stateChange);
+  // };
 
   onScreenshotRequestFulfilled = async (screenshot) => {
     const { textareaText, textareaAttachments } = this.state;
@@ -421,13 +415,8 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
         </div>
 
         <ChatTextarea
-          onChange={this.onTextareaChange}
-          onSubmit={this.onMessageSubmit}
-          textareaText={textareaText}
-          textareaResponseToMessageId={textareaResponseToMessageId}
-          textareaAttachments={textareaAttachments}
-          onVerticalResize={this.onTextareaVerticalResize}
-          elixirChatWidget={elixirChatWidget}/>
+          elixirChatWidget={elixirChatWidget}
+          onVerticalResize={this.onTextareaVerticalResize}/>
 
 
         {isDraggingAttachments && (

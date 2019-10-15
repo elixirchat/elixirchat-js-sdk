@@ -13,7 +13,7 @@ import {
   JOIN_ROOM_ERROR,
   JOIN_ROOM_SUCCESS,
   LAST_READ_MESSAGE_CHANGE,
-  MESSAGES_HISTORY_UNREAD_STATUS_CHANGED,
+  MESSAGES_HISTORY_CHANGE_MANY,
 } from './ElixirChatEventTypes';
 
 export interface IElixirChatRoom {
@@ -170,7 +170,7 @@ export class ElixirChat {
         message.isUnread = false;
       }
     });
-    this.triggerEvent(MESSAGES_HISTORY_UNREAD_STATUS_CHANGED, this.messageHistory);
+    this.triggerEvent(MESSAGES_HISTORY_CHANGE_MANY, this.messageHistory);
   };
 
   protected setRoomAndClient(data: { room?: IElixirChatRoom, client?: IElixirChatUser }): void {
@@ -297,6 +297,14 @@ export class ElixirChat {
 
   public fetchMessageHistory = (limit: number, beforeCursor?: string): Promise<[IMessage]> => {
     return this.messageSubscription.fetchMessageHistory(limit, beforeCursor);
+  };
+
+  public appendMessage = (message: IMessage): void => {
+    return this.messageSubscription.appendMessage(message);
+  };
+
+  public updateMessageById = (messageId: string, messageData: object): void => {
+    return this.messageSubscription.updateMessageById(messageId, messageData);
   };
 
   public dispatchTypedText = (typedText: string): void => {

@@ -1,10 +1,9 @@
 import { ElixirChat } from './ElixirChat';
 import {
   MESSAGES_FETCH_HISTORY_ERROR,
-  MESSAGES_FETCH_HISTORY_SUCCESS, MESSAGES_HISTORY_PREPEND_MANY, MESSAGES_HISTORY_APPEND_ONE, MESSAGES_HISTORY_SET,
-  MESSAGES_NEW,
+  MESSAGES_FETCH_HISTORY_SUCCESS, MESSAGES_HISTORY_PREPEND_MANY, MESSAGES_HISTORY_APPEND_ONE,
   MESSAGES_SUBSCRIBE_ERROR,
-  MESSAGES_SUBSCRIBE_SUCCESS,
+  MESSAGES_SUBSCRIBE_SUCCESS, MESSAGES_HISTORY_CHANGE_ONE,
 } from './ElixirChatEventTypes';
 
 import {_get, logEvent, randomDigitStringId} from '../utilsCommon';
@@ -121,7 +120,6 @@ export class MessageSubscription {
           this.messageHistory.push(message);
           logEvent(debug, 'Received new message', message);
           triggerEvent(MESSAGES_HISTORY_APPEND_ONE, message, this.messageHistory);
-          triggerEvent(MESSAGES_NEW, message);
         }
       },
     });
@@ -256,7 +254,7 @@ export class MessageSubscription {
 
             triggerEvent(MESSAGES_HISTORY_PREPEND_MANY, messages, this.messageHistory);
             if (isSettingMessageHistoryFromScratch) {
-              triggerEvent(MESSAGES_HISTORY_SET, this.messageHistory);
+              // triggerEvent(MESSAGES_HISTORY_SET, this.messageHistory); // TODO: replace /w FETCH_INITIAL
             }
             triggerEvent(MESSAGES_FETCH_HISTORY_SUCCESS, messages);
             resolve(messages);
@@ -272,6 +270,25 @@ export class MessageSubscription {
           triggerEvent(MESSAGES_FETCH_HISTORY_ERROR, error);
           reject(error);
         });
+    });
+  };
+
+  public appendMessage = (message: IMessage): void => {
+    const { triggerEvent, debug } = this.elixirChat;
+    this.messageHistory.push(message);
+    logEvent(debug, 'Appended new message', message);
+    triggerEvent(MESSAGES_HISTORY_APPEND_ONE, message, this.messageHistory);
+  };
+
+  public updateMessageById = (messageId: string, messageData: object): void => {
+    const { triggerEvent, debug } = this.elixirChat;
+    this.messageHistory.forEach(message => {
+      if (message.id === messageId) {
+        for (let key in messageData) {
+          message[key] = messageData[key];
+        }
+        triggerEvent(MESSAGES_HISTORY_CHANGE_ONE, messageData, this.messageHistory);
+      }
     });
   };
 
