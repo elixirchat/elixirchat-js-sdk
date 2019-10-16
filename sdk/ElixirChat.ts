@@ -298,12 +298,12 @@ export class ElixirChat {
     return this.messageSubscription.sendMessage(params);
   };
 
-  public fetchMessageHistory = (limit: number, beforeCursor?: string): Promise<[IMessage]> => {
-    return this.messageSubscription.fetchMessageHistory(limit, beforeCursor);
+  public fetchMessageHistory = (limit: number): Promise<[IMessage]> => {
+    return this.messageSubscription.fetchMessageHistory(limit);
   };
 
-  public updateMessageByTempId = (tempId: string, messageData: object): void => {
-    return this.messageSubscription.updateMessageByTempId(tempId, messageData);
+  public fetchPrecedingMessageHistory = (limit: number): Promise<[IMessage]> => {
+    return this.messageSubscription.fetchPrecedingMessageHistory(limit);
   };
 
   public dispatchTypedText = (typedText: string): void => {

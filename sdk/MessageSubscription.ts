@@ -123,8 +123,6 @@ export class MessageSubscription {
     }
     const message = serializeMessage(data, { backendStaticUrl, client });
 
-    console.log('%c__ onMessageReceive', 'color: green', JSON.stringify(message, 0, 2));
-
     if (this.temporaryMessageTempIds.includes(message.tempId)) {
       this.enrichTemporaryMessage(message.tempId, message);
       logEvent(debug, 'Enriched temporary message with actual one', { message });
@@ -296,9 +294,36 @@ export class MessageSubscription {
     }
   }
 
-  public fetchMessageHistory = (limit: number, beforeCursor: string): Promise<[IMessage]> => {
+  // public getMessageHistoryByCursor222 = (limit: number, beforeCursor: string): Promise<[IMessage]> => {
+  //   return new Promise((resolve, reject) => {
+  //     const isPrependingExistingMessageHistory = Boolean(beforeCursor);
+  //     if (this.reachedBeginningOfMessageHistory) {
+  //       resolve([]);
+  //       return;
+  //     }
+  //     this.graphQLClient.query(this.messageHistoryQuery, { limit, beforeCursor })
+  //       .then(response => {
+  //         if (response.messages) {
+  //           const processedMessageHistory = this.processFetchedMessageHistory(response.messages);
+  //           this.onFetchMessageHistorySuccess(processedMessageHistory, isPrependingExistingMessageHistory);
+  //           resolve(processedMessageHistory);
+  //         }
+  //         else {
+  //           this.onFetchMessageHistoryFailure(response, isPrependingExistingMessageHistory);
+  //           reject(response);
+  //         }
+  //       })
+  //       .catch(error => {
+  //         this.onFetchMessageHistoryFailure(error, isPrependingExistingMessageHistory);
+  //         reject(error);
+  //       });
+  //   });
+  // };
+
+  public getMessageHistoryByCursor = (limit: number, beforeCursor: string): Promise<[IMessage]> => {
+    const { triggerEvent, debug, backendStaticUrl, client } = this.elixirChat;
+
     return new Promise((resolve, reject) => {
-      const isPrependingExistingMessageHistory = Boolean(beforeCursor);
       if (this.reachedBeginningOfMessageHistory) {
         resolve([]);
         return;
@@ -306,67 +331,47 @@ export class MessageSubscription {
       this.graphQLClient.query(this.messageHistoryQuery, { limit, beforeCursor })
         .then(response => {
           if (response.messages) {
-            const processedMessageHistory = this.processFetchedMessageHistory(response.messages);
-            this.onFetchMessageHistorySuccess(processedMessageHistory, isPrependingExistingMessageHistory);
-            resolve(processedMessageHistory);
+
+            const { hasMessageHistoryBeenEverFetched } = this;
+            let processedMessages = <[IMessage]>simplifyGraphQLJSON(response.messages)
+              .map(message => serializeMessage(message, { backendStaticUrl, client }))
+              .filter(message => {
+                // Preventing message duplication if overlapping ranges of messages were fetched
+                return !this.latestMessageHistoryCursorsCache.includes(message.cursor);
+              });
+
+            this.hasMessageHistoryBeenEverFetched = true;
+            this.latestMessageHistoryCursorsCache = [
+              ...processedMessages.map(message => message.cursor),
+              ...this.latestMessageHistoryCursorsCache,
+            ].slice(0, limit);
+
+            this.reachedBeginningOfMessageHistory = processedMessages.length < limit;
+            if (this.reachedBeginningOfMessageHistory) {
+              processedMessages.unshift(
+                this.generateNewClientPlaceholderMessage(processedMessages)
+              );
+            }
+            triggerEvent(
+              hasMessageHistoryBeenEverFetched
+                ? MESSAGES_FETCH_HISTORY_SUCCESS
+                : MESSAGES_FETCH_HISTORY_INITIAL_SUCCESS,
+              processedMessages,
+              this.messageHistory
+            );
+            resolve(processedMessages);
           }
           else {
-            this.onFetchMessageHistoryFailure(response, isPrependingExistingMessageHistory);
+            this.onFetchMessageHistoryFailure(response);
             reject(response);
           }
         })
         .catch(error => {
-          this.onFetchMessageHistoryFailure(error, isPrependingExistingMessageHistory);
+          this.onFetchMessageHistoryFailure(error);
           reject(error);
         });
     });
   };
-
-  protected processFetchedMessageHistory(messages: Array<object>, limit: number): Array<IMessage> {
-    const { backendStaticUrl, client } = this.elixirChat;
-
-    let processedMessages = <[IMessage]>simplifyGraphQLJSON(messages)
-      .map(message => serializeMessage(message, { backendStaticUrl, client }))
-      .filter(message => {
-        // Preventing message duplication if overlapping ranges of messages were fetched
-        return !this.latestMessageHistoryCursorsCache.includes(message.cursor);
-      });
-
-    this.latestMessageHistoryCursorsCache = [
-      ...processedMessages.map(message => message.cursor),
-      ...this.latestMessageHistoryCursorsCache,
-    ].slice(0, limit);
-
-    this.reachedBeginningOfMessageHistory = messages.length < limit;
-    this.hasMessageHistoryBeenEverFetched = true;
-
-    if (messages.length < limit) {
-      const newClientPlaceholderMessage = this.generateNewClientPlaceholderMessage(messages);
-      processedMessages = [newClientPlaceholderMessage, ...processedMessages];
-    }
-    return processedMessages;
-  }
-
-  protected onFetchMessageHistorySuccess(processedMessageHistory: Array<IMessage>, isPrependingExistingMessageHistory: boolean): void {
-    const { triggerEvent, debug } = this.elixirChat;
-    if (isPrependingExistingMessageHistory) {
-      this.messageHistory = processedMessageHistory.concat(this.messageHistory);
-      logEvent(debug, 'Fetched and prepended additional message history', { processedMessageHistory });
-      triggerEvent(MESSAGES_HISTORY_PREPEND_MANY, processedMessageHistory, this.messageHistory);
-    }
-    else {
-      this.messageHistory = processedMessageHistory;
-      logEvent(debug, 'Fetched new message history', { processedMessageHistory });
-      triggerEvent(MESSAGES_HISTORY_SET, processedMessageHistory);
-    }
-
-    if (this.hasMessageHistoryBeenEverFetched) {
-      triggerEvent(MESSAGES_FETCH_HISTORY_SUCCESS, processedMessageHistory, this.messageHistory);
-    }
-    else {
-      triggerEvent(MESSAGES_FETCH_HISTORY_INITIAL_SUCCESS, processedMessageHistory, this.messageHistory);
-    }
-  }
 
   protected onFetchMessageHistoryFailure(error: any): void {
     const { triggerEvent, debug } = this.elixirChat;
@@ -378,7 +383,95 @@ export class MessageSubscription {
       logEvent(debug, 'Failed to fetch initial message history', { error }, 'error');
       triggerEvent(MESSAGES_FETCH_HISTORY_INITIAL_ERROR, error);
     }
-  }
+  };
+
+  // protected processFetchedMessageHistory(messages: Array<object>, limit: number): Array<IMessage> {
+  //   const { backendStaticUrl, client } = this.elixirChat;
+  //
+  //   let processedMessages = <[IMessage]>simplifyGraphQLJSON(messages)
+  //     .map(message => serializeMessage(message, { backendStaticUrl, client }))
+  //     .filter(message => {
+  //       // Preventing message duplication if overlapping ranges of messages were fetched
+  //       return !this.latestMessageHistoryCursorsCache.includes(message.cursor);
+  //     });
+  //
+  //   this.latestMessageHistoryCursorsCache = [
+  //     ...processedMessages.map(message => message.cursor),
+  //     ...this.latestMessageHistoryCursorsCache,
+  //   ].slice(0, limit);
+  //
+  //   this.reachedBeginningOfMessageHistory = messages.length < limit;
+  //   this.hasMessageHistoryBeenEverFetched = true;
+  //
+  //   if (messages.length < limit) {
+  //     const newClientPlaceholderMessage = this.generateNewClientPlaceholderMessage(messages);
+  //     processedMessages = [newClientPlaceholderMessage, ...processedMessages];
+  //   }
+  //   return processedMessages;
+  // }
+
+  // protected onFetchMessageHistorySuccess(processedMessageHistory: Array<IMessage>, isPrependingExistingMessageHistory: boolean): void {
+  //   const { triggerEvent, debug } = this.elixirChat;
+  //   if (isPrependingExistingMessageHistory) {
+  //     this.messageHistory = processedMessageHistory.concat(this.messageHistory);
+  //     logEvent(debug, 'Fetched and prepended additional message history', { processedMessageHistory });
+  //     triggerEvent(MESSAGES_HISTORY_PREPEND_MANY, processedMessageHistory, this.messageHistory);
+  //   }
+  //   else {
+  //     this.messageHistory = processedMessageHistory;
+  //     logEvent(debug, 'Fetched new message history', { processedMessageHistory });
+  //     triggerEvent(MESSAGES_HISTORY_SET, processedMessageHistory);
+  //   }
+  //
+  //   if (this.hasMessageHistoryBeenEverFetched) {
+  //     triggerEvent(MESSAGES_FETCH_HISTORY_SUCCESS, processedMessageHistory, this.messageHistory);
+  //   }
+  //   else {
+  //     triggerEvent(MESSAGES_FETCH_HISTORY_INITIAL_SUCCESS, processedMessageHistory, this.messageHistory);
+  //   }
+  // }
+
+  public fetchMessageHistory = (limit: number): Promise<[IMessage | any]> => {
+    const { triggerEvent, debug } = this.elixirChat;
+
+    return this.getMessageHistoryByCursor(limit, null)
+      .then(processedMessageHistory => {
+        this.messageHistory = processedMessageHistory;
+        logEvent(debug, 'Fetched new message history', { processedMessageHistory });
+        triggerEvent(MESSAGES_HISTORY_SET, processedMessageHistory);
+        return processedMessageHistory;
+      })
+      .catch(error => {
+        logEvent(debug, 'Failed to fetch initial message history', { error }, 'error');
+        triggerEvent(MESSAGES_FETCH_HISTORY_INITIAL_ERROR, error);
+        throw error;
+      });
+  };
+
+  public fetchPrecedingMessageHistory = (limit: number): Promise<[IMessage | any]> => {
+    const { triggerEvent, debug } = this.elixirChat;
+    const latestCursor = this.messageHistory[0].cursor;
+
+    if (!latestCursor) {
+      return new Promise((resolve, reject) => {
+        const errorMessage = 'Failed to fetch previous message history - cursors not found';
+        logEvent(debug, errorMessage);
+        reject({ message: errorMessage });
+      });
+    }
+    return this.getMessageHistoryByCursor(limit, latestCursor)
+      .then(processedMessageHistory => {
+        this.messageHistory = processedMessageHistory.concat(this.messageHistory);
+        logEvent(debug, 'Fetched and prepended additional message history', { processedMessageHistory });
+        triggerEvent(MESSAGES_HISTORY_PREPEND_MANY, processedMessageHistory, this.messageHistory);
+        return processedMessageHistory;
+      })
+      .catch(error => {
+        logEvent(debug, 'Failed to fetch message history', { error }, 'error');
+        triggerEvent(MESSAGES_FETCH_HISTORY_ERROR, error);
+        throw error;
+      });
+  };
 
   public unsubscribe = (): void => {
     const { debug } = this.elixirChat;

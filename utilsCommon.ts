@@ -5,7 +5,7 @@ export function logEvent(isDebug:boolean = false, message: string, data: any, ty
       color = '#EB3223';
     }
     else if (type === 'event') {
-      color = '#5ee9eb';
+      color = /_ERROR$/i.test(message) ? '#eba4a7' : '#5ee9eb';
     }
     const messageConsoleStyles = `
        font-weight: bold;

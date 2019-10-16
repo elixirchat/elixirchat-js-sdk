@@ -47,8 +47,9 @@ export interface IDefaultWidgetState {
 
 export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
 
-  container: { current: HTMLElement } = React.createRef();
-  scrollBlock: { current: HTMLElement } = React.createRef();
+  // container: { current: HTMLElement } = React.createRef();
+  // scrollBlock: { current: HTMLElement } = React.createRef();
+  chatMessages: { current: Component } = React.createRef();
   messageChunkSize: number = 20;
 
   state = {
@@ -67,6 +68,8 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
 
   componentDidMount() {
     const { elixirChatWidget } = this.props;
+
+    window.__this = this;
 
     elixirChatWidget.on(WIDGET_IFRAME_READY, () => {
       elixirChatWidget.widgetIFrameDocument.body.addEventListener('click', unlockNotificationSoundAutoplay);
@@ -130,65 +133,68 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
     this.setState({ textareaAttachments, isDraggingAttachments: false });
   };
 
-  onNewMessage = (message) => {
-    const hasUserScroll = this.hasUserScroll();
-    const isMessageSentByCurrentClient = message.sender.isCurrentClient;
+  // onNewMessage = (message) => {
+  //   const hasUserScroll = this.hasUserScroll();
+  //   const isMessageSentByCurrentClient = message.sender.isCurrentClient;
+  //
+  //   if (isMessageSentByCurrentClient) {
+  //     this.replaceTemporaryMessageWithActualOne(message);
+  //   }
+  //   else {
+  //     const messages = [...this.state.messages, message];
+  //     this.setState({ messages });
+  //     if (!this.state.areNotificationsMuted) {
+  //       playNotificationSound();
+  //     }
+  //   }
+  //   if (!hasUserScroll) {
+  //     this.scrollToBottom();
+  //   }
+  // };
 
-    if (isMessageSentByCurrentClient) {
-      this.replaceTemporaryMessageWithActualOne(message);
-    }
-    else {
-      const messages = [...this.state.messages, message];
-      this.setState({ messages });
-      if (!this.state.areNotificationsMuted) {
-        playNotificationSound();
-      }
-    }
-    if (!hasUserScroll) {
-      this.scrollToBottom();
-    }
-  };
+  // loadPreviousMessages = (callback): void => {
+  //   const { elixirChatWidget } = this.props;
+  //   const { isLoadingPreviousMessages } = this.state;
+  //   const firstMessageCursor = elixirChatWidget.messageHistory[0].cursor;
+  //
+  //   if (!isLoadingPreviousMessages && !elixirChatWidget.reachedBeginningOfMessageHistory) {
+  //     this.setState({ isLoadingPreviousMessages: true });
+  //     elixirChatWidget.fetchMessageHistory(this.messageChunkSize, firstMessageCursor).then(() => {
+  //       this.setState({ isLoadingPreviousMessages: false });
+  //       callback();
+  //     });
+  //   }
+  // };
 
-  loadPreviousMessages = (callback): void => {
-    const { elixirChatWidget } = this.props;
-    const { isLoadingPreviousMessages } = this.state;
-    const firstMessageCursor = elixirChatWidget.messageHistory[0].cursor;
-
-    if (!isLoadingPreviousMessages && !elixirChatWidget.reachedBeginningOfMessageHistory) {
-      this.setState({ isLoadingPreviousMessages: true });
-      elixirChatWidget.fetchMessageHistory(this.messageChunkSize, firstMessageCursor).then(() => {
-        this.setState({ isLoadingPreviousMessages: false });
-        callback();
-      });
-    }
-  };
-
-  onMessagesScroll = () => {
-    const scrollBlock = this.scrollBlock.current;
-    if (scrollBlock.scrollTop <= 0) {
-      const initialScrollHeight = scrollBlock.scrollHeight;
-      this.loadPreviousMessages(() => {
-        scrollBlock.scrollTop = scrollBlock.scrollHeight - initialScrollHeight;
-      });
-    }
-  };
-
-  hasUserScroll = () => {
-    const scrollBlock = this.scrollBlock.current;
-    return scrollBlock.scrollTop !== scrollBlock.scrollHeight - scrollBlock.offsetHeight;
-  };
-
-  scrollToBottom = (): void => {
-    this.scrollBlock.current.scrollTop = this.scrollBlock.current.scrollHeight;
-  };
+  // onMessagesScroll = () => {
+  //   const scrollBlock = this.scrollBlock.current;
+  //   if (scrollBlock.scrollTop <= 0) {
+  //     const initialScrollHeight = scrollBlock.scrollHeight;
+  //     this.loadPreviousMessages(() => {
+  //       scrollBlock.scrollTop = scrollBlock.scrollHeight - initialScrollHeight;
+  //     });
+  //   }
+  // };
+  //
+  // hasUserScroll = () => {
+  //   const scrollBlock = this.scrollBlock.current;
+  //   return scrollBlock.scrollTop !== scrollBlock.scrollHeight - scrollBlock.offsetHeight;
+  // };
+  //
+  // scrollToBottom = (): void => {
+  //   this.scrollBlock.current.scrollTop = this.scrollBlock.current.scrollHeight;
+  // };
 
   onTextareaVerticalResize = (newTextareaHeight) => {
-    const hasUserScroll = this.hasUserScroll();
-    this.scrollBlock.current.style.bottom = newTextareaHeight + 'px';
 
-    if (!hasUserScroll) {
-      this.scrollToBottom();
-    }
+    console.error('__ onTextareaVerticalResize: hasUserScroll, scrollBlock, scrollToBottom');
+
+    // const hasUserScroll = this.hasUserScroll();
+    // this.scrollBlock.current.style.bottom = newTextareaHeight + 'px';
+    //
+    // if (!hasUserScroll) {
+    //   this.scrollToBottom();
+    // }
   };
 
   // onMessageSubmit = async () => {
@@ -249,20 +255,20 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
     this.setState({ messages: changedMessages });
   };
 
-  replaceTemporaryMessageWithActualOne = (newMessage) => {
-    const { messages } = this.state;
-    const temporaryMessage = _last(messages.filter(message => {
-      return message.tempId === newMessage.tempId;
-    }));
-    if (temporaryMessage) {
-      this.changeMessageById(temporaryMessage.id, newMessage);
-    }
-    else {
-      this.setState({
-        messages: [...this.state.messages, newMessage]
-      });
-    }
-  };
+  // replaceTemporaryMessageWithActualOne = (newMessage) => {
+  //   const { messages } = this.state;
+  //   const temporaryMessage = _last(messages.filter(message => {
+  //     return message.tempId === newMessage.tempId;
+  //   }));
+  //   if (temporaryMessage) {
+  //     this.changeMessageById(temporaryMessage.id, newMessage);
+  //   }
+  //   else {
+  //     this.setState({
+  //       messages: [...this.state.messages, newMessage]
+  //     });
+  //   }
+  // };
 
   // generateTemporaryMessage = ({ textareaText, textareaResponseToMessageId, textareaAttachments }) => {
   //   const { messages } = this.state;
@@ -376,7 +382,7 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
     } = this.state;
 
     return (
-      <div className="elixirchat-chat-container" ref={this.container}>
+      <div className="elixirchat-chat-container">
 
         <h2 className="elixirchat-chat-header">
           {widgetTitle && (
@@ -408,6 +414,7 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
 
         <div className="elixirchat-chat-scroll" ref={this.scrollBlock} onScroll={this.onMessagesScroll}>
           <ChatMessages
+            ref={this.chatMessages}
             onLoadPreviousMessages={this.loadPreviousMessages}
             onReplyMessage={this.onReplyMessage}
             onSubmitRetry={this.onSubmitRetry}
