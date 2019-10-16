@@ -294,34 +294,8 @@ export class MessageSubscription {
     }
   }
 
-  // public getMessageHistoryByCursor222 = (limit: number, beforeCursor: string): Promise<[IMessage]> => {
-  //   return new Promise((resolve, reject) => {
-  //     const isPrependingExistingMessageHistory = Boolean(beforeCursor);
-  //     if (this.reachedBeginningOfMessageHistory) {
-  //       resolve([]);
-  //       return;
-  //     }
-  //     this.graphQLClient.query(this.messageHistoryQuery, { limit, beforeCursor })
-  //       .then(response => {
-  //         if (response.messages) {
-  //           const processedMessageHistory = this.processFetchedMessageHistory(response.messages);
-  //           this.onFetchMessageHistorySuccess(processedMessageHistory, isPrependingExistingMessageHistory);
-  //           resolve(processedMessageHistory);
-  //         }
-  //         else {
-  //           this.onFetchMessageHistoryFailure(response, isPrependingExistingMessageHistory);
-  //           reject(response);
-  //         }
-  //       })
-  //       .catch(error => {
-  //         this.onFetchMessageHistoryFailure(error, isPrependingExistingMessageHistory);
-  //         reject(error);
-  //       });
-  //   });
-  // };
-
   public getMessageHistoryByCursor = (limit: number, beforeCursor: string): Promise<[IMessage]> => {
-    const { triggerEvent, debug, backendStaticUrl, client } = this.elixirChat;
+    const { triggerEvent, backendStaticUrl, client } = this.elixirChat;
 
     return new Promise((resolve, reject) => {
       if (this.reachedBeginningOfMessageHistory) {
@@ -384,52 +358,6 @@ export class MessageSubscription {
       triggerEvent(MESSAGES_FETCH_HISTORY_INITIAL_ERROR, error);
     }
   };
-
-  // protected processFetchedMessageHistory(messages: Array<object>, limit: number): Array<IMessage> {
-  //   const { backendStaticUrl, client } = this.elixirChat;
-  //
-  //   let processedMessages = <[IMessage]>simplifyGraphQLJSON(messages)
-  //     .map(message => serializeMessage(message, { backendStaticUrl, client }))
-  //     .filter(message => {
-  //       // Preventing message duplication if overlapping ranges of messages were fetched
-  //       return !this.latestMessageHistoryCursorsCache.includes(message.cursor);
-  //     });
-  //
-  //   this.latestMessageHistoryCursorsCache = [
-  //     ...processedMessages.map(message => message.cursor),
-  //     ...this.latestMessageHistoryCursorsCache,
-  //   ].slice(0, limit);
-  //
-  //   this.reachedBeginningOfMessageHistory = messages.length < limit;
-  //   this.hasMessageHistoryBeenEverFetched = true;
-  //
-  //   if (messages.length < limit) {
-  //     const newClientPlaceholderMessage = this.generateNewClientPlaceholderMessage(messages);
-  //     processedMessages = [newClientPlaceholderMessage, ...processedMessages];
-  //   }
-  //   return processedMessages;
-  // }
-
-  // protected onFetchMessageHistorySuccess(processedMessageHistory: Array<IMessage>, isPrependingExistingMessageHistory: boolean): void {
-  //   const { triggerEvent, debug } = this.elixirChat;
-  //   if (isPrependingExistingMessageHistory) {
-  //     this.messageHistory = processedMessageHistory.concat(this.messageHistory);
-  //     logEvent(debug, 'Fetched and prepended additional message history', { processedMessageHistory });
-  //     triggerEvent(MESSAGES_HISTORY_PREPEND_MANY, processedMessageHistory, this.messageHistory);
-  //   }
-  //   else {
-  //     this.messageHistory = processedMessageHistory;
-  //     logEvent(debug, 'Fetched new message history', { processedMessageHistory });
-  //     triggerEvent(MESSAGES_HISTORY_SET, processedMessageHistory);
-  //   }
-  //
-  //   if (this.hasMessageHistoryBeenEverFetched) {
-  //     triggerEvent(MESSAGES_FETCH_HISTORY_SUCCESS, processedMessageHistory, this.messageHistory);
-  //   }
-  //   else {
-  //     triggerEvent(MESSAGES_FETCH_HISTORY_INITIAL_SUCCESS, processedMessageHistory, this.messageHistory);
-  //   }
-  // }
 
   public fetchMessageHistory = (limit: number): Promise<[IMessage | any]> => {
     const { triggerEvent, debug } = this.elixirChat;

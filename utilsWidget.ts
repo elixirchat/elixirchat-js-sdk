@@ -103,7 +103,7 @@ export function getHumanReadableFileSize(locale: 'ru-RU' | 'en-US', sizeInBytes:
 }
 
 
-export async function getImageDimensions(imageUrl) {
+export async function getImageDimensions(imageUrl: string): Promise<{ width: number, height: number }> {
   return new Promise(resolve => {
     const image = new Image();
     image.onload = () => {
@@ -120,4 +120,42 @@ export async function getImageDimensions(imageUrl) {
     };
     image.src = imageUrl;
   });
+}
+
+
+export interface IScrollToElement {
+  (
+    element: HTMLElement,
+    options: {
+      isSmooth: boolean;
+      position: string;
+    },
+    callback: () => {}
+  ): void
+}
+
+export function scrollToElement(element, options = {}, callback = () => {}): IScrollToElement {
+  const { isSmooth, position } = options;
+
+  if (element.tagName) {
+    element.scrollIntoView({
+      behavior: isSmooth ? 'smooth' : 'auto',
+      block: position || 'center',
+    });
+
+    if (typeof IntersectionObserver !== 'undefined') {
+      const intersectionObserver = new IntersectionObserver(function(entries) {
+        if (entries[0].isIntersecting) {
+          intersectionObserver.unobserve(element);
+          callback();
+        }
+      });
+      intersectionObserver.observe(element);
+    }
+    else {
+      setTimeout(() => {
+        callback && callback();
+      }, 300); // default callback timeout for browsers not supporting IntersectionObserver
+    }
+  }
 }

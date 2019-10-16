@@ -5,7 +5,12 @@ import dayjsCalendar from 'dayjs/plugin/calendar';
 import 'dayjs/locale/ru';
 import AutoLinkText from 'react-autolink-text2';
 import { _get, _last, _round, isWebImage } from '../../utilsCommon';
-import { getHumanReadableFileSize, inflectDayJSWeekDays, playNotificationSound } from '../../utilsWidget';
+import {
+  getHumanReadableFileSize,
+  inflectDayJSWeekDays,
+  playNotificationSound,
+  scrollToElement
+} from '../../utilsWidget';
 import { getScreenshotCompatibilityFallback } from '../../sdk/ScreenshotTaker';
 import { ElixirChatWidget } from '../ElixirChatWidget';
 import { IMAGE_PREVIEW_OPEN } from '../ElixirChatWidgetEventTypes';
@@ -41,6 +46,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
   };
 
   scrollBlock: { current: HTMLElement } = React.createRef();
+  scrollBlockInner: { current: HTMLElement } = React.createRef();
   maxThumbnailSize: number = 256;
   messageChunkSize: number = 20;
 
@@ -58,10 +64,15 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     elixirChatWidget.on(MESSAGES_HISTORY_PREPEND_MANY, messages => {
       this.setProcessedMessages(messages, { insertBefore: true });
     });
-    elixirChatWidget.on([MESSAGES_HISTORY_SET, MESSAGES_HISTORY_CHANGE_MANY], messages => {
+    elixirChatWidget.on(MESSAGES_HISTORY_CHANGE_MANY, messages => {
+      this.setProcessedMessages(messages);
+    });
+    elixirChatWidget.on(MESSAGES_HISTORY_SET, messages => {
       this.setProcessedMessages(messages);
       this.setState({ isLoading: false });
+      this.scrollToBottom(); // TODO: fix
     });
+
     elixirChatWidget.on([JOIN_ROOM_ERROR, MESSAGES_SUBSCRIBE_ERROR, MESSAGES_FETCH_HISTORY_INITIAL_ERROR], () => {
       this.setState({ isLoading: false, isLoadingError: true });
     });
@@ -234,7 +245,9 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
   };
 
   scrollToBottom = (): void => {
-    this.scrollBlock.current.scrollTop = this.scrollBlock.current.scrollHeight;
+    requestAnimationFrame(() => {
+      this.scrollBlock.current.scrollTop = this.scrollBlock.current.scrollHeight;
+    });
   };
 
   loadPrecedingMessageHistory = (): void => {
@@ -277,7 +290,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
     return (
       <div className="elixirchat-chat-scroll" ref={this.scrollBlock} onScroll={this.onMessagesScroll}>
-        <div className="elixirchat-chat-messages">
+        <div className="elixirchat-chat-messages" ref={this.scrollBlockInner}>
 
           {isLoading && (
             <i className="elixirchat-chat-spinner"/>

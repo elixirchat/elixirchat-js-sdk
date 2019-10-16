@@ -363,6 +363,7 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
   };
 
   toggleMute = () => {
+
     const { areNotificationsMuted } = this.state;
     localStorage.setItem('elixirchat-notifications-muted', JSON.stringify(!areNotificationsMuted));
     this.setState({ areNotificationsMuted: !areNotificationsMuted });
@@ -371,11 +372,8 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
   render(): void {
     const { elixirChatWidget } = this.props;
     const {
-      textareaText,
-      textareaResponseToMessageId,
-      textareaAttachments,
-      isDraggingAttachments,
       widgetTitle,
+      isDraggingAttachments,
       areAnyOperatorsOnline,
       areNotificationsMuted,
       isLoadingPreviousMessages,
