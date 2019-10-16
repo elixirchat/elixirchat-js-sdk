@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 import dayjsCalendar from 'dayjs/plugin/calendar';
 import 'dayjs/locale/ru';
 import AutoLinkText from 'react-autolink-text2';
-import {_findIndex, _get, _last, _round, isWebImage} from '../../utilsCommon';
+import {_findIndex, _get, _last, _round, isWebImage, logEvent, randomDigitStringId} from '../../utilsCommon';
 import {
   getHumanReadableFileSize,
   inflectDayJSWeekDays,
@@ -53,8 +53,10 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
   scrollBlock: { current: HTMLElement } = React.createRef();
   scrollBlockInner: { current: HTMLElement } = React.createRef();
+
   maxThumbnailSize: number = 256;
   messageChunkSize: number = 20;
+  messageRefs: object = {};
 
   componentDidMount() {
     const { elixirChatWidget } = this.props;
@@ -78,6 +80,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
       this.setProcessedMessages(messages);
       this.setState({ isLoading: false });
       this.scrollToBottom();
+      this.onScrollThroughUnreadMessage();
     });
     elixirChatWidget.on(MESSAGES_HISTORY_PREPEND_MANY, messages => {
       this.setProcessedMessages(messages, { insertBefore: true });
@@ -99,6 +102,73 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
       }
     });
   }
+
+
+  onScrollThroughUnreadMessage = (callback) => {
+    const pxNeedToScrollToMarkRead = this.scrollBlock.current.offsetHeight / 2;
+    let currentlyViewedMessageId;
+
+    const { elixirChatWidget } = this.props;
+
+    // const getMessageById = id => elixirChatWidget.messageHistory
+
+    Object.values(this.messageRefs)
+      .filter(ref => {
+        return 1;
+        // return ref.isUnread && !ref.sender.isCurrentClient;
+      })
+      .forEach(ref => {
+        const intersectionObserver = new IntersectionObserver(([ entry ]) => {
+          if (entry.isIntersecting) {
+            const messageElement: HTMLElement = entry.target;
+            currentlyViewedMessageId = messageElement.dataset.id;
+
+            setTimeout(() => {
+              if (currentlyViewedMessageId === messageElement.dataset.id) {
+                messageElement.style.border = `4px solid #${randomDigitStringId(6)}`;
+              }
+              else {
+                console.warn('__ skipped message', message);
+              }
+            }, 3 * 1000);
+          }
+        }, {
+          root: this.scrollBlock.current,
+          threshold: Math.min(pxNeedToScrollToMarkRead / ref.current.offsetHeight, 1),
+        });
+        intersectionObserver.observe(ref.current);
+    });
+  };
+
+  onScrollThroughUnreadMessage222 = (callback) => {
+
+    window.__this = this;
+
+    // const { elixirChatWidget } = this.props;
+    const { processedMessages } = this.state;
+
+    const intersectionObserver = new IntersectionObserver(entries => {
+      const [ entry ] = entries;
+      if (entry.isIntersecting) {
+        const messageElement: HTMLElement = entry.target;
+
+        console.log('%c__ ggg', 'color: green', messageElement.dataset);
+
+        messageElement.style.border = `4px solid #${randomDigitStringId(6)}`;
+
+        // if (messageElement.dataset.unread && !messageElement.dataset.byMe) {
+        //   const messageId = messageElement.dataset.id;
+        //   const message = processedMessages.filter(item => item.id === messageId);
+        //   console.log('%c__ MARK AS READ', 'color: green', messageId, message);
+        // }
+
+      }
+    }, {
+      // root: this.scrollBlock.current
+    });
+
+    Object.values(this.refs).forEach(messageElement => intersectionObserver.observe(messageElement));
+  };
 
   onMessageReceive = message => {
     const { elixirChatWidget } = this.props;
@@ -300,6 +370,17 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     );
   };
 
+  createMessageRef = (messageElement, message) => {
+    this.messageRefs[message.id] = {
+      current: messageElement,
+      id: message.id,
+      isUnread: message.isUnread,
+      sender: {
+        isCurrentClient: message.sender.isCurrentClient
+      }
+    };
+  };
+
   render(): void {
     const { elixirChatWidget } = this.props;
     const {
@@ -346,12 +427,17 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
               )}
 
               {!message.isSystem && (
-                <div ref={`message-${message.id}`} className={cn({
+                <div className={cn({
                   'elixirchat-chat-messages__item': true,
                   'elixirchat-chat-messages__item--by-me': message.sender.isCurrentClient,
                   'elixirchat-chat-messages__item--by-operator': message.sender.isOperator,
                   'elixirchat-chat-messages__item--highlighted': message.isUnread,
-                })}>
+                })}
+                  // ref={`message-${message.id}`}
+                  // data-unread={message.isUnread}
+                  // data-by-me={message.sender.isCurrentClient}
+                  // data-id={message.id}>
+                  ref={element => this.createMessageRef(element, message)}>
 
                   {!this.shouldHideMessageBalloon(message) && (
                     <div className="elixirchat-chat-messages__balloon"
@@ -467,7 +553,13 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                   'elixirchat-chat-messages__item--by-operator': true,
                   'elixirchat-chat-messages__item--system': true,
                   'elixirchat-chat-messages__item--highlighted': message.isUnread,
-                })}>
+                })}
+                  // ref={`message-${message.id}`}
+                  // data-unread={message.isUnread}
+                  // data-by-me={message.sender.isCurrentClient}
+                  // data-id={message.id}>
+                  ref={element => this.createMessageRef(element, message)}>
+
                   <div className="elixirchat-chat-messages__balloon">
                     <div className="elixirchat-chat-messages__sender">
                       {message.sender.firstName} {message.sender.lastName}

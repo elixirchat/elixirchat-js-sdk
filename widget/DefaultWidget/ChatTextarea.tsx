@@ -3,7 +3,7 @@ import cn from 'classnames';
 import TextareaAutosize from 'react-textarea-autosize';
 import { ElixirChatWidget } from '../ElixirChatWidget';
 import { randomDigitStringId } from '../../utilsCommon';
-import {inflect, getImageDimensions, isWebImage, unlockNotificationSoundAutoplay} from '../../utilsWidget';
+import { inflect, getImageDimensions } from '../../utilsWidget';
 import { getScreenshotCompatibilityFallback } from '../../sdk/ScreenshotTaker';
 import {
   IMAGE_PREVIEW_CLOSE,
