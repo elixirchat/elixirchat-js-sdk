@@ -80,7 +80,10 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
       this.setProcessedMessages(messages);
       this.setState({ isLoading: false });
       this.scrollToBottom();
-      this.onScrollThroughUnreadMessage();
+      this.onMessageBeingScrolledToAndViewed(viewedMessageId => {
+        this.messageRefs[viewedMessageId].current.style.border = `4px solid #${randomDigitStringId(6)}`;
+        console.log('%c__ MARK READ 2', 'color: green', viewedMessageId);
+      });
     });
     elixirChatWidget.on(MESSAGES_HISTORY_PREPEND_MANY, messages => {
       this.setProcessedMessages(messages, { insertBefore: true });
@@ -101,40 +104,37 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
         this.scrollToBottom();
       }
     });
+
+    window.__this = this;
   }
 
-
-  onScrollThroughUnreadMessage = (callback) => {
-    const pxNeedToScrollToMarkRead = this.scrollBlock.current.offsetHeight / 2;
-    let currentlyViewedMessageId;
-
-    const { elixirChatWidget } = this.props;
-
-    // const getMessageById = id => elixirChatWidget.messageHistory
+  onMessageBeingScrolledToAndViewed = (callback) => {
+    const timeInViewportToMarkMessageRead = 2 * 1000;
+    const maxConsiderableMessageHeight = this.scrollBlock.current.offsetHeight / 2;
+    const currentlyVisibleMessageIds = {};
+    const alreadyMarkedReadMessageIds = {};
 
     Object.values(this.messageRefs)
-      .filter(ref => {
-        return 1;
-        // return ref.isUnread && !ref.sender.isCurrentClient;
-      })
+      .filter(ref => ref.isUnread)
       .forEach(ref => {
         const intersectionObserver = new IntersectionObserver(([ entry ]) => {
+          const messageElement: HTMLElement = entry.target;
+          const messageId = messageElement.dataset.id;
+          if (alreadyMarkedReadMessageIds[messageId]) {
+            return;
+          }
           if (entry.isIntersecting) {
-            const messageElement: HTMLElement = entry.target;
-            currentlyViewedMessageId = messageElement.dataset.id;
-
-            setTimeout(() => {
-              if (currentlyViewedMessageId === messageElement.dataset.id) {
-                messageElement.style.border = `4px solid #${randomDigitStringId(6)}`;
-              }
-              else {
-                console.warn('__ skipped message', message);
-              }
-            }, 3 * 1000);
+            currentlyVisibleMessageIds[messageId] = setTimeout(() => {
+              callback(messageId);
+            }, timeInViewportToMarkMessageRead);
+          }
+          else {
+            clearTimeout(currentlyVisibleMessageIds[messageId]);
+            delete currentlyVisibleMessageIds[messageId];
           }
         }, {
           root: this.scrollBlock.current,
-          threshold: Math.min(pxNeedToScrollToMarkRead / ref.current.offsetHeight, 1),
+          threshold: Math.min(maxConsiderableMessageHeight / ref.current.offsetHeight, 0.8),
         });
         intersectionObserver.observe(ref.current);
     });
@@ -437,6 +437,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                   // data-unread={message.isUnread}
                   // data-by-me={message.sender.isCurrentClient}
                   // data-id={message.id}>
+                  data-id={message.id}
                   ref={element => this.createMessageRef(element, message)}>
 
                   {!this.shouldHideMessageBalloon(message) && (
@@ -558,6 +559,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                   // data-unread={message.isUnread}
                   // data-by-me={message.sender.isCurrentClient}
                   // data-id={message.id}>
+                  data-id={message.id}
                   ref={element => this.createMessageRef(element, message)}>
 
                   <div className="elixirchat-chat-messages__balloon">
