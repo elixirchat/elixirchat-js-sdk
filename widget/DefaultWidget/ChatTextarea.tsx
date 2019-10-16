@@ -5,7 +5,7 @@ import { ElixirChatWidget } from '../ElixirChatWidget';
 import { randomDigitStringId } from '../../utilsCommon';
 import {inflect, getImageDimensions, isWebImage} from '../../utilsWidget';
 import { getScreenshotCompatibilityFallback } from '../../sdk/ScreenshotTaker';
-import {IMAGE_PREVIEW_CLOSE, WIDGET_POPUP_OPEN, WIDGET_RENDERED} from '../ElixirChatWidgetEventTypes';
+import {IMAGE_PREVIEW_CLOSE, REPLY_MESSAGE, WIDGET_POPUP_OPEN, WIDGET_RENDERED} from '../ElixirChatWidgetEventTypes';
 import {TYPING_STATUS_CHANGE, TYPING_STATUS_SUBSCRIBE_SUCCESS} from '../../sdk/ElixirChatEventTypes';
 
 export interface IDefaultWidgetTextareaProps {
@@ -60,6 +60,10 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
     });
 
     elixirChatWidget.on(IMAGE_PREVIEW_CLOSE, () => this.focusTextarea);
+    elixirChatWidget.on(REPLY_MESSAGE, messageId => {
+      this.setState({ textareaResponseToMessageId: messageId });
+      this.focusTextarea();
+    });
 
     this.setState({
       screenshotFallback: getScreenshotCompatibilityFallback(),

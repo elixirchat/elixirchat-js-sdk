@@ -88,8 +88,6 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
       this.setState({ areAnyOperatorsOnline });
     });
 
-    elixirChatWidget.on(SCREENSHOT_REQUEST_SUCCESS, this.onScreenshotRequestFulfilled);
-
     const areNotificationsMuted = getJSONFromLocalStorage('elixirchat-notifications-muted', false);
     this.setState({ areNotificationsMuted });
   }
@@ -255,88 +253,7 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
     this.setState({ messages: changedMessages });
   };
 
-  // replaceTemporaryMessageWithActualOne = (newMessage) => {
-  //   const { messages } = this.state;
-  //   const temporaryMessage = _last(messages.filter(message => {
-  //     return message.tempId === newMessage.tempId;
-  //   }));
-  //   if (temporaryMessage) {
-  //     this.changeMessageById(temporaryMessage.id, newMessage);
-  //   }
-  //   else {
-  //     this.setState({
-  //       messages: [...this.state.messages, newMessage]
-  //     });
-  //   }
-  // };
 
-  // generateTemporaryMessage = ({ textareaText, textareaResponseToMessageId, textareaAttachments }) => {
-  //   const { messages } = this.state;
-  //   const responseToMessage = messages.filter(message => {
-  //     return message.id === textareaResponseToMessageId;
-  //   })[0];
-  //
-  //   const attachments = textareaAttachments.map(attachment => {
-  //     const id = randomDigitStringId(6);
-  //     const originalFileObject = attachment.file;
-  //     const contentType = originalFileObject.type;
-  //     const url = URL.createObjectURL(originalFileObject);
-  //     let thumbnails = [];
-  //     if (isWebImage(contentType) && attachment.width && attachment.height) {
-  //       thumbnails = [{ id, url }];
-  //     }
-  //     return {
-  //       id,
-  //       url,
-  //       originalFileObject,
-  //       contentType,
-  //       thumbnails,
-  //       name: attachment.name,
-  //       width: attachment.width,
-  //       height: attachment.height,
-  //       bytesSize: originalFileObject.size,
-  //     };
-  //   });
-  //
-  //   return  {
-  //     id: randomDigitStringId(6),
-  //     tempId: randomDigitStringId(6),
-  //     text: textareaText.trim() || '',
-  //     timestamp: new Date().toISOString(),
-  //     sender: {
-  //       isOperator: false,
-  //       isCurrentClient: true,
-  //     },
-  //     responseToMessage: responseToMessage || null,
-  //     attachments: attachments,
-  //     isSubmitting: true,
-  //   };
-  // };
-
-  // onTextareaChange = (stateChange) => {
-  //   if (this.state.textareaText !== stateChange.textareaText) {
-  //     localStorage.setItem('elixirchat-typed-text', stateChange.textareaText);
-  //   }
-  //   this.setState(stateChange);
-  // };
-
-  onScreenshotRequestFulfilled = async (screenshot) => {
-    const { textareaText, textareaAttachments } = this.state;
-    const imageBlobUrl = URL.createObjectURL(screenshot.file);
-    const dimensions = await getImageDimensions(imageBlobUrl);
-    const newAttachment = {
-      id: randomDigitStringId(6),
-      name: 'Скриншот экрана',
-      file: screenshot.file,
-      isScreenshot: true,
-      ...dimensions,
-    };
-    const updatedText = textareaText.trim() ? textareaText : 'Вот скриншот моего экрана';
-    this.setState({
-      textareaText: updatedText,
-      textareaAttachments: [ ...textareaAttachments, newAttachment ]
-    });
-  };
 
   onReplyMessage = (messageId) => {
     this.setState({ textareaResponseToMessageId: messageId });

@@ -13,7 +13,7 @@ import {
 } from '../../utilsWidget';
 import { getScreenshotCompatibilityFallback } from '../../sdk/ScreenshotTaker';
 import { ElixirChatWidget } from '../ElixirChatWidget';
-import { IMAGE_PREVIEW_OPEN } from '../ElixirChatWidgetEventTypes';
+import {IMAGE_PREVIEW_OPEN, REPLY_MESSAGE, WIDGET_POPUP_BLUR} from '../ElixirChatWidgetEventTypes';
 import {
   JOIN_ROOM_ERROR,
   MESSAGES_SUBSCRIBE_ERROR,
@@ -60,17 +60,17 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     });
 
     elixirChatWidget.on(MESSAGES_HISTORY_APPEND_ONE, this.onMessageReceive);
+    elixirChatWidget.on(MESSAGES_HISTORY_SET, messages => {
+      this.setProcessedMessages(messages);
+      this.setState({ isLoading: false });
+      this.scrollToBottom();
+    });
 
     elixirChatWidget.on(MESSAGES_HISTORY_PREPEND_MANY, messages => {
       this.setProcessedMessages(messages, { insertBefore: true });
     });
     elixirChatWidget.on(MESSAGES_HISTORY_CHANGE_MANY, messages => {
       this.setProcessedMessages(messages);
-    });
-    elixirChatWidget.on(MESSAGES_HISTORY_SET, messages => {
-      this.setProcessedMessages(messages);
-      this.setState({ isLoading: false });
-      this.scrollToBottom(); // TODO: fix
     });
 
     elixirChatWidget.on([JOIN_ROOM_ERROR, MESSAGES_SUBSCRIBE_ERROR, MESSAGES_FETCH_HISTORY_INITIAL_ERROR], () => {
@@ -80,9 +80,12 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
   onMessageReceive = message => {
     const { elixirChatWidget } = this.props;
+
     const hasUserScroll = this.hasUserScroll();
-    const shouldScrollMessagesToBottom = elixirChatWidget.isWidgetPopupOpen && elixirChatWidget.isWidgetPopupFocused && !hasUserScroll;
     const shouldPlayNotificationSound = !message.sender.isCurrentClient;
+    const shouldScrollMessagesToBottom = elixirChatWidget.isWidgetPopupOpen
+      && elixirChatWidget.isWidgetPopupFocused
+      && !hasUserScroll;
 
     this.setProcessedMessages([message], { insertAfter: true });
 
@@ -201,27 +204,6 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     return message.sender.isCurrentClient && !hasText && !hasReply && !hasFiles;
   };
 
-  scrollToMessage = (messageId) => {
-    const messageDOMElement = this.refs[`message-${messageId}`];
-    if (messageDOMElement) {
-      messageDOMElement.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center',
-      });
-    }
-  };
-
-  flashMessage = (messageId) => {
-    const highlightedClassName = 'elixirchat-chat-messages__item--highlighted';
-    const messageDOMElement = this.refs[`message-${messageId}`];
-    if (messageDOMElement) {
-      messageDOMElement.classList.add(highlightedClassName);
-      setTimeout(() => {
-        messageDOMElement.classList.remove(highlightedClassName);
-      }, 1000);
-    }
-  };
-
   onTakeScreenshotClick = () => {
     const { elixirChatWidget } = this.props;
     elixirChatWidget.togglePopup();
@@ -250,6 +232,18 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     });
   };
 
+  onReplyOriginalMessageTextClick = (messageId) => {
+    const highlightedClassName = 'elixirchat-chat-messages__item--flashed';
+    const messageElement = this.refs[`message-${messageId}`];
+
+    scrollToElement(messageElement, { isSmooth: true, position: 'center' }, () => {
+      messageElement.classList.add(highlightedClassName);
+      setTimeout(() => {
+        messageElement.classList.remove(highlightedClassName);
+      }, 1000);
+    });
+  };
+
   loadPrecedingMessageHistory = (): void => {
     const { elixirChatWidget } = this.props;
     const { isLoadingPrecedingMessageHistory } = this.state;
@@ -263,6 +257,11 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
         scrollBlock.scrollTop = scrollBlock.scrollHeight - initialScrollHeight;
       });
     }
+  };
+
+  onReplyMessageClick = (messageId) => {
+    const { elixirChatWidget } = this.props;
+    elixirChatWidget.triggerEvent(REPLY_MESSAGE, messageId);
   };
 
   renderKeyShortcut = (keySequence) => {
@@ -280,7 +279,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
   };
 
   render(): void {
-    const { elixirChatWidget, onReplyMessage, onSubmitRetry } = this.props;
+    const { elixirChatWidget, onSubmitRetry } = this.props;
     const {
       processedMessages,
       screenshotFallback,
@@ -328,7 +327,8 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                 })}>
 
                   {!this.shouldHideMessageBalloon(message) && (
-                    <div className="elixirchat-chat-messages__balloon" onDoubleClick={() => onReplyMessage(message.id)}>
+                    <div className="elixirchat-chat-messages__balloon"
+                      onDoubleClick={() => this.onReplyMessageClick(message.id)}>
 
                       {!message.sender.isCurrentClient && (
                         <div className="elixirchat-chat-messages__sender">
@@ -339,15 +339,8 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
                       {Boolean(message.responseToMessage) && (
                         <div className="elixirchat-chat-messages__reply-message"
-                          onClick={() => {
-                            this.scrollToMessage(message.responseToMessage.id);
-                            this.flashMessage(message.responseToMessage.id);
-                          }}>
-                          {message.responseToMessage.sender.firstName ? message.responseToMessage.sender.firstName + ' ' : ''}
-                          {message.responseToMessage.sender.lastName ? message.responseToMessage.sender.lastName + ' ' : ''}
-                          <span title={message.responseToMessage.text}>
-                              {message.responseToMessage.text.substr(0, 100)}
-                            </span>
+                          onClick={() => this.onReplyOriginalMessageTextClick(message.responseToMessage.id)}>
+                          {message.responseToMessage.sender.firstName} {message.responseToMessage.sender.lastName} {message.responseToMessage.text.substr(0, 100)}
                         </div>
                       )}
 
@@ -430,7 +423,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                         {!message.isSystem && (
                           <span className="elixirchat-chat-messages__reply-button"
                             title="Для ответа также можно дважды кликнуть сообщение"
-                            onClick={() => onReplyMessage(message.id)}>
+                            onClick={() => this.onReplyMessageClick(message.id)}>
                             Ответить
                           </span>
                         )}

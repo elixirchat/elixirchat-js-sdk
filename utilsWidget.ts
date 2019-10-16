@@ -1,4 +1,6 @@
 import assets from './widget/DefaultWidget/assets';
+import scrollIntoView from '@treora/scroll-into-view';
+// scrollIntoView.installPolyfill();
 
 export function inflect(locale: 'en-US' | 'ru-RU', number: number, endings: [string], hideNumber?: boolean): string {
   const getEnding = {};
@@ -137,11 +139,17 @@ export interface IScrollToElement {
 export function scrollToElement(element, options = {}, callback = () => {}): IScrollToElement {
   const { isSmooth, position } = options;
 
-  if (element.tagName) {
-    element.scrollIntoView({
+  if (element && element.tagName) {
+
+    scrollIntoView.call(element, {
       behavior: isSmooth ? 'smooth' : 'auto',
       block: position || 'center',
     });
+
+    // element.scrollIntoView({
+    //   behavior: isSmooth ? 'smooth' : 'auto',
+    //   block: position || 'center',
+    // });
 
     if (typeof IntersectionObserver !== 'undefined') {
       const intersectionObserver = new IntersectionObserver(function(entries) {
