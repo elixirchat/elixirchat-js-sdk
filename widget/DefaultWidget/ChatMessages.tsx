@@ -9,14 +9,15 @@ import {
   getHumanReadableFileSize,
   inflectDayJSWeekDays,
   playNotificationSound,
-  scrollToElement
+  unlockNotificationSoundAutoplay,
+  scrollToElement,
 } from '../../utilsWidget';
 import { getScreenshotCompatibilityFallback } from '../../sdk/ScreenshotTaker';
 import { ElixirChatWidget } from '../ElixirChatWidget';
 import {
   IMAGE_PREVIEW_OPEN,
   REPLY_MESSAGE,
-  TEXTAREA_VERTICAL_RESIZE,
+  TEXTAREA_VERTICAL_RESIZE, WIDGET_IFRAME_READY,
   WIDGET_POPUP_BLUR
 } from '../ElixirChatWidgetEventTypes';
 import {
@@ -26,13 +27,12 @@ import {
   MESSAGES_HISTORY_SET,
   MESSAGES_HISTORY_APPEND_ONE,
   MESSAGES_HISTORY_PREPEND_MANY,
-  MESSAGES_HISTORY_CHANGE_MANY, MESSAGES_HISTORY_CHANGE_ONE,
+  MESSAGES_HISTORY_CHANGE_MANY, MESSAGES_HISTORY_CHANGE_ONE, JOIN_ROOM_SUCCESS,
 } from '../../sdk/ElixirChatEventTypes';
 
 export interface IDefaultWidgetMessagesProps {
   elixirChatWidget: ElixirChatWidget;
   messages: Array<any>;
-  onloadPrecedingMessageHistory: any;
 }
 
 export interface IDefaultWidgetMessagesState {
@@ -44,6 +44,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
   state = {
     isLoading: true,
     isLoadingError: false,
+    isLoadingPrecedingMessageHistory: false,
     processedMessages: [],
     imagePreviews: [],
     screenshotFallback: null,
@@ -62,6 +63,14 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
     this.setState({
       screenshotFallback: getScreenshotCompatibilityFallback(),
+    });
+
+    elixirChatWidget.on(JOIN_ROOM_SUCCESS, () => {
+      elixirChatWidget.fetchMessageHistory(this.messageChunkSize);
+    });
+
+    elixirChatWidget.on(WIDGET_IFRAME_READY, () => {
+      elixirChatWidget.widgetIFrameDocument.body.addEventListener('click', unlockNotificationSoundAutoplay);
     });
 
     elixirChatWidget.on(MESSAGES_HISTORY_APPEND_ONE, this.onMessageReceive);
@@ -298,12 +307,17 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
       screenshotFallback,
       isLoading,
       isLoadingError,
+      isLoadingPrecedingMessageHistory,
     } = this.state;
 
     return (
       <div className="elixirchat-chat-scroll" ref={this.scrollBlock} onScroll={this.onMessagesScroll}>
-        <div className="elixirchat-chat-messages" ref={this.scrollBlockInner}>
+        <i className={cn({
+          'elixirchat-chat-scroll-progress-bar': true,
+          'elixirchat-chat-scroll-progress-bar--animating': isLoadingPrecedingMessageHistory,
+        })}/>
 
+        <div className="elixirchat-chat-messages" ref={this.scrollBlockInner}>
           {isLoading && (
             <i className="elixirchat-chat-spinner"/>
           )}

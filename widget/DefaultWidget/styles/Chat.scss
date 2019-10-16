@@ -122,6 +122,7 @@ textarea {
   background: rgba(0,0,0,.4);
   position: fixed;
   top: $chat-header-height;
+  left: 0;
 
   &--animating {
     width: 100%;

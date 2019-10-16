@@ -3,12 +3,13 @@ import { getJSONFromLocalStorage, logEvent } from '../utilsCommon';
 import { renderWidgetReactComponent } from './DefaultWidget/Widget';
 import { IFontExtractorExtractParams } from './FontExtractor';
 import {
-  WIDGET_IFRAME_READY, WIDGET_POPUP_BLUR,
+  WIDGET_IFRAME_READY, WIDGET_MUTE, WIDGET_POPUP_BLUR,
   WIDGET_POPUP_CLOSE, WIDGET_POPUP_FOCUS,
   WIDGET_POPUP_OPEN,
   WIDGET_POPUP_TOGGLE,
-  WIDGET_RENDERED,
+  WIDGET_RENDERED, WIDGET_UNMUTE,
 } from './ElixirChatWidgetEventTypes';
+import {MESSAGES_FETCH_HISTORY_INITIAL_SUCCESS} from '../sdk/ElixirChatEventTypes';
 
 let ElixirChat = window.ElixirChat;
 if (!ElixirChat) {
@@ -53,13 +54,42 @@ export class ElixirChatWidget extends ElixirChat {
   public extractFontsFromParentWindow: Array<IFontExtractorExtractParams>;
 
   public isWidgetPopupOpen: boolean = false;
-  public isWidgetIFrameReady: boolean = false;
-  public isWidgetRendered: boolean = false;
   public isWidgetPopupFocused: boolean = false;
+  public isWidgetRendered: boolean = false;
+  public isWidgetMuted: boolean = false;
+  public isWidgetIFrameReady: boolean = false;
 
   public widgetReactComponent: any;
   public widgetIFrameWindow: Window = {};
   public widgetIFrameDocument: Document = {};
+
+  protected initializeWidget(): void {
+    this.on(WIDGET_IFRAME_READY, (iframeWindow) => {
+      this.isWidgetIFrameReady = true;
+      this.widgetIFrameWindow = iframeWindow;
+      this.widgetIFrameDocument = iframeWindow.document;
+
+      this.widgetIFrameWindow.addEventListener('focus', () => {
+        this.onToggleChatFocus(true);
+      });
+      this.widgetIFrameWindow.addEventListener('blur', () => {
+        this.onToggleChatFocus(false);
+      });
+      const isWidgetMuted = getJSONFromLocalStorage('elixirchat-notifications-muted', false);
+      if (isWidgetMuted) {
+        this.toggleMute();
+      }
+      const isWidgetVisible = getJSONFromLocalStorage('elixirchat-widget-is-visible', false);
+      if (isWidgetVisible) {
+        this.togglePopup();
+      }
+    });
+
+    this.on(MESSAGES_FETCH_HISTORY_INITIAL_SUCCESS, () => {
+      this.isWidgetRendered = true;
+      this.triggerEvent(WIDGET_RENDERED);
+    });
+  }
 
   public togglePopup = (): void => {
     this.isWidgetPopupOpen = !this.isWidgetPopupOpen;
@@ -71,15 +101,17 @@ export class ElixirChatWidget extends ElixirChat {
     this.triggerEvent(this.isWidgetPopupOpen ? WIDGET_POPUP_OPEN : WIDGET_POPUP_CLOSE);
   };
 
+  public toggleMute = () => {
+    this.isWidgetMuted = !this.isWidgetMuted;
+    localStorage.setItem('elixirchat-notifications-muted', JSON.stringify(this.isWidgetMuted));
+    logEvent(this.debug, (this.isWidgetMuted ? 'Muted' : 'Unmuted') + ' widget');
+    this.triggerEvent(this.isWidgetMuted ? WIDGET_MUTE: WIDGET_UNMUTE);
+  };
+
   protected onToggleChatFocus = (isFocused) => {
     if (isFocused !== this.isWidgetPopupFocused) {
       this.isWidgetPopupFocused = isFocused;
-      if (this.isWidgetPopupFocused) {
-        this.triggerEvent(WIDGET_POPUP_FOCUS);
-      }
-      else {
-        this.triggerEvent(WIDGET_POPUP_BLUR);
-      }
+      this.triggerEvent(this.isWidgetPopupFocused ? WIDGET_POPUP_FOCUS: WIDGET_POPUP_BLUR);
     }
   };
 
@@ -90,30 +122,7 @@ export class ElixirChatWidget extends ElixirChat {
       return;
     }
 
-    this.on(WIDGET_IFRAME_READY, (iframeWindow) => {
-      this.isWidgetIFrameReady = true;
-      this.widgetIFrameWindow = iframeWindow;
-      this.widgetIFrameDocument = iframeWindow.document;
-
-      this.widgetIFrameWindow.addEventListener('focus', () => {
-        this.onToggleChatFocus(true);
-      });
-
-      this.widgetIFrameWindow.addEventListener('blur', () => {
-        this.onToggleChatFocus(false);
-      });
-
-      const isWidgetVisible = getJSONFromLocalStorage('elixirchat-widget-is-visible', false);
-      if (isWidgetVisible) {
-        this.togglePopup();
-      }
-    });
-
-    // TODO: replace w/ FETCH_SUCCESS_INITIAL & FETCH_ERROR_INITIAL
-    // this.on([MESSAGES_HISTORY_SET, MESSAGES_FETCH_HISTORY_ERROR], () => {
-    //   this.isWidgetRendered = true;
-    //   this.triggerEvent(WIDGET_RENDERED);
-    // });
+    this.initializeWidget();
 
     this.container = container;
     this.iframeStyles = iframeStyles || '';

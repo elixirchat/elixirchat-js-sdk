@@ -1,14 +1,14 @@
-import React, { Component } from 'react';
+import React, {Component, Fragment} from 'react';
 import cn from 'classnames';
 import TextareaAutosize from 'react-textarea-autosize';
 import { ElixirChatWidget } from '../ElixirChatWidget';
 import { randomDigitStringId } from '../../utilsCommon';
-import {inflect, getImageDimensions, isWebImage} from '../../utilsWidget';
+import {inflect, getImageDimensions, isWebImage, unlockNotificationSoundAutoplay} from '../../utilsWidget';
 import { getScreenshotCompatibilityFallback } from '../../sdk/ScreenshotTaker';
 import {
   IMAGE_PREVIEW_CLOSE,
   REPLY_MESSAGE,
-  TEXTAREA_VERTICAL_RESIZE,
+  TEXTAREA_VERTICAL_RESIZE, WIDGET_IFRAME_READY,
   WIDGET_POPUP_OPEN,
   WIDGET_RENDERED
 } from '../ElixirChatWidgetEventTypes';
@@ -46,10 +46,16 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
     textareaText: '',
     textareaAttachments: [],
     textareaResponseToMessageId: null,
+    isDraggingAttachments: false,
   };
 
   componentDidMount(): void {
     const { elixirChatWidget } = this.props;
+
+    elixirChatWidget.on(WIDGET_IFRAME_READY, () => {
+      elixirChatWidget.widgetIFrameDocument.body.addEventListener('dragover', this.onBodyDrag);
+      elixirChatWidget.widgetIFrameDocument.body.addEventListener('drop', this.onBodyDrop);
+    });
 
     elixirChatWidget.on(WIDGET_RENDERED, () => {
       if (elixirChatWidget.isWidgetPopupOpen) {
@@ -93,6 +99,34 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
       this.focusTextarea();
     }
   }
+
+  componentWillUnmount(){
+    const { elixirChatWidget } = this.props;
+    elixirChatWidget.widgetIFrameDocument.body.removeEventListener('dragover', this.onBodyDrag);
+    elixirChatWidget.widgetIFrameDocument.body.removeEventListener('drop', this.onBodyDrop);
+  }
+
+  onBodyDrag = (e) => {
+    e.preventDefault();
+    this.setState({ isDraggingAttachments: true });
+  };
+
+  onBodyDrop = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const attachments = Array.from(e.dataTransfer.items || e.dataTransfer.files)
+      .filter(item => item.kind === 'file')
+      .map(item => {
+        const file = item.getAsFile();
+        return {
+          name: file.name,
+          file,
+        }
+      });
+
+    this.addAttachments(attachments);
+    this.setState({ isDraggingAttachments: false });
+  };
 
   focusTextarea = () => {
     requestAnimationFrame(() => {
@@ -250,6 +284,7 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
       textareaResponseToMessageId,
       currentlyTypingUsers,
       screenshotFallback,
+      isDraggingAttachments,
     } = this.state;
 
     const responseToMessage = elixirChatWidget.messageHistory.filter(message => {
@@ -257,87 +292,100 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
     })[0];
 
     return (
-      <div className="elixirchat-chat-textarea" ref={this.container}>
+      <Fragment>
+        <div className="elixirchat-chat-textarea" ref={this.container}>
 
-        {Boolean(currentlyTypingUsers.length) && (
-          <div className="elixirchat-chat-typing">
-            <i className="elixirchat-chat-typing__icon icon-typing"/>
-            {inflect('ru-RU', currentlyTypingUsers.length, ['человек пишет...', 'человека пишут...', 'человек пишут...'])}
-          </div>
-        )}
-
-        {Boolean(responseToMessage) && (
-          <div className="elixirchat-chat-textarea__reply-to">
-            <span className="elixirchat-chat-textarea__reply-to-text">
-              <i className="elixirchat-chat-textarea__reply-to-icon icon-reply-right"/>
-              <span title={responseToMessage.text}>
-                {responseToMessage.text && responseToMessage.text.substr(0, 100)}
-                {!responseToMessage.text && (
-                  responseToMessage.sender.firstName + ' ' + responseToMessage.sender.lastName
-                )}
-              </span>
-            </span>
-            <span className="elixirchat-chat-textarea__reply-to-remove icon-close-thick"
-              onClick={this.onRemoveReplyTo}/>
-          </div>
-        )}
-
-        <div className="elixirchat-chat-textarea__actions">
-          {!Boolean(screenshotFallback) && (
-            <button className="elixirchat-chat-textarea__actions-screenshot"
-              onClick={this.onScreenShotClick}
-              title="Сделать скриншот">
-              <i className="icon-screenshot"/>
-            </button>
+          {Boolean(currentlyTypingUsers.length) && (
+            <div className="elixirchat-chat-typing">
+              <i className="elixirchat-chat-typing__icon icon-typing"/>
+              {inflect('ru-RU', currentlyTypingUsers.length, ['человек пишет...', 'человека пишут...', 'человек пишут...'])}
+            </div>
           )}
-          <span className="elixirchat-chat-textarea__actions-attach"
-            title="Прикрепить файл">
-            <label className="elixirchat-chat-textarea__actions-attach-label" htmlFor="DefaultWidget-file-upload">
-              <i className="icon-file"/>
-            </label>
-            <input
-              className="elixirchat-chat-textarea__actions-attach-input"
-              id="DefaultWidget-file-upload"
-              type="file"
-              ref={this.inputFile}
-              multiple={true}
-              onChange={this.onInputFileChange}/>
-          </span>
+
+          {Boolean(responseToMessage) && (
+            <div className="elixirchat-chat-textarea__reply-to">
+              <span className="elixirchat-chat-textarea__reply-to-text">
+                <i className="elixirchat-chat-textarea__reply-to-icon icon-reply-right"/>
+                <span title={responseToMessage.text}>
+                  {responseToMessage.text && responseToMessage.text.substr(0, 100)}
+                  {!responseToMessage.text && (
+                    responseToMessage.sender.firstName + ' ' + responseToMessage.sender.lastName
+                  )}
+                </span>
+              </span>
+              <span className="elixirchat-chat-textarea__reply-to-remove icon-close-thick"
+                onClick={this.onRemoveReplyTo}/>
+            </div>
+          )}
+
+          <div className="elixirchat-chat-textarea__actions">
+            {!Boolean(screenshotFallback) && (
+              <button className="elixirchat-chat-textarea__actions-screenshot"
+                onClick={this.onScreenShotClick}
+                title="Сделать скриншот">
+                <i className="icon-screenshot"/>
+              </button>
+            )}
+            <span className="elixirchat-chat-textarea__actions-attach"
+              title="Прикрепить файл">
+              <label className="elixirchat-chat-textarea__actions-attach-label" htmlFor="DefaultWidget-file-upload">
+                <i className="icon-file"/>
+              </label>
+              <input
+                className="elixirchat-chat-textarea__actions-attach-input"
+                id="DefaultWidget-file-upload"
+                type="file"
+                ref={this.inputFile}
+                multiple={true}
+                onChange={this.onInputFileChange}/>
+            </span>
+          </div>
+
+          <TextareaAutosize
+            className="elixirchat-chat-textarea__textarea"
+            placeholder="Напишите сообщение..."
+            inputRef={tag => {this.textarea = tag;}}
+            minRows={1}
+            maxRows={5}
+            onHeightChange={this.onVerticalResize}
+            onPaste={this.handleAttachmentPaste}
+            onChange={this.onTextareaChange}
+            onKeyDown={this.onTextareaKeyDown}
+            value={textareaText}>
+          </TextareaAutosize>
+
+          {Boolean(textareaAttachments.length) && (
+            <ul className="elixirchat-chat-attachment-list">
+              {textareaAttachments.map(attachment => (
+                <li key={attachment.id} className="elixirchat-chat-attachment-item">
+                  <i className={cn({
+                    'elixirchat-chat-attachment-icon': true,
+                    'icon-file': !attachment.isScreenshot,
+                    'icon-screenshot': attachment.isScreenshot,
+                  })}/>
+                  <span className="elixirchat-chat-attachment-filename">{attachment.name}</span>
+                  <i className="elixirchat-chat-attachment-remove icon-close-thick"
+                    tabIndex={0}
+                    onClick={() => this.removeAttachment(attachment.id)}>
+                  </i>
+                </li>
+              ))}
+            </ul>
+          )}
+
         </div>
 
-        <TextareaAutosize
-          className="elixirchat-chat-textarea__textarea"
-          placeholder="Напишите сообщение..."
-          inputRef={tag => {this.textarea = tag;}}
-          minRows={1}
-          maxRows={5}
-          onHeightChange={this.onVerticalResize}
-          onPaste={this.handleAttachmentPaste}
-          onChange={this.onTextareaChange}
-          onKeyDown={this.onTextareaKeyDown}
-          value={textareaText}>
-        </TextareaAutosize>
-
-        {Boolean(textareaAttachments.length) && (
-          <ul className="elixirchat-chat-attachment-list">
-            {textareaAttachments.map(attachment => (
-              <li key={attachment.id} className="elixirchat-chat-attachment-item">
-                <i className={cn({
-                  'elixirchat-chat-attachment-icon': true,
-                  'icon-file': !attachment.isScreenshot,
-                  'icon-screenshot': attachment.isScreenshot,
-                })}/>
-                <span className="elixirchat-chat-attachment-filename">{attachment.name}</span>
-                <i className="elixirchat-chat-attachment-remove icon-close-thick"
-                  tabIndex={0}
-                  onClick={() => this.removeAttachment(attachment.id)}>
-                </i>
-              </li>
-            ))}
-          </ul>
+        {isDraggingAttachments && (
+          <Fragment>
+            <div className="elixirchat-chat-draggable-backdrop"/>
+            <div className="elixirchat-chat-draggable-area">
+              <i className="elixirchat-chat-draggable-area__icon icon-file"/>
+              <div>Перетащите файлы для загрузки</div>
+            </div>
+          </Fragment>
         )}
 
-      </div>
+      </Fragment>
     );
   }
 }
