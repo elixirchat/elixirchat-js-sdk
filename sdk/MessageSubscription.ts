@@ -26,9 +26,16 @@ import {
 
 export interface ISentMessage {
   text?: string,
-  attachments?: Array<File>,
-  responseToMessageId?: string,
   tempId?: string,
+  responseToMessageId?: string,
+  attachments?: Array<{
+    id: string;
+    file: File;
+    name: string;
+    width: number;
+    height: number;
+    isScreenshot?: boolean;
+  }>,
   appendConditionally?: boolean;
 }
 
@@ -143,7 +150,7 @@ export class MessageSubscription {
     const binaries = {};
 
     try {
-      params.attachments.forEach(file => {
+      params.attachments.forEach(({ file }) => {
         attachments.push(file.name);
         binaries[file.name] = file;
       });
@@ -183,23 +190,23 @@ export class MessageSubscription {
     })[0];
 
     const serializedAttachments = attachments.map((attachment): IFile => {
-      const id = randomDigitStringId(6);
       const originalFileObject = attachment.file;
       const contentType = originalFileObject.type;
+
+      console.log('__ originalFileObject', originalFileObject);
+      window.__originalFileObject = originalFileObject;
+
       const url = URL.createObjectURL(originalFileObject);
       let thumbnails = [];
       if (isWebImage(contentType) && attachment.width && attachment.height) {
-        thumbnails = [{ id, url }];
+        thumbnails = [{ id: attachment.id, url }];
       }
       return {
-        id,
+        ...attachment,
         url,
-        originalFileObject,
-        contentType,
         thumbnails,
-        name: attachment.name,
-        width: attachment.width,
-        height: attachment.height,
+        contentType,
+        originalFileObject,
         bytesSize: originalFileObject.size,
       };
     });
@@ -278,6 +285,19 @@ export class MessageSubscription {
           this.onSendMessageFailure(temporaryMessage, error);
           reject(error);
         });
+    });
+  };
+
+  public retrySendMessage = (message: IMessage): Promise<IMessage> => {
+    this.enrichTemporaryMessage(message.tempId, {
+      isSubmitting: true,
+      isSubmissionError: false,
+    });
+    return this.sendMessage({
+      text: message.text,
+      attachments: message.attachments.map(attachment => attachment.originalFileObject).filter(file => file),
+      responseToMessageId: _get(message, 'responseToMessage.id'),
+      tempId: message.tempId,
     });
   };
 

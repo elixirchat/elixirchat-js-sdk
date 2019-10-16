@@ -26,11 +26,6 @@ export class IFrameWrapper extends Component<IIFrameWrapperProps, IIFrameWrapper
     this.onIframeReady().then(async (iframeWindow) => {
       this.iframeContentContainer = iframeWindow.document.createElement('main');
       iframeWindow.document.body.appendChild(this.iframeContentContainer);
-
-      // Enabling scrollIntoView smooth scroll support in all browsers
-      // scrollIntoView.installPolyfill();
-      // iframeWindow.Element.prototype.scrollIntoView = window.Element.prototype.scrollIntoView;
-
       await this.setState({ isIframeReady: true });
       elixirChatWidget.triggerEvent(WIDGET_IFRAME_READY, iframeWindow);
     });

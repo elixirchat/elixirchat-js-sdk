@@ -298,6 +298,10 @@ export class ElixirChat {
     return this.messageSubscription.sendMessage(params);
   };
 
+  public retrySendMessage = (message: IMessage): Promise<IMessage> => {
+    return this.messageSubscription.retrySendMessage(message);
+  };
+
   public fetchMessageHistory = (limit: number): Promise<[IMessage]> => {
     return this.messageSubscription.fetchMessageHistory(limit);
   };

@@ -23,7 +23,6 @@
   "homepage": "https://github.com/elixirchat/elixirchat-js-sdk#readme",
   "dependencies": {
     "@absinthe/socket": "^0.2.1",
-    "@treora/scroll-into-view": "^0.1.1",
     "classnames": "^2.2.6",
     "dayjs": "^1.8.15",
     "phoenix": "^1.4.9",

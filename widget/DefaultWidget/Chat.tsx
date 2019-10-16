@@ -131,111 +131,6 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
     this.setState({ textareaAttachments, isDraggingAttachments: false });
   };
 
-  // onNewMessage = (message) => {
-  //   const hasUserScroll = this.hasUserScroll();
-  //   const isMessageSentByCurrentClient = message.sender.isCurrentClient;
-  //
-  //   if (isMessageSentByCurrentClient) {
-  //     this.replaceTemporaryMessageWithActualOne(message);
-  //   }
-  //   else {
-  //     const messages = [...this.state.messages, message];
-  //     this.setState({ messages });
-  //     if (!this.state.areNotificationsMuted) {
-  //       playNotificationSound();
-  //     }
-  //   }
-  //   if (!hasUserScroll) {
-  //     this.scrollToBottom();
-  //   }
-  // };
-
-  // loadPreviousMessages = (callback): void => {
-  //   const { elixirChatWidget } = this.props;
-  //   const { isLoadingPreviousMessages } = this.state;
-  //   const firstMessageCursor = elixirChatWidget.messageHistory[0].cursor;
-  //
-  //   if (!isLoadingPreviousMessages && !elixirChatWidget.reachedBeginningOfMessageHistory) {
-  //     this.setState({ isLoadingPreviousMessages: true });
-  //     elixirChatWidget.fetchMessageHistory(this.messageChunkSize, firstMessageCursor).then(() => {
-  //       this.setState({ isLoadingPreviousMessages: false });
-  //       callback();
-  //     });
-  //   }
-  // };
-
-  // onMessagesScroll = () => {
-  //   const scrollBlock = this.scrollBlock.current;
-  //   if (scrollBlock.scrollTop <= 0) {
-  //     const initialScrollHeight = scrollBlock.scrollHeight;
-  //     this.loadPreviousMessages(() => {
-  //       scrollBlock.scrollTop = scrollBlock.scrollHeight - initialScrollHeight;
-  //     });
-  //   }
-  // };
-  //
-  // hasUserScroll = () => {
-  //   const scrollBlock = this.scrollBlock.current;
-  //   return scrollBlock.scrollTop !== scrollBlock.scrollHeight - scrollBlock.offsetHeight;
-  // };
-  //
-  // scrollToBottom = (): void => {
-  //   this.scrollBlock.current.scrollTop = this.scrollBlock.current.scrollHeight;
-  // };
-
-  onTextareaVerticalResize = (newTextareaHeight) => {
-
-    console.error('__ onTextareaVerticalResize: hasUserScroll, scrollBlock, scrollToBottom');
-
-    // const hasUserScroll = this.hasUserScroll();
-    // this.scrollBlock.current.style.bottom = newTextareaHeight + 'px';
-    //
-    // if (!hasUserScroll) {
-    //   this.scrollToBottom();
-    // }
-  };
-
-  // onMessageSubmit = async () => {
-  //   const { elixirChatWidget } = this.props;
-  //   const {
-  //     textareaText,
-  //     textareaResponseToMessageId,
-  //     textareaAttachments,
-  //     // messages,
-  //   } = this.state;
-  //
-  //   if (textareaText.trim() || textareaAttachments.length) {
-  //     const hasUserScroll = this.hasUserScroll();
-  //     const temporaryMessage = this.generateTemporaryMessage({
-  //       textareaText,
-  //       textareaResponseToMessageId,
-  //       textareaAttachments,
-  //     });
-  //
-  //     // await this.setState({
-  //     //   messages: [...messages, temporaryMessage],
-  //     // });
-  //     if (!hasUserScroll) {
-  //       this.scrollToBottom();
-  //     }
-  //     elixirChatWidget.sendMessage({
-  //       text: textareaText,
-  //       tempId: temporaryMessage.tempId,
-  //       attachments: textareaAttachments.map(attachment => attachment.file),
-  //       responseToMessageId: textareaResponseToMessageId,
-  //     })
-  //       .catch(() => {
-  //         this.changeMessageById(temporaryMessage.id, {
-  //           isSubmitting: false,
-  //           isSubmissionError: true,
-  //         });
-  //         elixirChatWidget.dispatchTypedText(false);
-  //       });
-  //
-  //     localStorage.removeItem('elixirchat-typed-text');
-  //   }
-  // };
-
   changeMessageById = (messageId, data) => {
     const { messages } = this.state;
     const changedMessages = messages.map(message => {
@@ -255,32 +150,27 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
 
 
 
-  onReplyMessage = (messageId) => {
-    this.setState({ textareaResponseToMessageId: messageId });
-  };
-
   onSubmitRetry = async (message) => {
-    const { elixirChatWidget } = this.props;
-
-    this.changeMessageById(message.id, {
-      isSubmitting: true,
-      isSubmissionError: false,
-    });
-    elixirChatWidget.sendMessage({
-      text: message.text,
-      attachments: message.attachments.map(attachment => attachment.originalFileObject).filter(file => file),
-      responseToMessageId: _get(message, 'responseToMessage.id'),
-      tempId: message.tempId,
-    }).catch(() => {
-      this.changeMessageById(message.id, {
-        isSubmitting: false,
-        isSubmissionError: true,
-      });
-    });
+    // const { elixirChatWidget } = this.props;
+    //
+    // this.changeMessageById(message.id, {
+    //   isSubmitting: true,
+    //   isSubmissionError: false,
+    // });
+    // elixirChatWidget.sendMessage({
+    //   text: message.text,
+    //   attachments: message.attachments.map(attachment => attachment.originalFileObject).filter(file => file),
+    //   responseToMessageId: _get(message, 'responseToMessage.id'),
+    //   tempId: message.tempId,
+    // }).catch(() => {
+    //   this.changeMessageById(message.id, {
+    //     isSubmitting: false,
+    //     isSubmissionError: true,
+    //   });
+    // });
   };
 
   toggleMute = () => {
-
     const { areNotificationsMuted } = this.state;
     localStorage.setItem('elixirchat-notifications-muted', JSON.stringify(!areNotificationsMuted));
     this.setState({ areNotificationsMuted: !areNotificationsMuted });
@@ -327,19 +217,8 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
           'elixirchat-chat-scroll-progress-bar--animating': isLoadingPreviousMessages,
         })}/>
 
-        <div className="elixirchat-chat-scroll" ref={this.scrollBlock} onScroll={this.onMessagesScroll}>
-          <ChatMessages
-            ref={this.chatMessages}
-            onLoadPreviousMessages={this.loadPreviousMessages}
-            onReplyMessage={this.onReplyMessage}
-            onSubmitRetry={this.onSubmitRetry}
-            elixirChatWidget={elixirChatWidget}/>
-        </div>
-
-        <ChatTextarea
-          elixirChatWidget={elixirChatWidget}
-          onVerticalResize={this.onTextareaVerticalResize}/>
-
+        <ChatMessages ref={this.chatMessages} onSubmitRetry={this.onSubmitRetry} elixirChatWidget={elixirChatWidget}/>
+        <ChatTextarea elixirChatWidget={elixirChatWidget}/>
 
         {isDraggingAttachments && (
           <Fragment>

@@ -5,7 +5,13 @@ import { ElixirChatWidget } from '../ElixirChatWidget';
 import { randomDigitStringId } from '../../utilsCommon';
 import {inflect, getImageDimensions, isWebImage} from '../../utilsWidget';
 import { getScreenshotCompatibilityFallback } from '../../sdk/ScreenshotTaker';
-import {IMAGE_PREVIEW_CLOSE, REPLY_MESSAGE, WIDGET_POPUP_OPEN, WIDGET_RENDERED} from '../ElixirChatWidgetEventTypes';
+import {
+  IMAGE_PREVIEW_CLOSE,
+  REPLY_MESSAGE,
+  TEXTAREA_VERTICAL_RESIZE,
+  WIDGET_POPUP_OPEN,
+  WIDGET_RENDERED
+} from '../ElixirChatWidgetEventTypes';
 import {TYPING_STATUS_CHANGE, TYPING_STATUS_SUBSCRIBE_SUCCESS} from '../../sdk/ElixirChatEventTypes';
 
 export interface IDefaultWidgetTextareaProps {
@@ -17,7 +23,14 @@ export interface IDefaultWidgetTextareaState {
   screenshotFallback: null | object;
   currentlyTypingUsers: Array<object>,
   textareaText: string,
-  textareaAttachments: Array<{ id: string, file: File, name: string, isScreenshot?: boolean }>,
+  textareaAttachments: Array<{
+    id: string;
+    file: File;
+    name: string;
+    width: number;
+    height: number;
+    isScreenshot?: boolean;
+  }>,
   textareaResponseToMessageId: string | null,
 }
 
@@ -51,7 +64,7 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
     });
 
     elixirChatWidget.on(WIDGET_POPUP_OPEN, () => {
-      this.updateVerticalHeight();
+      this.onVerticalResize();
       this.focusTextarea();
     });
 
@@ -62,6 +75,7 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
     elixirChatWidget.on(IMAGE_PREVIEW_CLOSE, () => this.focusTextarea);
     elixirChatWidget.on(REPLY_MESSAGE, messageId => {
       this.setState({ textareaResponseToMessageId: messageId });
+      this.onVerticalResize();
       this.focusTextarea();
     });
 
@@ -75,7 +89,7 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
     const didResponseToMessageIdChange = textareaResponseToMessageId !== prevProps.textareaResponseToMessageId;
     // const didAttachmentsChange = textareaAttachments !== prevProps.textareaAttachments;
     if (didResponseToMessageIdChange) {
-      this.updateVerticalHeight();
+      this.onVerticalResize();
       this.focusTextarea();
     }
   }
@@ -86,12 +100,12 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
     });
   };
 
-  updateVerticalHeight = () => {
-    const { onVerticalResize } = this.props;
+  onVerticalResize = () => {
+    const { elixirChatWidget } = this.props;
     requestAnimationFrame(() => {
       const containerElement = this.container.current;
       if (containerElement) {
-        onVerticalResize(containerElement.offsetHeight);
+        elixirChatWidget.triggerEvent(TEXTAREA_VERTICAL_RESIZE, containerElement.offsetHeight);
       }
     });
   };
@@ -128,7 +142,7 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
     this.setState({
       textareaResponseToMessageId: null,
     });
-    this.updateVerticalHeight();
+    this.onVerticalResize();
   };
 
   addAttachments = async newAttachments => {
@@ -143,7 +157,7 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
       enrichedNewAttachments.push({
         id,
         file: attachment.file,
-        name: attachment.name || attachment.file.name,
+        name: attachment.name,
         width: dimensions.width,
         height: dimensions.height,
         isScreenshot: attachment.isScreenshot,
@@ -155,7 +169,7 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
         ...enrichedNewAttachments,
       ]
     });
-    this.updateVerticalHeight();
+    this.onVerticalResize();
     this.focusTextarea();
   };
 
@@ -164,7 +178,7 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
     this.setState({
       textareaAttachments: textareaAttachments.filter(item => item.id !== attachmentId)
     });
-    this.updateVerticalHeight();
+    this.onVerticalResize();
   };
 
   handleAttachmentPaste = e => {
@@ -202,7 +216,13 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
   };
 
   onInputFileChange = (e) => {
-    this.addAttachments(e.target.files);
+    const attachments = Array.from(e.target.files).map(file => {
+      return {
+        name: file.name,
+        file: file,
+      };
+    });
+    this.addAttachments(attachments);
     this.inputFile.current.value = '';
   };
 
@@ -213,7 +233,7 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
     if (textareaText.trim() || textareaAttachments.length) {
       elixirChatWidget.sendMessage({
         text: textareaText,
-        attachments: textareaAttachments.map(attachment => attachment.file),
+        attachments: textareaAttachments,
         responseToMessageId: textareaResponseToMessageId,
         appendConditionally: true,
       });
@@ -291,7 +311,7 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
           inputRef={tag => {this.textarea = tag;}}
           minRows={1}
           maxRows={5}
-          onHeightChange={this.updateVerticalHeight}
+          onHeightChange={this.onVerticalResize}
           onPaste={this.handleAttachmentPaste}
           onChange={this.onTextareaChange}
           onKeyDown={this.onTextareaKeyDown}

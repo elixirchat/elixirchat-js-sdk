@@ -13,7 +13,12 @@ import {
 } from '../../utilsWidget';
 import { getScreenshotCompatibilityFallback } from '../../sdk/ScreenshotTaker';
 import { ElixirChatWidget } from '../ElixirChatWidget';
-import {IMAGE_PREVIEW_OPEN, REPLY_MESSAGE, WIDGET_POPUP_BLUR} from '../ElixirChatWidgetEventTypes';
+import {
+  IMAGE_PREVIEW_OPEN,
+  REPLY_MESSAGE,
+  TEXTAREA_VERTICAL_RESIZE,
+  WIDGET_POPUP_BLUR
+} from '../ElixirChatWidgetEventTypes';
 import {
   JOIN_ROOM_ERROR,
   MESSAGES_SUBSCRIBE_ERROR,
@@ -65,16 +70,21 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
       this.setState({ isLoading: false });
       this.scrollToBottom();
     });
-
     elixirChatWidget.on(MESSAGES_HISTORY_PREPEND_MANY, messages => {
       this.setProcessedMessages(messages, { insertBefore: true });
     });
     elixirChatWidget.on(MESSAGES_HISTORY_CHANGE_MANY, messages => {
       this.setProcessedMessages(messages);
     });
-
     elixirChatWidget.on([JOIN_ROOM_ERROR, MESSAGES_SUBSCRIBE_ERROR, MESSAGES_FETCH_HISTORY_INITIAL_ERROR], () => {
       this.setState({ isLoading: false, isLoadingError: true });
+    });
+    elixirChatWidget.on(TEXTAREA_VERTICAL_RESIZE, textareaHeight => {
+      const hasUserScroll = this.hasUserScroll();
+      this.scrollBlock.current.style.bottom = textareaHeight + 'px';
+      if (!hasUserScroll) {
+        this.scrollToBottom();
+      }
     });
   }
 
@@ -264,6 +274,12 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     elixirChatWidget.triggerEvent(REPLY_MESSAGE, messageId);
   };
 
+  onSubmitRetryClick = (message) => {
+    console.warn('__ reply submit', message);
+    const { elixirChatWidget } = this.props;
+    elixirChatWidget.retrySendMessage(message);
+  };
+
   renderKeyShortcut = (keySequence) => {
     return (
       <Fragment>
@@ -279,7 +295,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
   };
 
   render(): void {
-    const { elixirChatWidget, onSubmitRetry } = this.props;
+    const { elixirChatWidget } = this.props;
     const {
       processedMessages,
       screenshotFallback,
@@ -413,7 +429,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                     {message.isSubmissionError && (
                       <span className="elixirchat-chat-messages__submission-error"
                         title="Нажмите, чтобы отправить еще раз"
-                        onClick={() => onSubmitRetry(message)}>
+                        onClick={() => this.onSubmitRetryClick(message)}>
                         Не отправлено
                       </span>
                     )}
