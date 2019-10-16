@@ -4,18 +4,18 @@ import dayjs from 'dayjs';
 import dayjsCalendar from 'dayjs/plugin/calendar';
 import 'dayjs/locale/ru';
 import AutoLinkText from 'react-autolink-text2';
-import { _get, _last, _round } from '../../utilsCommon';
-import { isWebImage, getHumanReadableFileSize, inflectDayJSWeekDays } from '../../utilsWidget';
+import { _get, _last, _round, isWebImage } from '../../utilsCommon';
+import { getHumanReadableFileSize, inflectDayJSWeekDays, playNotificationSound } from '../../utilsWidget';
 import { getScreenshotCompatibilityFallback } from '../../sdk/ScreenshotTaker';
 import { ElixirChatWidget } from '../ElixirChatWidget';
 import { IMAGE_PREVIEW_OPEN } from '../ElixirChatWidgetEventTypes';
 import {
   JOIN_ROOM_ERROR,
-  MESSAGES_FETCH_HISTORY_SUCCESS,
-  MESSAGES_FETCH_HISTORY_ERROR,
   MESSAGES_SUBSCRIBE_ERROR,
-  MESSAGES_HISTORY_PREPEND_MANY,
+  MESSAGES_FETCH_HISTORY_INITIAL_ERROR,
+  MESSAGES_HISTORY_SET,
   MESSAGES_HISTORY_APPEND_ONE,
+  MESSAGES_HISTORY_PREPEND_MANY,
   MESSAGES_HISTORY_CHANGE_MANY,
 } from '../../sdk/ElixirChatEventTypes';
 
@@ -51,23 +51,35 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
       screenshotFallback: getScreenshotCompatibilityFallback(),
     });
 
-    elixirChatWidget.on(MESSAGES_HISTORY_APPEND_ONE, message => {
-      this.setProcessedMessages([message], { insertAfter: true });
-    });
+    elixirChatWidget.on(MESSAGES_HISTORY_APPEND_ONE, this.onMessageReceive);
+
     elixirChatWidget.on(MESSAGES_HISTORY_PREPEND_MANY, messages => {
       this.setProcessedMessages(messages, { insertBefore: true });
     });
-    elixirChatWidget.on(MESSAGES_HISTORY_CHANGE_MANY, messages => {
-      this.setProcessedMessages(messages)
-    });
-
-    elixirChatWidget.on(MESSAGES_FETCH_HISTORY_SUCCESS, () => {
+    elixirChatWidget.on([MESSAGES_HISTORY_SET, MESSAGES_HISTORY_CHANGE_MANY], messages => {
+      this.setProcessedMessages(messages);
       this.setState({ isLoading: false });
     });
-    elixirChatWidget.on([JOIN_ROOM_ERROR, MESSAGES_SUBSCRIBE_ERROR, MESSAGES_FETCH_HISTORY_ERROR], () => {
+    elixirChatWidget.on([JOIN_ROOM_ERROR, MESSAGES_SUBSCRIBE_ERROR, MESSAGES_FETCH_HISTORY_INITIAL_ERROR], () => {
       this.setState({ isLoading: false, isLoadingError: true });
     });
   }
+
+  onMessageReceive = message => {
+    const { elixirChatWidget } = this.props;
+    const hasUserScroll = false; // TODO: fix scroll
+    const shouldScrollMessagesToBottom = elixirChatWidget.isWidgetPopupOpen && elixirChatWidget.isWidgetPopupFocused && !hasUserScroll;
+    const shouldPlayNotificationSound = !message.sender.isCurrentClient;
+
+    this.setProcessedMessages([message], { insertAfter: true });
+
+    if (shouldScrollMessagesToBottom) {
+      console.error('__ SCROLL BOTTOM (and mark not mine messages mark on scroll)'); // TODO: fix scroll
+    }
+    if (shouldPlayNotificationSound) {
+      playNotificationSound();
+    }
+  };
 
   setProcessedMessages = (messages, params = {}) => {
     const { insertBefore, insertAfter } = params;
@@ -169,7 +181,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     e.preventDefault();
   };
 
-  shouldHideMessageBalloon = (message) => {
+  shouldHideMessageBalloon = (message) => { // TODO: move to process messages
     const hasText = message.text.trim();
     const hasReply = message.responseToMessage;
     const hasFiles = message.files && message.files.length;

@@ -207,72 +207,15 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
     const { textareaText, textareaResponseToMessageId, textareaAttachments } = this.state;
 
     if (textareaText.trim() || textareaAttachments.length) {
-      const temporaryMessage = this.generateTemporaryMessage({
-        textareaText,
-        textareaResponseToMessageId,
-        textareaAttachments,
-      });
-
       elixirChatWidget.sendMessage({
         text: textareaText,
-        tempId: temporaryMessage.tempId,
         attachments: textareaAttachments.map(attachment => attachment.file),
         responseToMessageId: textareaResponseToMessageId,
-      })
-        .catch(() => {
-          elixirChatWidget.changeMessageById(temporaryMessage.id, {
-            isSubmitting: false,
-            isSubmissionError: true,
-          })
-        });
-
-      elixirChatWidget.appendMessage(temporaryMessage);
+        appendConditionally: true,
+      });
       elixirChatWidget.dispatchTypedText(false);
       localStorage.removeItem('elixirchat-typed-text');
     }
-  };
-
-  generateTemporaryMessage = ({ textareaText, textareaResponseToMessageId, textareaAttachments }) => {
-    const { elixirChatWidget } = this.props;
-    const responseToMessage = elixirChatWidget.messageHistory.filter(message => {
-      return message.id === textareaResponseToMessageId;
-    })[0];
-
-    const attachments = textareaAttachments.map(attachment => {
-      const id = randomDigitStringId(6);
-      const originalFileObject = attachment.file;
-      const contentType = originalFileObject.type;
-      const url = URL.createObjectURL(originalFileObject);
-      let thumbnails = [];
-      if (isWebImage(contentType) && attachment.width && attachment.height) {
-        thumbnails = [{ id, url }];
-      }
-      return {
-        id,
-        url,
-        originalFileObject,
-        contentType,
-        thumbnails,
-        name: attachment.name,
-        width: attachment.width,
-        height: attachment.height,
-        bytesSize: originalFileObject.size,
-      };
-    });
-
-    return  {
-      id: randomDigitStringId(6),
-      tempId: randomDigitStringId(6),
-      text: textareaText.trim() || '',
-      timestamp: new Date().toISOString(),
-      sender: {
-        isOperator: false,
-        isCurrentClient: true,
-      },
-      responseToMessage: responseToMessage || null,
-      attachments: attachments,
-      isSubmitting: true,
-    };
   };
 
   render(): void {

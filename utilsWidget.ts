@@ -71,11 +71,6 @@ export function generateFontFaceRule(fontFamily: string, fontWeight: string | nu
 }
 
 
-export function isWebImage(mimeType: string): boolean {
-  return ['image/jpg', 'image/jpeg', 'image/png', 'image/gif'].includes(mimeType.toLowerCase());
-}
-
-
 export function getHumanReadableFileSize(locale: 'ru-RU' | 'en-US', sizeInBytes: number): string {
   const unitsDict = {
     'ru-RU': {

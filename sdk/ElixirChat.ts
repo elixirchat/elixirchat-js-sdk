@@ -67,6 +67,9 @@ export class ElixirChat {
   public get messageHistory(): boolean {
     return this.messageSubscription.messageHistory;
   }
+  public get hasMessageHistoryBeenEverFetched(): boolean {
+    return this.messageSubscription.hasMessageHistoryBeenEverFetched;
+  }
   public get reachedBeginningOfMessageHistory(): boolean {
     return this.messageSubscription.reachedBeginningOfMessageHistory;
   }
@@ -299,12 +302,8 @@ export class ElixirChat {
     return this.messageSubscription.fetchMessageHistory(limit, beforeCursor);
   };
 
-  public appendMessage = (message: IMessage): void => {
-    return this.messageSubscription.appendMessage(message);
-  };
-
-  public updateMessageById = (messageId: string, messageData: object): void => {
-    return this.messageSubscription.updateMessageById(messageId, messageData);
+  public updateMessageByTempId = (tempId: string, messageData: object): void => {
+    return this.messageSubscription.updateMessageByTempId(tempId, messageData);
   };
 
   public dispatchTypedText = (typedText: string): void => {

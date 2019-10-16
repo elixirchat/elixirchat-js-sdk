@@ -3,10 +3,11 @@ import { ElixirChat } from './ElixirChat';
 import { gql, GraphQLClient } from './GraphQLClient';
 import { GraphQLClientSocket } from './GraphQLClientSocket';
 import {
-  UNREAD_MESSAGES_SUBSCRIBE_ERROR,
   UNREAD_MESSAGES_SUBSCRIBE_SUCCESS,
+  UNREAD_MESSAGES_SUBSCRIBE_ERROR,
   UNREAD_MESSAGES_CHANGE,
-  UNREAD_REPLIES_CHANGE, LAST_READ_MESSAGE_CHANGE,
+  UNREAD_REPLIES_CHANGE,
+  LAST_READ_MESSAGE_CHANGE,
 } from './ElixirChatEventTypes';
 
 
@@ -69,10 +70,7 @@ export class UnreadMessagesCounter {
     this.graphQLClient = null;
   };
 
-  public setLastReadMessage =  (messageId: string): Promise<IUnreadMessagesCounterData> => {
-
-    // TODO: unread - remove
-    this.elixirChat.triggerEvent(LAST_READ_MESSAGE_CHANGE, messageId);
+  public setLastReadMessage = (messageId: string): Promise<IUnreadMessagesCounterData> => {
     return this.graphQLClient.query(this.setLastReadMessageQuery, { messageId });
   };
 
@@ -117,31 +115,5 @@ export class UnreadMessagesCounter {
       this.lastReadMessageId = lastReadMessageId;
       triggerEvent(LAST_READ_MESSAGE_CHANGE, lastReadMessageId);
     }
-  };
-
-  // TODO: unread - remove manually triggering UNREAD_MESSAGES_CHANGE, UNREAD_REPLIES_CHANGE, LAST_READ_MESSAGE_CHANGE
-  public __tempTriggerChange = (messages, replies, messageLastIndex = 0) => {
-    const { messageHistory } = this.elixirChat;
-    const notMineMessages = messageHistory.filter(message => !message.sender.isCurrentClient);
-    const lastMessage = notMineMessages[notMineMessages.length - 1 - messageLastIndex];
-
-    if (typeof messages !== 'number') {
-      this.onSocketResult({
-        data: {
-          updateReadMessages: { unreadMessagesCount: messages }
-        }
-      });
-    }
-
-    if (typeof replies !== 'number') {
-      this.onSocketResult({
-        data: {
-          updateReadMessages: { unreadRepliesCount: replies }
-        }
-      });
-    }
-
-    console.log('%c lastMessage', 'color: green', lastMessage);
-    this.setLastReadMessage(lastMessage.id);
   };
 }

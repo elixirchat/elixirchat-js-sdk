@@ -59,6 +59,7 @@ export const fragmentMessage = insertGraphQlFragments(gql`
 
 export interface IMessage {
   id: string;
+  tempId: string | null;
   text: string;
   timestamp: string;
   cursor: string;

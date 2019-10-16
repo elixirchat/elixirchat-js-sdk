@@ -124,3 +124,8 @@ export function getJSONFromLocalStorage(key: string, defaultValue: any = ''): an
   catch (e) {}
   return value;
 }
+
+
+export function isWebImage(mimeType: string): boolean {
+  return ['image/jpg', 'image/jpeg', 'image/png', 'image/gif'].includes(mimeType.toLowerCase());
+}

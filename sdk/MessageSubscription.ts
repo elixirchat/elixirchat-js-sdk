@@ -1,20 +1,27 @@
 import { ElixirChat } from './ElixirChat';
 import {
-  MESSAGES_FETCH_HISTORY_ERROR,
-  MESSAGES_FETCH_HISTORY_SUCCESS, MESSAGES_HISTORY_PREPEND_MANY, MESSAGES_HISTORY_APPEND_ONE,
+  MESSAGES_SUBSCRIBE_SUCCESS,
   MESSAGES_SUBSCRIBE_ERROR,
-  MESSAGES_SUBSCRIBE_SUCCESS, MESSAGES_HISTORY_CHANGE_ONE,
+  MESSAGES_FETCH_HISTORY_SUCCESS,
+  MESSAGES_FETCH_HISTORY_ERROR,
+  MESSAGES_FETCH_HISTORY_INITIAL_SUCCESS,
+  MESSAGES_FETCH_HISTORY_INITIAL_ERROR,
+  MESSAGES_HISTORY_SET,
+  MESSAGES_HISTORY_APPEND_ONE,
+  MESSAGES_HISTORY_CHANGE_ONE,
+  MESSAGES_HISTORY_PREPEND_MANY,
 } from './ElixirChatEventTypes';
 
-import {_get, logEvent, randomDigitStringId} from '../utilsCommon';
-import { serializeMessage, IMessage, fragmentMessage } from './serializers/serializeMessage';
+import { IFile } from './serializers/serializeFile';
+import { IMessage, serializeMessage, fragmentMessage } from './serializers/serializeMessage';
+import { _get, logEvent, randomDigitStringId, isWebImage } from '../utilsCommon';
+import { GraphQLClientSocket } from './GraphQLClientSocket';
 import {
-  insertGraphQlFragments,
-  simplifyGraphQLJSON,
   GraphQLClient,
+  simplifyGraphQLJSON,
+  insertGraphQlFragments,
   gql,
 } from './GraphQLClient';
-import {GraphQLClientSocket} from './GraphQLClientSocket';
 
 
 export interface ISentMessage {
@@ -22,6 +29,7 @@ export interface ISentMessage {
   attachments?: Array<File>,
   responseToMessageId?: string,
   tempId?: string,
+  appendConditionally?: boolean;
 }
 
 export interface ISentMessageSerialized {
@@ -41,6 +49,8 @@ export class MessageSubscription {
   protected graphQLClientSocket: GraphQLClientSocket;
 
   public messageHistory: Array<IMessage> = [];
+  public hasMessageHistoryBeenEverFetched: boolean = false;
+  protected temporaryMessageTempIds: Array<string> = [];
   protected latestMessageHistoryCursorsCache: Array<IMessage> = [];
   protected reachedBeginningOfMessageHistory: boolean = false;
 
@@ -87,14 +97,7 @@ export class MessageSubscription {
   };
 
   protected initializeSocketClient(): void {
-    const {
-      socketUrl,
-      authToken,
-      backendStaticUrl,
-      client,
-      debug,
-      triggerEvent,
-    } = this.elixirChat;
+    const { socketUrl, authToken, debug, triggerEvent } = this.elixirChat;
 
     this.graphQLClientSocket = new GraphQLClientSocket({
       socketUrl,
@@ -108,21 +111,30 @@ export class MessageSubscription {
         logEvent(debug, 'Successfully subscribed to messages');
         triggerEvent(MESSAGES_SUBSCRIBE_SUCCESS);
       },
-      onResult: ({ data }) => {
-        if (data && data.newMessage) {
-          const message = serializeMessage(data.newMessage, { backendStaticUrl, client });
-
-          // TODO: unread - remove
-          if (!message.sender.isCurrentClient) {
-            message.isUnread = true;
-          }
-
-          this.messageHistory.push(message);
-          logEvent(debug, 'Received new message', message);
-          triggerEvent(MESSAGES_HISTORY_APPEND_ONE, message, this.messageHistory);
-        }
-      },
+      onResult: this.onMessageReceive,
     });
+  };
+
+  protected onMessageReceive = (response: any): void => {
+    const { backendStaticUrl, client, triggerEvent, debug } = this.elixirChat;
+    const data = _get(response, 'data.newMessage');
+    if (!data) {
+      return;
+    }
+    const message = serializeMessage(data, { backendStaticUrl, client });
+
+    console.log('%c__ onMessageReceive', 'color: green', JSON.stringify(message, 0, 2));
+
+    if (this.temporaryMessageTempIds.includes(message.tempId)) {
+      this.enrichTemporaryMessage(message.tempId, message);
+      logEvent(debug, 'Enriched temporary message with actual one', { message });
+      triggerEvent(MESSAGES_HISTORY_CHANGE_ONE, message, this.messageHistory);
+    }
+    else {
+      this.messageHistory.push(message);
+      logEvent(debug, 'Received new message', { message });
+      triggerEvent(MESSAGES_HISTORY_APPEND_ONE, message, this.messageHistory);
+    }
   };
 
   protected serializeSendMessageParams(params: ISentMessage): ISentMessageSerialized {
@@ -151,7 +163,7 @@ export class MessageSubscription {
     };
   };
 
-  protected generateNewClientPlaceholderMessage(messageHistory): IMessage {
+  protected generateNewClientPlaceholderMessage(messageHistory: Array<IMessage>): IMessage {
     const firstMessageTimestamp = _get(messageHistory, '[0].timestamp');
     const timestamp = firstMessageTimestamp || new Date().toISOString();
     return {
@@ -166,10 +178,83 @@ export class MessageSubscription {
     };
   };
 
+  protected generateTemporaryMessage(params: ISentMessage): IMessage {
+    const { text, attachments, responseToMessageId } = params;
+    const serializedResponseToMessage = this.messageHistory.filter(message => {
+      return message.id === responseToMessageId;
+    })[0];
+
+    const serializedAttachments = attachments.map((attachment): IFile => {
+      const id = randomDigitStringId(6);
+      const originalFileObject = attachment.file;
+      const contentType = originalFileObject.type;
+      const url = URL.createObjectURL(originalFileObject);
+      let thumbnails = [];
+      if (isWebImage(contentType) && attachment.width && attachment.height) {
+        thumbnails = [{ id, url }];
+      }
+      return {
+        id,
+        url,
+        originalFileObject,
+        contentType,
+        thumbnails,
+        name: attachment.name,
+        width: attachment.width,
+        height: attachment.height,
+        bytesSize: originalFileObject.size,
+      };
+    });
+
+    return {
+      id: randomDigitStringId(6),
+      tempId: randomDigitStringId(6),
+      text: text.trim() || '',
+      timestamp: new Date().toISOString(),
+      sender: {
+        isOperator: false,
+        isCurrentClient: true,
+      },
+      responseToMessage: serializedResponseToMessage || null,
+      attachments: serializedAttachments,
+      isSubmitting: true,
+    };
+  }
+
+  protected appendMessageConditionally(message: IMessage): void {
+    const { triggerEvent, debug } = this.elixirChat;
+    this.messageHistory.push(message);
+    this.temporaryMessageTempIds.push(message.tempId);
+    logEvent(debug, 'Conditionally appended message', { message });
+    triggerEvent(MESSAGES_HISTORY_APPEND_ONE, message);
+  };
+
+  protected enrichTemporaryMessage(temporaryMessageTempId: string, messageData: IMessage){
+    const { triggerEvent } = this.elixirChat;
+    if (this.temporaryMessageTempIds.includes(temporaryMessageTempId)) {
+      this.messageHistory.forEach(message => {
+        if (message.tempId === temporaryMessageTempId) {
+          for (let key in messageData) {
+            message[key] = messageData[key];
+          }
+          this.temporaryMessageTempIds = this.temporaryMessageTempIds.filter(id => id !== temporaryMessageTempId);
+          triggerEvent(MESSAGES_HISTORY_CHANGE_ONE, message, this.messageHistory);
+          return;
+        }
+      });
+    }
+  }
 
   public sendMessage = (params: ISentMessage): Promise<IMessage> => {
     const { backendStaticUrl, client, debug } = this.elixirChat;
     const { variables, binaries } = this.serializeSendMessageParams(params);
+    let temporaryMessage;
+
+    if (params.appendConditionally) {
+      const temporaryMessage = this.generateTemporaryMessage(params);
+      variables.tempId = temporaryMessage.tempId;
+      this.appendMessageConditionally(temporaryMessage);
+    }
 
     return new Promise((resolve, reject) => {
       if (!variables.text && !variables.attachments.length) {
@@ -180,117 +265,120 @@ export class MessageSubscription {
       }
       this.graphQLClient
         .query(this.sendMessageQuery, variables, binaries)
-        .then(data => {
-          if (data && data.sendMessage) {
-            const message = serializeMessage(data.sendMessage, { backendStaticUrl, client });
+        .then(response => {
+          if (response && response.sendMessage) {
+            const message = serializeMessage(response.sendMessage, { backendStaticUrl, client });
             logEvent(this.debug, 'Sent message', { params, variables, message });
             resolve(message);
           }
           else {
-            logEvent(debug, 'Failed to send message', { data }, 'error');
-            reject(data);
-          }
-        })
-        .catch(error => {
-          logEvent(debug, 'Failed to send message', { error }, 'error');
-          reject(error);
-        });
-    });
-  };
-
-  public fetchMessageHistory = (limit: number, beforeCursor: string): Promise<[IMessage] | any[]> => {
-    const { backendStaticUrl, client, triggerEvent, debug } = this.elixirChat;
-    const query = this.messageHistoryQuery;
-    const variables = { limit, beforeCursor };
-
-    return new Promise((resolve, reject) => {
-
-      if (this.reachedBeginningOfMessageHistory) {
-        resolve([]);
-        return;
-      }
-
-      this.graphQLClient.query(query, variables)
-        .then(response => {
-          if (response.messages) {
-
-            // TODO: remove latestMessageHistoryCursorsCache?
-            let messages = <[IMessage]>simplifyGraphQLJSON(response.messages)
-              .map(message => serializeMessage(message, { backendStaticUrl, client }))
-              .filter(message => !this.latestMessageHistoryCursorsCache.includes(message.cursor));
-
-            this.latestMessageHistoryCursorsCache = [
-              ...messages.map(message => message.cursor),
-              ...this.latestMessageHistoryCursorsCache,
-            ].slice(0, limit);
-
-            if (messages.length < limit) {
-              this.reachedBeginningOfMessageHistory = true;
-              messages = [
-                this.generateNewClientPlaceholderMessage(messages),
-                ...messages,
-              ];
-            }
-
-
-            const isSettingMessageHistoryFromScratch = !beforeCursor;
-            this.messageHistory = messages.concat(this.messageHistory);
-
-
-            // TODO: unread - remove
-            let notMineMessages = messages.filter(message => !message.sender.isCurrentClient);
-            isSettingMessageHistoryFromScratch && notMineMessages.forEach((message, index) => {
-              if (index > notMineMessages.length - 5) {
-                message.isUnread = true;
-              }
-            });
-
-
-            logEvent(debug, `Fetched ${isSettingMessageHistoryFromScratch ? 'new' : 'additional'} message history`, {
-              messages,
-              limit,
-              beforeCursor,
-            });
-
-            triggerEvent(MESSAGES_HISTORY_PREPEND_MANY, messages, this.messageHistory);
-            if (isSettingMessageHistoryFromScratch) {
-              // triggerEvent(MESSAGES_HISTORY_SET, this.messageHistory); // TODO: replace /w FETCH_INITIAL
-            }
-            triggerEvent(MESSAGES_FETCH_HISTORY_SUCCESS, messages);
-            resolve(messages);
-          }
-          else {
-            logEvent(debug, 'Failed to fetch message history', { response }, 'error');
-            triggerEvent(MESSAGES_FETCH_HISTORY_ERROR, response);
+            this.onSendMessageFailure(temporaryMessage, response);
             reject(response);
           }
         })
         .catch(error => {
-          logEvent(debug, 'Failed to fetch message history', { error }, 'error');
-          triggerEvent(MESSAGES_FETCH_HISTORY_ERROR, error);
+          this.onSendMessageFailure(temporaryMessage, error);
           reject(error);
         });
     });
   };
 
-  public appendMessage = (message: IMessage): void => {
+  protected onSendMessageFailure(temporaryMessage: IMessage, error: any): void {
     const { triggerEvent, debug } = this.elixirChat;
-    this.messageHistory.push(message);
-    logEvent(debug, 'Appended new message', message);
-    triggerEvent(MESSAGES_HISTORY_APPEND_ONE, message, this.messageHistory);
-  };
+    logEvent(debug, 'Failed to send message', { error }, 'error');
 
-  public updateMessageById = (messageId: string, messageData: object): void => {
-    const { triggerEvent, debug } = this.elixirChat;
-    this.messageHistory.forEach(message => {
-      if (message.id === messageId) {
-        for (let key in messageData) {
-          message[key] = messageData[key];
-        }
-        triggerEvent(MESSAGES_HISTORY_CHANGE_ONE, messageData, this.messageHistory);
+    if (temporaryMessage) {
+      this.enrichTemporaryMessage(temporaryMessage.tempId, {
+        isSubmitting: false,
+        isSubmissionError: true,
+      });
+      triggerEvent(MESSAGES_HISTORY_CHANGE_ONE, temporaryMessage, this.messageHistory);
+    }
+  }
+
+  public fetchMessageHistory = (limit: number, beforeCursor: string): Promise<[IMessage]> => {
+    return new Promise((resolve, reject) => {
+      const isPrependingExistingMessageHistory = Boolean(beforeCursor);
+      if (this.reachedBeginningOfMessageHistory) {
+        resolve([]);
+        return;
       }
+      this.graphQLClient.query(this.messageHistoryQuery, { limit, beforeCursor })
+        .then(response => {
+          if (response.messages) {
+            const processedMessageHistory = this.processFetchedMessageHistory(response.messages);
+            this.onFetchMessageHistorySuccess(processedMessageHistory, isPrependingExistingMessageHistory);
+            resolve(processedMessageHistory);
+          }
+          else {
+            this.onFetchMessageHistoryFailure(response, isPrependingExistingMessageHistory);
+            reject(response);
+          }
+        })
+        .catch(error => {
+          this.onFetchMessageHistoryFailure(error, isPrependingExistingMessageHistory);
+          reject(error);
+        });
     });
   };
+
+  protected processFetchedMessageHistory(messages: Array<object>, limit: number): Array<IMessage> {
+    const { backendStaticUrl, client } = this.elixirChat;
+
+    let processedMessages = <[IMessage]>simplifyGraphQLJSON(messages)
+      .map(message => serializeMessage(message, { backendStaticUrl, client }))
+      .filter(message => {
+        // Preventing message duplication if overlapping ranges of messages were fetched
+        return !this.latestMessageHistoryCursorsCache.includes(message.cursor);
+      });
+
+    this.latestMessageHistoryCursorsCache = [
+      ...processedMessages.map(message => message.cursor),
+      ...this.latestMessageHistoryCursorsCache,
+    ].slice(0, limit);
+
+    this.reachedBeginningOfMessageHistory = messages.length < limit;
+    this.hasMessageHistoryBeenEverFetched = true;
+
+    if (messages.length < limit) {
+      const newClientPlaceholderMessage = this.generateNewClientPlaceholderMessage(messages);
+      processedMessages = [newClientPlaceholderMessage, ...processedMessages];
+    }
+    return processedMessages;
+  }
+
+  protected onFetchMessageHistorySuccess(processedMessageHistory: Array<IMessage>, isPrependingExistingMessageHistory: boolean): void {
+    const { triggerEvent, debug } = this.elixirChat;
+    if (isPrependingExistingMessageHistory) {
+      this.messageHistory = processedMessageHistory.concat(this.messageHistory);
+      logEvent(debug, 'Fetched and prepended additional message history', { processedMessageHistory });
+      triggerEvent(MESSAGES_HISTORY_PREPEND_MANY, processedMessageHistory, this.messageHistory);
+    }
+    else {
+      this.messageHistory = processedMessageHistory;
+      logEvent(debug, 'Fetched new message history', { processedMessageHistory });
+      triggerEvent(MESSAGES_HISTORY_SET, processedMessageHistory);
+    }
+
+    if (this.hasMessageHistoryBeenEverFetched) {
+      triggerEvent(MESSAGES_FETCH_HISTORY_SUCCESS, processedMessageHistory, this.messageHistory);
+    }
+    else {
+      triggerEvent(MESSAGES_FETCH_HISTORY_INITIAL_SUCCESS, processedMessageHistory, this.messageHistory);
+    }
+  }
+
+  protected onFetchMessageHistoryFailure(error: any): void {
+    const { triggerEvent, debug } = this.elixirChat;
+    if (this.hasMessageHistoryBeenEverFetched) {
+      logEvent(debug, 'Failed to fetch message history', { error }, 'error');
+      triggerEvent(MESSAGES_FETCH_HISTORY_ERROR, error);
+    }
+    else {
+      logEvent(debug, 'Failed to fetch initial message history', { error }, 'error');
+      triggerEvent(MESSAGES_FETCH_HISTORY_INITIAL_ERROR, error);
+    }
+  }
 
   public unsubscribe = (): void => {
     const { debug } = this.elixirChat;
