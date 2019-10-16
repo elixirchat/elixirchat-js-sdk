@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 import dayjsCalendar from 'dayjs/plugin/calendar';
 import 'dayjs/locale/ru';
 import AutoLinkText from 'react-autolink-text2';
-import { _get, _last, _round, isWebImage } from '../../utilsCommon';
+import {_findIndex, _get, _last, _round, isWebImage} from '../../utilsCommon';
 import {
   getHumanReadableFileSize,
   inflectDayJSWeekDays,
@@ -26,7 +26,7 @@ import {
   MESSAGES_HISTORY_SET,
   MESSAGES_HISTORY_APPEND_ONE,
   MESSAGES_HISTORY_PREPEND_MANY,
-  MESSAGES_HISTORY_CHANGE_MANY,
+  MESSAGES_HISTORY_CHANGE_MANY, MESSAGES_HISTORY_CHANGE_ONE,
 } from '../../sdk/ElixirChatEventTypes';
 
 export interface IDefaultWidgetMessagesProps {
@@ -72,6 +72,9 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     });
     elixirChatWidget.on(MESSAGES_HISTORY_PREPEND_MANY, messages => {
       this.setProcessedMessages(messages, { insertBefore: true });
+    });
+    elixirChatWidget.on(MESSAGES_HISTORY_CHANGE_ONE, (changedMessage, messageHistory) => {
+      this.setProcessedMessages(messageHistory);
     });
     elixirChatWidget.on(MESSAGES_HISTORY_CHANGE_MANY, messages => {
       this.setProcessedMessages(messages);
@@ -274,12 +277,6 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     elixirChatWidget.triggerEvent(REPLY_MESSAGE, messageId);
   };
 
-  onSubmitRetryClick = (message) => {
-    console.warn('__ reply submit', message);
-    const { elixirChatWidget } = this.props;
-    elixirChatWidget.retrySendMessage(message);
-  };
-
   renderKeyShortcut = (keySequence) => {
     return (
       <Fragment>
@@ -429,7 +426,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                     {message.isSubmissionError && (
                       <span className="elixirchat-chat-messages__submission-error"
                         title="Нажмите, чтобы отправить еще раз"
-                        onClick={() => this.onSubmitRetryClick(message)}>
+                        onClick={() => elixirChatWidget.retrySendMessage(message)}>
                         Не отправлено
                       </span>
                     )}

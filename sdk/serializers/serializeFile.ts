@@ -33,7 +33,6 @@ export interface IFile {
   contentType: string | null;
   thumbType?: string | null;
   thumbnails?: Array<IFile>;
-  originalFileObject?: File | null;
 }
 
 export interface ISerializeFileOptions {
@@ -76,6 +75,6 @@ export function serializeFile(fileData: any, elixirChat: ElixirChat): IFile {
     width: file.width || 0,
     thumbnails: thumbnails,
     contentType: file.contentType || null,
-    originalFileObject: file.originalFileObject || null,
+    isScreenshot: file.isScreenshot || false,
   };
 }

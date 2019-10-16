@@ -37,6 +37,7 @@ export interface ISentMessage {
     isScreenshot?: boolean;
   }>,
   appendConditionally?: boolean;
+  retrySubmissionByTempId?: string;
 }
 
 export interface ISentMessageSerialized {
@@ -131,7 +132,7 @@ export class MessageSubscription {
     const message = serializeMessage(data, { backendStaticUrl, client });
 
     if (this.temporaryMessageTempIds.includes(message.tempId)) {
-      this.enrichTemporaryMessage(message.tempId, message);
+      this.enrichTemporaryMessage(message.tempId, message, true);
       logEvent(debug, 'Enriched temporary message with actual one', { message });
       triggerEvent(MESSAGES_HISTORY_CHANGE_ONE, message, this.messageHistory);
     }
@@ -183,20 +184,16 @@ export class MessageSubscription {
     };
   };
 
-  protected generateTemporaryMessage(params: ISentMessage): IMessage {
+  protected generateTemporaryMessage(tempId: string, params: ISentMessage): IMessage {
     const { text, attachments, responseToMessageId } = params;
     const serializedResponseToMessage = this.messageHistory.filter(message => {
       return message.id === responseToMessageId;
     })[0];
 
     const serializedAttachments = attachments.map((attachment): IFile => {
-      const originalFileObject = attachment.file;
-      const contentType = originalFileObject.type;
-
-      console.log('__ originalFileObject', originalFileObject);
-      window.__originalFileObject = originalFileObject;
-
-      const url = URL.createObjectURL(originalFileObject);
+      const { file } = attachment;
+      const contentType = file.type;
+      const url = URL.createObjectURL(file);
       let thumbnails = [];
       if (isWebImage(contentType) && attachment.width && attachment.height) {
         thumbnails = [{ id: attachment.id, url }];
@@ -206,14 +203,13 @@ export class MessageSubscription {
         url,
         thumbnails,
         contentType,
-        originalFileObject,
-        bytesSize: originalFileObject.size,
+        bytesSize: file.size,
       };
     });
 
     return {
+      tempId,
       id: randomDigitStringId(6),
-      tempId: randomDigitStringId(6),
       text: text.trim() || '',
       timestamp: new Date().toISOString(),
       sender: {
@@ -234,7 +230,7 @@ export class MessageSubscription {
     triggerEvent(MESSAGES_HISTORY_APPEND_ONE, message);
   };
 
-  protected enrichTemporaryMessage(temporaryMessageTempId: string, messageData: IMessage){
+  protected enrichTemporaryMessage(temporaryMessageTempId: string, messageData: IMessage, forgetThisTemporaryMessage: boolean = false): void {
     const { triggerEvent } = this.elixirChat;
     if (this.temporaryMessageTempIds.includes(temporaryMessageTempId)) {
       this.messageHistory.forEach(message => {
@@ -242,7 +238,9 @@ export class MessageSubscription {
           for (let key in messageData) {
             message[key] = messageData[key];
           }
-          this.temporaryMessageTempIds = this.temporaryMessageTempIds.filter(id => id !== temporaryMessageTempId);
+          if (forgetThisTemporaryMessage) {
+            this.temporaryMessageTempIds = this.temporaryMessageTempIds.filter(id => id !== temporaryMessageTempId);
+          }
           triggerEvent(MESSAGES_HISTORY_CHANGE_ONE, message, this.messageHistory);
           return;
         }
@@ -254,11 +252,21 @@ export class MessageSubscription {
     const { backendStaticUrl, client, debug } = this.elixirChat;
     const { variables, binaries } = this.serializeSendMessageParams(params);
     let temporaryMessage;
+    let tempId;
 
     if (params.appendConditionally) {
-      const temporaryMessage = this.generateTemporaryMessage(params);
-      variables.tempId = temporaryMessage.tempId;
+      tempId = randomDigitStringId(6);
+      variables.tempId = tempId;
+      temporaryMessage = this.generateTemporaryMessage(tempId, params);
       this.appendMessageConditionally(temporaryMessage);
+    }
+    else if (params.retrySubmissionByTempId) {
+      tempId = params.retrySubmissionByTempId;
+      variables.tempId = tempId;
+      this.enrichTemporaryMessage(tempId, {
+        isSubmitting: true,
+        isSubmissionError: false,
+      });
     }
 
     return new Promise((resolve, reject) => {
@@ -277,40 +285,35 @@ export class MessageSubscription {
             resolve(message);
           }
           else {
-            this.onSendMessageFailure(temporaryMessage, response);
+            this.onSendMessageFailure(tempId, response);
             reject(response);
           }
         })
         .catch(error => {
-          this.onSendMessageFailure(temporaryMessage, error);
+          this.onSendMessageFailure(tempId, error);
           reject(error);
         });
     });
   };
 
   public retrySendMessage = (message: IMessage): Promise<IMessage> => {
-    this.enrichTemporaryMessage(message.tempId, {
-      isSubmitting: true,
-      isSubmissionError: false,
-    });
-    return this.sendMessage({
+    this.sendMessage({
       text: message.text,
-      attachments: message.attachments.map(attachment => attachment.originalFileObject).filter(file => file),
+      attachments: message.attachments,
       responseToMessageId: _get(message, 'responseToMessage.id'),
-      tempId: message.tempId,
+      retrySubmissionByTempId: message.tempId,
     });
   };
 
-  protected onSendMessageFailure(temporaryMessage: IMessage, error: any): void {
+  protected onSendMessageFailure(tempId: string, error: any): void {
     const { triggerEvent, debug } = this.elixirChat;
-    logEvent(debug, 'Failed to send message', { error }, 'error');
+    logEvent(debug, 'Failed to send message', { error, tempId }, 'error');
 
-    if (temporaryMessage) {
-      this.enrichTemporaryMessage(temporaryMessage.tempId, {
+    if (tempId) {
+      this.enrichTemporaryMessage(tempId, {
         isSubmitting: false,
         isSubmissionError: true,
       });
-      triggerEvent(MESSAGES_HISTORY_CHANGE_ONE, temporaryMessage, this.messageHistory);
     }
   }
 
