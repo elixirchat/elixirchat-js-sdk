@@ -108,29 +108,6 @@ export function _flatten(arr: Array): Array {
 }
 
 
-// Lodash-like _._findIndex
-export function _findIndex(arr: Array, predicate: () => {} | object ) {
-  let doesItemMatchesPredicate = predicate;
-
-  if (typeof predicate !== 'function') {
-    doesItemMatchesPredicate = (item) => {
-      for (let key in predicate) {
-        if (predicate[key] !== item[key]) {
-          return false;
-        }
-      }
-      return true;
-    };
-  }
-  for (let index = 0; index < arr.length; index++) {
-    if (doesItemMatchesPredicate(arr[index])) {
-      return index;
-    }
-  }
-  return -1;
-}
-
-
 export function detectPlatform(): { isWindows: boolean, isMac: boolean } {
   return {
     isWindows: navigator.platform.indexOf('Win') > -1,
