@@ -80,11 +80,9 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     elixirChatWidget.on(JOIN_ROOM_SUCCESS, () => {
       elixirChatWidget.fetchMessageHistory(this.messageChunkSize);
     });
-
     elixirChatWidget.on(WIDGET_IFRAME_READY, () => {
       elixirChatWidget.widgetIFrameDocument.body.addEventListener('click', unlockNotificationSoundAutoplay);
     });
-
     elixirChatWidget.on(WIDGET_POPUP_OPEN, () => {
       const { hasMessageHistoryEverBeenVisible } = this.state;
       this.onMultipleMessagesBeingViewedSimultaneously(this.markLatestViewedMessageRead);
@@ -92,7 +90,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
         this.onMessageHistoryInitiallyBecomeVisible();
       }
     });
-
+    
     elixirChatWidget.on(MESSAGES_HISTORY_APPEND_ONE, this.onMessageReceive);
 
     elixirChatWidget.on(MESSAGES_HISTORY_SET, messages => {

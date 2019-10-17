@@ -2,7 +2,8 @@ import React, { Component, Fragment } from 'react';
 import ReactDOM from 'react-dom';
 import cn from 'classnames';
 import { ElixirChatWidget } from '../ElixirChatWidget';
-import { UNREAD_MESSAGES_CHANGE, UNREAD_REPLIES_CHANGE } from '../../sdk/ElixirChatEventTypes';
+import { WIDGET_POPUP_TOGGLE } from '../ElixirChatWidgetEventTypes';
+import { UNREAD_MESSAGES_CHANGE } from '../../sdk/ElixirChatEventTypes';
 import { _flatten } from '../../utilsCommon';
 import { generateFontFaceRule, unlockNotificationSoundAutoplay } from '../../utilsWidget';
 import { FontExtractor } from '../FontExtractor';
@@ -11,7 +12,6 @@ import { IFrameWrapper } from './IFrameWrapper';
 import { ImagePreview } from './ImagePreview';
 import styles from './styles';
 import assets from './assets';
-import { WIDGET_POPUP_TOGGLE } from '../ElixirChatWidgetEventTypes';
 
 export interface IWidgetProps {
   elixirChatWidget: ElixirChatWidget;
@@ -30,6 +30,7 @@ export interface IWidgetState {
 export class Widget extends Component<IWidgetProps, IWidgetState> {
 
   state = {
+    isDefaultButtonHidden: false,
     isIFrameOpen: false,
     isIFrameOpeningAnimation: false,
     outsideIframeStyles: null,
@@ -49,12 +50,13 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
       outsideIframeStyles,
       insideIframeStyles,
       customIframeStyles: elixirChatWidget.iframeStyles,
+      isDefaultButtonHidden: elixirChatWidget.hideDefaultButton,
     });
 
     elixirChatWidget.on(WIDGET_POPUP_TOGGLE, this.onPopupToggle);
 
-    elixirChatWidget.on(UNREAD_MESSAGES_CHANGE, unreadMessagesCounter => {
-      this.setState({ unreadMessagesCounter });
+    elixirChatWidget.on(UNREAD_MESSAGES_CHANGE, unreadMessagesCount => {
+      this.setState({ unreadMessagesCount });
     });
   }
 
@@ -113,6 +115,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
     const {
       isIFrameOpen,
       isIFrameOpeningAnimation,
+      isDefaultButtonHidden,
       outsideIframeStyles,
       insideIframeStyles,
       extractedFontsStyles,
@@ -125,14 +128,17 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
     return (
       <Fragment>
         <style dangerouslySetInnerHTML={{ __html: outsideIframeStyles }}/>
-        <button className="elixirchat-widget-button" onClick={elixirChatWidget.togglePopup}>
-          <span className={cn({
-            'elixirchat-widget-button-counter': true,
-            'elixirchat-widget-button-counter--has-unread': visibleUnreadMessagesCounter,
-          })}>
-            {Boolean(visibleUnreadMessagesCounter) && visibleUnreadMessagesCounter}
-          </span>
-        </button>
+
+        {!isDefaultButtonHidden && (
+          <button className="elixirchat-widget-button" onClick={elixirChatWidget.togglePopup}>
+            <span className={cn({
+              'elixirchat-widget-button-counter': true,
+              'elixirchat-widget-button-counter--has-unread': visibleUnreadMessagesCounter,
+            })}>
+              {Boolean(visibleUnreadMessagesCounter) && visibleUnreadMessagesCounter}
+            </span>
+          </button>
+        )}
 
         <ImagePreview elixirChatWidget={elixirChatWidget}/>
 

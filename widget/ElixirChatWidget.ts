@@ -44,6 +44,7 @@ if (!ElixirChat) {
 export interface IElixirChatWidgetAppendWidgetConfig {
   container: HTMLElement;
   iframeStyles?: string;
+  hideDefaultButton?: boolean;
   extractFontsFromParentWindow?: Array<IFontExtractorExtractParams>;
 }
 
@@ -52,6 +53,7 @@ export class ElixirChatWidget extends ElixirChat {
   public container: HTMLElement;
   public iframeStyles: string;
   public extractFontsFromParentWindow: Array<IFontExtractorExtractParams>;
+  public hideDefaultButton: boolean;
 
   public isWidgetPopupOpen: boolean = false;
   public isWidgetPopupFocused: boolean = false;
@@ -115,10 +117,17 @@ export class ElixirChatWidget extends ElixirChat {
     }
   };
 
-  public appendWidget = async ({ container, iframeStyles, extractFontsFromParentWindow }: IElixirChatWidgetAppendWidgetConfig): void => {
+  public appendWidget = async (config: IElixirChatWidgetAppendWidgetConfig): void => {
+    const {
+      container,
+      iframeStyles,
+      extractFontsFromParentWindow,
+      hideDefaultButton,
+    } = config;
+
     if (!(container instanceof HTMLElement)) {
       const errorMessage = 'You must provide an HTMLElement as a "container" option to appendWidget() method';
-      logEvent(this.debug, errorMessage, { container, iframeStyles, extractFontsFromParentWindow }, 'error');
+      logEvent(this.debug, errorMessage, config, 'error');
       return;
     }
 
@@ -127,6 +136,7 @@ export class ElixirChatWidget extends ElixirChat {
     this.container = container;
     this.iframeStyles = iframeStyles || '';
     this.extractFontsFromParentWindow = extractFontsFromParentWindow || [];
+    this.hideDefaultButton = hideDefaultButton || false;
     this.widgetReactComponent = renderWidgetReactComponent(this.container, this);
 
     logEvent(this.debug, 'Appended ElixirChat default widget', { container });
