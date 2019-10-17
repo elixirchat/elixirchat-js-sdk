@@ -292,16 +292,23 @@ function logEvent() {
   var type = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 'info';
 
   if (isDebug && window.console) {
-    var color = type === 'error' ? '#EB3223;' : '';
-    var messageConsoleStyles = "\n       font-weight: bold;\n       color: ".concat(color, "\n    ");
-    var infoButtonConsoleStyles = "\n      font-weight: normal;\n      text-decoration: underline;\n      color: ".concat(color, "\n    ");
-    var arrowConsoleStyles = "\n      font: 10px Arial;\n      padding-left: 3px;\n      color: ".concat(color, "\n    ");
+    var color = '';
+
+    if (type === 'error') {
+      color = '#EB3223';
+    } else if (type === 'event') {
+      color = /_ERROR$/i.test(message) ? '#eba4a7' : '#5ee9eb';
+    }
+
+    var messageConsoleStyles = "\n       font-weight: bold;\n       color: ".concat(color, ";\n    ");
+    var infoButtonConsoleStyles = "\n      font-weight: normal;\n      text-decoration: underline;\n      color: ".concat(color, ";\n    ");
+    var arrowConsoleStyles = "\n      font: 10px Arial;\n      padding-left: 3px;\n      color: ".concat(color, ";\n    ");
     var additionalDataConsoleStyles = "font-weight: bold;";
     console.groupCollapsed("%cElixirChat: ".concat(message, " %cInfo%c\u25BE"), messageConsoleStyles, infoButtonConsoleStyles, arrowConsoleStyles);
 
     if (type === 'error') {
       console.error(data);
-    } else if (_typeof(data) === 'object' && !(data instanceof Array)) {
+    } else if (data && _typeof(data) === 'object' && !(data instanceof Array)) {
       Object.keys(data).forEach(function (key) {
         console.log("%c".concat(key, ":\n"), additionalDataConsoleStyles, data[key], '\n');
       });
@@ -397,6 +404,25 @@ function detectPlatform() {
 }
 
 exports.detectPlatform = detectPlatform;
+
+function getJSONFromLocalStorage(key) {
+  var defaultValue = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+  var value = defaultValue;
+
+  try {
+    value = JSON.parse(localStorage.getItem(key));
+  } catch (e) {}
+
+  return value;
+}
+
+exports.getJSONFromLocalStorage = getJSONFromLocalStorage;
+
+function isWebImage(mimeType) {
+  return ['image/jpg', 'image/jpeg', 'image/png', 'image/gif'].includes(mimeType.toLowerCase());
+}
+
+exports.isWebImage = isWebImage;
 },{}],"1fv+":[function(require,module,exports) {
 "use strict";
 
@@ -498,7 +524,13 @@ exports.simplifyGraphQLJSON = function (graphQLJSON) {
 };
 
 exports.gql = function (queryParts) {
-  return queryParts.join('');
+  var str = '';
+
+  for (var i = 0; i < queryParts.length; i++) {
+    str += queryParts[i] + ((i + 1 < 1 || arguments.length <= i + 1 ? undefined : arguments[i + 1]) || '');
+  }
+
+  return str;
 };
 
 exports.insertGraphQlFragments = function (query) {
@@ -547,7 +579,7 @@ var utilsCommon_1 = require("../../utilsCommon");
 exports.fragmentClient = GraphQLClient_1.gql(_templateObject());
 exports.fragmentCompanyEmployee = GraphQLClient_1.gql(_templateObject2());
 
-function serializeUser(user, options) {
+function serializeUser(user, elixirChat) {
   var elixirChatId = utilsCommon_1._get(user, 'foreignId') || null;
   var isOperator = utilsCommon_1._get(user, '__typename') !== 'Client';
   var id = isOperator ? utilsCommon_1._get(user, 'employee.id') : utilsCommon_1._get(user, 'id');
@@ -555,14 +587,214 @@ function serializeUser(user, options) {
     id: id || null,
     firstName: utilsCommon_1._get(user, 'firstName') || utilsCommon_1._get(user, 'employee.firstName') || '',
     lastName: utilsCommon_1._get(user, 'lastName') || utilsCommon_1._get(user, 'employee.lastName') || '',
-    isCurrentClient: elixirChatId === options.currentClientId,
+    isCurrentClient: elixirChatId === elixirChat.client.id,
     isOperator: isOperator,
     elixirChatId: elixirChatId
   };
 }
 
 exports.serializeUser = serializeUser;
-},{"../GraphQLClient":"1fv+","../../utilsCommon":"EjGt"}],"5qf4":[function(require,module,exports) {
+},{"../GraphQLClient":"1fv+","../../utilsCommon":"EjGt"}],"zWqG":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.WIDGET_IFRAME_READY = 'WIDGET_IFRAME_READY';
+exports.WIDGET_RENDERED = 'WIDGET_RENDERED';
+exports.WIDGET_POPUP_OPEN = 'WIDGET_POPUP_OPEN';
+exports.WIDGET_POPUP_CLOSE = 'WIDGET_POPUP_CLOSE';
+exports.WIDGET_POPUP_TOGGLE = 'WIDGET_POPUP_TOGGLE';
+exports.WIDGET_POPUP_FOCUS = 'WIDGET_POPUP_FOCUS';
+exports.WIDGET_POPUP_BLUR = 'WIDGET_POPUP_BLUR';
+exports.WIDGET_MUTE = 'WIDGET_MUTE';
+exports.WIDGET_UNMUTE = 'WIDGET_UNMUTE';
+exports.SCREENSHOT_REQUEST_SUCCESS = 'SCREENSHOT_REQUEST_SUCCESS';
+exports.SCREENSHOT_REQUEST_ERROR = 'SCREENSHOT_REQUEST_ERROR';
+exports.REPLY_MESSAGE = 'REPLY_MESSAGE';
+exports.TEXTAREA_VERTICAL_RESIZE = 'TEXTAREA_VERTICAL_RESIZE';
+exports.IMAGE_PREVIEW_OPEN = 'IMAGE_PREVIEW_OPEN';
+exports.IMAGE_PREVIEW_CLOSE = 'IMAGE_PREVIEW_CLOSE';
+},{}],"CLsL":[function(require,module,exports) {
+"use strict";
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var utilsCommon_1 = require("../utilsCommon");
+
+var ElixirChatWidgetEventTypes_1 = require("../widget/ElixirChatWidgetEventTypes");
+
+var ScreenshotTaker =
+/*#__PURE__*/
+function () {
+  function ScreenshotTaker(_ref) {
+    var _this = this;
+
+    var elixirChat = _ref.elixirChat;
+
+    _classCallCheck(this, ScreenshotTaker);
+
+    this.mediaOptions = {
+      video: {
+        width: screen.width * window.devicePixelRatio,
+        height: screen.height * window.devicePixelRatio
+      }
+    };
+    this.width = 0;
+    this.height = 0;
+
+    this.takeScreenshot = function () {
+      var _this$elixirChat = _this.elixirChat,
+          debug = _this$elixirChat.debug,
+          triggerEvent = _this$elixirChat.triggerEvent;
+      return new Promise(function (resolve, reject) {
+        _this.getMediaStream().then(function (stream) {
+          _this.stream = stream;
+          _this.video.srcObject = _this.stream;
+
+          _this.video.oncanplay = function () {
+            _this.setVideoCanvasSize();
+
+            setTimeout(function () {
+              var screenshot = _this.captureVideoFrame();
+
+              _this.stopMediaStream();
+
+              utilsCommon_1.logEvent(debug, 'Captured screenshot', screenshot);
+              triggerEvent(ElixirChatWidgetEventTypes_1.SCREENSHOT_REQUEST_SUCCESS, screenshot);
+              resolve(screenshot);
+            }, 500);
+          };
+
+          _this.video.play();
+        }).catch(function (error) {
+          utilsCommon_1.logEvent(debug, 'Could not capture screenshot', error, 'error');
+          triggerEvent(ElixirChatWidgetEventTypes_1.SCREENSHOT_REQUEST_ERROR, error);
+          reject(error);
+        });
+      });
+    };
+
+    this.elixirChat = elixirChat;
+    this.initialize();
+  }
+
+  _createClass(ScreenshotTaker, [{
+    key: "initialize",
+    value: function initialize() {
+      this.width = screen.width * window.devicePixelRatio;
+      this.canvas = document.createElement('canvas');
+      this.video = document.createElement('video');
+    }
+  }, {
+    key: "setVideoCanvasSize",
+    value: function setVideoCanvasSize() {
+      var video = this.video,
+          canvas = this.canvas,
+          width = this.width;
+      this.height = video.videoHeight / (video.videoWidth / width);
+      video.width = width;
+      video.height = this.height;
+      canvas.width = width;
+      canvas.height = this.height;
+    }
+  }, {
+    key: "captureVideoFrame",
+    value: function captureVideoFrame() {
+      var canvas = this.canvas,
+          width = this.width,
+          height = this.height,
+          video = this.video;
+      var context = canvas.getContext('2d');
+      context.drawImage(video, 0, 0, width, height);
+      var dataUrl = canvas.toDataURL('image/png');
+      var file = this.base64ToFile(dataUrl);
+      return {
+        dataUrl: dataUrl,
+        file: file
+      };
+    }
+  }, {
+    key: "stopMediaStream",
+    value: function stopMediaStream() {
+      this.stream.getTracks()[0].stop();
+    }
+  }, {
+    key: "getMediaStream",
+    value: function getMediaStream() {
+      var _this2 = this;
+
+      return new Promise(function (resolve, reject) {
+        try {
+          var mediaDevices = navigator.mediaDevices;
+          mediaDevices.getDisplayMedia(_this2.mediaOptions).then(resolve).catch(reject);
+        } catch (e) {
+          reject({
+            message: 'MediaDevices.getDisplayMedia is not supported in this browser'
+          });
+        }
+      });
+    }
+  }, {
+    key: "base64ToFile",
+    value: function base64ToFile(dataUrl) {
+      var blobBin = atob(dataUrl.split(',')[1]);
+      var blobArray = [];
+
+      for (var i = 0; i < blobBin.length; i++) {
+        blobArray.push(blobBin.charCodeAt(i));
+      }
+
+      var blob = new Blob([new Uint8Array(blobArray)]);
+      var fileName = "Screenshot ".concat(new Date().toLocaleString(), ".png");
+      return new File([blob], fileName, {
+        type: 'image/png'
+      });
+    }
+  }]);
+
+  return ScreenshotTaker;
+}();
+
+exports.ScreenshotTaker = ScreenshotTaker;
+
+exports.getScreenshotCompatibilityFallback = function () {
+  var getDisplayMedia;
+
+  try {
+    getDisplayMedia = navigator.mediaDevices.getDisplayMedia;
+  } catch (e) {}
+
+  if (getDisplayMedia) {
+    return null;
+  } else {
+    var platform = utilsCommon_1.detectPlatform();
+
+    if (platform.isMac) {
+      return {
+        pressKey: 'Cmd+Control+Shift+3'
+      };
+    } else if (platform.isWindows) {
+      return {
+        pressKey: 'PrtSc',
+        pressKeySecondary: 'Fn+PrtSc'
+      };
+    } else {
+      return {
+        pressKey: null
+      };
+    }
+  }
+};
+},{"../utilsCommon":"EjGt","../widget/ElixirChatWidgetEventTypes":"zWqG"}],"5qf4":[function(require,module,exports) {
 
 // https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
 var global = module.exports = typeof window != 'undefined' && window.Math == Math
@@ -5884,7 +6116,652 @@ var unobserveOrCancel = function unobserveOrCancel(absintheSocket, notifier, obs
 
 
 exports.unobserveOrCancel = unobserveOrCancel;
-},{"core-js/modules/es6.array.find-index":"7sVm","core-js/modules/es6.array.find":"Qppk","core-js/modules/es6.function.name":"N3yi","@jumpn/utils-composite":"7Q0f","phoenix":"XFqm","core-js/modules/web.dom.iterable":"v6Aj","core-js/modules/es6.array.for-each":"VsIt","@babel/runtime/helpers/toConsumableArray":"Fhqp","@jumpn/utils-graphql":"2hqA","zen-observable":"U0NN","core-js/modules/es7.array.includes":"TLss","core-js/modules/es6.string.includes":"fH7p","@babel/runtime/helpers/objectSpread":"fwAU","@babel/runtime/helpers/objectWithoutProperties":"U8F3","core-js/modules/es6.array.index-of":"LvRh","@jumpn/utils-array":"Yu+T","core-js/modules/es6.function.bind":"WIhg","@babel/runtime/helpers/newArrowCheck":"tS9b"}],"sQAQ":[function(require,module,exports) {
+},{"core-js/modules/es6.array.find-index":"7sVm","core-js/modules/es6.array.find":"Qppk","core-js/modules/es6.function.name":"N3yi","@jumpn/utils-composite":"7Q0f","phoenix":"XFqm","core-js/modules/web.dom.iterable":"v6Aj","core-js/modules/es6.array.for-each":"VsIt","@babel/runtime/helpers/toConsumableArray":"Fhqp","@jumpn/utils-graphql":"2hqA","zen-observable":"U0NN","core-js/modules/es7.array.includes":"TLss","core-js/modules/es6.string.includes":"fH7p","@babel/runtime/helpers/objectSpread":"fwAU","@babel/runtime/helpers/objectWithoutProperties":"U8F3","core-js/modules/es6.array.index-of":"LvRh","@jumpn/utils-array":"Yu+T","core-js/modules/es6.function.bind":"WIhg","@babel/runtime/helpers/newArrowCheck":"tS9b"}],"P6qz":[function(require,module,exports) {
+"use strict";
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+var __importStar = this && this.__importStar || function (mod) {
+  if (mod && mod.__esModule) return mod;
+  var result = {};
+  if (mod != null) for (var k in mod) {
+    if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+  }
+  result["default"] = mod;
+  return result;
+};
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var AbsintheSocket = __importStar(require("@absinthe/socket"));
+
+var Phoenix = __importStar(require("phoenix"));
+
+var GraphQLClientSocket =
+/*#__PURE__*/
+function () {
+  function GraphQLClientSocket(config) {
+    var _this = this;
+
+    _classCallCheck(this, GraphQLClientSocket);
+
+    this.query = '';
+    this.isCurrentlySubscribed = false;
+
+    this.unsubscribe = function () {
+      AbsintheSocket.cancel(_this.absintheSocket, _this.notifier);
+      _this.notifier = null;
+      _this.absintheSocket = null;
+      _this.isCurrentlySubscribed = false;
+    };
+
+    this.socketUrl = config.socketUrl;
+    this.authToken = config.authToken;
+    this.query = config.query;
+
+    this.onAbort = config.onAbort || function () {};
+
+    this.onStart = config.onStart || function () {};
+
+    this.onResult = config.onResult || function () {};
+
+    this.initializeSocket();
+    this.initializeObserver();
+  }
+
+  _createClass(GraphQLClientSocket, [{
+    key: "initializeSocket",
+    value: function initializeSocket() {
+      this.absintheSocket = AbsintheSocket.create(new Phoenix.Socket(this.socketUrl, {
+        params: {
+          token: this.authToken
+        }
+      }));
+      this.notifier = AbsintheSocket.send(this.absintheSocket, {
+        operation: this.query
+      });
+    }
+  }, {
+    key: "initializeObserver",
+    value: function initializeObserver() {
+      var _this2 = this;
+
+      AbsintheSocket.observe(this.absintheSocket, this.notifier, {
+        onStart: function onStart() {
+          if (!_this2.isCurrentlySubscribed) {
+            _this2.isCurrentlySubscribed = true;
+
+            _this2.onStart();
+          }
+        },
+        onAbort: this.onAbort,
+        onResult: this.onResult
+      });
+    }
+  }]);
+
+  return GraphQLClientSocket;
+}();
+
+exports.GraphQLClientSocket = GraphQLClientSocket;
+},{"@absinthe/socket":"zTqj","phoenix":"XFqm"}],"Cteb":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.UNREAD_MESSAGES_CHANGE = 'UNREAD_MESSAGES_CHANGE';
+exports.UNREAD_REPLIES_CHANGE = 'UNREAD_REPLIES_CHANGE';
+exports.LAST_READ_MESSAGE_CHANGE = 'LAST_READ_MESSAGE_CHANGE';
+exports.UNREAD_MESSAGES_SUBSCRIBE_SUCCESS = 'UNREAD_MESSAGES_SUBSCRIBE_SUCCESS';
+exports.UNREAD_MESSAGES_SUBSCRIBE_ERROR = 'UNREAD_MESSAGES_SUBSCRIBE_ERROR';
+exports.UNREAD_FETCH_COUNTS_SUCCESS = 'UNREAD_FETCH_COUNTS_SUCCESS';
+exports.UNREAD_FETCH_COUNTS_ERROR = 'UNREAD_FETCH_COUNTS_ERROR';
+exports.JOIN_ROOM_SUCCESS = 'JOIN_ROOM_SUCCESS';
+exports.JOIN_ROOM_ERROR = 'JOIN_ROOM_ERROR';
+exports.OPERATOR_ONLINE_STATUS_CHANGE = 'OPERATOR_ONLINE_STATUS_CHANGE';
+exports.OPERATOR_ONLINE_STATUS_SUBSCRIBE_SUCCESS = 'OPERATOR_ONLINE_STATUS_SUBSCRIBE_SUCCESS';
+exports.OPERATOR_ONLINE_STATUS_SUBSCRIBE_ERROR = 'OPERATOR_ONLINE_STATUS_SUBSCRIBE_ERROR';
+exports.TYPING_STATUS_CHANGE = 'TYPING_STATUS_CHANGE';
+exports.TYPING_STATUS_SUBSCRIBE_SUCCESS = 'TYPING_STATUS_SUBSCRIBE_SUCCESS';
+exports.TYPING_STATUS_SUBSCRIBE_ERROR = 'TYPING_STATUS_SUBSCRIBE_ERROR';
+exports.MESSAGES_SUBSCRIBE_SUCCESS = 'MESSAGES_SUBSCRIBE_SUCCESS';
+exports.MESSAGES_SUBSCRIBE_ERROR = 'MESSAGES_SUBSCRIBE_ERROR';
+exports.MESSAGES_HISTORY_SET = 'MESSAGES_HISTORY_SET';
+exports.MESSAGES_HISTORY_APPEND_ONE = 'MESSAGES_HISTORY_APPEND_ONE';
+exports.MESSAGES_HISTORY_APPEND_MANY = 'MESSAGES_HISTORY_APPEND_MANY';
+exports.MESSAGES_HISTORY_PREPEND_ONE = 'MESSAGES_HISTORY_PREPEND_ONE';
+exports.MESSAGES_HISTORY_PREPEND_MANY = 'MESSAGES_HISTORY_PREPEND_MANY';
+exports.MESSAGES_HISTORY_CHANGE_ONE = 'MESSAGES_HISTORY_CHANGE_ONE';
+exports.MESSAGES_HISTORY_CHANGE_MANY = 'MESSAGES_HISTORY_CHANGE_MANY';
+exports.MESSAGES_FETCH_HISTORY_SUCCESS = 'MESSAGES_FETCH_HISTORY_SUCCESS';
+exports.MESSAGES_FETCH_HISTORY_INITIAL_SUCCESS = 'MESSAGES_FETCH_HISTORY_INITIAL_SUCCESS';
+exports.MESSAGES_FETCH_HISTORY_ERROR = 'MESSAGES_FETCH_HISTORY_ERROR';
+exports.MESSAGES_FETCH_HISTORY_INITIAL_ERROR = 'MESSAGES_FETCH_HISTORY_INITIAL_ERROR';
+},{}],"xY1B":[function(require,module,exports) {
+"use strict";
+
+function _templateObject3() {
+  var data = _taggedTemplateLiteral(["\n    query {\n      room {\n        unreadMessagesCount\n        unreadRepliesCount\n      }\n    }\n  "]);
+
+  _templateObject3 = function _templateObject3() {
+    return data;
+  };
+
+  return data;
+}
+
+function _templateObject2() {
+  var data = _taggedTemplateLiteral(["\n    mutation ($messageId: ID!) {\n      updateLastReadMessage(messageId: $messageId) {\n        unreadMessagesCount,\n        unreadRepliesCount,\n      }\n    }\n  "]);
+
+  _templateObject2 = function _templateObject2() {
+    return data;
+  };
+
+  return data;
+}
+
+function _templateObject() {
+  var data = _taggedTemplateLiteral(["\n    subscription {\n      updateReadMessages {\n        unreadMessagesCount\n        unreadRepliesCount\n        lastReadMessageId\n      }\n    }\n  "]);
+
+  _templateObject = function _templateObject() {
+    return data;
+  };
+
+  return data;
+}
+
+function _taggedTemplateLiteral(strings, raw) { if (!raw) { raw = strings.slice(0); } return Object.freeze(Object.defineProperties(strings, { raw: { value: Object.freeze(raw) } })); }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var utilsCommon_1 = require("../utilsCommon");
+
+var GraphQLClient_1 = require("./GraphQLClient");
+
+var GraphQLClientSocket_1 = require("./GraphQLClientSocket");
+
+var ElixirChatEventTypes_1 = require("./ElixirChatEventTypes");
+
+var UnreadMessagesCounter =
+/*#__PURE__*/
+function () {
+  function UnreadMessagesCounter(_ref) {
+    var _this = this;
+
+    var elixirChat = _ref.elixirChat;
+
+    _classCallCheck(this, UnreadMessagesCounter);
+
+    this.unreadMessagesCount = 0;
+    this.unreadRepliesCount = 0;
+    this.lastReadMessageId = null;
+    this.subscriptionQuery = GraphQLClient_1.gql(_templateObject());
+    this.setLastReadMessageQuery = GraphQLClient_1.gql(_templateObject2());
+    this.fetchUnreadCountsQuery = GraphQLClient_1.gql(_templateObject3());
+
+    this.subscribe = function () {
+      var _this$elixirChat = _this.elixirChat,
+          apiUrl = _this$elixirChat.apiUrl,
+          authToken = _this$elixirChat.authToken;
+      _this.graphQLClient = new GraphQLClient_1.GraphQLClient({
+        url: apiUrl,
+        token: authToken
+      });
+
+      _this.fetchUnreadCounts();
+
+      _this.initializeSocketClient();
+    };
+
+    this.unsubscribe = function () {
+      var debug = _this.elixirChat.debug;
+      utilsCommon_1.logEvent(debug, 'Unsubscribing from unread messages count...');
+      _this.unreadMessagesCount = 0;
+      _this.unreadRepliesCount = 0;
+
+      _this.graphQLClientSocket.unsubscribe();
+
+      _this.graphQLClientSocket = null;
+      _this.graphQLClient = null;
+    };
+
+    this.setLastReadMessage = function (messageId) {
+      return _this.graphQLClient.query(_this.setLastReadMessageQuery, {
+        messageId: messageId
+      });
+    };
+
+    this.fetchUnreadCounts = function () {
+      var _this$elixirChat2 = _this.elixirChat,
+          debug = _this$elixirChat2.debug,
+          triggerEvent = _this$elixirChat2.triggerEvent;
+      return _this.graphQLClient.query(_this.fetchUnreadCountsQuery, {}).then(function (response) {
+        if (response && response.room) {
+          utilsCommon_1.logEvent(debug, 'Fetched unread counts', response.room);
+          triggerEvent(ElixirChatEventTypes_1.UNREAD_FETCH_COUNTS_SUCCESS, response);
+
+          _this.onUnreadCountsUpdate(response.room);
+
+          return response;
+        } else {
+          utilsCommon_1.logEvent(debug, 'Failed to fetch unread counts', response, 'error');
+          triggerEvent(ElixirChatEventTypes_1.UNREAD_FETCH_COUNTS_ERROR, response);
+          throw response;
+        }
+      }).catch(function (error) {
+        utilsCommon_1.logEvent(debug, 'Failed to fetch unread counts', error, 'error');
+        triggerEvent(ElixirChatEventTypes_1.UNREAD_FETCH_COUNTS_ERROR, error);
+        throw error;
+      });
+    };
+
+    this.onUnreadCountsUpdate = function (data) {
+      var _this$elixirChat3 = _this.elixirChat,
+          debug = _this$elixirChat3.debug,
+          triggerEvent = _this$elixirChat3.triggerEvent;
+      var unreadMessagesCount = data.unreadMessagesCount,
+          unreadRepliesCount = data.unreadRepliesCount,
+          lastReadMessageId = data.lastReadMessageId;
+
+      if (unreadMessagesCount !== _this.unreadMessagesCount) {
+        utilsCommon_1.logEvent(debug, 'Unread messages count changed to ' + unreadMessagesCount);
+        _this.unreadMessagesCount = unreadMessagesCount;
+        triggerEvent(ElixirChatEventTypes_1.UNREAD_MESSAGES_CHANGE, unreadMessagesCount);
+      }
+
+      if (unreadRepliesCount !== _this.unreadRepliesCount) {
+        utilsCommon_1.logEvent(debug, 'Unread replies count changed to ' + unreadRepliesCount);
+        _this.unreadRepliesCount = unreadRepliesCount;
+        triggerEvent(ElixirChatEventTypes_1.UNREAD_REPLIES_CHANGE, unreadRepliesCount);
+      }
+
+      if (lastReadMessageId !== _this.lastReadMessageId) {
+        utilsCommon_1.logEvent(debug, 'Last message marked as read changed to ID: ' + lastReadMessageId);
+        _this.lastReadMessageId = lastReadMessageId;
+        triggerEvent(ElixirChatEventTypes_1.LAST_READ_MESSAGE_CHANGE, lastReadMessageId);
+      }
+    };
+
+    this.elixirChat = elixirChat;
+  }
+
+  _createClass(UnreadMessagesCounter, [{
+    key: "initializeSocketClient",
+    value: function initializeSocketClient() {
+      var _this2 = this;
+
+      var _this$elixirChat4 = this.elixirChat,
+          socketUrl = _this$elixirChat4.socketUrl,
+          authToken = _this$elixirChat4.authToken,
+          debug = _this$elixirChat4.debug,
+          triggerEvent = _this$elixirChat4.triggerEvent;
+      this.graphQLClientSocket = new GraphQLClientSocket_1.GraphQLClientSocket({
+        socketUrl: socketUrl,
+        authToken: authToken,
+        query: this.subscriptionQuery,
+        onAbort: function onAbort(error) {
+          utilsCommon_1.logEvent(debug, 'Failed to subscribe to unread messages count', error, 'error');
+          triggerEvent(ElixirChatEventTypes_1.UNREAD_MESSAGES_SUBSCRIBE_ERROR, error);
+        },
+        onStart: function onStart() {
+          utilsCommon_1.logEvent(debug, 'Successfully subscribed to unread messages count');
+          triggerEvent(ElixirChatEventTypes_1.UNREAD_MESSAGES_SUBSCRIBE_SUCCESS);
+        },
+        onResult: function onResult(response) {
+          var data = utilsCommon_1._get(response, 'data.updateReadMessages') || {};
+
+          _this2.onUnreadCountsUpdate(data);
+        }
+      });
+    }
+  }]);
+
+  return UnreadMessagesCounter;
+}();
+
+exports.UnreadMessagesCounter = UnreadMessagesCounter;
+},{"../utilsCommon":"EjGt","./GraphQLClient":"1fv+","./GraphQLClientSocket":"P6qz","./ElixirChatEventTypes":"Cteb"}],"QERd":[function(require,module,exports) {
+"use strict";
+
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
+
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
+
+function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
+
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+var __importStar = this && this.__importStar || function (mod) {
+  if (mod && mod.__esModule) return mod;
+  var result = {};
+  if (mod != null) for (var k in mod) {
+    if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+  }
+  result["default"] = mod;
+  return result;
+};
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var Phoenix = __importStar(require("phoenix"));
+
+var ElixirChatEventTypes_1 = require("./ElixirChatEventTypes");
+
+var utilsCommon_1 = require("../utilsCommon");
+
+var TypingStatusSubscription =
+/*#__PURE__*/
+function () {
+  function TypingStatusSubscription(_ref) {
+    var _this = this;
+
+    var elixirChat = _ref.elixirChat;
+
+    _classCallCheck(this, TypingStatusSubscription);
+
+    this.hasConnectErrorOccurred = false;
+    this.currentlyTypingUsers = [];
+    this.typingTimeouts = {};
+    this.typedText = '';
+
+    this.subscribe = function () {
+      _this.initializeSocket(function () {
+        _this.joinChannel();
+      });
+    };
+
+    this.unsubscribe = function () {
+      var debug = _this.elixirChat.debug;
+      utilsCommon_1.logEvent(debug, 'Unsubscribing from typing status change...');
+
+      _this.channel.leave();
+
+      _this.phoenixSocket = null;
+      _this.channel = null;
+      _this.currentlyTypingUsers = [];
+      _this.hasConnectErrorOccurred = false;
+      Object.values(_this.typingTimeouts).forEach(function (timeout) {
+        return clearTimeout(timeout);
+      });
+      _this.typingTimeouts = [];
+      _this.typedText = '';
+    };
+
+    this.dispatchTypedText = function (typedText) {
+      if (_this.channel) {
+        var trimmedText = typeof typedText === 'string' ? typedText.trim() : '';
+
+        if (typedText === false) {
+          _this.channel.push('typing', {
+            typing: false,
+            text: ''
+          });
+        } else if (_this.typedText !== trimmedText) {
+          _this.channel.push('typing', {
+            typing: Boolean(trimmedText),
+            text: trimmedText
+          });
+
+          _this.typedText = trimmedText;
+        }
+      }
+    };
+
+    this.onPresenceDiff = function (diff) {
+      var elixirChatClientId = _this.elixirChat.elixirChatClientId;
+      var userId;
+      var userData;
+      var userMeta;
+
+      try {
+        userId = Object.keys(diff.joins)[0];
+        userData = Object.values(diff.joins)[0];
+        userMeta = userData.metas[0];
+      } catch (e) {}
+
+      if (!userMeta || userId === elixirChatClientId) {
+        return;
+      }
+
+      var currentlyTypingUserIds = _this.currentlyTypingUsers.map(function (user) {
+        return user.id;
+      });
+
+      var userFullName = userData.first_name + ' ' + userData.last_name;
+      var serializedUserData = {
+        id: userId,
+        firstName: userData.first_name,
+        lastName: userData.last_name,
+        avatar: {
+          url: userData.avatar
+        }
+      };
+
+      if (userMeta.typing) {
+        _this.removeFromCurrentlyTypingUsersAfterTimeout(userId, userFullName);
+      }
+
+      if (userMeta.typing && !currentlyTypingUserIds.includes(userId)) {
+        _this.triggerOnChangeEvent([].concat(_toConsumableArray(_this.currentlyTypingUsers), [serializedUserData]));
+      } else if (!userMeta.typing && currentlyTypingUserIds.includes(userId)) {
+        _this.triggerOnChangeEvent(_this.currentlyTypingUsers.filter(function (user) {
+          return user.id !== userId;
+        }));
+      }
+    };
+
+    this.elixirChat = elixirChat;
+  }
+
+  _createClass(TypingStatusSubscription, [{
+    key: "initializeSocket",
+    value: function initializeSocket() {
+      var _this2 = this;
+
+      var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {};
+      var _this$elixirChat = this.elixirChat,
+          triggerEvent = _this$elixirChat.triggerEvent,
+          debug = _this$elixirChat.debug,
+          socketUrl = _this$elixirChat.socketUrl,
+          authToken = _this$elixirChat.authToken;
+      this.phoenixSocket = new Phoenix.Socket(socketUrl, {
+        params: {
+          token: authToken
+        }
+      });
+      this.phoenixSocket.onError(function (error) {
+        if (!_this2.hasConnectErrorOccurred) {
+          var message = 'Failed to subscribe to typing status change: could not open connection via Phoenix.Socket';
+          _this2.hasConnectErrorOccurred = true;
+          utilsCommon_1.logEvent(debug, message, error, 'error');
+          triggerEvent(ElixirChatEventTypes_1.TYPING_STATUS_SUBSCRIBE_ERROR, error);
+        }
+      });
+      this.phoenixSocket.onOpen(callback);
+      this.phoenixSocket.connect();
+    }
+  }, {
+    key: "joinChannel",
+    value: function joinChannel() {
+      var _this3 = this;
+
+      var _this$elixirChat2 = this.elixirChat,
+          triggerEvent = _this$elixirChat2.triggerEvent,
+          debug = _this$elixirChat2.debug,
+          elixirChatRoomId = _this$elixirChat2.elixirChatRoomId;
+      this.channel = this.phoenixSocket.channel('public:room:' + elixirChatRoomId, {});
+      this.channel.join().receive('error', function (error) {
+        utilsCommon_1.logEvent(debug, 'Failed to subscribe to typing status change: channel received error', error, 'error');
+        triggerEvent(ElixirChatEventTypes_1.TYPING_STATUS_SUBSCRIBE_ERROR, error);
+      }).receive('timeout', function () {
+        utilsCommon_1.logEvent(debug, 'Failed to subscribe to typing status change: channel received timeout', null, 'error');
+        triggerEvent(ElixirChatEventTypes_1.TYPING_STATUS_SUBSCRIBE_ERROR);
+      }).receive('ok', function (data) {
+        _this3.channel.on('presence_diff', _this3.onPresenceDiff);
+
+        utilsCommon_1.logEvent(debug, 'Successfully subscribed to typing status change', data);
+        setTimeout(function () {
+          return triggerEvent(ElixirChatEventTypes_1.TYPING_STATUS_SUBSCRIBE_SUCCESS, data);
+        });
+      });
+    }
+  }, {
+    key: "removeFromCurrentlyTypingUsersAfterTimeout",
+    value: function removeFromCurrentlyTypingUsersAfterTimeout(userId, userFullName) {
+      var _this4 = this;
+
+      clearTimeout(this.typingTimeouts[userId]);
+      this.typingTimeouts[userId] = setTimeout(function () {
+        _this4.triggerOnChangeEvent(_this4.currentlyTypingUsers.filter(function (user) {
+          return user.id !== userId;
+        }));
+      }, 2000);
+    }
+  }, {
+    key: "triggerOnChangeEvent",
+    value: function triggerOnChangeEvent(updatedTypingUsers) {
+      var _this$elixirChat3 = this.elixirChat,
+          triggerEvent = _this$elixirChat3.triggerEvent,
+          debug = _this$elixirChat3.debug;
+
+      if (updatedTypingUsers.length || this.currentlyTypingUsers.length) {
+        var didStopTyping = this.currentlyTypingUsers.length > updatedTypingUsers.length;
+        this.currentlyTypingUsers = updatedTypingUsers;
+        utilsCommon_1.logEvent(debug, "Some users ".concat(didStopTyping ? 'stopped' : 'started', " typing"), this.currentlyTypingUsers);
+        triggerEvent(ElixirChatEventTypes_1.TYPING_STATUS_CHANGE, this.currentlyTypingUsers);
+      }
+    }
+  }]);
+
+  return TypingStatusSubscription;
+}();
+
+exports.TypingStatusSubscription = TypingStatusSubscription;
+},{"phoenix":"XFqm","./ElixirChatEventTypes":"Cteb","../utilsCommon":"EjGt"}],"zgd1":[function(require,module,exports) {
+"use strict";
+
+function _templateObject() {
+  var data = _taggedTemplateLiteral(["\n    subscription {\n      updateCompanyWorking\n    }\n  "]);
+
+  _templateObject = function _templateObject() {
+    return data;
+  };
+
+  return data;
+}
+
+function _taggedTemplateLiteral(strings, raw) { if (!raw) { raw = strings.slice(0); } return Object.freeze(Object.defineProperties(strings, { raw: { value: Object.freeze(raw) } })); }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var ElixirChatEventTypes_1 = require("./ElixirChatEventTypes");
+
+var GraphQLClient_1 = require("./GraphQLClient");
+
+var GraphQLClientSocket_1 = require("./GraphQLClientSocket");
+
+var utilsCommon_1 = require("../utilsCommon");
+
+var OperatorOnlineStatusSubscription =
+/*#__PURE__*/
+function () {
+  function OperatorOnlineStatusSubscription(_ref) {
+    var _this = this;
+
+    var elixirChat = _ref.elixirChat;
+
+    _classCallCheck(this, OperatorOnlineStatusSubscription);
+
+    this.subscriptionQuery = GraphQLClient_1.gql(_templateObject());
+
+    this.subscribe = function (areAnyOperatorsOnline) {
+      var triggerEvent = _this.elixirChat.triggerEvent;
+      _this.areAnyOperatorsOnline = areAnyOperatorsOnline;
+      triggerEvent(ElixirChatEventTypes_1.OPERATOR_ONLINE_STATUS_CHANGE, _this.areAnyOperatorsOnline);
+
+      _this.initializeSocketClient();
+    };
+
+    this.unsubscribe = function () {
+      var debug = _this.elixirChat.debug;
+      utilsCommon_1.logEvent(debug, 'Unsubscribing from operator online status change...');
+
+      _this.graphQLClientSocket.unsubscribe();
+
+      _this.graphQLClientSocket = null;
+    };
+
+    this.elixirChat = elixirChat;
+  }
+
+  _createClass(OperatorOnlineStatusSubscription, [{
+    key: "initializeSocketClient",
+    value: function initializeSocketClient() {
+      var _this2 = this;
+
+      var _this$elixirChat = this.elixirChat,
+          socketUrl = _this$elixirChat.socketUrl,
+          authToken = _this$elixirChat.authToken,
+          debug = _this$elixirChat.debug,
+          triggerEvent = _this$elixirChat.triggerEvent;
+      this.graphQLClientSocket = new GraphQLClientSocket_1.GraphQLClientSocket({
+        socketUrl: socketUrl,
+        authToken: authToken,
+        query: this.subscriptionQuery,
+        onAbort: function onAbort(error) {
+          utilsCommon_1.logEvent(debug, 'Failed to subscribe to operator online status change', error, 'error');
+          triggerEvent(ElixirChatEventTypes_1.OPERATOR_ONLINE_STATUS_SUBSCRIBE_ERROR, error);
+        },
+        onStart: function onStart() {
+          utilsCommon_1.logEvent(debug, 'Successfully subscribed to operator online status change');
+          triggerEvent(ElixirChatEventTypes_1.OPERATOR_ONLINE_STATUS_SUBSCRIBE_SUCCESS);
+        },
+        onResult: function onResult(_ref2) {
+          var data = _ref2.data;
+          _this2.areAnyOperatorsOnline = data && data.updateCompanyWorking;
+          utilsCommon_1.logEvent(debug, _this2.areAnyOperatorsOnline ? 'Operators got back online' : 'All operators went offline');
+          triggerEvent(ElixirChatEventTypes_1.OPERATOR_ONLINE_STATUS_CHANGE, _this2.areAnyOperatorsOnline);
+        }
+      });
+    }
+  }]);
+
+  return OperatorOnlineStatusSubscription;
+}();
+
+exports.OperatorOnlineStatusSubscription = OperatorOnlineStatusSubscription;
+},{"./ElixirChatEventTypes":"Cteb","./GraphQLClient":"1fv+","./GraphQLClientSocket":"P6qz","../utilsCommon":"EjGt"}],"sQAQ":[function(require,module,exports) {
 "use strict";
 
 function _templateObject() {
@@ -5907,13 +6784,13 @@ var GraphQLClient_1 = require("../GraphQLClient");
 
 exports.fragmentFile = GraphQLClient_1.gql(_templateObject());
 
-function serializeFile(fileData, options) {
+function serializeFile(fileData, elixirChat) {
   var file = fileData || {};
   var thumbnails = null;
 
   if (file.thumbnails && file.thumbnails.length) {
     thumbnails = file.thumbnails.map(function (thumbnail) {
-      var serializedThumbnail = serializeFile(thumbnail, options);
+      var serializedThumbnail = serializeFile(thumbnail, elixirChat);
       return {
         id: serializedThumbnail.id,
         url: serializedThumbnail.url,
@@ -5927,7 +6804,7 @@ function serializeFile(fileData, options) {
     });
   }
 
-  var uploadsUrlPrefix = options.backendStaticUrl.replace(/\/$/, '') + '/';
+  var uploadsUrlPrefix = elixirChat.backendStaticUrl.replace(/\/$/, '') + '/';
   var fileUrl = '';
 
   if (file.url) {
@@ -5943,7 +6820,7 @@ function serializeFile(fileData, options) {
     width: file.width || 0,
     thumbnails: thumbnails,
     contentType: file.contentType || null,
-    originalFileObject: file.originalFileObject || null
+    isScreenshot: file.isScreenshot || false
   };
 }
 
@@ -5952,7 +6829,7 @@ exports.serializeFile = serializeFile;
 "use strict";
 
 function _templateObject() {
-  var data = _taggedTemplateLiteral(["\n  fragment fragmentMessage on Message {\n    id\n    tempId\n    text\n    timestamp\n    system\n    sender {\n      ... on Client { ...fragmentClient }\n      ... on CompanyEmployee { ...fragmentCompanyEmployee }\n    }\n    attachments {\n      ...fragmentFile\n    }\n    data {\n      ... on SystemMessageData {\n        type\n        author {\n          ...fragmentCompanyEmployee\n        }\n        whenWouldWork\n      }\n      ... on NotSystemMessageData {\n        responseToMessage {\n          id\n          text\n          sender {\n            __typename\n            ... on Client { ...fragmentClient }\n            ... on CompanyEmployee { ...fragmentCompanyEmployee }\n          }\n        }\n      }\n    }\n  }\n"]);
+  var data = _taggedTemplateLiteral(["\n  fragment fragmentMessage on Message {\n    id\n    tempId\n    text\n    timestamp\n    system\n    unread\n    sender {\n      ... on Client { ...fragmentClient }\n      ... on CompanyEmployee { ...fragmentCompanyEmployee }\n    }\n    attachments {\n      ...fragmentFile\n    }\n    data {\n      ... on SystemMessageData {\n        type\n        author {\n          ...fragmentCompanyEmployee\n        }\n        whenWouldWork\n      }\n      ... on NotSystemMessageData {\n        responseToMessage {\n          id\n          text\n          sender {\n            __typename\n            ... on Client { ...fragmentClient }\n            ... on CompanyEmployee { ...fragmentCompanyEmployee }\n          }\n        }\n      }\n    }\n  }\n"]);
 
   _templateObject = function _templateObject() {
     return data;
@@ -5981,7 +6858,7 @@ exports.fragmentMessage = GraphQLClient_1.insertGraphQlFragments(GraphQLClient_1
   fragmentFile: serializeFile_1.fragmentFile
 });
 
-function serializeMessage(message, options) {
+function serializeMessage(message, elixirChat) {
   var _message$sender = message.sender,
       sender = _message$sender === void 0 ? {} : _message$sender,
       attachments = message.attachments,
@@ -5990,9 +6867,9 @@ function serializeMessage(message, options) {
   var responseToMessage = data.responseToMessage,
       _data$author = data.author,
       author = _data$author === void 0 ? {} : _data$author;
-  var serializedSender = serializeUser_1.serializeUser(Object.assign({}, sender, author), options);
+  var serializedSender = serializeUser_1.serializeUser(Object.assign({}, sender, author), elixirChat);
   var serializedAttachments = (attachments || []).map(function (attachment) {
-    return serializeFile_1.serializeFile(attachment, options);
+    return serializeFile_1.serializeFile(attachment, elixirChat);
   });
 
   var responseToMessageSender = utilsCommon_1._get(responseToMessage, 'sender', {});
@@ -6000,7 +6877,7 @@ function serializeMessage(message, options) {
   var serializedResponseToMessage = {
     id: utilsCommon_1._get(responseToMessage, 'id') || null,
     text: utilsCommon_1._get(responseToMessage, 'text') || '',
-    sender: serializeUser_1.serializeUser(responseToMessageSender, options)
+    sender: serializeUser_1.serializeUser(responseToMessageSender, elixirChat)
   };
 
   var isSystem = utilsCommon_1._get(message, 'system', false);
@@ -6016,6 +6893,7 @@ function serializeMessage(message, options) {
     attachments: serializedAttachments,
     isSubmitting: utilsCommon_1._get(message, 'isSubmitting') || false,
     isSubmissionError: utilsCommon_1._get(message, 'isSubmissionError') || false,
+    isUnread: utilsCommon_1._get(message, 'unread') || false,
     isSystem: isSystem,
     systemData: !isSystem ? null : {
       type: utilsCommon_1._get(message, 'data.type') || null,
@@ -6025,7 +6903,7 @@ function serializeMessage(message, options) {
 }
 
 exports.serializeMessage = serializeMessage;
-},{"../GraphQLClient":"1fv+","../../utilsCommon":"EjGt","./serializeUser":"1lqy","./serializeFile":"sQAQ"}],"y8vH":[function(require,module,exports) {
+},{"../GraphQLClient":"1fv+","../../utilsCommon":"EjGt","./serializeUser":"1lqy","./serializeFile":"sQAQ"}],"jRw6":[function(require,module,exports) {
 "use strict";
 
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
@@ -6074,39 +6952,35 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-var __importStar = this && this.__importStar || function (mod) {
-  if (mod && mod.__esModule) return mod;
-  var result = {};
-  if (mod != null) for (var k in mod) {
-    if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-  }
-  result["default"] = mod;
-  return result;
-};
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var AbsintheSocket = __importStar(require("@absinthe/socket"));
-
-var Phoenix = __importStar(require("phoenix"));
+var ElixirChatEventTypes_1 = require("./ElixirChatEventTypes");
 
 var serializeMessage_1 = require("./serializers/serializeMessage");
 
+var utilsCommon_1 = require("../utilsCommon");
+
+var GraphQLClientSocket_1 = require("./GraphQLClientSocket");
+
 var GraphQLClient_1 = require("./GraphQLClient");
 
-var MessagesSubscription =
+var MessageSubscription =
 /*#__PURE__*/
 function () {
-  function MessagesSubscription(config) {
+  function MessageSubscription(_ref) {
     var _this = this;
 
-    _classCallCheck(this, MessagesSubscription);
+    var elixirChat = _ref.elixirChat;
 
+    _classCallCheck(this, MessageSubscription);
+
+    this.messageHistory = [];
+    this.hasMessageHistoryBeenEverFetched = false;
+    this.temporaryMessageTempIds = [];
     this.latestMessageHistoryCursorsCache = [];
     this.reachedBeginningOfMessageHistory = false;
-    this.isCurrentlySubscribed = false;
     this.subscriptionQuery = GraphQLClient_1.insertGraphQlFragments(GraphQLClient_1.gql(_templateObject()), {
       fragmentMessage: serializeMessage_1.fragmentMessage
     });
@@ -6117,832 +6991,427 @@ function () {
       fragmentMessage: serializeMessage_1.fragmentMessage
     });
 
-    this.unsubscribe = function () {
-      _this.absintheSocket = AbsintheSocket.cancel(_this.absintheSocket, _this.notifier);
-      _this.latestMessageHistoryCursorsCache = [];
-      _this.reachedBeginningOfMessageHistory = false;
-      _this.isCurrentlySubscribed = false;
+    this.subscribe = function () {
+      var _this$elixirChat = _this.elixirChat,
+          apiUrl = _this$elixirChat.apiUrl,
+          authToken = _this$elixirChat.authToken;
+      _this.graphQLClient = new GraphQLClient_1.GraphQLClient({
+        url: apiUrl,
+        token: authToken
+      });
 
-      _this.onUnsubscribe();
+      _this.initializeSocketClient();
     };
 
-    this.sendMessage = function (_ref) {
-      var text = _ref.text,
-          attachments = _ref.attachments,
-          responseToMessageId = _ref.responseToMessageId,
-          tempId = _ref.tempId;
-      var query = _this.sendMessageQuery;
-      var attachmentFileNames = [];
-      var binaryAttachmentsObject = {};
-      attachments.forEach(function (file) {
-        attachmentFileNames.push(file.name);
-        binaryAttachmentsObject[file.name] = file;
+    this.onMessageReceive = function (response) {
+      var _this$elixirChat2 = _this.elixirChat,
+          backendStaticUrl = _this$elixirChat2.backendStaticUrl,
+          client = _this$elixirChat2.client,
+          triggerEvent = _this$elixirChat2.triggerEvent,
+          debug = _this$elixirChat2.debug;
+
+      var data = utilsCommon_1._get(response, 'data.newMessage');
+
+      if (!data) {
+        return;
+      }
+
+      var message = serializeMessage_1.serializeMessage(data, {
+        backendStaticUrl: backendStaticUrl,
+        client: client
       });
-      var variables = {
-        text: text,
-        attachments: attachmentFileNames,
-        responseToMessageId: responseToMessageId,
-        tempId: tempId
-      };
+
+      if (_this.temporaryMessageTempIds.includes(message.tempId)) {
+        _this.enrichTemporaryMessage(message.tempId, message, true);
+
+        utilsCommon_1.logEvent(debug, 'Enriched temporary message with actual one', {
+          message: message
+        });
+        triggerEvent(ElixirChatEventTypes_1.MESSAGES_HISTORY_CHANGE_ONE, message, _this.messageHistory);
+      } else {
+        _this.messageHistory.push(message);
+
+        utilsCommon_1.logEvent(debug, 'Received new message', {
+          message: message
+        });
+        triggerEvent(ElixirChatEventTypes_1.MESSAGES_HISTORY_APPEND_ONE, message, _this.messageHistory);
+      }
+    };
+
+    this.sendMessage = function (params) {
+      var _this$elixirChat3 = _this.elixirChat,
+          backendStaticUrl = _this$elixirChat3.backendStaticUrl,
+          client = _this$elixirChat3.client,
+          debug = _this$elixirChat3.debug;
+
+      var _this$serializeSendMe = _this.serializeSendMessageParams(params),
+          variables = _this$serializeSendMe.variables,
+          binaries = _this$serializeSendMe.binaries;
+
+      var tempId;
+
+      if (!variables.text && !variables.attachments.length) {
+        var errorMessage = 'Either "text" or "attachments" parameter must not be empty';
+        utilsCommon_1.logEvent(debug, errorMessage, {
+          variables: variables
+        }, 'error');
+        return new Promise(function (resolve, reject) {
+          reject({
+            message: errorMessage
+          });
+        });
+      }
+
+      if (params.appendConditionally) {
+        tempId = utilsCommon_1.randomDigitStringId(6);
+        variables.tempId = tempId;
+
+        var temporaryMessage = _this.generateTemporaryMessage(tempId, params);
+
+        _this.appendMessageConditionally(temporaryMessage);
+      } else if (params.retrySubmissionByTempId) {
+        tempId = params.retrySubmissionByTempId;
+        variables.tempId = tempId;
+
+        _this.enrichTemporaryMessage(tempId, {
+          isSubmitting: true,
+          isSubmissionError: false
+        });
+      }
+
       return new Promise(function (resolve, reject) {
-        _this.graphQLClient.query(query, variables, binaryAttachmentsObject).then(function (data) {
-          if (data && data.sendMessage) {
-            var message = serializeMessage_1.serializeMessage(data.sendMessage, {
-              backendStaticUrl: _this.backendStaticUrl,
-              currentClientId: _this.currentClientId
+        _this.graphQLClient.query(_this.sendMessageQuery, variables, binaries).then(function (response) {
+          if (response && response.sendMessage) {
+            var message = serializeMessage_1.serializeMessage(response.sendMessage, {
+              backendStaticUrl: backendStaticUrl,
+              client: client
+            });
+            utilsCommon_1.logEvent(_this.debug, 'Sent message', {
+              params: params,
+              variables: variables,
+              message: message
             });
             resolve(message);
           } else {
-            reject({
-              error: data,
-              variables: variables,
-              query: query
-            });
+            _this.onSendMessageFailure(tempId, response);
+
+            reject(response);
           }
         }).catch(function (error) {
-          reject({
-            error: error,
-            variables: variables,
-            query: query
-          });
+          _this.onSendMessageFailure(tempId, error);
+
+          reject(error);
         });
       });
     };
 
-    this.fetchMessageHistory = function (limit, beforeCursor) {
-      var query = _this.messageHistoryQuery;
-      var variables = {
-        limit: limit,
-        beforeCursor: beforeCursor
-      };
+    this.retrySendMessage = function (message) {
+      _this.sendMessage({
+        text: message.text,
+        attachments: message.attachments,
+        responseToMessageId: utilsCommon_1._get(message, 'responseToMessage.id'),
+        retrySubmissionByTempId: message.tempId
+      });
+    };
+
+    this.getMessageHistoryByCursor = function (limit, beforeCursor) {
+      var _this$elixirChat4 = _this.elixirChat,
+          triggerEvent = _this$elixirChat4.triggerEvent,
+          backendStaticUrl = _this$elixirChat4.backendStaticUrl,
+          client = _this$elixirChat4.client;
       return new Promise(function (resolve, reject) {
         if (_this.reachedBeginningOfMessageHistory) {
           resolve([]);
           return;
         }
 
-        _this.graphQLClient.query(query, variables).then(function (response) {
+        _this.graphQLClient.query(_this.messageHistoryQuery, {
+          limit: limit,
+          beforeCursor: beforeCursor
+        }).then(function (response) {
           if (response.messages) {
-            var messages = GraphQLClient_1.simplifyGraphQLJSON(response.messages).map(function (message) {
+            var hasMessageHistoryBeenEverFetched = _this.hasMessageHistoryBeenEverFetched;
+            var processedMessages = GraphQLClient_1.simplifyGraphQLJSON(response.messages).map(function (message) {
               return serializeMessage_1.serializeMessage(message, {
-                backendStaticUrl: _this.backendStaticUrl,
-                currentClientId: _this.currentClientId
+                backendStaticUrl: backendStaticUrl,
+                client: client
               });
             }).filter(function (message) {
+              // Preventing message duplication if overlapping ranges of messages were fetched
               return !_this.latestMessageHistoryCursorsCache.includes(message.cursor);
             });
-            _this.latestMessageHistoryCursorsCache = [].concat(_toConsumableArray(messages.map(function (message) {
+            _this.hasMessageHistoryBeenEverFetched = true;
+            _this.latestMessageHistoryCursorsCache = [].concat(_toConsumableArray(processedMessages.map(function (message) {
               return message.cursor;
             })), _toConsumableArray(_this.latestMessageHistoryCursorsCache)).slice(0, limit);
+            _this.reachedBeginningOfMessageHistory = processedMessages.length < limit;
 
-            if (messages.length < limit) {
-              _this.reachedBeginningOfMessageHistory = true;
+            if (_this.reachedBeginningOfMessageHistory) {
+              processedMessages.unshift(_this.generateNewClientPlaceholderMessage(processedMessages));
             }
 
-            resolve(messages);
+            triggerEvent(hasMessageHistoryBeenEverFetched ? ElixirChatEventTypes_1.MESSAGES_FETCH_HISTORY_SUCCESS : ElixirChatEventTypes_1.MESSAGES_FETCH_HISTORY_INITIAL_SUCCESS, processedMessages, _this.messageHistory);
+            resolve(processedMessages);
           } else {
-            reject({
-              response: response,
-              limit: limit,
-              beforeCursor: beforeCursor,
-              query: query,
-              variables: variables
-            });
+            _this.onGetMessageHistoryByCursorFailure(response);
+
+            reject(response);
           }
         }).catch(function (error) {
+          _this.onGetMessageHistoryByCursorFailure(error);
+
+          reject(error);
+        });
+      });
+    };
+
+    this.fetchMessageHistory = function (limit) {
+      var _this$elixirChat5 = _this.elixirChat,
+          triggerEvent = _this$elixirChat5.triggerEvent,
+          debug = _this$elixirChat5.debug;
+      return _this.getMessageHistoryByCursor(limit, null).then(function (processedMessageHistory) {
+        _this.messageHistory = processedMessageHistory;
+        utilsCommon_1.logEvent(debug, 'Fetched new message history', {
+          processedMessageHistory: processedMessageHistory
+        });
+        triggerEvent(ElixirChatEventTypes_1.MESSAGES_HISTORY_SET, processedMessageHistory);
+        return processedMessageHistory;
+      });
+    };
+
+    this.fetchPrecedingMessageHistory = function (limit) {
+      var _this$elixirChat6 = _this.elixirChat,
+          triggerEvent = _this$elixirChat6.triggerEvent,
+          debug = _this$elixirChat6.debug;
+      var latestCursor = _this.messageHistory[0].cursor;
+
+      if (!latestCursor) {
+        return new Promise(function (resolve, reject) {
+          var errorMessage = 'Failed to fetch previous message history - cursors not found';
+          utilsCommon_1.logEvent(debug, errorMessage);
           reject({
-            error: error,
-            limit: limit,
-            beforeCursor: beforeCursor,
-            query: query,
-            variables: variables
+            message: errorMessage
           });
         });
-      });
-    };
-
-    this.apiUrl = config.apiUrl;
-    this.socketUrl = config.socketUrl;
-    this.backendStaticUrl = config.backendStaticUrl;
-    this.token = config.token;
-    this.currentClientId = config.currentClientId;
-
-    this.onSubscribeSuccess = config.onSubscribeSuccess || function () {};
-
-    this.onSubscribeError = config.onSubscribeError || function () {};
-
-    this.onUnsubscribe = config.onUnsubscribe || function () {};
-
-    this.onMessage = config.onMessage;
-    this.initialize();
-  }
-
-  _createClass(MessagesSubscription, [{
-    key: "initialize",
-    value: function initialize() {
-      this.absintheSocket = AbsintheSocket.create(new Phoenix.Socket(this.socketUrl, {
-        params: {
-          token: this.token
-        }
-      }));
-      this.graphQLClient = new GraphQLClient_1.GraphQLClient({
-        url: this.apiUrl,
-        token: this.token
-      });
-      this.subscribe();
-    }
-  }, {
-    key: "subscribe",
-    value: function subscribe() {
-      var _this2 = this;
-
-      var notifier = AbsintheSocket.send(this.absintheSocket, {
-        operation: this.subscriptionQuery
-      });
-      AbsintheSocket.observe(this.absintheSocket, notifier, {
-        onAbort: function onAbort(e) {
-          return _this2.onSubscribeAbort(e);
-        },
-        onStart: function onStart(notifier) {
-          _this2.notifier = notifier;
-
-          if (!_this2.isCurrentlySubscribed) {
-            _this2.isCurrentlySubscribed = true;
-
-            _this2.onSubscribeSuccess(notifier);
-          }
-        },
-        onResult: function onResult(_ref2) {
-          var data = _ref2.data;
-
-          if (data && data.newMessage) {
-            var message = serializeMessage_1.serializeMessage(data.newMessage, {
-              backendStaticUrl: _this2.backendStaticUrl,
-              currentClientId: _this2.currentClientId
-            });
-
-            _this2.onMessage(message);
-          }
-        }
-      });
-    }
-  }, {
-    key: "onSubscribeAbort",
-    value: function onSubscribeAbort(error) {
-      this.onSubscribeError({
-        error: error,
-        graphQLQuery: this.subscriptionQuery
-      });
-    }
-  }]);
-
-  return MessagesSubscription;
-}();
-
-exports.MessagesSubscription = MessagesSubscription;
-},{"@absinthe/socket":"zTqj","phoenix":"XFqm","./serializers/serializeMessage":"ZEl5","./GraphQLClient":"1fv+"}],"QERd":[function(require,module,exports) {
-"use strict";
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
-var __importStar = this && this.__importStar || function (mod) {
-  if (mod && mod.__esModule) return mod;
-  var result = {};
-  if (mod != null) for (var k in mod) {
-    if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-  }
-  result["default"] = mod;
-  return result;
-};
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var Phoenix = __importStar(require("phoenix"));
-
-var TypingStatusSubscription =
-/*#__PURE__*/
-function () {
-  function TypingStatusSubscription(params) {
-    var _this = this;
-
-    _classCallCheck(this, TypingStatusSubscription);
-
-    this.hasConnectErrorOccurred = false;
-    this.currentlyTypingUsers = [];
-    this.typingTimeouts = {};
-    this.typedText = '';
-
-    this.subscribeStatusChange = function () {
-      _this.channel.on('presence_diff', function (diff) {
-        if (diff.joins && Object.values(diff.joins).length) {
-          _this.onStatusChange(diff.joins);
-        }
-      });
-    };
-
-    this.dispatchTypedText = function (typedText) {
-      if (_this.channel) {
-        var trimmedText = typeof typedText === 'string' ? typedText.trim() : '';
-
-        if (typedText === false) {
-          _this.channel.push('typing', {
-            typing: false,
-            text: ''
-          });
-        } else if (_this.typedText !== trimmedText) {
-          _this.channel.push('typing', {
-            typing: Boolean(trimmedText),
-            text: trimmedText
-          });
-
-          _this.typedText = trimmedText;
-        }
       }
-    };
 
-    this.resubscribeToAnotherRoom = function (roomId) {
-      return new Promise(function (resolve, reject) {
-        _this.unsubscribeFromThisRoom().then(function () {
-          _this.roomId = roomId;
-
-          _this.joinChannel(function () {
-            _this.subscribeStatusChange();
-
-            resolve();
-          });
-        }).catch(reject);
-      });
-    };
-
-    this.unsubscribeFromThisRoom = function () {
-      return new Promise(function (resolve, reject) {
-        if (_this.channel) {
-          _this.channel.leave().receive('ok', function () {
-            _this.roomId = null;
-            _this.channel = null;
-            resolve();
-          }).receive('error', reject);
-        } else {
-          _this.roomId = null;
-          _this.channel = null;
-          resolve();
-        }
-      });
-    };
-
-    this.socketUrl = params.socketUrl;
-    this.token = params.token;
-    this.roomId = params.roomId;
-    this.clientId = params.clientId;
-
-    this.onSubscribeSuccess = params.onSubscribeSuccess || function () {};
-
-    this.onSubscribeError = params.onSubscribeError || function () {};
-
-    this.onChange = params.onChange;
-    this.connect(function () {
-      _this.joinChannel(_this.subscribeStatusChange);
-    });
-  }
-
-  _createClass(TypingStatusSubscription, [{
-    key: "connect",
-    value: function connect() {
-      var _this2 = this;
-
-      var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {};
-      this.phoenixSocket = new Phoenix.Socket(this.socketUrl, {
-        params: {
-          token: this.token
-        }
-      });
-      this.phoenixSocket.onError(function (error) {
-        if (!_this2.hasConnectErrorOccurred) {
-          var message = 'Could not open connection via WebSocketPhoenixClient';
-
-          _this2.onSubscribeError({
-            error: error,
-            message: message
-          });
-
-          _this2.hasConnectErrorOccurred = true;
-        }
-      });
-      this.phoenixSocket.onOpen(callback);
-      this.phoenixSocket.connect();
-    }
-  }, {
-    key: "joinChannel",
-    value: function joinChannel() {
-      var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {};
-      var phoenixSocket = this.phoenixSocket,
-          roomId = this.roomId,
-          onSubscribeError = this.onSubscribeError,
-          onSubscribeSuccess = this.onSubscribeSuccess;
-      this.channel = phoenixSocket.channel('public:room:' + roomId, {});
-      this.channel.join().receive('ok', function (data) {
-        onSubscribeSuccess(data);
-        callback();
-      }).receive('error', function (error) {
-        onSubscribeError({
-          error: error,
-          roomId: roomId
+      return _this.getMessageHistoryByCursor(limit, latestCursor).then(function (processedMessageHistory) {
+        _this.messageHistory = processedMessageHistory.concat(_this.messageHistory);
+        utilsCommon_1.logEvent(debug, 'Fetched and prepended additional message history', {
+          processedMessageHistory: processedMessageHistory
         });
-      }).receive('timeout', function () {
-        var message = 'Networking issue: could not join room via WebSocketPhoenixClient';
-        onSubscribeError({
-          error: {
-            message: message
-          },
-          roomId: roomId
-        });
+        triggerEvent(ElixirChatEventTypes_1.MESSAGES_HISTORY_PREPEND_MANY, processedMessageHistory, _this.messageHistory);
+        return processedMessageHistory;
       });
-    }
-  }, {
-    key: "onStatusChange",
-    value: function onStatusChange(state) {
-      var userId = Object.keys(state)[0];
-
-      if (userId === this.clientId) {
-        return;
-      }
-
-      var statusValues = Object.values(state)[0];
-      var statusChange = statusValues.metas[0];
-      var userData = {
-        id: userId,
-        firstName: statusChange.first_name,
-        lastName: statusChange.last_name
-      };
-      var currentlyTypingUserIds = this.currentlyTypingUsers.map(function (user) {
-        return user.id;
-      });
-
-      if (statusChange.typing) {
-        this.debouncedRemoveFromCurrentlyTypingUsers(userId);
-      }
-
-      if (statusChange.typing && !currentlyTypingUserIds.includes(userId)) {
-        this.currentlyTypingUsers.push(userData);
-        this.onChange(this.currentlyTypingUsers);
-      } else if (!statusChange && currentlyTypingUserIds.includes(userId)) {
-        this.currentlyTypingUsers = this.currentlyTypingUsers.filter(function (user) {
-          return user.id !== userId;
-        });
-        this.onChange(this.currentlyTypingUsers);
-      }
-    }
-  }, {
-    key: "debouncedRemoveFromCurrentlyTypingUsers",
-    value: function debouncedRemoveFromCurrentlyTypingUsers(userId) {
-      var _this3 = this;
-
-      if (this.typingTimeouts[userId]) {
-        clearTimeout(this.typingTimeouts[userId]);
-      }
-
-      this.typingTimeouts[userId] = setTimeout(function () {
-        _this3.currentlyTypingUsers = _this3.currentlyTypingUsers.filter(function (user) {
-          return user.id !== userId;
-        });
-
-        _this3.onChange(_this3.currentlyTypingUsers);
-      }, 2000);
-    }
-  }]);
-
-  return TypingStatusSubscription;
-}();
-
-exports.TypingStatusSubscription = TypingStatusSubscription;
-},{"phoenix":"XFqm"}],"zgd1":[function(require,module,exports) {
-"use strict";
-
-function _templateObject() {
-  var data = _taggedTemplateLiteral(["\n    subscription {\n      updateCompanyWorking\n    }\n  "]);
-
-  _templateObject = function _templateObject() {
-    return data;
-  };
-
-  return data;
-}
-
-function _taggedTemplateLiteral(strings, raw) { if (!raw) { raw = strings.slice(0); } return Object.freeze(Object.defineProperties(strings, { raw: { value: Object.freeze(raw) } })); }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
-var __importStar = this && this.__importStar || function (mod) {
-  if (mod && mod.__esModule) return mod;
-  var result = {};
-  if (mod != null) for (var k in mod) {
-    if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-  }
-  result["default"] = mod;
-  return result;
-};
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var AbsintheSocket = __importStar(require("@absinthe/socket"));
-
-var Phoenix = __importStar(require("phoenix"));
-
-var GraphQLClient_1 = require("./GraphQLClient");
-
-var OperatorOnlineStatusSubscription =
-/*#__PURE__*/
-function () {
-  function OperatorOnlineStatusSubscription(config) {
-    var _this = this;
-
-    _classCallCheck(this, OperatorOnlineStatusSubscription);
-
-    this.isCurrentlySubscribed = false;
-    this.subscriptionQuery = GraphQLClient_1.gql(_templateObject());
+    };
 
     this.unsubscribe = function () {
-      _this.absintheSocket = AbsintheSocket.cancel(_this.absintheSocket, _this.notifier);
-      _this.isCurrentlySubscribed = false;
+      var debug = _this.elixirChat.debug;
+      utilsCommon_1.logEvent(debug, 'Unsubscribing from messages...');
 
-      _this.onUnsubscribe();
+      _this.graphQLClientSocket.unsubscribe();
+
+      _this.graphQLClientSocket = null;
+      _this.graphQLClient = null;
     };
 
-    this.onSubscribeSuccess = config.onSubscribeSuccess || function () {};
-
-    this.onSubscribeError = config.onSubscribeError || function () {};
-
-    this.onUnsubscribe = config.onUnsubscribe || function () {};
-
-    this.onStatusChange = config.onStatusChange;
-    this.socketUrl = config.socketUrl;
-    this.token = config.token;
-    this.isOnline = config.isOnline;
-    this.initialize();
+    this.elixirChat = elixirChat;
   }
 
-  _createClass(OperatorOnlineStatusSubscription, [{
-    key: "initialize",
-    value: function initialize() {
-      this.absintheSocket = AbsintheSocket.create(new Phoenix.Socket(this.socketUrl, {
-        params: {
-          token: this.token
-        }
-      }));
-      this.subscribe();
+  _createClass(MessageSubscription, [{
+    key: "initializeSocketClient",
+    value: function initializeSocketClient() {
+      var _this$elixirChat7 = this.elixirChat,
+          socketUrl = _this$elixirChat7.socketUrl,
+          authToken = _this$elixirChat7.authToken,
+          debug = _this$elixirChat7.debug,
+          triggerEvent = _this$elixirChat7.triggerEvent;
+      this.graphQLClientSocket = new GraphQLClientSocket_1.GraphQLClientSocket({
+        socketUrl: socketUrl,
+        authToken: authToken,
+        query: this.subscriptionQuery,
+        onAbort: function onAbort(error) {
+          utilsCommon_1.logEvent(debug, 'Failed to subscribe to messages', error, 'error');
+          triggerEvent(ElixirChatEventTypes_1.MESSAGES_SUBSCRIBE_ERROR, error);
+        },
+        onStart: function onStart() {
+          utilsCommon_1.logEvent(debug, 'Successfully subscribed to messages');
+          triggerEvent(ElixirChatEventTypes_1.MESSAGES_SUBSCRIBE_SUCCESS);
+        },
+        onResult: this.onMessageReceive
+      });
     }
   }, {
-    key: "subscribe",
-    value: function subscribe() {
+    key: "serializeSendMessageParams",
+    value: function serializeSendMessageParams(params) {
+      var text = typeof params.text === 'string' ? params.text.trim() : '';
+      var tempId = params.tempId;
+      var responseToMessageId = typeof params.responseToMessageId === 'string' ? params.responseToMessageId : null;
+      var attachments = [];
+      var binaries = {};
+
+      try {
+        params.attachments.forEach(function (_ref2) {
+          var file = _ref2.file;
+          attachments.push(file.name);
+          binaries[file.name] = file;
+        });
+      } catch (e) {}
+
+      return {
+        variables: {
+          text: text,
+          tempId: tempId,
+          attachments: attachments,
+          responseToMessageId: responseToMessageId
+        },
+        binaries: binaries
+      };
+    }
+  }, {
+    key: "generateNewClientPlaceholderMessage",
+    value: function generateNewClientPlaceholderMessage(messageHistory) {
+      var firstMessageTimestamp = utilsCommon_1._get(messageHistory, '[0].timestamp');
+
+      var timestamp = firstMessageTimestamp || new Date().toISOString();
+      return {
+        timestamp: timestamp,
+        id: utilsCommon_1.randomDigitStringId(6),
+        isSystem: true,
+        sender: {},
+        attachments: [],
+        systemData: {
+          type: 'NEW_CLIENT_PLACEHOLDER'
+        }
+      };
+    }
+  }, {
+    key: "generateTemporaryMessage",
+    value: function generateTemporaryMessage(tempId, params) {
+      var text = params.text,
+          attachments = params.attachments,
+          responseToMessageId = params.responseToMessageId;
+      var serializedResponseToMessage = this.messageHistory.filter(function (message) {
+        return message.id === responseToMessageId;
+      })[0];
+      var serializedAttachments = attachments.map(function (attachment) {
+        var file = attachment.file;
+        var contentType = file.type;
+        var url = URL.createObjectURL(file);
+        var thumbnails = [];
+
+        if (utilsCommon_1.isWebImage(contentType) && attachment.width && attachment.height) {
+          thumbnails = [{
+            id: attachment.id,
+            url: url
+          }];
+        }
+
+        return Object.assign({}, attachment, {
+          url: url,
+          thumbnails: thumbnails,
+          contentType: contentType,
+          bytesSize: file.size
+        });
+      });
+      return {
+        tempId: tempId,
+        id: utilsCommon_1.randomDigitStringId(6),
+        text: text.trim() || '',
+        timestamp: new Date().toISOString(),
+        sender: {
+          isOperator: false,
+          isCurrentClient: true
+        },
+        responseToMessage: serializedResponseToMessage || null,
+        attachments: serializedAttachments,
+        isSubmitting: true
+      };
+    }
+  }, {
+    key: "appendMessageConditionally",
+    value: function appendMessageConditionally(message) {
+      var _this$elixirChat8 = this.elixirChat,
+          triggerEvent = _this$elixirChat8.triggerEvent,
+          debug = _this$elixirChat8.debug;
+      this.messageHistory.push(message);
+      this.temporaryMessageTempIds.push(message.tempId);
+      utilsCommon_1.logEvent(debug, 'Conditionally appended message', {
+        message: message
+      });
+      triggerEvent(ElixirChatEventTypes_1.MESSAGES_HISTORY_APPEND_ONE, message);
+    }
+  }, {
+    key: "enrichTemporaryMessage",
+    value: function enrichTemporaryMessage(temporaryMessageTempId, messageData) {
       var _this2 = this;
 
-      var notifier = AbsintheSocket.send(this.absintheSocket, {
-        operation: this.subscriptionQuery
-      });
-      AbsintheSocket.observe(this.absintheSocket, notifier, {
-        onAbort: function onAbort(e) {
-          return _this2.onSubscribeAbort(e);
-        },
-        onStart: function onStart(notifier) {
-          _this2.notifier = notifier;
+      var forgetThisTemporaryMessage = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
+      var triggerEvent = this.elixirChat.triggerEvent;
 
-          if (!_this2.isCurrentlySubscribed) {
-            _this2.isCurrentlySubscribed = true;
+      if (this.temporaryMessageTempIds.includes(temporaryMessageTempId)) {
+        this.messageHistory.forEach(function (message) {
+          if (message.tempId === temporaryMessageTempId) {
+            for (var key in messageData) {
+              message[key] = messageData[key];
+            }
 
-            _this2.onSubscribeSuccess(notifier);
+            if (forgetThisTemporaryMessage) {
+              _this2.temporaryMessageTempIds = _this2.temporaryMessageTempIds.filter(function (id) {
+                return id !== temporaryMessageTempId;
+              });
+            }
+
+            triggerEvent(ElixirChatEventTypes_1.MESSAGES_HISTORY_CHANGE_ONE, message, _this2.messageHistory);
+            return;
           }
-        },
-        onResult: function onResult(_ref) {
-          var data = _ref.data;
-          var isOnline = data && data.updateCompanyWorking;
-
-          _this2.onStatusChange(isOnline);
-
-          _this2.isOnline = isOnline;
-        }
-      });
+        });
+      }
     }
   }, {
-    key: "onSubscribeAbort",
-    value: function onSubscribeAbort(error) {
-      this.onSubscribeError({
+    key: "onSendMessageFailure",
+    value: function onSendMessageFailure(tempId, error) {
+      var _this$elixirChat9 = this.elixirChat,
+          triggerEvent = _this$elixirChat9.triggerEvent,
+          debug = _this$elixirChat9.debug;
+      utilsCommon_1.logEvent(debug, 'Failed to send message', {
         error: error,
-        graphQLQuery: this.subscriptionQuery
-      });
+        tempId: tempId
+      }, 'error');
+
+      if (tempId) {
+        this.enrichTemporaryMessage(tempId, {
+          isSubmitting: false,
+          isSubmissionError: true
+        });
+      }
+    }
+  }, {
+    key: "onGetMessageHistoryByCursorFailure",
+    value: function onGetMessageHistoryByCursorFailure(error) {
+      var _this$elixirChat10 = this.elixirChat,
+          triggerEvent = _this$elixirChat10.triggerEvent,
+          debug = _this$elixirChat10.debug;
+
+      if (this.hasMessageHistoryBeenEverFetched) {
+        utilsCommon_1.logEvent(debug, 'Failed to fetch message history', {
+          error: error
+        }, 'error');
+        triggerEvent(ElixirChatEventTypes_1.MESSAGES_FETCH_HISTORY_ERROR, error);
+      } else {
+        utilsCommon_1.logEvent(debug, 'Failed to fetch initial message history', {
+          error: error
+        }, 'error');
+        triggerEvent(ElixirChatEventTypes_1.MESSAGES_FETCH_HISTORY_INITIAL_ERROR, error);
+      }
     }
   }]);
 
-  return OperatorOnlineStatusSubscription;
+  return MessageSubscription;
 }();
 
-exports.OperatorOnlineStatusSubscription = OperatorOnlineStatusSubscription;
-},{"@absinthe/socket":"zTqj","phoenix":"XFqm","./GraphQLClient":"1fv+"}],"xY1B":[function(require,module,exports) {
-"use strict";
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var utilsCommon_1 = require("../utilsCommon");
-
-var UnreadMessagesCounter =
-/*#__PURE__*/
-function () {
-  function UnreadMessagesCounter(params) {
-    var _this = this;
-
-    _classCallCheck(this, UnreadMessagesCounter);
-
-    this.unreadMessagesCount = 0;
-    this.unreadRepliesCount = 0;
-    this.unreadMessages = [];
-    this.unreadReplies = [];
-    this.receivedMessages = [];
-    this.currentClientId = null;
-
-    this.setCurrentClientId = function (currentClientId) {
-      _this.currentClientId = currentClientId;
-    };
-
-    this.setReceivedMessages = function (receivedMessages) {
-      _this.receivedMessages = receivedMessages;
-
-      var unreadMessages = _this.getUnreadMessages();
-
-      var unreadReplies = _this.getUnreadRepliesToCurrentClient();
-
-      _this.triggerOnChangeCallbacks(unreadMessages, unreadReplies);
-    };
-
-    this.resetUnreadMessagesAndReplies = function () {
-      var allRepliesToCurrentClient = _this.getAllRepliesToCurrentClient();
-
-      var latestReplyToCurrentClient = utilsCommon_1._last(allRepliesToCurrentClient);
-
-      if (latestReplyToCurrentClient) {
-        localStorage.setItem('elixirchat-latest-unread-reply-id', latestReplyToCurrentClient.id);
-      }
-
-      var notCurrentClientMessages = _this.getAllMessagesByNotCurrentClient();
-
-      var latestMessage = utilsCommon_1._last(notCurrentClientMessages);
-
-      if (latestMessage) {
-        localStorage.setItem('elixirchat-latest-unread-message-id', latestMessage.id);
-      }
-
-      _this.triggerOnChangeCallbacks([], []);
-    };
-
-    this.getUnreadRepliesToCurrentClient = function () {
-      var allRepliesToCurrentClient = _this.getAllRepliesToCurrentClient();
-
-      var latestUnreadReplyId = localStorage.getItem('elixirchat-latest-unread-reply-id');
-      var latestUnreadReplyIndex = allRepliesToCurrentClient.map(function (message) {
-        return message.id;
-      }).indexOf(latestUnreadReplyId);
-      return latestUnreadReplyIndex === -1 ? allRepliesToCurrentClient : allRepliesToCurrentClient.slice(latestUnreadReplyIndex + 1);
-    };
-
-    this.getUnreadMessages = function () {
-      var latestUnreadMessageId = localStorage.getItem('elixirchat-latest-unread-message-id');
-
-      var notCurrentClientMessages = _this.getAllMessagesByNotCurrentClient();
-
-      var latestUnreadMessageIndex = notCurrentClientMessages.map(function (message) {
-        return message.id;
-      }).indexOf(latestUnreadMessageId);
-      return latestUnreadMessageIndex === -1 ? notCurrentClientMessages : notCurrentClientMessages.slice(latestUnreadMessageIndex + 1);
-    };
-
-    this.onUnreadMessagesChange = params.onUnreadMessagesChange || function () {};
-
-    this.onUnreadRepliesChange = params.onUnreadRepliesChange || function () {};
-  }
-
-  _createClass(UnreadMessagesCounter, [{
-    key: "triggerOnChangeCallbacks",
-    value: function triggerOnChangeCallbacks(unreadMessages, unreadReplies) {
-      if (this.unreadMessagesCount !== unreadMessages.length) {
-        this.unreadMessages = unreadMessages;
-        this.unreadMessagesCount = unreadMessages.length;
-        this.onUnreadMessagesChange(unreadMessages.length, unreadMessages);
-      }
-
-      if (this.unreadRepliesCount !== unreadReplies.length) {
-        this.unreadReplies = unreadReplies;
-        this.unreadRepliesCount = unreadReplies.length;
-        this.onUnreadRepliesChange(unreadReplies.length, unreadReplies);
-      }
-    }
-  }, {
-    key: "getAllRepliesToCurrentClient",
-    value: function getAllRepliesToCurrentClient() {
-      var _this2 = this;
-
-      return this.receivedMessages.filter(function (message) {
-        var responseToMessage = message.responseToMessage,
-            sender = message.sender;
-        var isSentByCurrentClient = sender.id === _this2.currentClientId;
-
-        var isResponseToCurrentClient = utilsCommon_1._get(responseToMessage, 'sender.id') === _this2.currentClientId;
-
-        return isResponseToCurrentClient && !isSentByCurrentClient;
-      });
-    }
-  }, {
-    key: "getAllMessagesByNotCurrentClient",
-    value: function getAllMessagesByNotCurrentClient() {
-      var _this3 = this;
-
-      return this.receivedMessages.filter(function (message) {
-        return message.sender.id !== _this3.currentClientId;
-      });
-    }
-  }]);
-
-  return UnreadMessagesCounter;
-}();
-
-exports.UnreadMessagesCounter = UnreadMessagesCounter;
-},{"../utilsCommon":"EjGt"}],"CLsL":[function(require,module,exports) {
-"use strict";
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var utilsCommon_1 = require("../utilsCommon");
-
-var ScreenshotTaker =
-/*#__PURE__*/
-function () {
-  function ScreenshotTaker() {
-    var _this = this;
-
-    _classCallCheck(this, ScreenshotTaker);
-
-    this.mediaOptions = {
-      video: {
-        width: screen.width * window.devicePixelRatio,
-        height: screen.height * window.devicePixelRatio
-      }
-    };
-    this.width = 0;
-    this.height = 0;
-
-    this.takeScreenshot = function () {
-      return new Promise(function (resolve, reject) {
-        _this.getMediaStream().then(function (stream) {
-          _this.stream = stream;
-          _this.video.srcObject = _this.stream;
-
-          _this.video.oncanplay = function () {
-            _this.setVideoCanvasSize();
-
-            setTimeout(function () {
-              var screenshot = _this.captureVideoFrame();
-
-              _this.stopMediaStream();
-
-              resolve(screenshot);
-            }, 500);
-          };
-
-          _this.video.play();
-        }).catch(reject);
-      });
-    };
-
-    this.initialize();
-  }
-
-  _createClass(ScreenshotTaker, [{
-    key: "initialize",
-    value: function initialize() {
-      this.width = screen.width * window.devicePixelRatio;
-      this.canvas = document.createElement('canvas');
-      this.video = document.createElement('video');
-    }
-  }, {
-    key: "setVideoCanvasSize",
-    value: function setVideoCanvasSize() {
-      var video = this.video,
-          canvas = this.canvas,
-          width = this.width;
-      this.height = video.videoHeight / (video.videoWidth / width);
-      video.width = width;
-      video.height = this.height;
-      canvas.width = width;
-      canvas.height = this.height;
-    }
-  }, {
-    key: "captureVideoFrame",
-    value: function captureVideoFrame() {
-      var canvas = this.canvas,
-          width = this.width,
-          height = this.height,
-          video = this.video;
-      var context = canvas.getContext('2d');
-      context.drawImage(video, 0, 0, width, height);
-      var dataUrl = canvas.toDataURL('image/png');
-      var file = this.base64ToFile(dataUrl);
-      return {
-        dataUrl: dataUrl,
-        file: file
-      };
-    }
-  }, {
-    key: "stopMediaStream",
-    value: function stopMediaStream() {
-      this.stream.getTracks()[0].stop();
-    }
-  }, {
-    key: "getMediaStream",
-    value: function getMediaStream() {
-      var _this2 = this;
-
-      return new Promise(function (resolve, reject) {
-        try {
-          var mediaDevices = navigator.mediaDevices;
-          mediaDevices.getDisplayMedia(_this2.mediaOptions).then(resolve).catch(reject);
-        } catch (e) {
-          reject({
-            message: 'MediaDevices.getDisplayMedia is not supported in this browser'
-          });
-        }
-      });
-    }
-  }, {
-    key: "base64ToFile",
-    value: function base64ToFile(dataUrl) {
-      var blobBin = atob(dataUrl.split(',')[1]);
-      var blobArray = [];
-
-      for (var i = 0; i < blobBin.length; i++) {
-        blobArray.push(blobBin.charCodeAt(i));
-      }
-
-      var blob = new Blob([new Uint8Array(blobArray)]);
-      var fileName = "Screenshot ".concat(new Date().toLocaleString(), ".png");
-      return new File([blob], fileName, {
-        type: 'image/png'
-      });
-    }
-  }]);
-
-  return ScreenshotTaker;
-}();
-
-exports.ScreenshotTaker = ScreenshotTaker;
-
-exports.getCompatibilityFallback = function () {
-  if (navigator.mediaDevices.getDisplayMedia) {
-    return null;
-  } else {
-    var platform = utilsCommon_1.detectPlatform();
-
-    if (platform.isMac) {
-      return {
-        pressKey: 'Cmd+Control+Shift+3'
-      };
-    } else if (platform.isWindows) {
-      return {
-        pressKey: 'PrtSc',
-        pressKeySecondary: 'Fn+PrtSc'
-      };
-    } else {
-      return {
-        pressKey: null
-      };
-    }
-  }
-};
-},{"../utilsCommon":"EjGt"}],"Pqo8":[function(require,module,exports) {
+exports.MessageSubscription = MessageSubscription;
+},{"./ElixirChatEventTypes":"Cteb","./serializers/serializeMessage":"ZEl5","../utilsCommon":"EjGt","./GraphQLClientSocket":"P6qz","./GraphQLClient":"1fv+"}],"Pqo8":[function(require,module,exports) {
 "use strict";
 
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
@@ -6981,19 +7450,19 @@ var utilsCommon_1 = require("../utilsCommon");
 
 var serializeUser_1 = require("./serializers/serializeUser");
 
-var MessagesSubscription_1 = require("./MessagesSubscription");
+var ScreenshotTaker_1 = require("./ScreenshotTaker");
+
+var UnreadMessagesCounter_1 = require("./UnreadMessagesCounter");
 
 var TypingStatusSubscription_1 = require("./TypingStatusSubscription");
 
 var OperatorOnlineStatusSubscription_1 = require("./OperatorOnlineStatusSubscription");
 
-var UnreadMessagesCounter_1 = require("./UnreadMessagesCounter");
-
-var ScreenshotTaker_1 = require("./ScreenshotTaker");
+var MessageSubscription_1 = require("./MessageSubscription");
 
 var GraphQLClient_1 = require("./GraphQLClient");
 
-exports.API_REFERENCE_URL = 'https://github.com/elixirchat/elixirchat-js-sdk';
+var ElixirChatEventTypes_1 = require("./ElixirChatEventTypes");
 
 var ElixirChat =
 /*#__PURE__*/
@@ -7003,47 +7472,139 @@ function () {
 
     _classCallCheck(this, ElixirChat);
 
-    this.receivedMessages = [];
-    this.areAnyOperatorsOnline = false;
     this.widgetTitle = '';
     this.defaultWidgetTitle = 'Служба поддержки';
+    this.eventCallbacks = {};
     this.joinRoomQuery = GraphQLClient_1.insertGraphQlFragments(GraphQLClient_1.gql(_templateObject()), {
       fragmentClient: serializeUser_1.fragmentClient
     });
-    this.onMessageCallbacks = [];
-    this.onConnectSuccessCallbacks = [];
-    this.onConnectErrorCallbacks = [];
-    this.onTypingCallbacks = [];
-    this.onOperatorOnlineStatusChangeCallbacks = [];
-    this.onUnreadMessagesChangeCallbacks = [];
-    this.onUnreadRepliesChangeCallbacks = [];
 
-    this.onUnreadRepliesChange = function (callback) {
-      _this.onUnreadRepliesChangeCallbacks.push(callback);
+    this.markPrecedingMessagesRead = function (lastReadMessageId) {
+      var messageIds = _this.messageHistory.map(function (message) {
+        return message.id;
+      });
+
+      var lastReadMessageIndex = messageIds.indexOf(lastReadMessageId);
+
+      _this.messageHistory.forEach(function (message, index) {
+        if (lastReadMessageIndex >= index) {
+          message.isUnread = false;
+        }
+      });
+
+      _this.triggerEvent(ElixirChatEventTypes_1.MESSAGES_HISTORY_CHANGE_MANY, _this.messageHistory);
     };
 
-    this.onUnreadMessagesChange = function (callback) {
-      _this.onUnreadMessagesChangeCallbacks.push(callback);
+    this.triggerEvent = function (eventName) {
+      for (var _len = arguments.length, params = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+        params[_key - 1] = arguments[_key];
+      }
+
+      utilsCommon_1.logEvent(_this.debug, eventName, {
+        params: params
+      }, 'event');
+      var callbacks = _this.eventCallbacks[eventName];
+
+      if (callbacks && callbacks.length) {
+        callbacks.forEach(function (callback) {
+          return callback.apply(void 0, params);
+        });
+      }
     };
 
-    this.resetUnreadMessagesAndReplies = function () {
-      _this.unreadMessagesCounter.resetUnreadMessagesAndReplies();
+    this.on = function (eventName, callback) {
+      if (eventName instanceof Array) {
+        eventName.map(function (singleEventName) {
+          return _this.on(singleEventName, callback);
+        });
+      } else {
+        if (!_this.eventCallbacks[eventName]) {
+          _this.eventCallbacks[eventName] = [];
+        }
+
+        _this.eventCallbacks[eventName].push(callback);
+      }
+    };
+
+    this.off = function (eventName, callback) {
+      var callbacks = _this.eventCallbacks[eventName];
+
+      if (callbacks && callbacks.length) {
+        _this.eventCallbacks[eventName] = callbacks.filter(function (currentCallback) {
+          return currentCallback !== callback;
+        });
+      }
+    };
+
+    this.sendMessage = function (params) {
+      if (!_this.isConnected) {
+        return _this.showDisconnectedError(true);
+      }
+
+      _this.typingStatusSubscription.dispatchTypedText(false);
+
+      return _this.messageSubscription.sendMessage(params);
+    };
+
+    this.retrySendMessage = function (message) {
+      if (!_this.isConnected) {
+        return _this.showDisconnectedError(true);
+      }
+
+      return _this.messageSubscription.retrySendMessage(message);
+    };
+
+    this.fetchMessageHistory = function (limit) {
+      if (!_this.isConnected) {
+        return _this.showDisconnectedError(true);
+      }
+
+      return _this.messageSubscription.fetchMessageHistory(limit);
+    };
+
+    this.fetchPrecedingMessageHistory = function (limit) {
+      if (!_this.isConnected) {
+        return _this.showDisconnectedError(true);
+      }
+
+      return _this.messageSubscription.fetchPrecedingMessageHistory(limit);
     };
 
     this.dispatchTypedText = function (typedText) {
+      if (!_this.isConnected) {
+        return _this.showDisconnectedError();
+      }
+
       _this.typingStatusSubscription.dispatchTypedText(typedText);
     };
 
-    this.onMessage = function (callback) {
-      _this.onMessageCallbacks.push(callback);
+    this.setLastReadMessage = function (messageId) {
+      if (!_this.isConnected) {
+        return _this.showDisconnectedError(true);
+      }
+
+      return _this.unreadMessagesCounter.setLastReadMessage(messageId);
     };
 
-    this.onTyping = function (callback) {
-      _this.onTypingCallbacks.push(callback);
+    this.takeScreenshot = function () {
+      return _this.screenshotTaker.takeScreenshot();
     };
 
-    this.onOperatorOnlineStatusChange = function (callback) {
-      _this.onOperatorOnlineStatusChangeCallbacks.push(callback);
+    this.disconnect = function () {
+      if (!_this.isConnected) {
+        return _this.showDisconnectedError();
+      }
+
+      utilsCommon_1.logEvent(_this.debug, 'Disconnecting from ElixirChat');
+      _this.isConnected = false;
+
+      _this.messageSubscription.unsubscribe();
+
+      _this.unreadMessagesCounter.unsubscribe();
+
+      _this.typingStatusSubscription.unsubscribe();
+
+      _this.operatorOnlineStatusSubscription.unsubscribe();
     };
 
     this.reconnect = function (_ref) {
@@ -7054,71 +7615,14 @@ function () {
         client: client
       });
 
-      if (room) {
-        _this.room = room;
-      }
-
-      if (client) {
-        _this.client = client;
-      }
-
-      _this.isPrivate = !room || !room.id;
-
-      _this.setDefaultConfigValues();
-
-      _this.messagesSubscription.unsubscribe();
-
-      _this.operatorOnlineStatusSubscription.unsubscribe();
-
-      _this.unreadMessagesCounter.resetUnreadMessagesAndReplies();
-
-      return _this.connectToRoom().then(function () {
-        _this.unreadMessagesCounter.setCurrentClientId(_this.elixirChatClientId);
-
-        _this.saveRoomClientToLocalStorage(_this.room, _this.client);
-
-        _this.subscribeToNewMessages();
-
-        _this.subscribeToOperatorOnlineStatusChange();
-
-        _this.typingStatusSubscription.resubscribeToAnotherRoom(_this.room.id);
+      _this.setRoomAndClient({
+        room: room,
+        client: client
       });
-    };
 
-    this.onConnectSuccess = function (callback) {
-      _this.onConnectSuccessCallbacks.push(callback);
-    };
+      _this.disconnect();
 
-    this.onConnectError = function (callback) {
-      _this.onConnectErrorCallbacks.push(callback);
-    };
-
-    this.takeScreenshot = function () {
-      return _this.screenshotTaker.takeScreenshot().then(function (screenshot) {
-        utilsCommon_1.logEvent(_this.debug, 'Captured screenshot', screenshot);
-        return screenshot;
-      }).catch(function (e) {
-        utilsCommon_1.logEvent(_this.debug, 'Could not capture screenshot', e, 'error');
-        throw e;
-      });
-    };
-
-    this.fetchMessageHistory = function (limit, beforeCursor) {
-      return _this.messagesSubscription.fetchMessageHistory(limit, beforeCursor).then(function (messages) {
-        utilsCommon_1.logEvent(_this.debug, 'Fetched message history', {
-          limit: limit,
-          beforeCursor: beforeCursor,
-          messages: messages
-        });
-        _this.receivedMessages = _this.receivedMessages.concat(messages);
-
-        _this.unreadMessagesCounter.setReceivedMessages(_this.receivedMessages);
-
-        return messages;
-      }).catch(function (data) {
-        utilsCommon_1.logEvent(_this.debug, 'Could not fetch message history', data, 'error');
-        throw data;
-      });
+      return _this.joinRoom();
     };
 
     this.apiUrl = config.apiUrl;
@@ -7126,31 +7630,34 @@ function () {
     this.backendStaticUrl = config.backendStaticUrl;
     this.companyId = config.companyId;
     this.debug = config.debug || false;
-    this.room = config.room;
-    this.client = config.client;
-    this.isPrivate = !this.room || !this.room.id;
-    var localValues = this.getRoomClientFromLocalStorage();
 
-    if (!this.room || !this.room.id) {
-      this.room = localValues.room;
+    if (this.hasAllRequiredConfigParameters()) {
+      this.initialize(config);
     }
-
-    if (!this.client || !this.client.id) {
-      this.client = localValues.client;
-    }
-
-    this.initialize();
   }
 
   _createClass(ElixirChat, [{
-    key: "initialize",
-    value: function initialize() {
+    key: "hasAllRequiredConfigParameters",
+    value: function hasAllRequiredConfigParameters() {
       var _this2 = this;
 
-      if (!this.companyId) {
-        utilsCommon_1.logEvent(this.debug, "Required parameter companyId is not provided: \nSee more: ".concat(exports.API_REFERENCE_URL, "#config-companyid"), null, 'error');
-        return;
+      var requiredParams = ['apiUrl', 'socketUrl', 'backendStaticUrl', 'companyId'];
+      var missingRequiredParams = requiredParams.filter(function (paramKey) {
+        return !_this2[paramKey];
+      });
+
+      if (missingRequiredParams.length) {
+        var message = "Required parameters: ".concat(missingRequiredParams.join(', '), " not provided. \nSee more: https://github.com/elixirchat/elixirchat-js-sdk#config");
+        utilsCommon_1.logEvent(this.debug, message, null, 'error');
+        return false;
+      } else {
+        return true;
       }
+    }
+  }, {
+    key: "initialize",
+    value: function initialize(config) {
+      var _this3 = this;
 
       utilsCommon_1.logEvent(this.debug, 'Initializing ElixirChat', {
         apiUrl: this.apiUrl,
@@ -7161,24 +7668,82 @@ function () {
         client: this.client,
         debug: this.debug
       });
-      this.setDefaultConfigValues();
-      this.screenshotTaker = new ScreenshotTaker_1.ScreenshotTaker();
-      this.subscribeToUnreadCounterChangeChange();
-      this.connectToRoom().then(function () {
-        _this2.unreadMessagesCounter.setCurrentClientId(_this2.elixirChatClientId);
+      this.on(ElixirChatEventTypes_1.JOIN_ROOM_SUCCESS, function (data) {
+        utilsCommon_1.logEvent(_this3.debug, 'Joined room', data);
 
-        _this2.saveRoomClientToLocalStorage(_this2.room, _this2.client);
+        var areAnyOperatorsOnline = utilsCommon_1._get(data, 'company.working');
 
-        _this2.subscribeToNewMessages();
+        _this3.messageSubscription.subscribe();
 
-        _this2.subscribeToTypingStatusChange();
+        _this3.unreadMessagesCounter.subscribe();
 
-        _this2.subscribeToOperatorOnlineStatusChange();
+        _this3.typingStatusSubscription.subscribe();
+
+        _this3.operatorOnlineStatusSubscription.subscribe(areAnyOperatorsOnline);
+      });
+      this.on(ElixirChatEventTypes_1.JOIN_ROOM_ERROR, function (error) {
+        utilsCommon_1.logEvent(_this3.debug, 'Failed to join room', {
+          error: error
+        }, 'error');
+      });
+      this.on(ElixirChatEventTypes_1.LAST_READ_MESSAGE_CHANGE, this.markPrecedingMessagesRead);
+      this.setRoomAndClient({
+        room: config.room,
+        client: config.client
+      });
+      this.screenshotTaker = new ScreenshotTaker_1.ScreenshotTaker({
+        elixirChat: this
+      });
+      this.messageSubscription = new MessageSubscription_1.MessageSubscription({
+        elixirChat: this
+      });
+      this.unreadMessagesCounter = new UnreadMessagesCounter_1.UnreadMessagesCounter({
+        elixirChat: this
+      });
+      this.typingStatusSubscription = new TypingStatusSubscription_1.TypingStatusSubscription({
+        elixirChat: this
+      });
+      this.operatorOnlineStatusSubscription = new OperatorOnlineStatusSubscription_1.OperatorOnlineStatusSubscription({
+        elixirChat: this
+      });
+      this.joinRoom();
+    }
+  }, {
+    key: "setRoomAndClient",
+    value: function setRoomAndClient(data) {
+      var room = data.room || {};
+      var client = data.client || {};
+      var localStorageRoom = utilsCommon_1.getJSONFromLocalStorage('elixirchat-room');
+      var localStorageClient = utilsCommon_1.getJSONFromLocalStorage('elixirchat-client');
+      var anonymousClientData = this.generateAnonymousClientData();
+      var clientId = client.id || localStorageClient.id || anonymousClientData.id;
+      var clientFirstName = client.firstName || localStorageClient.firstName || anonymousClientData.firstName;
+      var clientLastName = client.lastName || localStorageClient.lastName || anonymousClientData.lastName;
+      this.client = {
+        id: clientId,
+        firstName: clientFirstName,
+        lastName: clientLastName
+      };
+      this.isPrivate = !(room.id || localStorageRoom.id);
+      var roomId = room.id || localStorageRoom.id || clientId;
+      var roomTitle = room.title || localStorageRoom.title || clientFirstName + ' ' + clientLastName;
+      var roomData = room.data || {};
+      this.room = {
+        id: roomId,
+        title: roomTitle,
+        data: roomData
+      };
+      localStorage.setItem('elixirchat-room', JSON.stringify(room));
+      localStorage.setItem('elixirchat-client', JSON.stringify(client));
+      utilsCommon_1.logEvent(this.debug, 'Set room and client values', {
+        room: this.room,
+        client: this.client,
+        isPrivate: this.isPrivate
       });
     }
   }, {
-    key: "getDefaultClientData",
-    value: function getDefaultClientData() {
+    key: "generateAnonymousClientData",
+    value: function generateAnonymousClientData() {
       var baseTitle = unique_names_generator_1.uniqueNamesGenerator({
         length: 2,
         separator: ' ',
@@ -7192,75 +7757,11 @@ function () {
 
       var randomFourDigitPostfix = utilsCommon_1.randomDigitStringId(4);
       var uniqueId = baseTitle.replace(' ', '-') + '-' + randomFourDigitPostfix;
-      var clientData = {
+      return {
         id: uniqueId,
         firstName: firstName,
         lastName: lastName
       };
-      utilsCommon_1.logEvent(this.debug, 'Generated default client data', clientData);
-      return clientData;
-    }
-  }, {
-    key: "getRoomClientFromLocalStorage",
-    value: function getRoomClientFromLocalStorage() {
-      var room;
-      var client;
-
-      try {
-        room = JSON.parse(localStorage.getItem('elixirchat-room'));
-      } catch (e) {}
-
-      try {
-        client = JSON.parse(localStorage.getItem('elixirchat-client'));
-      } catch (e) {}
-
-      utilsCommon_1.logEvent(this.debug, 'Fetched room, client values from localStorage', {
-        room: room,
-        client: client
-      });
-      return {
-        room: room,
-        client: client
-      };
-    }
-  }, {
-    key: "saveRoomClientToLocalStorage",
-    value: function saveRoomClientToLocalStorage(room, client) {
-      localStorage.setItem('elixirchat-room', JSON.stringify(room));
-      localStorage.setItem('elixirchat-client', JSON.stringify(client));
-    }
-  }, {
-    key: "setDefaultConfigValues",
-    value: function setDefaultConfigValues() {
-      var client = this.client || {};
-      var room = this.room || {};
-      var defaultClientData = this.getDefaultClientData();
-      var clientId = client.id || defaultClientData.id;
-      var clientFirstName = client.firstName;
-      var clientLastName = client.lastName;
-
-      if (!clientFirstName && !clientLastName) {
-        clientFirstName = defaultClientData.firstName;
-        clientLastName = defaultClientData.lastName;
-      }
-
-      this.client = {
-        id: clientId,
-        firstName: clientFirstName,
-        lastName: clientLastName
-      };
-      var roomId = room.id || clientId;
-      var roomTitle = room.title || clientFirstName + ' ' + clientLastName;
-      var roomData = room.data || {};
-      this.room = {
-        id: roomId,
-        title: roomTitle,
-        data: roomData
-      };
-      utilsCommon_1.logEvent(this.debug, 'Set room and client values', {
-        room: this.room,
-        client: this.client
-      });
     }
   }, {
     key: "serializeRoomData",
@@ -7274,9 +7775,9 @@ function () {
       return JSON.stringify(serializedData);
     }
   }, {
-    key: "connectToRoom",
-    value: function connectToRoom() {
-      var _this3 = this;
+    key: "joinRoom",
+    value: function joinRoom() {
+      var _this4 = this;
 
       this.graphQLClient = new GraphQLClient_1.GraphQLClient({
         url: this.apiUrl
@@ -7284,268 +7785,74 @@ function () {
       var query = this.joinRoomQuery;
       var variables = {
         companyId: this.companyId,
+        client: this.client,
         room: {
           id: this.room.id,
           title: this.room.title,
           data: this.serializeRoomData(this.room.data)
-        },
-        client: this.client
+        }
       };
-      return new Promise(function (resolve, reject) {
-        _this3.graphQLClient.query(query, variables).then(function (_ref2) {
-          var joinRoom = _ref2.joinRoom;
+      return this.graphQLClient.query(query, variables).then(function (_ref2) {
+        var joinRoom = _ref2.joinRoom;
 
-          if (joinRoom) {
-            _this3.authToken = joinRoom.token;
-            _this3.connected = true;
-            _this3.client.firstName = joinRoom.client.firstName;
-            _this3.client.lastName = joinRoom.client.lastName;
-            _this3.client.id = joinRoom.client.foreignId;
-            _this3.elixirChatClientId = joinRoom.client.id;
-            _this3.widgetTitle = joinRoom.company.widgetTitle || _this3.defaultWidgetTitle;
-            _this3.areAnyOperatorsOnline = joinRoom.company.working;
-            _this3.room.id = joinRoom.room.foreignId;
-            _this3.room.title = joinRoom.room.title;
-            _this3.elixirChatRoomId = joinRoom.room.id;
-            utilsCommon_1.logEvent(_this3.debug, 'Joined room', {
-              joinRoom: joinRoom,
-              room: _this3.room,
-              client: _this3.client
-            });
-            resolve(joinRoom);
-          } else {
-            utilsCommon_1.logEvent(_this3.debug, 'Failed to join room', {
-              joinRoom: joinRoom,
-              query: query,
-              variables: variables
-            }, 'error');
+        if (joinRoom) {
+          _this4.isConnected = true;
+          _this4.authToken = joinRoom.token;
+          _this4.widgetTitle = joinRoom.company.widgetTitle || _this4.defaultWidgetTitle;
+          _this4.elixirChatClientId = joinRoom.client.id;
+          _this4.elixirChatRoomId = joinRoom.room.id;
 
-            _this3.onConnectErrorCallbacks.forEach(function (callback) {
-              return callback(joinRoom);
-            });
-
-            reject(joinRoom);
-          }
-        }).catch(function (response) {
-          utilsCommon_1.logEvent(_this3.debug, 'Failed to join room', {
-            response: response,
-            query: query,
-            variables: variables
-          }, 'error');
-
-          _this3.onConnectErrorCallbacks.forEach(function (callback) {
-            return callback(response);
-          });
-
-          reject(response);
-        });
-      });
-    }
-  }, {
-    key: "subscribeToTypingStatusChange",
-    value: function subscribeToTypingStatusChange() {
-      var _this4 = this;
-
-      this.typingStatusSubscription = new TypingStatusSubscription_1.TypingStatusSubscription({
-        socketUrl: this.socketUrl,
-        token: this.authToken,
-        roomId: this.elixirChatRoomId,
-        clientId: this.elixirChatClientId,
-        onSubscribeSuccess: function onSubscribeSuccess() {
-          utilsCommon_1.logEvent(_this4.debug, 'Successfully subscribed to typing status change', {
-            roomId: _this4.elixirChatRoomId
-          });
-        },
-        onSubscribeError: function onSubscribeError(data) {
-          utilsCommon_1.logEvent(_this4.debug, 'Failed to subscribe to typing status change', data, 'error');
-        },
-        onChange: function onChange(peopleWhoAreTyping) {
-          utilsCommon_1.logEvent(_this4.debug, 'Some users started/stopped typing', {
-            peopleWhoAreTyping: peopleWhoAreTyping
-          });
-
-          _this4.onTypingCallbacks.forEach(function (callback) {
-            return callback(peopleWhoAreTyping);
-          });
+          _this4.triggerEvent(ElixirChatEventTypes_1.JOIN_ROOM_SUCCESS, joinRoom);
+        } else {
+          _this4.triggerEvent(ElixirChatEventTypes_1.JOIN_ROOM_ERROR, joinRoom);
         }
+      }).catch(function (response) {
+        _this4.triggerEvent(ElixirChatEventTypes_1.JOIN_ROOM_ERROR, response);
       });
     }
   }, {
-    key: "subscribeToOperatorOnlineStatusChange",
-    value: function subscribeToOperatorOnlineStatusChange() {
-      var _this5 = this;
+    key: "showDisconnectedError",
+    value: function showDisconnectedError(returnPromise) {
+      var message = 'ElixirChat is not currently connected. Use reconnect() method to connect to another room.';
+      utilsCommon_1.logEvent(this.debug, message, null, 'error');
 
-      this.operatorOnlineStatusSubscription = new OperatorOnlineStatusSubscription_1.OperatorOnlineStatusSubscription({
-        isOnline: this.areAnyOperatorsOnline,
-        socketUrl: this.socketUrl,
-        token: this.authToken,
-        onSubscribeSuccess: function onSubscribeSuccess() {
-          utilsCommon_1.logEvent(_this5.debug, 'Successfully subscribed to operator online status change');
-        },
-        onSubscribeError: function onSubscribeError(data) {
-          utilsCommon_1.logEvent(_this5.debug, 'Failed to subscribe to operator online status change', data, 'error');
-        },
-        onStatusChange: function onStatusChange(isOnline) {
-          utilsCommon_1.logEvent(_this5.debug, isOnline ? 'Operators got back online' : 'All operators went');
-          _this5.areAnyOperatorsOnline = isOnline;
-
-          _this5.onOperatorOnlineStatusChangeCallbacks.forEach(function (callback) {
-            return callback(isOnline);
-          });
-        },
-        onUnsubscribe: function onUnsubscribe() {
-          utilsCommon_1.logEvent(_this5.debug, 'Unsubscribed from  operator online status change');
-        }
-      });
-    }
-  }, {
-    key: "subscribeToUnreadCounterChangeChange",
-    value: function subscribeToUnreadCounterChangeChange() {
-      var _this6 = this;
-
-      this.unreadMessagesCounter = new UnreadMessagesCounter_1.UnreadMessagesCounter({
-        onUnreadMessagesChange: function onUnreadMessagesChange(unreadMessagesCount, unreadMessages) {
-          utilsCommon_1.logEvent(_this6.debug, 'Unread messages count changed to ' + unreadMessagesCount, {
-            unreadMessages: unreadMessages
-          });
-
-          _this6.onUnreadMessagesChangeCallbacks.forEach(function (callback) {
-            return callback(unreadMessagesCount, unreadMessages);
-          });
-        },
-        onUnreadRepliesChange: function onUnreadRepliesChange(unreadRepliesCount, unreadReplies) {
-          utilsCommon_1.logEvent(_this6.debug, 'Unread replies count changed to ' + unreadRepliesCount, {
-            unreadReplies: unreadReplies
-          });
-
-          _this6.onUnreadRepliesChangeCallbacks.forEach(function (callback) {
-            return callback(unreadRepliesCount, unreadReplies);
-          });
-        }
-      });
-    }
-  }, {
-    key: "subscribeToNewMessages",
-    value: function subscribeToNewMessages() {
-      var _this7 = this;
-
-      this.messagesSubscription = new MessagesSubscription_1.MessagesSubscription({
-        apiUrl: this.apiUrl,
-        socketUrl: this.socketUrl,
-        backendStaticUrl: this.backendStaticUrl,
-        token: this.authToken,
-        currentClientId: this.client.id,
-        onSubscribeSuccess: function onSubscribeSuccess() {
-          var roomData = {
-            room: _this7.room,
-            client: _this7.client
-          };
-          utilsCommon_1.logEvent(_this7.debug, 'Successfully subscribed to messages', roomData);
-
-          _this7.onConnectSuccessCallbacks.forEach(function (callback) {
-            return callback(roomData);
-          });
-        },
-        onSubscribeError: function onSubscribeError(data) {
-          utilsCommon_1.logEvent(_this7.debug, 'Failed to subscribe to messages', {
-            data: data
-          }, 'error');
-
-          _this7.onConnectErrorCallbacks.forEach(function (callback) {
-            return callback(data);
-          });
-        },
-        onMessage: function onMessage(message) {
-          utilsCommon_1.logEvent(_this7.debug, 'Received new message', message);
-
-          _this7.receivedMessages.push(message);
-
-          _this7.unreadMessagesCounter.setReceivedMessages(_this7.receivedMessages);
-
-          _this7.onMessageCallbacks.forEach(function (callback) {
-            return callback(message);
-          });
-        },
-        onUnsubscribe: function onUnsubscribe() {
-          utilsCommon_1.logEvent(_this7.debug, 'Unsubscribed from messages', {
-            room: _this7.room,
-            client: _this7.client
-          });
-        }
-      });
-    }
-  }, {
-    key: "sendMessage",
-    value: function sendMessage(params) {
-      var _this8 = this;
-
-      var text = params.text;
-      var attachments = params.attachments && params.attachments.length ? Array.from(params.attachments).filter(function (file) {
-        return file;
-      }) : [];
-      var responseToMessageId = typeof params.responseToMessageId === 'string' ? params.responseToMessageId : null;
-      var tempId = params.tempId;
-
-      if (text.trim() || attachments.length) {
-        return this.messagesSubscription.sendMessage({
-          text: text,
-          attachments: attachments,
-          responseToMessageId: responseToMessageId,
-          tempId: tempId
-        }).then(function (message) {
-          utilsCommon_1.logEvent(_this8.debug, 'Sent message', {
-            message: message,
-            params: params,
-            normalizedParams: {
-              text: text,
-              attachments: attachments,
-              responseToMessageId: responseToMessageId,
-              tempId: tempId
-            }
-          });
-
-          _this8.typingStatusSubscription.dispatchTypedText(false);
-
-          return message;
-        }).catch(function (error) {
-          utilsCommon_1.logEvent(_this8.debug, 'Failed to send message', error, 'error');
-          throw error;
-        });
-      } else {
-        var errorMessage = 'Either "text" or "attachment" property must not be empty';
-        utilsCommon_1.logEvent(this.debug, errorMessage, params, 'error');
+      if (returnPromise) {
         return new Promise(function (resolve, reject) {
           reject({
-            message: errorMessage,
-            params: params
+            message: message
           });
         });
       }
     }
   }, {
+    key: "areAnyOperatorsOnline",
+    get: function get() {
+      return this.operatorOnlineStatusSubscription.areAnyOperatorsOnline;
+    }
+  }, {
     key: "unreadMessagesCount",
     get: function get() {
-      return utilsCommon_1._get(this.unreadMessagesCounter, 'unreadMessagesCount') || 0;
+      return this.unreadMessagesCounter.unreadMessagesCount;
     }
   }, {
     key: "unreadRepliesCount",
     get: function get() {
-      return utilsCommon_1._get(this.unreadMessagesCounter, 'unreadRepliesCount') || 0;
+      return this.unreadMessagesCounter.unreadRepliesCount;
     }
   }, {
-    key: "unreadMessages",
+    key: "messageHistory",
     get: function get() {
-      return utilsCommon_1._get(this.unreadMessagesCounter, 'unreadMessages') || [];
+      return this.messageSubscription.messageHistory;
     }
   }, {
-    key: "unreadReplies",
+    key: "hasMessageHistoryBeenEverFetched",
     get: function get() {
-      return utilsCommon_1._get(this.unreadMessagesCounter, 'unreadReplies') || [];
+      return this.messageSubscription.hasMessageHistoryBeenEverFetched;
     }
   }, {
     key: "reachedBeginningOfMessageHistory",
     get: function get() {
-      return utilsCommon_1._get(this.messagesSubscription, 'reachedBeginningOfMessageHistory') || false;
+      return this.messageSubscription.reachedBeginningOfMessageHistory;
     }
   }]);
 
@@ -7557,7 +7864,7 @@ exports.ElixirChat = ElixirChat;
 if (typeof window !== 'undefined') {
   window.ElixirChat = ElixirChat;
 }
-},{"unique-names-generator":"Qz33","../utilsCommon":"EjGt","./serializers/serializeUser":"1lqy","./MessagesSubscription":"y8vH","./TypingStatusSubscription":"QERd","./OperatorOnlineStatusSubscription":"zgd1","./UnreadMessagesCounter":"xY1B","./ScreenshotTaker":"CLsL","./GraphQLClient":"1fv+"}],"7QCb":[function(require,module,exports) {
+},{"unique-names-generator":"Qz33","../utilsCommon":"EjGt","./serializers/serializeUser":"1lqy","./ScreenshotTaker":"CLsL","./UnreadMessagesCounter":"xY1B","./TypingStatusSubscription":"QERd","./OperatorOnlineStatusSubscription":"zgd1","./MessageSubscription":"jRw6","./GraphQLClient":"1fv+","./ElixirChatEventTypes":"Cteb"}],"7QCb":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {

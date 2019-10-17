@@ -8097,16 +8097,23 @@ function logEvent() {
   var type = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 'info';
 
   if (isDebug && window.console) {
-    var color = type === 'error' ? '#EB3223;' : '';
-    var messageConsoleStyles = "\n       font-weight: bold;\n       color: ".concat(color, "\n    ");
-    var infoButtonConsoleStyles = "\n      font-weight: normal;\n      text-decoration: underline;\n      color: ".concat(color, "\n    ");
-    var arrowConsoleStyles = "\n      font: 10px Arial;\n      padding-left: 3px;\n      color: ".concat(color, "\n    ");
+    var color = '';
+
+    if (type === 'error') {
+      color = '#EB3223';
+    } else if (type === 'event') {
+      color = /_ERROR$/i.test(message) ? '#eba4a7' : '#5ee9eb';
+    }
+
+    var messageConsoleStyles = "\n       font-weight: bold;\n       color: ".concat(color, ";\n    ");
+    var infoButtonConsoleStyles = "\n      font-weight: normal;\n      text-decoration: underline;\n      color: ".concat(color, ";\n    ");
+    var arrowConsoleStyles = "\n      font: 10px Arial;\n      padding-left: 3px;\n      color: ".concat(color, ";\n    ");
     var additionalDataConsoleStyles = "font-weight: bold;";
     console.groupCollapsed("%cElixirChat: ".concat(message, " %cInfo%c\u25BE"), messageConsoleStyles, infoButtonConsoleStyles, arrowConsoleStyles);
 
     if (type === 'error') {
       console.error(data);
-    } else if (_typeof(data) === 'object' && !(data instanceof Array)) {
+    } else if (data && _typeof(data) === 'object' && !(data instanceof Array)) {
       Object.keys(data).forEach(function (key) {
         console.log("%c".concat(key, ":\n"), additionalDataConsoleStyles, data[key], '\n');
       });
@@ -8202,6 +8209,25 @@ function detectPlatform() {
 }
 
 exports.detectPlatform = detectPlatform;
+
+function getJSONFromLocalStorage(key) {
+  var defaultValue = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+  var value = defaultValue;
+
+  try {
+    value = JSON.parse(localStorage.getItem(key));
+  } catch (e) {}
+
+  return value;
+}
+
+exports.getJSONFromLocalStorage = getJSONFromLocalStorage;
+
+function isWebImage(mimeType) {
+  return ['image/jpg', 'image/jpeg', 'image/png', 'image/gif'].includes(mimeType.toLowerCase());
+}
+
+exports.isWebImage = isWebImage;
 },{}],"J4Nk":[function(require,module,exports) {
 /*
 object-assign
@@ -9114,6 +9140,61 @@ var define;
 	}
 }());
 
+},{}],"zWqG":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.WIDGET_IFRAME_READY = 'WIDGET_IFRAME_READY';
+exports.WIDGET_RENDERED = 'WIDGET_RENDERED';
+exports.WIDGET_POPUP_OPEN = 'WIDGET_POPUP_OPEN';
+exports.WIDGET_POPUP_CLOSE = 'WIDGET_POPUP_CLOSE';
+exports.WIDGET_POPUP_TOGGLE = 'WIDGET_POPUP_TOGGLE';
+exports.WIDGET_POPUP_FOCUS = 'WIDGET_POPUP_FOCUS';
+exports.WIDGET_POPUP_BLUR = 'WIDGET_POPUP_BLUR';
+exports.WIDGET_MUTE = 'WIDGET_MUTE';
+exports.WIDGET_UNMUTE = 'WIDGET_UNMUTE';
+exports.SCREENSHOT_REQUEST_SUCCESS = 'SCREENSHOT_REQUEST_SUCCESS';
+exports.SCREENSHOT_REQUEST_ERROR = 'SCREENSHOT_REQUEST_ERROR';
+exports.REPLY_MESSAGE = 'REPLY_MESSAGE';
+exports.TEXTAREA_VERTICAL_RESIZE = 'TEXTAREA_VERTICAL_RESIZE';
+exports.IMAGE_PREVIEW_OPEN = 'IMAGE_PREVIEW_OPEN';
+exports.IMAGE_PREVIEW_CLOSE = 'IMAGE_PREVIEW_CLOSE';
+},{}],"Cteb":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.UNREAD_MESSAGES_CHANGE = 'UNREAD_MESSAGES_CHANGE';
+exports.UNREAD_REPLIES_CHANGE = 'UNREAD_REPLIES_CHANGE';
+exports.LAST_READ_MESSAGE_CHANGE = 'LAST_READ_MESSAGE_CHANGE';
+exports.UNREAD_MESSAGES_SUBSCRIBE_SUCCESS = 'UNREAD_MESSAGES_SUBSCRIBE_SUCCESS';
+exports.UNREAD_MESSAGES_SUBSCRIBE_ERROR = 'UNREAD_MESSAGES_SUBSCRIBE_ERROR';
+exports.UNREAD_FETCH_COUNTS_SUCCESS = 'UNREAD_FETCH_COUNTS_SUCCESS';
+exports.UNREAD_FETCH_COUNTS_ERROR = 'UNREAD_FETCH_COUNTS_ERROR';
+exports.JOIN_ROOM_SUCCESS = 'JOIN_ROOM_SUCCESS';
+exports.JOIN_ROOM_ERROR = 'JOIN_ROOM_ERROR';
+exports.OPERATOR_ONLINE_STATUS_CHANGE = 'OPERATOR_ONLINE_STATUS_CHANGE';
+exports.OPERATOR_ONLINE_STATUS_SUBSCRIBE_SUCCESS = 'OPERATOR_ONLINE_STATUS_SUBSCRIBE_SUCCESS';
+exports.OPERATOR_ONLINE_STATUS_SUBSCRIBE_ERROR = 'OPERATOR_ONLINE_STATUS_SUBSCRIBE_ERROR';
+exports.TYPING_STATUS_CHANGE = 'TYPING_STATUS_CHANGE';
+exports.TYPING_STATUS_SUBSCRIBE_SUCCESS = 'TYPING_STATUS_SUBSCRIBE_SUCCESS';
+exports.TYPING_STATUS_SUBSCRIBE_ERROR = 'TYPING_STATUS_SUBSCRIBE_ERROR';
+exports.MESSAGES_SUBSCRIBE_SUCCESS = 'MESSAGES_SUBSCRIBE_SUCCESS';
+exports.MESSAGES_SUBSCRIBE_ERROR = 'MESSAGES_SUBSCRIBE_ERROR';
+exports.MESSAGES_HISTORY_SET = 'MESSAGES_HISTORY_SET';
+exports.MESSAGES_HISTORY_APPEND_ONE = 'MESSAGES_HISTORY_APPEND_ONE';
+exports.MESSAGES_HISTORY_APPEND_MANY = 'MESSAGES_HISTORY_APPEND_MANY';
+exports.MESSAGES_HISTORY_PREPEND_ONE = 'MESSAGES_HISTORY_PREPEND_ONE';
+exports.MESSAGES_HISTORY_PREPEND_MANY = 'MESSAGES_HISTORY_PREPEND_MANY';
+exports.MESSAGES_HISTORY_CHANGE_ONE = 'MESSAGES_HISTORY_CHANGE_ONE';
+exports.MESSAGES_HISTORY_CHANGE_MANY = 'MESSAGES_HISTORY_CHANGE_MANY';
+exports.MESSAGES_FETCH_HISTORY_SUCCESS = 'MESSAGES_FETCH_HISTORY_SUCCESS';
+exports.MESSAGES_FETCH_HISTORY_INITIAL_SUCCESS = 'MESSAGES_FETCH_HISTORY_INITIAL_SUCCESS';
+exports.MESSAGES_FETCH_HISTORY_ERROR = 'MESSAGES_FETCH_HISTORY_ERROR';
+exports.MESSAGES_FETCH_HISTORY_INITIAL_ERROR = 'MESSAGES_FETCH_HISTORY_INITIAL_ERROR';
 },{}],"70rD":[function(require,module,exports) {
 
 },{}],"GpM8":[function(require,module,exports) {
@@ -9181,7 +9262,8 @@ exports.inflect = inflect;
 function inflectDayJSWeekDays(locale, formattedDateString) {
   if (locale === 'en-US') {
     return formattedDateString;
-  }
+  } // TODO: check out the proper way to customize date string in dayjs
+
 
   var updatedFormattedDateString = formattedDateString;
   var reDictRu = {
@@ -9225,7 +9307,12 @@ exports.unlockNotificationSoundAutoplay = unlockNotificationSoundAutoplay;
 
 function playNotificationSound() {
   var notification = new Audio(assets_1.default.notificationSound);
-  notification.play();
+
+  try {
+    notification.play();
+  } catch (e) {
+    console.error('Unable to play notification sound before any action was taken by the user in the current browser tab');
+  }
 }
 
 exports.playNotificationSound = playNotificationSound;
@@ -9235,12 +9322,6 @@ function generateFontFaceRule(fontFamily, fontWeight, fontUrl, format) {
 }
 
 exports.generateFontFaceRule = generateFontFaceRule;
-
-function isWebImage(mimeType) {
-  return ['image/jpg', 'image/jpeg', 'image/png', 'image/gif'].includes(mimeType.toLowerCase());
-}
-
-exports.isWebImage = isWebImage;
 
 function getHumanReadableFileSize(locale, sizeInBytes) {
   var unitsDict = {
@@ -9318,6 +9399,36 @@ function _getImageDimensions() {
 }
 
 exports.getImageDimensions = getImageDimensions;
+
+function scrollToElement(element) {
+  var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+  var callback = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : function () {};
+  var isSmooth = options.isSmooth,
+      position = options.position;
+
+  if (element && element.tagName) {
+    element.scrollIntoView({
+      behavior: isSmooth ? 'smooth' : 'auto',
+      block: position || 'center'
+    });
+
+    if (typeof IntersectionObserver !== 'undefined') {
+      var intersectionObserver = new IntersectionObserver(function (entries) {
+        if (entries[0].isIntersecting) {
+          intersectionObserver.unobserve(element);
+          callback();
+        }
+      });
+      intersectionObserver.observe(element);
+    } else {
+      setTimeout(function () {
+        callback && callback();
+      }, 300); // default callback timeout for browsers not supporting IntersectionObserver
+    }
+  }
+}
+
+exports.scrollToElement = scrollToElement;
 },{"./widget/DefaultWidget/assets":"GpM8"}],"vlE8":[function(require,module,exports) {
 "use strict";
 
@@ -10045,11 +10156,15 @@ Object.defineProperty(exports, "__esModule", {
 
 var utilsCommon_1 = require("../utilsCommon");
 
+var ElixirChatWidgetEventTypes_1 = require("../widget/ElixirChatWidgetEventTypes");
+
 var ScreenshotTaker =
 /*#__PURE__*/
 function () {
-  function ScreenshotTaker() {
+  function ScreenshotTaker(_ref) {
     var _this = this;
+
+    var elixirChat = _ref.elixirChat;
 
     _classCallCheck(this, ScreenshotTaker);
 
@@ -10063,6 +10178,9 @@ function () {
     this.height = 0;
 
     this.takeScreenshot = function () {
+      var _this$elixirChat = _this.elixirChat,
+          debug = _this$elixirChat.debug,
+          triggerEvent = _this$elixirChat.triggerEvent;
       return new Promise(function (resolve, reject) {
         _this.getMediaStream().then(function (stream) {
           _this.stream = stream;
@@ -10076,15 +10194,22 @@ function () {
 
               _this.stopMediaStream();
 
+              utilsCommon_1.logEvent(debug, 'Captured screenshot', screenshot);
+              triggerEvent(ElixirChatWidgetEventTypes_1.SCREENSHOT_REQUEST_SUCCESS, screenshot);
               resolve(screenshot);
             }, 500);
           };
 
           _this.video.play();
-        }).catch(reject);
+        }).catch(function (error) {
+          utilsCommon_1.logEvent(debug, 'Could not capture screenshot', error, 'error');
+          triggerEvent(ElixirChatWidgetEventTypes_1.SCREENSHOT_REQUEST_ERROR, error);
+          reject(error);
+        });
       });
     };
 
+    this.elixirChat = elixirChat;
     this.initialize();
   }
 
@@ -10167,8 +10292,14 @@ function () {
 
 exports.ScreenshotTaker = ScreenshotTaker;
 
-exports.getCompatibilityFallback = function () {
-  if (navigator.mediaDevices.getDisplayMedia) {
+exports.getScreenshotCompatibilityFallback = function () {
+  var getDisplayMedia;
+
+  try {
+    getDisplayMedia = navigator.mediaDevices.getDisplayMedia;
+  } catch (e) {}
+
+  if (getDisplayMedia) {
     return null;
   } else {
     var platform = utilsCommon_1.detectPlatform();
@@ -10189,12 +10320,28 @@ exports.getCompatibilityFallback = function () {
     }
   }
 };
-},{"../utilsCommon":"EjGt"}],"17A3":[function(require,module,exports) {
+},{"../utilsCommon":"EjGt","../widget/ElixirChatWidgetEventTypes":"zWqG"}],"17A3":[function(require,module,exports) {
 "use strict";
 
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
+
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
+
+function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
+
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
+
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
+
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
+
+function _iterableToArrayLimit(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -10250,6 +10397,10 @@ var utilsWidget_1 = require("../../utilsWidget");
 
 var ScreenshotTaker_1 = require("../../sdk/ScreenshotTaker");
 
+var ElixirChatWidgetEventTypes_1 = require("../ElixirChatWidgetEventTypes");
+
+var ElixirChatEventTypes_1 = require("../../sdk/ElixirChatEventTypes");
+
 var ChatMessages =
 /*#__PURE__*/
 function (_react_1$Component) {
@@ -10262,23 +10413,188 @@ function (_react_1$Component) {
 
     _this = _possibleConstructorReturn(this, _getPrototypeOf(ChatMessages).apply(this, arguments));
     _this.state = {
+      isLoading: true,
+      isLoadingError: false,
+      isLoadingPrecedingMessageHistory: false,
+      hasMessageHistoryEverBeenVisible: false,
       processedMessages: [],
       imagePreviews: [],
-      screenshotFallback: null,
-      highlightedMessageIds: []
+      screenshotFallback: null
     };
+    _this.scrollBlock = react_1.default.createRef();
+    _this.scrollBlockInner = react_1.default.createRef();
     _this.maxThumbnailSize = 256;
+    _this.messageChunkSize = 20;
+    _this.messageRefs = {};
+    _this.messagesWithinCurrentViewport = {};
+    _this.messagesAlreadyMarkedRead = {};
 
-    _this.setProcessedMessages = function (messages, highlightedMessageIds) {
+    _this.onMessageHistoryInitiallyBecomeVisible = function () {
+      var processedMessages = _this.state.processedMessages;
+
+      _this.setState({
+        hasMessageHistoryEverBeenVisible: true
+      });
+
+      _this.scrollToBottom();
+
+      var readMessages = processedMessages.filter(function (message) {
+        return !message.isUnread;
+      });
+      var messageToScrollTo = utilsCommon_1._last(readMessages) || processedMessages[0];
+      var messageToScrollToRef = _this.messageRefs[messageToScrollTo.id] || {};
+      setTimeout(function () {
+        utilsWidget_1.scrollToElement(messageToScrollToRef.current, {
+          isSmooth: true,
+          position: 'start'
+        });
+      }, 300);
+    };
+
+    _this.onMultipleMessagesBeingViewedSimultaneously = function (callback) {
+      var isThrottlingTimeoutRunning = false;
+      var messagesViewedSimultaneously = [];
+      requestAnimationFrame(function () {
+        _this.onMessageBeingViewed(function (messageId) {
+          messagesViewedSimultaneously.push(messageId);
+
+          if (!isThrottlingTimeoutRunning) {
+            isThrottlingTimeoutRunning = true;
+            setTimeout(function () {
+              callback(messagesViewedSimultaneously);
+              isThrottlingTimeoutRunning = false;
+              messagesViewedSimultaneously = [];
+            }, 1000);
+          }
+        });
+      });
+    };
+
+    _this.onMessageBeingViewed = function (callback) {
+      var scrollBlockHeight = _this.scrollBlock.current.offsetHeight;
+
+      if (scrollBlockHeight) {
+        // Zero scroll block height means popup is closed - therefore aborting watching
+        var maxConsiderableMessageHeight = scrollBlockHeight / 2;
+        Object.values(_this.messageRefs).filter(function (ref) {
+          return ref.isUnread && !ref.intersectionObserver;
+        }).forEach(function (ref) {
+          ref.intersectionObserver = _this.createMessageScrollObserver(ref.current, maxConsiderableMessageHeight, callback);
+        });
+      }
+    };
+
+    _this.createMessageScrollObserver = function (messageElement, maxConsiderableMessageHeight, callback) {
+      var delayToMarkMessageRead = 2 * 1000;
+      var observerOptions = {
+        root: _this.scrollBlock.current,
+        threshold: Math.min(maxConsiderableMessageHeight / messageElement.offsetHeight, 0.8)
+      };
+      var intersectionObserver = new IntersectionObserver(function (_ref) {
+        var _ref2 = _slicedToArray(_ref, 1),
+            entry = _ref2[0];
+
+        var messageElement = entry.target;
+        var messageId = messageElement.dataset.id;
+        var messageRef = _this.messageRefs[messageId];
+
+        if (_this.messagesAlreadyMarkedRead[messageId] || !messageRef.isUnread) {
+          return;
+        }
+
+        if (entry.isIntersecting) {
+          _this.messagesWithinCurrentViewport[messageId] = setTimeout(function () {
+            _this.messagesAlreadyMarkedRead[messageId] = true;
+            callback(messageId);
+          }, delayToMarkMessageRead);
+        } else {
+          clearTimeout(_this.messagesWithinCurrentViewport[messageId]);
+          delete _this.messagesWithinCurrentViewport[messageId];
+        }
+      }, observerOptions);
+      intersectionObserver.observe(messageElement);
+      return intersectionObserver;
+    };
+
+    _this.markLatestViewedMessageRead = function (messageIds) {
+      var elixirChatWidget = _this.props.elixirChatWidget;
+      var messagesSortedByTime = messageIds.map(function (messageId) {
+        return _this.messageRefs[messageId];
+      }).sort(function (a, b) {
+        var aTime = +new Date(a.timestamp);
+        var bTime = +new Date(b.timestamp);
+        return aTime < bTime ? -1 : 1;
+      });
+
+      var latestMessage = utilsCommon_1._last(messagesSortedByTime);
+
+      elixirChatWidget.setLastReadMessage(latestMessage.id);
+    };
+
+    _this.onMessageReceive = function (message) {
+      var elixirChatWidget = _this.props.elixirChatWidget;
+
+      var hasUserScroll = _this.hasUserScroll();
+
+      var shouldPlayNotificationSound = !message.sender.isCurrentClient && !elixirChatWidget.isWidgetMuted;
+      var shouldScrollMessagesToBottom = elixirChatWidget.isWidgetPopupOpen && elixirChatWidget.isWidgetPopupFocused && !hasUserScroll;
+
+      _this.setProcessedMessages([message], {
+        insertAfter: true
+      });
+
+      if (shouldScrollMessagesToBottom) {
+        _this.scrollToBottom();
+      }
+
+      if (shouldPlayNotificationSound) {
+        utilsWidget_1.playNotificationSound();
+      }
+    };
+
+    _this.setProcessedMessages = function (messages) {
+      var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      var insertBefore = params.insertBefore,
+          insertAfter = params.insertAfter;
+      var previousProcessedMessages = _this.state.processedMessages;
+      var previousImagePreviews = _this.state.imagePreviews;
+
+      var _this$processMessages = _this.processMessages(messages, insertAfter ? utilsCommon_1._last(previousProcessedMessages) : null),
+          processedMessages = _this$processMessages.processedMessages,
+          imagePreviews = _this$processMessages.imagePreviews;
+
+      var updatedProcessedMessages;
+      var updatedImagePreviews;
+
+      if (insertBefore) {
+        updatedProcessedMessages = [].concat(_toConsumableArray(processedMessages), _toConsumableArray(previousProcessedMessages));
+        updatedImagePreviews = [].concat(_toConsumableArray(imagePreviews), _toConsumableArray(previousImagePreviews));
+      } else if (insertAfter) {
+        updatedProcessedMessages = [].concat(_toConsumableArray(previousProcessedMessages), _toConsumableArray(processedMessages));
+        updatedImagePreviews = [].concat(_toConsumableArray(previousImagePreviews), _toConsumableArray(imagePreviews));
+      } else {
+        updatedProcessedMessages = processedMessages;
+        updatedImagePreviews = imagePreviews;
+      }
+
+      _this.setState({
+        processedMessages: updatedProcessedMessages,
+        imagePreviews: updatedImagePreviews
+      });
+
+      _this.onMultipleMessagesBeingViewedSimultaneously(_this.markLatestViewedMessageRead);
+    };
+
+    _this.processMessages = function (messages, precedingMessage) {
       var elixirChatWidget = _this.props.elixirChatWidget;
       var imagePreviews = [];
       var processedMessages = messages.map(function (message, i) {
         var processedMessage = Object.assign({}, message);
-        var previousMessage = messages[i - 1];
+        var previousMessage = messages[i - 1] || precedingMessage;
         var isFirstMessageInChat = !previousMessage && elixirChatWidget.reachedBeginningOfMessageHistory;
-        var isDayEarlier = previousMessage && dayjs_1.default(previousMessage.timestamp).isBefore(dayjs_1.default(message.timestamp).startOf('day'));
+        var isNextDayAfterPreviousMessage = previousMessage && dayjs_1.default(previousMessage.timestamp).isBefore(dayjs_1.default(message.timestamp).startOf('day'));
 
-        if (isDayEarlier || isFirstMessageInChat) {
+        if (isNextDayAfterPreviousMessage || isFirstMessageInChat) {
           processedMessage.prependDateTitle = true;
         }
 
@@ -10292,17 +10608,12 @@ function (_react_1$Component) {
           processedMessage.images = images;
         }
 
-        if (highlightedMessageIds.includes(processedMessage.id)) {
-          processedMessage.isHighlighted = true;
-        }
-
         return processedMessage;
       });
-
-      _this.setState({
+      return {
         processedMessages: processedMessages,
         imagePreviews: imagePreviews
-      });
+      };
     };
 
     _this.processAttachments = function (attachments, sender) {
@@ -10320,7 +10631,7 @@ function (_react_1$Component) {
           thumbnailHeight = attachment.height * thumbnailRatio;
         }
 
-        if (utilsWidget_1.isWebImage(attachment.contentType) && thumbnailWidth && thumbnailHeight) {
+        if (utilsCommon_1.isWebImage(attachment.contentType) && thumbnailWidth && thumbnailHeight) {
           images.push(Object.assign({}, attachment, {
             sender: sender,
             thumbnailUrl: thumbnailUrl,
@@ -10340,9 +10651,9 @@ function (_react_1$Component) {
     };
 
     _this.onImagePreviewClick = function (e, preview) {
-      var onImagePreviewOpen = _this.props.onImagePreviewOpen;
+      var elixirChatWidget = _this.props.elixirChatWidget;
       var imagePreviews = _this.state.imagePreviews;
-      onImagePreviewOpen(preview, imagePreviews);
+      elixirChatWidget.triggerEvent(ElixirChatWidgetEventTypes_1.IMAGE_PREVIEW_OPEN, preview, imagePreviews);
       e.preventDefault();
     };
 
@@ -10353,42 +10664,93 @@ function (_react_1$Component) {
       return message.sender.isCurrentClient && !hasText && !hasReply && !hasFiles;
     };
 
-    _this.scrollToMessage = function (message) {
-      var highlightedClassName = 'elixirchat-chat-messages__item--highlighted';
+    _this.onTakeScreenshotClick = function () {
+      var elixirChatWidget = _this.props.elixirChatWidget;
+      elixirChatWidget.togglePopup();
+      elixirChatWidget.takeScreenshot().then(function () {
+        elixirChatWidget.togglePopup();
+      }).catch(function () {
+        elixirChatWidget.togglePopup();
+      });
+    };
 
-      var messageDOMElement = _this.refs["message-".concat(message.id)];
+    _this.onMessagesScroll = function () {
+      var scrollBlock = _this.scrollBlock.current;
 
-      if (messageDOMElement) {
-        messageDOMElement.scrollIntoView({
-          behavior: 'smooth',
-          block: 'center'
-        });
-        messageDOMElement.classList.add(highlightedClassName);
-        setTimeout(function () {
-          messageDOMElement.classList.remove(highlightedClassName);
-        }, 1000);
+      if (scrollBlock.scrollTop <= 0) {
+        _this.loadPrecedingMessageHistory();
       }
     };
 
-    _this.onTakeScreenshotClick = function () {
-      var _this$props = _this.props,
-          elixirChatWidget = _this$props.elixirChatWidget,
-          onScreenshotRequestFulfilled = _this$props.onScreenshotRequestFulfilled;
-      elixirChatWidget.toggleChatVisibility();
-      elixirChatWidget.takeScreenshot().then(function (screenshot) {
-        onScreenshotRequestFulfilled(screenshot);
-        elixirChatWidget.toggleChatVisibility();
-      }).catch(function () {
-        elixirChatWidget.toggleChatVisibility();
+    _this.hasUserScroll = function () {
+      var scrollBlock = _this.scrollBlock.current;
+      return scrollBlock.scrollTop <= scrollBlock.scrollHeight - scrollBlock.offsetHeight - 30;
+    };
+
+    _this.scrollToBottom = function () {
+      requestAnimationFrame(function () {
+        _this.scrollBlock.current.scrollTop = _this.scrollBlock.current.scrollHeight;
       });
+      _this.scrollBlock.current.scrollTop = _this.scrollBlock.current.scrollHeight;
+    };
+
+    _this.onReplyOriginalMessageTextClick = function (messageId) {
+      var highlightedClassName = 'elixirchat-chat-messages__item--flashed';
+      var messageRef = _this.messageRefs[messageId] || {};
+      var messageElement = messageRef.current;
+      utilsWidget_1.scrollToElement(messageElement, {
+        isSmooth: true,
+        position: 'center'
+      }, function () {
+        messageElement.classList.add(highlightedClassName);
+        setTimeout(function () {
+          messageElement.classList.remove(highlightedClassName);
+        }, 1000);
+      });
+    };
+
+    _this.loadPrecedingMessageHistory = function () {
+      var elixirChatWidget = _this.props.elixirChatWidget;
+      var isLoadingPrecedingMessageHistory = _this.state.isLoadingPrecedingMessageHistory;
+      var scrollBlock = _this.scrollBlock.current;
+      var initialScrollHeight = scrollBlock.scrollHeight;
+
+      if (!isLoadingPrecedingMessageHistory && !elixirChatWidget.reachedBeginningOfMessageHistory) {
+        _this.setState({
+          isLoadingPrecedingMessageHistory: true
+        });
+
+        elixirChatWidget.fetchPrecedingMessageHistory(_this.messageChunkSize).finally(function () {
+          _this.setState({
+            isLoadingPrecedingMessageHistory: false
+          });
+
+          scrollBlock.scrollTop = scrollBlock.scrollHeight - initialScrollHeight;
+        });
+      }
+    };
+
+    _this.onReplyMessageClick = function (messageId) {
+      var elixirChatWidget = _this.props.elixirChatWidget;
+      elixirChatWidget.triggerEvent(ElixirChatWidgetEventTypes_1.REPLY_MESSAGE, messageId);
     };
 
     _this.renderKeyShortcut = function (keySequence) {
       return react_1.default.createElement(react_1.Fragment, null, keySequence.split(/\+/).map(function (key, index) {
         return react_1.default.createElement(react_1.Fragment, {
           key: index
-        }, !!index && '+', react_1.default.createElement("kbd", null, key));
+        }, Boolean(index) && '+', react_1.default.createElement("kbd", null, key));
       }));
+    };
+
+    _this.createMessageRef = function (messageElement, message) {
+      _this.messageRefs[message.id] = {
+        current: messageElement,
+        intersectionObserver: null,
+        id: message.id,
+        isUnread: message.isUnread,
+        timestamp: message.timestamp
+      };
     };
 
     return _this;
@@ -10399,55 +10761,97 @@ function (_react_1$Component) {
     value: function componentDidMount() {
       var _this2 = this;
 
-      var _this$props2 = this.props,
-          elixirChatWidget = _this$props2.elixirChatWidget,
-          messages = _this$props2.messages;
+      var elixirChatWidget = this.props.elixirChatWidget;
       dayjs_1.default.locale('ru');
       dayjs_1.default.extend(calendar_1.default);
-      var highlightedMessageIds = elixirChatWidget.unreadMessages.map(function (message) {
-        return message.id;
-      });
-      this.setProcessedMessages(messages, highlightedMessageIds);
       this.setState({
-        screenshotFallback: ScreenshotTaker_1.getCompatibilityFallback()
+        screenshotFallback: ScreenshotTaker_1.getScreenshotCompatibilityFallback()
       });
-      elixirChatWidget.onUnreadMessagesChange(function (unreadMessagesCounter, unreadMessages) {
-        var highlightedMessageIds = unreadMessages.map(function (message) {
-          return message.id;
-        });
+      elixirChatWidget.on(ElixirChatEventTypes_1.JOIN_ROOM_SUCCESS, function () {
+        elixirChatWidget.fetchMessageHistory(_this2.messageChunkSize);
+      });
+      elixirChatWidget.on(ElixirChatWidgetEventTypes_1.WIDGET_IFRAME_READY, function () {
+        elixirChatWidget.widgetIFrameDocument.body.addEventListener('click', utilsWidget_1.unlockNotificationSoundAutoplay);
+      });
+      elixirChatWidget.on(ElixirChatWidgetEventTypes_1.WIDGET_POPUP_OPEN, function () {
+        var hasMessageHistoryEverBeenVisible = _this2.state.hasMessageHistoryEverBeenVisible;
+
+        _this2.onMultipleMessagesBeingViewedSimultaneously(_this2.markLatestViewedMessageRead);
+
+        if (!hasMessageHistoryEverBeenVisible && elixirChatWidget.hasMessageHistoryBeenEverFetched) {
+          _this2.onMessageHistoryInitiallyBecomeVisible();
+        }
+      });
+      elixirChatWidget.on(ElixirChatEventTypes_1.MESSAGES_HISTORY_APPEND_ONE, this.onMessageReceive);
+      elixirChatWidget.on(ElixirChatEventTypes_1.MESSAGES_HISTORY_SET, function (messages) {
+        _this2.setProcessedMessages(messages);
 
         _this2.setState({
-          highlightedMessageIds: highlightedMessageIds
+          isLoading: false
+        });
+
+        if (elixirChatWidget.isWidgetPopupOpen) {
+          _this2.onMessageHistoryInitiallyBecomeVisible();
+        }
+      });
+      elixirChatWidget.on(ElixirChatEventTypes_1.MESSAGES_HISTORY_PREPEND_MANY, function (messages) {
+        _this2.setProcessedMessages(messages, {
+          insertBefore: true
         });
       });
-    }
-  }, {
-    key: "componentDidUpdate",
-    value: function componentDidUpdate(prevProps, prevState) {
-      var messages = this.props.messages;
-      var highlightedMessageIds = this.state.highlightedMessageIds;
-      var didMessagesChange = prevProps.messages !== messages;
-      var didHighlightedMessagesChange = prevState.highlightedMessageIds !== highlightedMessageIds;
+      elixirChatWidget.on(ElixirChatEventTypes_1.MESSAGES_HISTORY_CHANGE_ONE, function (changedMessage, messageHistory) {
+        _this2.setProcessedMessages(messageHistory);
+      });
+      elixirChatWidget.on(ElixirChatEventTypes_1.MESSAGES_HISTORY_CHANGE_MANY, function (messages) {
+        _this2.setProcessedMessages(messages);
+      });
+      elixirChatWidget.on([ElixirChatEventTypes_1.JOIN_ROOM_ERROR, ElixirChatEventTypes_1.MESSAGES_SUBSCRIBE_ERROR, ElixirChatEventTypes_1.MESSAGES_FETCH_HISTORY_INITIAL_ERROR], function () {
+        _this2.setState({
+          isLoading: false,
+          isLoadingError: true
+        });
+      });
+      elixirChatWidget.on(ElixirChatWidgetEventTypes_1.TEXTAREA_VERTICAL_RESIZE, function (textareaHeight) {
+        var hasUserScroll = _this2.hasUserScroll();
 
-      if (didMessagesChange || didHighlightedMessagesChange) {
-        this.setProcessedMessages(messages, highlightedMessageIds);
-      }
+        _this2.scrollBlock.current.style.bottom = textareaHeight + 'px';
+
+        if (!hasUserScroll) {
+          _this2.scrollToBottom();
+        }
+      });
     }
   }, {
     key: "render",
     value: function render() {
       var _this3 = this;
 
+      var elixirChatWidget = this.props.elixirChatWidget;
       var _this$state = this.state,
           processedMessages = _this$state.processedMessages,
-          screenshotFallback = _this$state.screenshotFallback;
-      var _this$props3 = this.props,
-          elixirChatWidget = _this$props3.elixirChatWidget,
-          onReplyMessage = _this$props3.onReplyMessage,
-          onSubmitRetry = _this$props3.onSubmitRetry;
+          screenshotFallback = _this$state.screenshotFallback,
+          isLoading = _this$state.isLoading,
+          isLoadingError = _this$state.isLoadingError,
+          isLoadingPrecedingMessageHistory = _this$state.isLoadingPrecedingMessageHistory;
       return react_1.default.createElement("div", {
-        className: "elixirchat-chat-messages"
-      }, processedMessages.map(function (message) {
+        className: "elixirchat-chat-scroll",
+        ref: this.scrollBlock,
+        onScroll: this.onMessagesScroll
+      }, react_1.default.createElement("i", {
+        className: classnames_1.default({
+          'elixirchat-chat-scroll-progress-bar': true,
+          'elixirchat-chat-scroll-progress-bar--animating': isLoadingPrecedingMessageHistory
+        })
+      }), react_1.default.createElement("div", {
+        className: "elixirchat-chat-messages",
+        ref: this.scrollBlockInner
+      }, isLoading && react_1.default.createElement("i", {
+        className: "elixirchat-chat-spinner"
+      }), isLoadingError && react_1.default.createElement("div", {
+        className: "elixirchat-chat-fatal-error"
+      }, "\u041E\u0448\u0438\u0431\u043A\u0430 \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0438. ", react_1.default.createElement("br", null), "\u041F\u043E\u0436\u0430\u043B\u0443\u0439\u0441\u0442\u0430, \u043F\u0435\u0440\u0435\u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u0435 \u0441\u0442\u0440\u0430\u043D\u0438\u0446\u0443 ", react_1.default.createElement("span", {
+        className: "elixirchat-chat-fatal-error--nowrap"
+      }, "\u0438\u043B\u0438 \u043D\u0430\u043F\u0438\u0448\u0438\u0442\u0435"), " \u0430\u0434\u043C\u0438\u043D\u0438\u0441\u0442\u0440\u0430\u0442\u043E\u0440\u0443 \u043D\u0430 support@elixir.chat."), processedMessages.map(function (message) {
         return react_1.default.createElement(react_1.Fragment, {
           key: message.id
         }, message.prependDateTitle && react_1.default.createElement("div", {
@@ -10458,30 +10862,29 @@ function (_react_1$Component) {
           lastWeek: 'D MMMM',
           sameElse: 'D MMMM'
         })), !message.isSystem && react_1.default.createElement("div", {
-          ref: "message-".concat(message.id),
           className: classnames_1.default({
             'elixirchat-chat-messages__item': true,
             'elixirchat-chat-messages__item--by-me': message.sender.isCurrentClient,
             'elixirchat-chat-messages__item--by-operator': message.sender.isOperator,
-            'elixirchat-chat-messages__item--highlighted': message.isHighlighted
-          })
+            'elixirchat-chat-messages__item--highlighted': message.isUnread
+          }),
+          ref: function ref(element) {
+            return _this3.createMessageRef(element, message);
+          },
+          "data-id": message.id
         }, !_this3.shouldHideMessageBalloon(message) && react_1.default.createElement("div", {
           className: "elixirchat-chat-messages__balloon",
           onDoubleClick: function onDoubleClick() {
-            return onReplyMessage(message.id);
+            return _this3.onReplyMessageClick(message.id);
           }
         }, !message.sender.isCurrentClient && react_1.default.createElement("div", {
           className: "elixirchat-chat-messages__sender"
-        }, message.sender.firstName, " ", message.sender.lastName), Boolean(message.responseToMessage) && react_1.default.createElement("div", {
+        }, message.sender.firstName, " ", message.sender.lastName, !message.sender.firstName && !message.sender.lastName && elixirChatWidget.widgetTitle), Boolean(message.responseToMessage) && react_1.default.createElement("div", {
           className: "elixirchat-chat-messages__reply-message",
           onClick: function onClick() {
-            return _this3.scrollToMessage(message.responseToMessage);
+            return _this3.onReplyOriginalMessageTextClick(message.responseToMessage.id);
           }
-        }, react_1.default.createElement("i", {
-          className: "elixirchat-chat-messages__reply-message-icon icon-reply-right"
-        }), message.responseToMessage.sender.firstName, "\xA0", message.responseToMessage.sender.lastName, "\xA0", react_1.default.createElement("span", {
-          title: message.responseToMessage.text
-        }, message.responseToMessage.text.substr(0, 100))), message.text && react_1.default.createElement("div", {
+        }, message.responseToMessage.sender.firstName, " ", message.responseToMessage.sender.lastName, " ", message.responseToMessage.text.substr(0, 100)), message.text && react_1.default.createElement("div", {
           className: "elixirchat-chat-messages__text"
         }, react_1.default.createElement(react_autolink_text2_1.default, {
           linkProps: {
@@ -10549,21 +10952,25 @@ function (_react_1$Component) {
           className: "elixirchat-chat-messages__submission-error",
           title: "\u041D\u0430\u0436\u043C\u0438\u0442\u0435, \u0447\u0442\u043E\u0431\u044B \u043E\u0442\u043F\u0440\u0430\u0432\u0438\u0442\u044C \u0435\u0449\u0435 \u0440\u0430\u0437",
           onClick: function onClick() {
-            return onSubmitRetry(message);
+            return elixirChatWidget.retrySendMessage(message);
           }
         }, "\u041D\u0435 \u043E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u043E"), !message.isSubmissionError && react_1.default.createElement(react_1.Fragment, null, !message.sender.isCurrentClient && dayjs_1.default(message.timestamp).format('H:mm'), !message.isSystem && react_1.default.createElement("span", {
           className: "elixirchat-chat-messages__reply-button",
           title: "\u0414\u043B\u044F \u043E\u0442\u0432\u0435\u0442\u0430 \u0442\u0430\u043A\u0436\u0435 \u043C\u043E\u0436\u043D\u043E \u0434\u0432\u0430\u0436\u0434\u044B \u043A\u043B\u0438\u043A\u043D\u0443\u0442\u044C \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435",
           onClick: function onClick() {
-            return onReplyMessage(message.id);
+            return _this3.onReplyMessageClick(message.id);
           }
         }, "\u041E\u0442\u0432\u0435\u0442\u0438\u0442\u044C"), message.sender.isCurrentClient && dayjs_1.default(message.timestamp).format('H:mm')))), message.isSystem && react_1.default.createElement("div", {
           className: classnames_1.default({
             'elixirchat-chat-messages__item': true,
             'elixirchat-chat-messages__item--by-operator': true,
             'elixirchat-chat-messages__item--system': true,
-            'elixirchat-chat-messages__item--highlighted': message.isHighlighted
-          })
+            'elixirchat-chat-messages__item--highlighted': message.isUnread
+          }),
+          ref: function ref(element) {
+            return _this3.createMessageRef(element, message);
+          },
+          "data-id": message.id
         }, react_1.default.createElement("div", {
           className: "elixirchat-chat-messages__balloon"
         }, react_1.default.createElement("div", {
@@ -10587,7 +10994,7 @@ function (_react_1$Component) {
         }, "\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439\u0442\u0435! \u041A\u0430\u043A \u043C\u044B \u043C\u043E\u0436\u0435\u043C \u0432\u0430\u043C \u043F\u043E\u043C\u043E\u0447\u044C?"))), react_1.default.createElement("div", {
           className: "elixirchat-chat-messages__bottom"
         }, dayjs_1.default(message.timestamp).format('H:mm'))));
-      }));
+      })));
     }
   }]);
 
@@ -10595,7 +11002,7 @@ function (_react_1$Component) {
 }(react_1.Component);
 
 exports.ChatMessages = ChatMessages;
-},{"react":"1n8/","classnames":"9qb7","dayjs":"3dZY","dayjs/plugin/calendar":"B5kD","dayjs/locale/ru":"7ZQM","react-autolink-text2":"7BCM","../../utilsCommon":"EjGt","../../utilsWidget":"4KO9","../../sdk/ScreenshotTaker":"CLsL"}],"SpjQ":[function(require,module,exports) {
+},{"react":"1n8/","classnames":"9qb7","dayjs":"3dZY","dayjs/plugin/calendar":"B5kD","dayjs/locale/ru":"7ZQM","react-autolink-text2":"7BCM","../../utilsCommon":"EjGt","../../utilsWidget":"4KO9","../../sdk/ScreenshotTaker":"CLsL","../ElixirChatWidgetEventTypes":"zWqG","../../sdk/ElixirChatEventTypes":"Cteb"}],"SpjQ":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -11084,6 +11491,10 @@ var utilsWidget_1 = require("../../utilsWidget");
 
 var ScreenshotTaker_1 = require("../../sdk/ScreenshotTaker");
 
+var ElixirChatWidgetEventTypes_1 = require("../ElixirChatWidgetEventTypes");
+
+var ElixirChatEventTypes_1 = require("../../sdk/ElixirChatEventTypes");
+
 var ChatTextarea =
 /*#__PURE__*/
 function (_react_1$Component) {
@@ -11099,132 +11510,57 @@ function (_react_1$Component) {
     _this.inputFile = react_1.default.createRef();
     _this.textarea = null;
     _this.state = {
-      screenshotFallback: null
+      screenshotFallback: null,
+      currentlyTypingUsers: [],
+      textareaText: '',
+      textareaAttachments: [],
+      textareaResponseToMessageId: null,
+      isDraggingAttachments: false
     };
 
-    _this.focusTextarea = function () {
-      setTimeout(function () {
-        _this.textarea.focus();
+    _this.onBodyDrag = function (e) {
+      e.preventDefault();
+
+      _this.setState({
+        isDraggingAttachments: true
       });
     };
 
-    _this.onTextareaChange = function (e) {
-      var _this$props = _this.props,
-          elixirChatWidget = _this$props.elixirChatWidget,
-          onChange = _this$props.onChange;
-      var textareaText = e.target.value;
-      elixirChatWidget.dispatchTypedText(textareaText);
-      onChange({
-        textareaText: textareaText
-      });
-    };
-
-    _this.onTextareaKeyDown = function (e) {
-      var _this$props2 = _this.props,
-          onMessageSubmit = _this$props2.onMessageSubmit,
-          onChange = _this$props2.onChange,
-          textareaText = _this$props2.textareaText,
-          textareaResponseToMessageId = _this$props2.textareaResponseToMessageId,
-          textareaAttachments = _this$props2.textareaAttachments;
-
-      if (e.keyCode === 13 && e.shiftKey === false) {
-        // Press "Enter" without holding Shift
-        e.preventDefault();
-
-        if (textareaText.trim() || textareaAttachments.length) {
-          onMessageSubmit({
-            textareaText: textareaText,
-            textareaResponseToMessageId: textareaResponseToMessageId,
-            textareaAttachments: textareaAttachments
-          });
-          onChange({
-            textareaText: '',
-            textareaResponseToMessageId: null,
-            textareaAttachments: []
-          });
-        }
-      }
-    };
-
-    _this.onRemoveReplyTo = function () {
-      _this.props.onChange({
-        textareaResponseToMessageId: null
-      });
-
-      _this.updateVerticalHeight();
-    };
-
-    _this.addAttachments =
+    _this.onBodyDrop =
     /*#__PURE__*/
     function () {
       var _ref = _asyncToGenerator(
       /*#__PURE__*/
-      regeneratorRuntime.mark(function _callee2(newAttachments) {
-        var _this$props3, textareaAttachments, onChange, enrichedNewAttachments;
-
-        return regeneratorRuntime.wrap(function _callee2$(_context2) {
+      regeneratorRuntime.mark(function _callee(e) {
+        var attachments;
+        return regeneratorRuntime.wrap(function _callee$(_context) {
           while (1) {
-            switch (_context2.prev = _context2.next) {
+            switch (_context.prev = _context.next) {
               case 0:
-                _this$props3 = _this.props, textareaAttachments = _this$props3.textareaAttachments, onChange = _this$props3.onChange;
-                enrichedNewAttachments = newAttachments.map(
-                /*#__PURE__*/
-                function () {
-                  var _ref2 = _asyncToGenerator(
-                  /*#__PURE__*/
-                  regeneratorRuntime.mark(function _callee(attachment) {
-                    var id, imageBlobUrl, dimensions;
-                    return regeneratorRuntime.wrap(function _callee$(_context) {
-                      while (1) {
-                        switch (_context.prev = _context.next) {
-                          case 0:
-                            id = utilsCommon_1.randomDigitStringId(6);
-                            imageBlobUrl = URL.createObjectURL(attachment.file);
-                            _context.next = 4;
-                            return utilsWidget_1.getImageDimensions(imageBlobUrl);
-
-                          case 4:
-                            dimensions = _context.sent;
-                            return _context.abrupt("return", Object.assign({}, attachment, dimensions, {
-                              id: id
-                            }));
-
-                          case 6:
-                          case "end":
-                            return _context.stop();
-                        }
-                      }
-                    }, _callee);
-                  }));
-
-                  return function (_x2) {
-                    return _ref2.apply(this, arguments);
+                e.preventDefault();
+                e.stopPropagation();
+                attachments = Array.from(e.dataTransfer.items || e.dataTransfer.files).filter(function (item) {
+                  return item.kind === 'file';
+                }).map(function (item) {
+                  var file = item.getAsFile();
+                  return {
+                    name: file.name,
+                    file: file
                   };
-                }());
-                _context2.t0 = onChange;
-                _context2.t1 = [];
-                _context2.t2 = _toConsumableArray(textareaAttachments);
-                _context2.t3 = _toConsumableArray;
-                _context2.next = 8;
-                return Promise.all(enrichedNewAttachments);
+                });
 
-              case 8:
-                _context2.t4 = _context2.sent;
-                _context2.t5 = (0, _context2.t3)(_context2.t4);
-                _context2.t6 = _context2.t1.concat.call(_context2.t1, _context2.t2, _context2.t5);
-                _context2.t7 = {
-                  textareaAttachments: _context2.t6
-                };
-                (0, _context2.t0)(_context2.t7);
+                _this.addAttachments(attachments);
 
-                _this.updateVerticalHeight();
+                _this.setState({
+                  isDraggingAttachments: false
+                });
 
-              case 14:
+              case 5:
               case "end":
-                return _context2.stop();
+                return _context.stop();
             }
           }
-        }, _callee2);
+        }, _callee);
       }));
 
       return function (_x) {
@@ -11232,17 +11568,147 @@ function (_react_1$Component) {
       };
     }();
 
+    _this.focusTextarea = function () {
+      requestAnimationFrame(function () {
+        _this.textarea.focus();
+      });
+    };
+
+    _this.onVerticalResize = function () {
+      var elixirChatWidget = _this.props.elixirChatWidget;
+      requestAnimationFrame(function () {
+        var containerElement = _this.container.current;
+
+        if (containerElement) {
+          elixirChatWidget.triggerEvent(ElixirChatWidgetEventTypes_1.TEXTAREA_VERTICAL_RESIZE, containerElement.offsetHeight);
+        }
+      });
+    };
+
+    _this.onTextareaChange = function (e) {
+      var elixirChatWidget = _this.props.elixirChatWidget;
+      var textareaText = e.target.value;
+      elixirChatWidget.dispatchTypedText(textareaText);
+      localStorage.setItem('elixirchat-typed-text', textareaText);
+
+      _this.setState({
+        textareaText: textareaText
+      });
+    };
+
+    _this.onTextareaKeyDown = function (e) {
+      var _this$state = _this.state,
+          textareaText = _this$state.textareaText,
+          textareaAttachments = _this$state.textareaAttachments,
+          textareaResponseToMessageId = _this$state.textareaResponseToMessageId;
+
+      if (e.keyCode === 13 && e.shiftKey === false) {
+        // Press "Enter" without holding Shift
+        e.preventDefault();
+
+        if (textareaText.trim() || textareaAttachments.length) {
+          _this.onMessageSubmit({
+            textareaText: textareaText,
+            textareaResponseToMessageId: textareaResponseToMessageId,
+            textareaAttachments: textareaAttachments
+          });
+
+          _this.setState({
+            textareaText: '',
+            textareaResponseToMessageId: null,
+            textareaAttachments: []
+          });
+
+          _this.onVerticalResize();
+        }
+      }
+    };
+
+    _this.onRemoveReplyTo = function () {
+      _this.setState({
+        textareaResponseToMessageId: null
+      });
+
+      _this.onVerticalResize();
+    };
+
+    _this.addAttachments =
+    /*#__PURE__*/
+    function () {
+      var _ref2 = _asyncToGenerator(
+      /*#__PURE__*/
+      regeneratorRuntime.mark(function _callee2(newAttachments) {
+        var textareaAttachments, enrichedNewAttachments, i, attachment, id, imageBlobUrl, dimensions;
+        return regeneratorRuntime.wrap(function _callee2$(_context2) {
+          while (1) {
+            switch (_context2.prev = _context2.next) {
+              case 0:
+                textareaAttachments = _this.state.textareaAttachments;
+                enrichedNewAttachments = [];
+                i = 0;
+
+              case 3:
+                if (!(i < newAttachments.length)) {
+                  _context2.next = 14;
+                  break;
+                }
+
+                attachment = newAttachments[i];
+                id = utilsCommon_1.randomDigitStringId(6);
+                imageBlobUrl = URL.createObjectURL(attachment.file);
+                _context2.next = 9;
+                return utilsWidget_1.getImageDimensions(imageBlobUrl);
+
+              case 9:
+                dimensions = _context2.sent;
+                enrichedNewAttachments.push({
+                  id: id,
+                  file: attachment.file,
+                  name: attachment.name,
+                  width: dimensions.width,
+                  height: dimensions.height,
+                  isScreenshot: attachment.isScreenshot
+                });
+
+              case 11:
+                i++;
+                _context2.next = 3;
+                break;
+
+              case 14:
+                _context2.next = 16;
+                return _this.setState({
+                  textareaAttachments: [].concat(_toConsumableArray(textareaAttachments), enrichedNewAttachments)
+                });
+
+              case 16:
+                _this.onVerticalResize();
+
+                _this.focusTextarea();
+
+              case 18:
+              case "end":
+                return _context2.stop();
+            }
+          }
+        }, _callee2);
+      }));
+
+      return function (_x2) {
+        return _ref2.apply(this, arguments);
+      };
+    }();
+
     _this.removeAttachment = function (attachmentId) {
-      var _this$props4 = _this.props,
-          textareaAttachments = _this$props4.textareaAttachments,
-          onChange = _this$props4.onChange;
-      onChange({
+      var textareaAttachments = _this.state.textareaAttachments;
+
+      _this.setState({
         textareaAttachments: textareaAttachments.filter(function (item) {
           return item.id !== attachmentId;
         })
       });
 
-      _this.updateVerticalHeight();
+      _this.onVerticalResize();
     };
 
     _this.handleAttachmentPaste = function (e) {
@@ -11262,11 +11728,9 @@ function (_react_1$Component) {
     };
 
     _this.onScreenShotClick = function () {
-      var _this$props5 = _this.props,
-          elixirChatWidget = _this$props5.elixirChatWidget,
-          onChange = _this$props5.onChange,
-          textareaText = _this$props5.textareaText;
-      elixirChatWidget.toggleChatVisibility();
+      var elixirChatWidget = _this.props.elixirChatWidget;
+      var textareaText = _this.state.textareaText;
+      elixirChatWidget.togglePopup();
       elixirChatWidget.takeScreenshot().then(function (screenshot) {
         _this.addAttachments([{
           name: 'Скриншот экрана',
@@ -11275,66 +11739,62 @@ function (_react_1$Component) {
         }]);
 
         var updatedText = textareaText.trim() ? textareaText : 'Вот скриншот моего экрана';
-        onChange({
+
+        _this.setState({
           textareaText: updatedText
         });
-        elixirChatWidget.toggleChatVisibility();
+
+        elixirChatWidget.togglePopup();
       }).catch(function () {
-        elixirChatWidget.toggleChatVisibility();
+        elixirChatWidget.togglePopup();
       });
     };
 
     _this.onInputFileChange = function (e) {
-      var textareaAttachments = Array.from(e.target.files).map(function (file) {
+      var attachments = Array.from(e.target.files).map(function (file) {
         return {
           name: file.name,
           file: file
         };
       });
 
-      _this.addAttachments(textareaAttachments);
+      _this.addAttachments(attachments);
 
       _this.inputFile.current.value = '';
     };
 
-    _this.updateVerticalHeight =
+    _this.onMessageSubmit =
     /*#__PURE__*/
-    function () {
-      var _ref3 = _asyncToGenerator(
-      /*#__PURE__*/
-      regeneratorRuntime.mark(function _callee3(options) {
-        var onVerticalResize, containerElement, newHeight;
-        return regeneratorRuntime.wrap(function _callee3$(_context3) {
-          while (1) {
-            switch (_context3.prev = _context3.next) {
-              case 0:
-                onVerticalResize = _this.props.onVerticalResize;
-                containerElement = _this.container.current;
+    _asyncToGenerator(
+    /*#__PURE__*/
+    regeneratorRuntime.mark(function _callee3() {
+      var elixirChatWidget, _this$state2, textareaText, textareaResponseToMessageId, textareaAttachments;
 
-                if (containerElement) {
-                  _context3.next = 4;
-                  break;
-                }
+      return regeneratorRuntime.wrap(function _callee3$(_context3) {
+        while (1) {
+          switch (_context3.prev = _context3.next) {
+            case 0:
+              elixirChatWidget = _this.props.elixirChatWidget;
+              _this$state2 = _this.state, textareaText = _this$state2.textareaText, textareaResponseToMessageId = _this$state2.textareaResponseToMessageId, textareaAttachments = _this$state2.textareaAttachments;
 
-                return _context3.abrupt("return");
+              if (textareaText.trim() || textareaAttachments.length) {
+                elixirChatWidget.sendMessage({
+                  text: textareaText,
+                  attachments: textareaAttachments,
+                  responseToMessageId: textareaResponseToMessageId,
+                  appendConditionally: true
+                });
+                elixirChatWidget.dispatchTypedText(false);
+                localStorage.removeItem('elixirchat-typed-text');
+              }
 
-              case 4:
-                newHeight = containerElement.offsetHeight;
-                onVerticalResize(newHeight, options);
-
-              case 6:
-              case "end":
-                return _context3.stop();
-            }
+            case 3:
+            case "end":
+              return _context3.stop();
           }
-        }, _callee3);
-      }));
-
-      return function (_x3) {
-        return _ref3.apply(this, arguments);
-      };
-    }();
-
+        }
+      }, _callee3);
+    }));
     return _this;
   }
 
@@ -11344,60 +11804,73 @@ function (_react_1$Component) {
       var _this2 = this;
 
       var elixirChatWidget = this.props.elixirChatWidget;
-      elixirChatWidget.onIFrameContentMounted(function () {
-        if (elixirChatWidget.widgetIsVisible) {
+      elixirChatWidget.on(ElixirChatWidgetEventTypes_1.WIDGET_IFRAME_READY, function () {
+        elixirChatWidget.widgetIFrameDocument.body.addEventListener('dragover', _this2.onBodyDrag);
+        elixirChatWidget.widgetIFrameDocument.body.addEventListener('drop', _this2.onBodyDrop);
+      });
+      elixirChatWidget.on(ElixirChatEventTypes_1.TYPING_STATUS_SUBSCRIBE_SUCCESS, function () {
+        var textareaText = localStorage.getItem('elixirchat-typed-text') || '';
+        elixirChatWidget.dispatchTypedText(textareaText);
+
+        _this2.setState({
+          textareaText: textareaText
+        });
+      });
+      elixirChatWidget.on(ElixirChatWidgetEventTypes_1.WIDGET_RENDERED, function () {
+        if (elixirChatWidget.isWidgetPopupOpen) {
           _this2.focusTextarea();
         }
       });
-      elixirChatWidget.onToggleChatVisibility(function (isOpen) {
-        if (isOpen) {
-          _this2.updateVerticalHeight({
-            forceScrollToBottom: true
-          });
+      elixirChatWidget.on(ElixirChatWidgetEventTypes_1.WIDGET_POPUP_OPEN, function () {
+        _this2.onVerticalResize();
 
-          _this2.focusTextarea();
-        }
+        _this2.focusTextarea();
+      });
+      elixirChatWidget.on(ElixirChatWidgetEventTypes_1.IMAGE_PREVIEW_CLOSE, function () {
+        return _this2.focusTextarea;
+      });
+      elixirChatWidget.on(ElixirChatEventTypes_1.TYPING_STATUS_CHANGE, function (currentlyTypingUsers) {
+        _this2.setState({
+          currentlyTypingUsers: currentlyTypingUsers
+        });
+      });
+      elixirChatWidget.on(ElixirChatWidgetEventTypes_1.REPLY_MESSAGE, function (messageId) {
+        _this2.setState({
+          textareaResponseToMessageId: messageId
+        });
+
+        _this2.onVerticalResize();
+
+        _this2.focusTextarea();
       });
       this.setState({
-        screenshotFallback: ScreenshotTaker_1.getCompatibilityFallback()
+        screenshotFallback: ScreenshotTaker_1.getScreenshotCompatibilityFallback()
       });
     }
   }, {
-    key: "componentDidUpdate",
-    value: function componentDidUpdate(prevProps) {
-      var _this$props6 = this.props,
-          textareaAttachments = _this$props6.textareaAttachments,
-          textareaResponseToMessageId = _this$props6.textareaResponseToMessageId,
-          isImagePreviewOpen = _this$props6.isImagePreviewOpen;
-      var didResponseToMessageIdChange = textareaResponseToMessageId !== prevProps.textareaResponseToMessageId;
-      var didAttachmentsChange = textareaAttachments !== prevProps.textareaAttachments;
-      var didImagePreviewClose = !isImagePreviewOpen && prevProps.isImagePreviewOpen;
-
-      if (didResponseToMessageIdChange || didAttachmentsChange) {
-        this.updateVerticalHeight();
-        this.focusTextarea();
-      }
-
-      if (didImagePreviewClose) {
-        this.focusTextarea();
-      }
+    key: "componentWillUnmount",
+    value: function componentWillUnmount() {
+      var elixirChatWidget = this.props.elixirChatWidget;
+      elixirChatWidget.widgetIFrameDocument.body.removeEventListener('dragover', this.onBodyDrag);
+      elixirChatWidget.widgetIFrameDocument.body.removeEventListener('drop', this.onBodyDrop);
     }
   }, {
     key: "render",
     value: function render() {
       var _this3 = this;
 
-      var screenshotFallback = this.state.screenshotFallback;
-      var _this$props7 = this.props,
-          messages = _this$props7.messages,
-          textareaText = _this$props7.textareaText,
-          textareaResponseToMessageId = _this$props7.textareaResponseToMessageId,
-          textareaAttachments = _this$props7.textareaAttachments,
-          currentlyTypingUsers = _this$props7.currentlyTypingUsers;
-      var responseToMessage = messages.filter(function (message) {
+      var elixirChatWidget = this.props.elixirChatWidget;
+      var _this$state3 = this.state,
+          textareaText = _this$state3.textareaText,
+          textareaAttachments = _this$state3.textareaAttachments,
+          textareaResponseToMessageId = _this$state3.textareaResponseToMessageId,
+          currentlyTypingUsers = _this$state3.currentlyTypingUsers,
+          screenshotFallback = _this$state3.screenshotFallback,
+          isDraggingAttachments = _this$state3.isDraggingAttachments;
+      var responseToMessage = elixirChatWidget.messageHistory.filter(function (message) {
         return message.id === textareaResponseToMessageId;
       })[0];
-      return react_1.default.createElement("div", {
+      return react_1.default.createElement(react_1.Fragment, null, react_1.default.createElement("div", {
         className: "elixirchat-chat-textarea",
         ref: this.container
       }, Boolean(currentlyTypingUsers.length) && react_1.default.createElement("div", {
@@ -11446,7 +11919,7 @@ function (_react_1$Component) {
         },
         minRows: 1,
         maxRows: 5,
-        onHeightChange: this.updateVerticalHeight,
+        onHeightChange: this.onVerticalResize,
         onPaste: this.handleAttachmentPaste,
         onChange: this.onTextareaChange,
         onKeyDown: this.onTextareaKeyDown,
@@ -11472,7 +11945,13 @@ function (_react_1$Component) {
             return _this3.removeAttachment(attachment.id);
           }
         }));
-      })));
+      }))), isDraggingAttachments && react_1.default.createElement(react_1.Fragment, null, react_1.default.createElement("div", {
+        className: "elixirchat-chat-draggable-backdrop"
+      }), react_1.default.createElement("div", {
+        className: "elixirchat-chat-draggable-area"
+      }, react_1.default.createElement("i", {
+        className: "elixirchat-chat-draggable-area__icon icon-file"
+      }), react_1.default.createElement("div", null, "\u041F\u0435\u0440\u0435\u0442\u0430\u0449\u0438\u0442\u0435 \u0444\u0430\u0439\u043B\u044B \u0434\u043B\u044F \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0438"))));
     }
   }]);
 
@@ -11480,18 +11959,139 @@ function (_react_1$Component) {
 }(react_1.Component);
 
 exports.ChatTextarea = ChatTextarea;
-},{"react":"1n8/","classnames":"9qb7","react-textarea-autosize":"0Ldd","../../utilsCommon":"EjGt","../../utilsWidget":"4KO9","../../sdk/ScreenshotTaker":"CLsL"}],"8tJY":[function(require,module,exports) {
+},{"react":"1n8/","classnames":"9qb7","react-textarea-autosize":"0Ldd","../../utilsCommon":"EjGt","../../utilsWidget":"4KO9","../../sdk/ScreenshotTaker":"CLsL","../ElixirChatWidgetEventTypes":"zWqG","../../sdk/ElixirChatEventTypes":"Cteb"}],"8tJY":[function(require,module,exports) {
 "use strict";
 
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
 
-function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+var __importStar = this && this.__importStar || function (mod) {
+  if (mod && mod.__esModule) return mod;
+  var result = {};
+  if (mod != null) for (var k in mod) {
+    if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+  }
+  result["default"] = mod;
+  return result;
+};
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var react_1 = __importStar(require("react"));
+
+var ChatMessages_1 = require("./ChatMessages");
+
+var ChatTextarea_1 = require("./ChatTextarea");
+
+var ElixirChatWidgetEventTypes_1 = require("../ElixirChatWidgetEventTypes");
+
+var ElixirChatEventTypes_1 = require("../../sdk/ElixirChatEventTypes");
+
+var Chat =
+/*#__PURE__*/
+function (_react_1$Component) {
+  _inherits(Chat, _react_1$Component);
+
+  function Chat() {
+    var _this;
+
+    _classCallCheck(this, Chat);
+
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(Chat).apply(this, arguments));
+    _this.state = {
+      widgetTitle: '',
+      isNotificationSoundMuted: false,
+      areAnyOperatorsOnline: false
+    };
+    return _this;
+  }
+
+  _createClass(Chat, [{
+    key: "componentDidMount",
+    value: function componentDidMount() {
+      var _this2 = this;
+
+      var elixirChatWidget = this.props.elixirChatWidget;
+      elixirChatWidget.on(ElixirChatEventTypes_1.JOIN_ROOM_SUCCESS, function () {
+        _this2.setState({
+          widgetTitle: elixirChatWidget.widgetTitle
+        });
+      });
+      elixirChatWidget.on(ElixirChatWidgetEventTypes_1.WIDGET_MUTE, function () {
+        return _this2.setState({
+          isNotificationSoundMuted: true
+        });
+      });
+      elixirChatWidget.on(ElixirChatWidgetEventTypes_1.WIDGET_UNMUTE, function () {
+        return _this2.setState({
+          isNotificationSoundMuted: false
+        });
+      });
+      elixirChatWidget.on(ElixirChatEventTypes_1.OPERATOR_ONLINE_STATUS_CHANGE, function (areAnyOperatorsOnline) {
+        _this2.setState({
+          areAnyOperatorsOnline: areAnyOperatorsOnline
+        });
+      });
+    }
+  }, {
+    key: "render",
+    value: function render() {
+      var elixirChatWidget = this.props.elixirChatWidget;
+      var _this$state = this.state,
+          widgetTitle = _this$state.widgetTitle,
+          areAnyOperatorsOnline = _this$state.areAnyOperatorsOnline,
+          isNotificationSoundMuted = _this$state.isNotificationSoundMuted;
+      return react_1.default.createElement("div", {
+        className: "elixirchat-chat-container"
+      }, react_1.default.createElement("h2", {
+        className: "elixirchat-chat-header"
+      }, widgetTitle && react_1.default.createElement(react_1.Fragment, null, areAnyOperatorsOnline && react_1.default.createElement("i", {
+        className: "elixirchat-chat-header__indicator"
+      }), widgetTitle), react_1.default.createElement("button", {
+        className: "elixirchat-chat-header__mute",
+        onClick: elixirChatWidget.toggleMute,
+        title: isNotificationSoundMuted ? 'Включить звук уведомлений' : 'Выключить звук уведомлений'
+      }, react_1.default.createElement("i", {
+        className: isNotificationSoundMuted ? 'icon-speaker-mute' : 'icon-speaker'
+      })), react_1.default.createElement("button", {
+        className: "elixirchat-chat-header__close",
+        title: "\u0417\u0430\u043A\u0440\u044B\u0442\u044C \u0447\u0430\u0442",
+        onClick: elixirChatWidget.togglePopup
+      }, react_1.default.createElement("i", {
+        className: "icon-close-thin"
+      }))), react_1.default.createElement(ChatMessages_1.ChatMessages, {
+        elixirChatWidget: elixirChatWidget
+      }), react_1.default.createElement(ChatTextarea_1.ChatTextarea, {
+        elixirChatWidget: elixirChatWidget
+      }));
+    }
+  }]);
+
+  return Chat;
+}(react_1.Component);
+
+exports.Chat = Chat;
+},{"react":"1n8/","./ChatMessages":"17A3","./ChatTextarea":"Bm76","../ElixirChatWidgetEventTypes":"zWqG","../../sdk/ElixirChatEventTypes":"Cteb"}],"0q3/":[function(require,module,exports) {
+"use strict";
+
+function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
 
@@ -11529,725 +12129,9 @@ Object.defineProperty(exports, "__esModule", {
 
 var react_1 = __importStar(require("react"));
 
-var utilsCommon_1 = require("../../utilsCommon");
-
-var utilsWidget_1 = require("../../utilsWidget");
-
-var ChatMessages_1 = require("./ChatMessages");
-
-var ChatTextarea_1 = require("./ChatTextarea");
-
-var Chat =
-/*#__PURE__*/
-function (_react_1$Component) {
-  _inherits(Chat, _react_1$Component);
-
-  function Chat() {
-    var _this;
-
-    _classCallCheck(this, Chat);
-
-    _this = _possibleConstructorReturn(this, _getPrototypeOf(Chat).apply(this, arguments));
-    _this.container = react_1.default.createRef();
-    _this.scrollBlock = react_1.default.createRef();
-    _this.messageChunkSize = 100; // TODO: reduce to 20 when unread message count implemented in server-side
-
-    _this.state = {
-      messages: [],
-      room: {},
-      client: {},
-      currentlyTypingUsers: [],
-      textareaText: '',
-      textareaResponseToMessageId: null,
-      textareaAttachments: [],
-      isLoading: true,
-      isLoadingError: false,
-      isLoadingPreviousMessages: false,
-      isDraggingAttachments: false,
-      widgetTitle: '',
-      areOperatorsOnline: false,
-      areNotificationsMuted: false
-    };
-
-    _this.onBodyDrag = function (e) {
-      e.preventDefault();
-
-      _this.setState({
-        isDraggingAttachments: true
-      });
-    };
-
-    _this.onBodyDrop =
-    /*#__PURE__*/
-    function () {
-      var _ref = _asyncToGenerator(
-      /*#__PURE__*/
-      regeneratorRuntime.mark(function _callee(e) {
-        var textareaAttachments, attachmentFiles, i, file, imageBlobUrl, dimensions;
-        return regeneratorRuntime.wrap(function _callee$(_context) {
-          while (1) {
-            switch (_context.prev = _context.next) {
-              case 0:
-                e.preventDefault();
-                e.stopPropagation();
-                textareaAttachments = _toConsumableArray(_this.state.textareaAttachments);
-
-                if (e.dataTransfer.items) {
-                  attachmentFiles = Array.from(e.dataTransfer.items).filter(function (item) {
-                    return item.kind === 'file';
-                  }).map(function (item) {
-                    return item.getAsFile();
-                  });
-                } else {
-                  attachmentFiles = Array.from(e.dataTransfer.files);
-                }
-
-                i = 0;
-
-              case 5:
-                if (!(i < attachmentFiles.length)) {
-                  _context.next = 15;
-                  break;
-                }
-
-                file = attachmentFiles[i];
-                imageBlobUrl = URL.createObjectURL(attachmentFiles[i]);
-                _context.next = 10;
-                return utilsWidget_1.getImageDimensions(imageBlobUrl);
-
-              case 10:
-                dimensions = _context.sent;
-                textareaAttachments.push(Object.assign({
-                  id: utilsCommon_1.randomDigitStringId(6),
-                  name: file.name,
-                  file: file
-                }, dimensions));
-
-              case 12:
-                i++;
-                _context.next = 5;
-                break;
-
-              case 15:
-                _this.setState({
-                  textareaAttachments: textareaAttachments,
-                  isDraggingAttachments: false
-                });
-
-              case 16:
-              case "end":
-                return _context.stop();
-            }
-          }
-        }, _callee);
-      }));
-
-      return function (_x) {
-        return _ref.apply(this, arguments);
-      };
-    }();
-
-    _this.loadPreviousMessages = function (callback) {
-      var _this$state = _this.state,
-          messages = _this$state.messages,
-          isLoadingPreviousMessages = _this$state.isLoadingPreviousMessages;
-      var elixirChatWidget = _this.props.elixirChatWidget;
-
-      if (!isLoadingPreviousMessages && !elixirChatWidget.reachedBeginningOfMessageHistory) {
-        _this.setState({
-          isLoadingPreviousMessages: true
-        });
-
-        elixirChatWidget.fetchMessageHistory(_this.messageChunkSize, messages[0].cursor).then(function (history) {
-          var updatedMessages = [].concat(_toConsumableArray(history), _toConsumableArray(messages));
-
-          _this.setState({
-            messages: updatedMessages,
-            isLoadingPreviousMessages: false
-          }, callback);
-        });
-      }
-    };
-
-    _this.onMessagesScroll = function () {
-      var scrollBlock = _this.scrollBlock.current;
-
-      if (scrollBlock.scrollTop <= 0) {
-        var initialScrollHeight = scrollBlock.scrollHeight;
-
-        _this.loadPreviousMessages(function () {
-          setTimeout(function () {
-            scrollBlock.scrollTop = scrollBlock.scrollHeight - initialScrollHeight;
-          }, 0);
-        });
-      }
-    };
-
-    _this.hasUserScroll = function () {
-      var scrollBlock = _this.scrollBlock.current;
-      return scrollBlock.scrollTop !== scrollBlock.scrollHeight - scrollBlock.offsetHeight;
-    };
-
-    _this.scrollToBottom = function () {
-      _this.scrollBlock.current.scrollTop = _this.scrollBlock.current.scrollHeight;
-    };
-
-    _this.onTextareaVerticalResize = function (newTextareaHeight) {
-      var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-
-      var hasUserScroll = _this.hasUserScroll();
-
-      _this.scrollBlock.current.style.bottom = newTextareaHeight + 'px';
-
-      if (!hasUserScroll || options.forceScrollToBottom) {
-        _this.scrollToBottom();
-      }
-    };
-
-    _this.onMessageSubmit =
-    /*#__PURE__*/
-    _asyncToGenerator(
-    /*#__PURE__*/
-    regeneratorRuntime.mark(function _callee2() {
-      var elixirChatWidget, _this$state2, textareaText, textareaResponseToMessageId, textareaAttachments, messages, hasUserScroll, temporaryMessage;
-
-      return regeneratorRuntime.wrap(function _callee2$(_context2) {
-        while (1) {
-          switch (_context2.prev = _context2.next) {
-            case 0:
-              elixirChatWidget = _this.props.elixirChatWidget;
-              _this$state2 = _this.state, textareaText = _this$state2.textareaText, textareaResponseToMessageId = _this$state2.textareaResponseToMessageId, textareaAttachments = _this$state2.textareaAttachments, messages = _this$state2.messages;
-
-              if (!(textareaText.trim() || textareaAttachments.length)) {
-                _context2.next = 9;
-                break;
-              }
-
-              hasUserScroll = _this.hasUserScroll();
-              temporaryMessage = _this.generateTemporaryMessage({
-                textareaText: textareaText,
-                textareaResponseToMessageId: textareaResponseToMessageId,
-                textareaAttachments: textareaAttachments
-              });
-              _context2.next = 7;
-              return _this.setState({
-                messages: [].concat(_toConsumableArray(messages), [temporaryMessage])
-              });
-
-            case 7:
-              if (!hasUserScroll) {
-                _this.scrollToBottom();
-              }
-
-              elixirChatWidget.sendMessage({
-                text: textareaText,
-                responseToMessageId: textareaResponseToMessageId,
-                attachments: textareaAttachments.map(function (attachment) {
-                  return attachment.file;
-                }),
-                tempId: temporaryMessage.tempId
-              }).catch(function () {
-                _this.changeMessageById(temporaryMessage.id, {
-                  isSubmitting: false,
-                  isSubmissionError: true
-                });
-
-                elixirChatWidget.dispatchTypedText(false);
-              });
-
-            case 9:
-            case "end":
-              return _context2.stop();
-          }
-        }
-      }, _callee2);
-    }));
-
-    _this.changeMessageById = function (messageId, data) {
-      var messages = _this.state.messages;
-      var changedMessages = messages.map(function (message) {
-        if (message.id === messageId) {
-          var changedMessage = Object.assign({}, message);
-
-          for (var key in data) {
-            changedMessage[key] = data[key];
-          }
-
-          return changedMessage;
-        } else {
-          return Object.assign({}, message);
-        }
-      });
-
-      _this.setState({
-        messages: changedMessages
-      });
-    };
-
-    _this.replaceTemporaryMessageWithActualOne = function (newMessage) {
-      var messages = _this.state.messages;
-
-      var temporaryMessage = utilsCommon_1._last(messages.filter(function (message) {
-        return message.tempId === newMessage.tempId;
-      }));
-
-      if (temporaryMessage) {
-        _this.changeMessageById(temporaryMessage.id, newMessage);
-      } else {
-        _this.setState({
-          messages: [].concat(_toConsumableArray(_this.state.messages), [newMessage])
-        });
-      }
-    };
-
-    _this.generateTemporaryMessage = function (_ref3) {
-      var textareaText = _ref3.textareaText,
-          textareaResponseToMessageId = _ref3.textareaResponseToMessageId,
-          textareaAttachments = _ref3.textareaAttachments;
-      var messages = _this.state.messages;
-      var responseToMessage = messages.filter(function (message) {
-        return message.id === textareaResponseToMessageId;
-      })[0];
-      var attachments = textareaAttachments.map(function (attachment) {
-        var id = utilsCommon_1.randomDigitStringId(6);
-        var originalFileObject = attachment.file;
-        var contentType = originalFileObject.type;
-        var url = URL.createObjectURL(originalFileObject);
-        var thumbnails = [];
-
-        if (utilsWidget_1.isWebImage(contentType) && attachment.width && attachment.height) {
-          thumbnails = [{
-            id: id,
-            url: url
-          }];
-        }
-
-        return {
-          id: id,
-          url: url,
-          originalFileObject: originalFileObject,
-          contentType: contentType,
-          thumbnails: thumbnails,
-          name: attachment.name,
-          width: attachment.width,
-          height: attachment.height,
-          bytesSize: originalFileObject.size
-        };
-      });
-      return {
-        id: utilsCommon_1.randomDigitStringId(6),
-        tempId: utilsCommon_1.randomDigitStringId(6),
-        text: textareaText.trim() || '',
-        timestamp: new Date().toISOString(),
-        sender: {
-          isOperator: false,
-          isCurrentClient: true
-        },
-        responseToMessage: responseToMessage || null,
-        attachments: attachments,
-        isSubmitting: true
-      };
-    };
-
-    _this.generateNewClientPlaceholderMessage = function (previousMessages) {
-      var previousMessageTimestamp = utilsCommon_1._get(previousMessages, '[0].timestamp');
-
-      var timestamp = previousMessageTimestamp || new Date().toISOString();
-      return {
-        timestamp: timestamp,
-        id: utilsCommon_1.randomDigitStringId(6),
-        isSystem: true,
-        sender: {},
-        attachments: [],
-        systemData: {
-          type: 'NEW_CLIENT_PLACEHOLDER'
-        }
-      };
-    };
-
-    _this.onTextareaChange = function (stateChange) {
-      _this.setState(stateChange);
-    };
-
-    _this.onScreenshotRequestFulfilled =
-    /*#__PURE__*/
-    function () {
-      var _ref4 = _asyncToGenerator(
-      /*#__PURE__*/
-      regeneratorRuntime.mark(function _callee3(screenshot) {
-        var _this$state3, textareaText, textareaAttachments, imageBlobUrl, dimensions, newAttachment, updatedText;
-
-        return regeneratorRuntime.wrap(function _callee3$(_context3) {
-          while (1) {
-            switch (_context3.prev = _context3.next) {
-              case 0:
-                _this$state3 = _this.state, textareaText = _this$state3.textareaText, textareaAttachments = _this$state3.textareaAttachments;
-                imageBlobUrl = URL.createObjectURL(screenshot.file);
-                _context3.next = 4;
-                return utilsWidget_1.getImageDimensions(imageBlobUrl);
-
-              case 4:
-                dimensions = _context3.sent;
-                newAttachment = Object.assign({
-                  id: utilsCommon_1.randomDigitStringId(6),
-                  name: 'Скриншот экрана',
-                  file: screenshot.file,
-                  isScreenshot: true
-                }, dimensions);
-                updatedText = textareaText.trim() ? textareaText : 'Вот скриншот моего экрана';
-
-                _this.setState({
-                  textareaText: updatedText,
-                  textareaAttachments: [].concat(_toConsumableArray(textareaAttachments), [newAttachment])
-                });
-
-              case 8:
-              case "end":
-                return _context3.stop();
-            }
-          }
-        }, _callee3);
-      }));
-
-      return function (_x2) {
-        return _ref4.apply(this, arguments);
-      };
-    }();
-
-    _this.onReplyMessage = function (messageId) {
-      _this.setState({
-        textareaResponseToMessageId: messageId
-      });
-    };
-
-    _this.onSubmitRetry =
-    /*#__PURE__*/
-    function () {
-      var _ref5 = _asyncToGenerator(
-      /*#__PURE__*/
-      regeneratorRuntime.mark(function _callee4(message) {
-        var elixirChatWidget;
-        return regeneratorRuntime.wrap(function _callee4$(_context4) {
-          while (1) {
-            switch (_context4.prev = _context4.next) {
-              case 0:
-                elixirChatWidget = _this.props.elixirChatWidget;
-
-                _this.changeMessageById(message.id, {
-                  isSubmitting: true,
-                  isSubmissionError: false
-                });
-
-                elixirChatWidget.sendMessage({
-                  text: message.text,
-                  attachments: message.attachments.map(function (attachment) {
-                    return attachment.originalFileObject;
-                  }).filter(function (file) {
-                    return file;
-                  }),
-                  responseToMessageId: utilsCommon_1._get(message, 'responseToMessage.id'),
-                  tempId: message.tempId
-                }).catch(function () {
-                  _this.changeMessageById(message.id, {
-                    isSubmitting: false,
-                    isSubmissionError: true
-                  });
-                });
-
-              case 3:
-              case "end":
-                return _context4.stop();
-            }
-          }
-        }, _callee4);
-      }));
-
-      return function (_x3) {
-        return _ref5.apply(this, arguments);
-      };
-    }();
-
-    _this.toggleMute = function () {
-      var areNotificationsMuted = _this.state.areNotificationsMuted;
-      localStorage.setItem('elixirchat-notifications-muted', JSON.stringify(!areNotificationsMuted));
-
-      _this.setState({
-        areNotificationsMuted: !areNotificationsMuted
-      });
-    };
-
-    return _this;
-  }
-
-  _createClass(Chat, [{
-    key: "componentDidMount",
-    value: function componentDidMount() {
-      var _this2 = this;
-
-      var elixirChatWidget = this.props.elixirChatWidget;
-      elixirChatWidget.onIFrameReady(function () {
-        elixirChatWidget.widgetIFrameDocument.body.addEventListener('click', utilsWidget_1.unlockNotificationSoundAutoplay);
-        elixirChatWidget.widgetIFrameDocument.body.addEventListener('dragover', _this2.onBodyDrag);
-        elixirChatWidget.widgetIFrameDocument.body.addEventListener('drop', _this2.onBodyDrop);
-      });
-      elixirChatWidget.onConnectSuccess(function () {
-        _this2.setState({
-          widgetTitle: elixirChatWidget.widgetTitle
-        });
-
-        elixirChatWidget.fetchMessageHistory(_this2.messageChunkSize).then(
-        /*#__PURE__*/
-        function () {
-          var _ref6 = _asyncToGenerator(
-          /*#__PURE__*/
-          regeneratorRuntime.mark(function _callee5(messages) {
-            return regeneratorRuntime.wrap(function _callee5$(_context5) {
-              while (1) {
-                switch (_context5.prev = _context5.next) {
-                  case 0:
-                    if (messages.length < _this2.messageChunkSize) {
-                      messages = [_this2.generateNewClientPlaceholderMessage(messages)].concat(_toConsumableArray(messages));
-                    }
-
-                    _context5.next = 3;
-                    return _this2.setState({
-                      messages: messages,
-                      isLoading: false
-                    });
-
-                  case 3:
-                    _this2.scrollToBottom();
-
-                    elixirChatWidget.setIFrameContentMounted();
-
-                  case 5:
-                  case "end":
-                    return _context5.stop();
-                }
-              }
-            }, _callee5);
-          }));
-
-          return function (_x4) {
-            return _ref6.apply(this, arguments);
-          };
-        }()).catch(
-        /*#__PURE__*/
-        _asyncToGenerator(
-        /*#__PURE__*/
-        regeneratorRuntime.mark(function _callee6() {
-          return regeneratorRuntime.wrap(function _callee6$(_context6) {
-            while (1) {
-              switch (_context6.prev = _context6.next) {
-                case 0:
-                  _context6.next = 2;
-                  return _this2.setState({
-                    isLoading: false,
-                    isLoadingError: true
-                  });
-
-                case 2:
-                  elixirChatWidget.setIFrameContentMounted();
-
-                case 3:
-                case "end":
-                  return _context6.stop();
-              }
-            }
-          }, _callee6);
-        })));
-      });
-      elixirChatWidget.onConnectError(
-      /*#__PURE__*/
-      _asyncToGenerator(
-      /*#__PURE__*/
-      regeneratorRuntime.mark(function _callee7() {
-        return regeneratorRuntime.wrap(function _callee7$(_context7) {
-          while (1) {
-            switch (_context7.prev = _context7.next) {
-              case 0:
-                _context7.next = 2;
-                return _this2.setState({
-                  isLoading: false,
-                  isLoadingError: true
-                });
-
-              case 2:
-              case "end":
-                return _context7.stop();
-            }
-          }
-        }, _callee7);
-      })));
-      elixirChatWidget.onMessage(function (message) {
-        var hasUserScroll = _this2.hasUserScroll();
-
-        var messages = [].concat(_toConsumableArray(_this2.state.messages), [message]);
-        var isMessageSentByCurrentClient = message.sender.isCurrentClient;
-
-        if (isMessageSentByCurrentClient) {
-          _this2.replaceTemporaryMessageWithActualOne(message);
-        } else {
-          _this2.setState({
-            messages: messages
-          });
-
-          if (!_this2.state.areNotificationsMuted) {
-            utilsWidget_1.playNotificationSound();
-          }
-        }
-
-        if (!hasUserScroll) {
-          _this2.scrollToBottom();
-        }
-      });
-      elixirChatWidget.onTyping(function (currentlyTypingUsers) {
-        _this2.setState({
-          currentlyTypingUsers: currentlyTypingUsers
-        });
-      });
-      elixirChatWidget.onOperatorOnlineStatusChange(function (areOperatorsOnline) {
-        _this2.setState({
-          areOperatorsOnline: areOperatorsOnline
-        });
-      });
-      var areNotificationsMuted = false;
-
-      try {
-        areNotificationsMuted = JSON.parse(localStorage.getItem('elixirchat-notifications-muted'));
-      } catch (e) {}
-
-      this.setState({
-        areNotificationsMuted: areNotificationsMuted
-      });
-    }
-  }, {
-    key: "componentWillUnmount",
-    value: function componentWillUnmount() {
-      var elixirChatWidget = this.props.elixirChatWidget;
-      elixirChatWidget.widgetIFrameDocument.body.removeEventListener('dragover', this.onBodyDrag);
-      elixirChatWidget.widgetIFrameDocument.body.removeEventListener('drop', this.onBodyDrop);
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      var _this$props = this.props,
-          elixirChatWidget = _this$props.elixirChatWidget,
-          onImagePreviewOpen = _this$props.onImagePreviewOpen,
-          isImagePreviewOpen = _this$props.isImagePreviewOpen;
-      var _this$state4 = this.state,
-          messages = _this$state4.messages,
-          textareaText = _this$state4.textareaText,
-          textareaResponseToMessageId = _this$state4.textareaResponseToMessageId,
-          textareaAttachments = _this$state4.textareaAttachments,
-          currentlyTypingUsers = _this$state4.currentlyTypingUsers,
-          isLoading = _this$state4.isLoading,
-          isLoadingError = _this$state4.isLoadingError,
-          isDraggingAttachments = _this$state4.isDraggingAttachments,
-          widgetTitle = _this$state4.widgetTitle,
-          areOperatorsOnline = _this$state4.areOperatorsOnline,
-          areNotificationsMuted = _this$state4.areNotificationsMuted;
-      return react_1.default.createElement("div", {
-        className: "elixirchat-chat-container",
-        ref: this.container,
-        onClick: elixirChatWidget.resetUnreadMessagesAndReplies
-      }, react_1.default.createElement("h2", {
-        className: "elixirchat-chat-header"
-      }, widgetTitle && react_1.default.createElement(react_1.Fragment, null, areOperatorsOnline && react_1.default.createElement("i", {
-        className: "elixirchat-chat-header__indicator"
-      }), widgetTitle), react_1.default.createElement("button", {
-        className: "elixirchat-chat-header__mute",
-        title: areNotificationsMuted ? 'Включить звук уведомлений' : 'Выключить звук уведомлений',
-        onClick: this.toggleMute
-      }, react_1.default.createElement("i", {
-        className: areNotificationsMuted ? 'icon-speaker-mute' : 'icon-speaker'
-      })), react_1.default.createElement("button", {
-        className: "elixirchat-chat-header__close",
-        title: "\u0417\u0430\u043A\u0440\u044B\u0442\u044C \u0447\u0430\u0442",
-        onClick: elixirChatWidget.toggleChatVisibility
-      }, react_1.default.createElement("i", {
-        className: "icon-close-thin"
-      }))), isLoading && react_1.default.createElement("i", {
-        className: "elixirchat-chat-spinner"
-      }), isLoadingError && react_1.default.createElement("div", {
-        className: "elixirchat-chat-fatal-error"
-      }, "\u041E\u0448\u0438\u0431\u043A\u0430 \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0438. ", react_1.default.createElement("br", null), "\u041F\u043E\u0436\u0430\u043B\u0443\u0439\u0441\u0442\u0430, \u043F\u0435\u0440\u0435\u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u0435 \u0441\u0442\u0440\u0430\u043D\u0438\u0446\u0443 ", react_1.default.createElement("span", {
-        className: "elixirchat-chat-fatal-error--nowrap"
-      }, "\u0438\u043B\u0438 \u043D\u0430\u043F\u0438\u0448\u0438\u0442\u0435"), " \u0430\u0434\u043C\u0438\u043D\u0438\u0441\u0442\u0440\u0430\u0442\u043E\u0440\u0443 \u043D\u0430 support@elixir.chat."), !isLoading && !isLoadingError && react_1.default.createElement(react_1.Fragment, null, react_1.default.createElement("div", {
-        className: "elixirchat-chat-scroll",
-        ref: this.scrollBlock,
-        onScroll: this.onMessagesScroll
-      }, react_1.default.createElement(ChatMessages_1.ChatMessages, {
-        onLoadPreviousMessages: this.loadPreviousMessages,
-        onScreenshotRequestFulfilled: this.onScreenshotRequestFulfilled,
-        onImagePreviewOpen: onImagePreviewOpen,
-        onReplyMessage: this.onReplyMessage,
-        onSubmitRetry: this.onSubmitRetry,
-        messages: messages,
-        elixirChatWidget: elixirChatWidget
-      })), react_1.default.createElement(ChatTextarea_1.ChatTextarea, {
-        onMessageSubmit: this.onMessageSubmit,
-        onChange: this.onTextareaChange,
-        messages: messages,
-        textareaText: textareaText,
-        isImagePreviewOpen: isImagePreviewOpen,
-        textareaResponseToMessageId: textareaResponseToMessageId,
-        textareaAttachments: textareaAttachments,
-        currentlyTypingUsers: currentlyTypingUsers,
-        onVerticalResize: this.onTextareaVerticalResize,
-        elixirChatWidget: elixirChatWidget
-      })), isDraggingAttachments && react_1.default.createElement(react_1.Fragment, null, react_1.default.createElement("div", {
-        className: "elixirchat-chat-draggable-backdrop"
-      }), react_1.default.createElement("div", {
-        className: "elixirchat-chat-draggable-area"
-      }, react_1.default.createElement("i", {
-        className: "elixirchat-chat-draggable-area__icon icon-file"
-      }), react_1.default.createElement("div", null, "\u041F\u0435\u0440\u0435\u0442\u0430\u0449\u0438\u0442\u0435 \u0444\u0430\u0439\u043B\u044B \u0434\u043B\u044F \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0438"))));
-    }
-  }]);
-
-  return Chat;
-}(react_1.Component);
-
-exports.Chat = Chat;
-},{"react":"1n8/","../../utilsCommon":"EjGt","../../utilsWidget":"4KO9","./ChatMessages":"17A3","./ChatTextarea":"Bm76"}],"0q3/":[function(require,module,exports) {
-"use strict";
-
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
-
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
-var __importStar = this && this.__importStar || function (mod) {
-  if (mod && mod.__esModule) return mod;
-  var result = {};
-  if (mod != null) for (var k in mod) {
-    if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-  }
-  result["default"] = mod;
-  return result;
-};
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var react_1 = __importStar(require("react"));
-
 var react_dom_1 = require("react-dom");
+
+var ElixirChatWidgetEventTypes_1 = require("../ElixirChatWidgetEventTypes");
 
 var IFrameWrapper =
 /*#__PURE__*/
@@ -12269,15 +12153,15 @@ function (_react_1$Component) {
     _this.onIframeReady = function () {
       return new Promise(function (resolve) {
         var iframeElement = _this.iframe.current;
-        var iframeDocument = iframeElement.contentWindow.document;
+        var iframeWindow = iframeElement.contentWindow;
 
-        if (iframeDocument.readyState === 'complete') {
-          resolve(iframeDocument);
+        if (iframeWindow.document.readyState === 'complete') {
+          resolve(iframeWindow);
         } else {
           iframeElement.addEventListener('load', function (e) {
             iframeElement = e.target;
-            iframeDocument = e.target.contentWindow.document;
-            resolve(iframeDocument);
+            iframeWindow = iframeElement.contentWindow;
+            resolve(iframeWindow);
           });
         }
       });
@@ -12292,16 +12176,38 @@ function (_react_1$Component) {
       var _this2 = this;
 
       var elixirChatWidget = this.props.elixirChatWidget;
-      this.onIframeReady().then(function (iframeDocument) {
-        _this2.iframeContentContainer = iframeDocument.createElement('main');
-        iframeDocument.body.appendChild(_this2.iframeContentContainer);
+      this.onIframeReady().then(
+      /*#__PURE__*/
+      function () {
+        var _ref = _asyncToGenerator(
+        /*#__PURE__*/
+        regeneratorRuntime.mark(function _callee(iframeWindow) {
+          return regeneratorRuntime.wrap(function _callee$(_context) {
+            while (1) {
+              switch (_context.prev = _context.next) {
+                case 0:
+                  _this2.iframeContentContainer = iframeWindow.document.createElement('main');
+                  iframeWindow.document.body.appendChild(_this2.iframeContentContainer);
+                  _context.next = 4;
+                  return _this2.setState({
+                    isIframeReady: true
+                  });
 
-        _this2.setState({
-          isIframeReady: true
-        });
+                case 4:
+                  elixirChatWidget.triggerEvent(ElixirChatWidgetEventTypes_1.WIDGET_IFRAME_READY, iframeWindow);
 
-        elixirChatWidget.setIFrameReady(iframeDocument);
-      });
+                case 5:
+                case "end":
+                  return _context.stop();
+              }
+            }
+          }, _callee);
+        }));
+
+        return function (_x) {
+          return _ref.apply(this, arguments);
+        };
+      }());
     }
   }, {
     key: "render",
@@ -12321,7 +12227,7 @@ function (_react_1$Component) {
 }(react_1.Component);
 
 exports.IFrameWrapper = IFrameWrapper;
-},{"react":"1n8/","react-dom":"NKHc"}],"3Xfh":[function(require,module,exports) {
+},{"react":"1n8/","react-dom":"NKHc","../ElixirChatWidgetEventTypes":"zWqG"}],"3Xfh":[function(require,module,exports) {
 "use strict";
 
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -12366,6 +12272,8 @@ var react_1 = __importStar(require("react"));
 
 var classnames_1 = __importDefault(require("classnames"));
 
+var ElixirChatWidgetEventTypes_1 = require("../ElixirChatWidgetEventTypes");
+
 var ImagePreview =
 /*#__PURE__*/
 function (_react_1$Component) {
@@ -12378,19 +12286,20 @@ function (_react_1$Component) {
 
     _this = _possibleConstructorReturn(this, _getPrototypeOf(ImagePreview).apply(this, arguments));
     _this.state = {
-      currentPreview: {},
+      preview: {},
+      gallery: [],
       displaySize: {
         width: 0,
         height: 0
       },
       marginTop: 0,
       isVisible: false,
-      isLoading: false
+      isSlideAnimation: false
     };
     _this.previewHorizontalPaddings = 100;
     _this.previewVerticalPaddings = 120;
 
-    _this.setPreview = function (preview) {
+    _this.updatePreviewDimensions = function (preview) {
       var width = preview.width,
           height = preview.height,
           url = preview.url;
@@ -12401,23 +12310,11 @@ function (_react_1$Component) {
         var marginTop = _this.calculateImagePreviewTopMargin(displaySize.height);
 
         _this.setState({
-          currentPreview: preview,
           displaySize: displaySize,
-          marginTop: marginTop,
-          isVisible: true,
-          isLoading: true
+          marginTop: marginTop
         });
-      } else {
-        _this.setState({
-          currentPreview: {},
-          displaySize: {
-            width: 0,
-            height: 0
-          },
-          marginTop: 0,
-          isVisible: false,
-          isLoading: false
-        });
+
+        _this.animateSlide();
       }
     };
 
@@ -12466,10 +12363,10 @@ function (_react_1$Component) {
     };
 
     _this.onArrowNavigation = function (delta) {
-      var gallery = _this.props.gallery;
       var _this$state = _this.state,
           isVisible = _this$state.isVisible,
-          currentPreview = _this$state.currentPreview;
+          preview = _this$state.preview,
+          gallery = _this$state.gallery;
 
       if (!isVisible) {
         return false;
@@ -12477,7 +12374,7 @@ function (_react_1$Component) {
 
       var currentPreviewIndex = gallery.map(function (image) {
         return image.id;
-      }).indexOf(currentPreview.id);
+      }).indexOf(preview.id);
       var nextPreviewIndex = currentPreviewIndex + delta;
 
       if (nextPreviewIndex < 0) {
@@ -12486,22 +12383,35 @@ function (_react_1$Component) {
         nextPreviewIndex = 0;
       }
 
-      _this.setPreview(gallery[nextPreviewIndex]);
+      var nextPreview = gallery[nextPreviewIndex];
+
+      _this.setState({
+        preview: nextPreview
+      });
+
+      _this.updatePreviewDimensions(nextPreview);
+
+      _this.animateSlide();
+    };
+
+    _this.animateSlide = function () {
+      _this.setState({
+        isSlideAnimation: true
+      });
+
+      setTimeout(function () {
+        _this.setState({
+          isSlideAnimation: false
+        });
+      }, 200);
     };
 
     _this.onClose = function () {
-      var onClose = _this.props.onClose;
+      var elixirChatWidget = _this.props.elixirChatWidget;
+      elixirChatWidget.triggerEvent(ElixirChatWidgetEventTypes_1.IMAGE_PREVIEW_CLOSE);
 
       _this.setState({
         isVisible: false
-      });
-
-      onClose();
-    };
-
-    _this.onImageLoad = function () {
-      _this.setState({
-        isLoading: false
       });
     };
 
@@ -12514,8 +12424,17 @@ function (_react_1$Component) {
       var _this2 = this;
 
       var elixirChatWidget = this.props.elixirChatWidget;
-      elixirChatWidget.onIFrameReady(function () {
+      elixirChatWidget.on(ElixirChatWidgetEventTypes_1.WIDGET_IFRAME_READY, function () {
         elixirChatWidget.widgetIFrameDocument.body.addEventListener('keyup', _this2.onIframeBodyKeyup);
+      });
+      elixirChatWidget.on(ElixirChatWidgetEventTypes_1.IMAGE_PREVIEW_OPEN, function (preview, gallery) {
+        _this2.setState({
+          preview: preview,
+          gallery: gallery,
+          isVisible: true
+        });
+
+        _this2.updatePreviewDimensions(preview);
       });
     }
   }, {
@@ -12525,22 +12444,13 @@ function (_react_1$Component) {
       elixirChatWidget.widgetIFrameDocument.body.removeEventListener('keyup', this.onIframeBodyKeyup);
     }
   }, {
-    key: "componentDidUpdate",
-    value: function componentDidUpdate(prevProps) {
-      var preview = this.props.preview;
-
-      if (prevProps.preview.url !== preview.url) {
-        this.setPreview(preview);
-      }
-    }
-  }, {
     key: "render",
     value: function render() {
       var _this$state2 = this.state,
-          currentPreview = _this$state2.currentPreview,
+          preview = _this$state2.preview,
           displaySize = _this$state2.displaySize,
           marginTop = _this$state2.marginTop,
-          isLoading = _this$state2.isLoading,
+          isSlideAnimation = _this$state2.isSlideAnimation,
           isVisible = _this$state2.isVisible;
       return react_1.default.createElement("div", {
         className: classnames_1.default({
@@ -12550,19 +12460,18 @@ function (_react_1$Component) {
         onClick: this.onClose
       }, react_1.default.createElement("div", {
         className: "elixirchat-widget-image-preview__inner"
-      }, currentPreview.url && react_1.default.createElement("img", {
+      }, preview.url && react_1.default.createElement("img", {
         className: classnames_1.default({
           'elixirchat-widget-image-preview__img': true,
-          'elixirchat-widget-image-preview__img--loading': isLoading
+          'elixirchat-widget-image-preview__img--animated': isSlideAnimation
         }),
-        onLoad: this.onImageLoad,
         style: {
           marginTop: marginTop
         },
         width: displaySize.width,
         height: displaySize.height,
-        src: currentPreview.url,
-        alt: currentPreview.name
+        src: preview.url,
+        alt: preview.name
       })));
     }
   }]);
@@ -12571,7 +12480,7 @@ function (_react_1$Component) {
 }(react_1.Component);
 
 exports.ImagePreview = ImagePreview;
-},{"react":"1n8/","classnames":"9qb7"}],"xqZa":[function(require,module,exports) {
+},{"react":"1n8/","classnames":"9qb7","../ElixirChatWidgetEventTypes":"zWqG"}],"xqZa":[function(require,module,exports) {
 "use strict";
 /**
  * SCSS files from widget/DefaultWidget/styles are transpiled into dist/styles
@@ -12591,9 +12500,9 @@ var fs = require('fs');
 
 exports.default = {
   icons: "/* GLOBAL */\n/* CUSTOM */\n[class^=\"icon-\"], [class*=\" icon-\"] {\n  font-family: \"elixirchat-icons\" !important;\n  speak: none;\n  font-style: normal;\n  font-weight: normal;\n  font-variant: normal;\n  text-transform: none;\n  line-height: 1;\n  -webkit-font-smoothing: antialiased;\n  -moz-osx-font-smoothing: grayscale; }\n\n.icon-arrow-down:before {\n  content: \"\\e900\"; }\n\n.icon-close-thick:before {\n  content: \"\\e901\"; }\n\n.icon-close-thin:before {\n  content: \"\\e902\"; }\n\n.icon-file:before {\n  content: \"\\e903\"; }\n\n.icon-logo:before {\n  content: \"\\e904\"; }\n\n.icon-reply-left:before {\n  content: \"\\e905\"; }\n\n.icon-reply-right:before {\n  content: \"\\e906\"; }\n\n.icon-screenshot:before {\n  content: \"\\e907\"; }\n\n.icon-spinner-lg:before {\n  content: \"\\e908\"; }\n\n.icon-spinner-xs:before {\n  content: \"\\e909\"; }\n\n.icon-typing:before {\n  content: \"\\e90a\"; }\n\n.icon-speaker-mute:before {\n  content: \"\\e90b\"; }\n\n.icon-speaker:before {\n  content: \"\\e90c\"; }\n",
-  Widget: "/* GLOBAL */\n/* CUSTOM */\n/* GLOBAL */\n/* CUSTOM */\n@keyframes spinner {\n  to {\n    transform: rotate(360deg); } }\n\n.elixirchat-widget-button {\n  font-family: \"elixirchat-icons\";\n  position: fixed;\n  bottom: 30px;\n  right: 30px;\n  width: 60px;\n  height: 60px;\n  border: 0;\n  border-radius: 100%;\n  cursor: pointer;\n  background-color: #FF0066;\n  box-shadow: 0 0 25px rgba(0, 0, 0, 0.15);\n  outline: none;\n  z-index: 999999;\n  transition: background-color 200ms;\n  color: #ffffff;\n  /* TODO: replace w/ <i class\"icon...\"> element when button is rewritten as a React component */\n  /* TODO: replace w/ <i class\"icon...\"> element when button is rewritten as a React component */ }\n  .elixirchat-widget-button:hover {\n    background-color: #e0005a; }\n  .elixirchat-widget-button:after, .elixirchat-widget-button:before {\n    position: absolute;\n    width: 100%;\n    height: 100%;\n    top: 0;\n    left: 0;\n    transition: opacity 300ms;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    box-sizing: border-box; }\n  .elixirchat-widget-button:after {\n    content: \"\\e904\";\n    /* .icon-logo */\n    font-size: 28px;\n    padding-top: 5px;\n    -webkit-font-smoothing: antialiased;\n    -moz-osx-font-smoothing: grayscale; }\n  .elixirchat-widget-button:before {\n    content: \"\\e902\";\n    /* .icon-close-thin */\n    font-size: 21px;\n    opacity: 0; }\n  .elixirchat-widget-button--visible:after {\n    opacity: 0; }\n  .elixirchat-widget-button--visible:before {\n    opacity: 1; }\n  @media (min-width: 0px) and (max-width: 480px) {\n    .elixirchat-widget-button {\n      right: 20px;\n      bottom: 20px; } }\n\n.elixirchat-widget-button-counter {\n  font: 13px/20px Graphik, \"Helvetica Neue\", sans-serif;\n  display: none;\n  position: absolute;\n  padding: 1px 5px 0 5px;\n  height: 20px;\n  min-width: 20px;\n  box-sizing: border-box;\n  text-align: center;\n  border-radius: 20px;\n  background: #FF0066;\n  color: #FFFFFF;\n  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.2);\n  z-index: 2;\n  right: 0;\n  top: 0; }\n  .elixirchat-widget-button-counter--has-unread {\n    display: block; }\n\n.elixirchat-widget-iframe {\n  border-radius: 8px;\n  background: #ffffff;\n  position: fixed;\n  max-height: 600px;\n  height: calc(100vh - 130px);\n  width: 380px;\n  bottom: 100px;\n  right: 30px;\n  border: 0;\n  box-shadow: 0 0 60px rgba(0, 0, 0, 0.15);\n  z-index: 999998;\n  transition: all 200ms;\n  opacity: 1;\n  transform: none;\n  transform-origin: bottom;\n  display: none; }\n  .elixirchat-widget-iframe--opening {\n    opacity: 0;\n    transform: translateY(15px) scale(0.9); }\n  .elixirchat-widget-iframe--visible {\n    display: block; }\n  @media (min-width: 0px) and (max-width: 480px) {\n    .elixirchat-widget-iframe {\n      bottom: 0;\n      right: 0;\n      left: 0;\n      top: 0;\n      width: 100%;\n      height: 100%;\n      max-height: 100%;\n      z-index: 9999999;\n      border-radius: 0; } }\n\n.elixirchat-widget-image-preview {\n  position: fixed;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  top: 0;\n  z-index: 99999999;\n  background: rgba(0, 0, 0, 0.8);\n  overflow-y: auto;\n  overflow-x: hidden;\n  padding: 40px 50px 0 50px;\n  text-align: center;\n  display: none; }\n  .elixirchat-widget-image-preview--visible {\n    display: block; }\n\n.elixirchat-widget-image-preview__inner {\n  display: inline-block; }\n\n.elixirchat-widget-image-preview__img {\n  position: relative;\n  z-index: 2;\n  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);\n  margin-bottom: 40px; }\n  .elixirchat-widget-image-preview__img--loading {\n    display: none; }\n",
-  Chat: "/* GLOBAL */\n/* CUSTOM */\n/* GLOBAL */\n/* CUSTOM */\n@keyframes spinner {\n  to {\n    transform: rotate(360deg); } }\n\nbody {\n  margin: 0;\n  padding: 0; }\n\nbody,\ninput,\nbutton,\ntextarea {\n  font: 14px/18px Graphik, \"Helvetica Neue\", sans-serif;\n  outline: none;\n  color: #151319;\n  -webkit-font-smoothing: antialiased;\n  -moz-osx-font-smoothing: grayscale; }\n\n.elixirchat-chat-container {\n  position: absolute;\n  top: 0;\n  bottom: 0;\n  right: 0;\n  left: 0; }\n\n.elixirchat-chat-header {\n  margin: 0;\n  font-size: 16px;\n  height: 53px;\n  box-sizing: border-box;\n  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.15);\n  padding: 19px 72px 0 30px;\n  position: fixed;\n  top: 0;\n  left: 0;\n  right: 0;\n  z-index: 2;\n  border-radius: 8px 8px 0 0;\n  background: #FFFFFF;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis; }\n\n.elixirchat-chat-header__indicator {\n  display: inline-block;\n  width: 10px;\n  height: 10px;\n  border-radius: 100%;\n  background: #50C900;\n  vertical-align: middle;\n  margin-right: 8px;\n  margin-top: -2px; }\n\n.elixirchat-chat-header__close {\n  height: 53px;\n  border: 0;\n  opacity: .25;\n  position: absolute;\n  top: 1px;\n  right: 0;\n  transition: opacity 200ms;\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  background: none;\n  cursor: pointer;\n  padding: 0 18px 0 7px; }\n  .elixirchat-chat-header__close:hover {\n    opacity: .4; }\n  .elixirchat-chat-header__close [class^=icon] {\n    -webkit-font-smoothing: initial; }\n\n.elixirchat-chat-header__mute {\n  background: none;\n  border: none;\n  position: absolute;\n  height: 53px;\n  padding: 0 8px 0 18px;\n  top: 1px;\n  right: 40px;\n  transition: opacity 200ms;\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  opacity: .27;\n  cursor: pointer; }\n  .elixirchat-chat-header__mute:hover {\n    opacity: .4; }\n  .elixirchat-chat-header__mute [class^=icon] {\n    -webkit-font-smoothing: initial; }\n\n.elixirchat-chat-scroll {\n  position: fixed;\n  top: 53px;\n  left: 0;\n  right: 0;\n  bottom: 110px;\n  overflow-x: hidden;\n  overflow-y: auto;\n  padding: 20px 30px; }\n\n.elixirchat-chat-spinner {\n  position: fixed;\n  top: 50%;\n  margin: -45px 0 0 -45px;\n  left: 50%;\n  display: block;\n  width: 90px;\n  height: 90px;\n  border-radius: 100%;\n  border: 1px solid #E2E2E2;\n  animation: spinner 1s linear infinite; }\n  .elixirchat-chat-spinner:after {\n    content: '';\n    background: #FFFFFF;\n    width: 5px;\n    height: 30px;\n    position: absolute;\n    top: 50%;\n    margin: -15px 0 0 0;\n    left: -2px; }\n\n.elixirchat-chat-fatal-error {\n  position: fixed;\n  top: 50%;\n  transform: translateY(-50%);\n  left: 0;\n  right: 0;\n  display: block;\n  padding: 0 50px;\n  color: #999999;\n  line-height: 22px;\n  text-align: center; }\n  .elixirchat-chat-fatal-error--nowrap {\n    white-space: nowrap; }\n\n.elixirchat-chat-draggable-backdrop {\n  position: fixed;\n  top: 0;\n  bottom: 0;\n  left: 0;\n  right: 0;\n  z-index: 3;\n  opacity: .2; }\n\n.elixirchat-chat-draggable-area {\n  position: fixed;\n  top: 0;\n  bottom: 0;\n  left: 0;\n  right: 0;\n  z-index: 2;\n  background: #FFFFFF;\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  text-align: center;\n  color: #b3b3b3;\n  font-size: 15px;\n  line-height: 21px; }\n\n.elixirchat-chat-draggable-area__icon {\n  font-size: 16px;\n  margin-bottom: 11px; }\n",
-  ChatMessages: "/* GLOBAL */\n/* CUSTOM */\n/* GLOBAL */\n/* CUSTOM */\n@keyframes spinner {\n  to {\n    transform: rotate(360deg); } }\n\n.elixirchat-chat-messages {\n  display: flex;\n  flex-direction: column;\n  align-items: flex-end; }\n  .elixirchat-chat-messages a {\n    text-decoration: none;\n    outline: none; }\n\n.elixirchat-chat-messages__date-title {\n  text-transform: uppercase;\n  font-size: 12px;\n  font-weight: bold;\n  border-bottom: 1px solid #151319;\n  line-height: 21px;\n  margin-bottom: 15px;\n  width: 100%; }\n\n.elixirchat-chat-messages__item {\n  max-width: 80%;\n  min-width: 50%;\n  margin-bottom: 15px;\n  transition: background-color 500ms; }\n  .elixirchat-chat-messages__item--by-operator {\n    align-self: flex-start;\n    padding-right: 20%;\n    width: 100%; }\n  .elixirchat-chat-messages__item:not(.elixirchat-chat-messages__item--by-me):not(.elixirchat-chat-messages__item--by-operator) {\n    padding-left: 20%;\n    width: 100%; }\n  .elixirchat-chat-messages__item--highlighted:not(.elixirchat-chat-messages__item--by-me) {\n    background: rgba(255, 0, 102, 0.05); }\n\n.elixirchat-chat-messages__sender {\n  color: #0033FF;\n  font-weight: bold;\n  padding-bottom: 1px; }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__sender {\n    color: #FFFFFF; }\n  .elixirchat-chat-messages__item--by-operator .elixirchat-chat-messages__sender {\n    color: #FF0066; }\n\n.elixirchat-chat-messages__balloon + .elixirchat-chat-messages__balloon {\n  margin-top: 10px; }\n\n.elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__balloon {\n  padding: 9px 10px 7px 10px;\n  border-radius: 3px;\n  background: #0033FF;\n  color: #FFFFFF; }\n\n.elixirchat-chat-messages__reply-message {\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  color: #999999;\n  margin: 2px 0 4px 0;\n  cursor: default; }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__reply-message {\n    color: rgba(255, 255, 255, 0.65); }\n\n.elixirchat-chat-messages__reply-message-icon {\n  margin-right: 7px;\n  opacity: .9;\n  vertical-align: text-bottom; }\n\n.elixirchat-chat-messages__text {\n  white-space: pre-wrap;\n  word-break: break-word; }\n  .elixirchat-chat-messages__text kbd {\n    font: 13px/17px Graphik, \"Helvetica Neue\", sans-serif;\n    background: rgba(0, 0, 0, 0.05);\n    border: 1px solid rgba(0, 0, 0, 0.1);\n    border-bottom-width: 2px;\n    border-radius: 2px;\n    padding: 1px 2px;\n    display: inline-block;\n    margin: 0 1px; }\n  .elixirchat-chat-messages__item--by-operator .elixirchat-chat-messages__text a {\n    color: #0033FF; }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__text a {\n    color: #FFFFFF;\n    text-decoration: underline; }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__text + .elixirchat-chat-files {\n    padding-top: 8px; }\n\n.elixirchat-chat-messages__bottom {\n  text-align: right;\n  color: #999999;\n  padding-top: 2px;\n  white-space: nowrap; }\n  .elixirchat-chat-messages__item--by-operator .elixirchat-chat-messages__bottom {\n    text-align: left; }\n\n.elixirchat-chat-messages__submission-error {\n  color: #FF0066;\n  cursor: pointer; }\n\n.elixirchat-chat-messages__reply-button {\n  margin-left: 10px;\n  cursor: pointer; }\n  .elixirchat-chat-messages__reply-button:hover {\n    color: #FF0066; }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__reply-button {\n    margin-left: 0;\n    margin-right: 10px; }\n\n.elixirchat-chat-files {\n  list-style: none;\n  padding: 6px 0 3px 0;\n  margin: 0; }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-files {\n    padding-top: 2px; }\n\n.elixirchat-chat-files__item {\n  display: flex;\n  line-height: 21px;\n  margin-top: 10px;\n  padding: 0;\n  cursor: default; }\n  .elixirchat-chat-files__item:first-child {\n    margin-top: 0; }\n  .elixirchat-chat-files__item:hover .elixirchat-chat-files__preview {\n    background-color: #efefef; }\n  .elixirchat-chat-files__item:hover .elixirchat-chat-files__preview-image:after {\n    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1); }\n\n.elixirchat-chat-files__preview {\n  width: 50px;\n  height: 50px;\n  flex-basis: 50px;\n  flex-shrink: 0;\n  border-radius: 3px;\n  background: #F4F4F4;\n  transition: all 200ms;\n  position: relative;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  color: #a6a6a6 !important; }\n\n.elixirchat-chat-files__preview-image {\n  background-size: cover; }\n  .elixirchat-chat-files__preview-image:after {\n    content: \"\";\n    position: absolute;\n    border-radius: 3px;\n    top: 0;\n    left: 0;\n    right: 0;\n    bottom: 0;\n    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);\n    pointer-events: none;\n    transition: all 200ms; }\n\n.elixirchat-chat-files__preview-submitting {\n  background-image: none;\n  display: flex;\n  align-items: center;\n  justify-content: center; }\n\n.elixirchat-chat-files__text {\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  padding: 6px 0 0 9px; }\n\n.elixirchat-chat-files__text-link {\n  margin-left: -15px;\n  padding-left: 15px; }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-files__text-link {\n    color: #FFFFFF; }\n\n.elixirchat-chat-files__text-secondary {\n  color: rgba(0, 0, 0, 0.25); }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-files__text-secondary {\n    color: rgba(255, 255, 255, 0.5); }\n\n.elixirchat-chat-messages__take-screenshot {\n  background: #FF0066;\n  color: #FFFFFF;\n  border: 0;\n  border-radius: 4px;\n  padding: 1px 11px 0 11px;\n  height: 31px;\n  line-height: 31px;\n  margin: 6px 0 3px 0;\n  transition: background-color 300ms; }\n  .elixirchat-chat-messages__take-screenshot:hover {\n    background: #e0005a; }\n\n.elixirchat-chat-files__preview-spinner {\n  display: block;\n  width: 22px;\n  height: 22px;\n  font-size: 22.4px;\n  animation: spinner 1s linear infinite; }\n\n.elixirchat-chat-images {\n  list-style: none;\n  padding: 0 0 0 0;\n  margin: 6px 0 2px 0; }\n\n.elixirchat-chat-images__item {\n  padding: 0;\n  margin-top: 6px; }\n  .elixirchat-chat-images__item:first-child {\n    margin-top: 2px; }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-images__item {\n    text-align: right; }\n\n.elixirchat-chat-images__link {\n  display: inline-block;\n  vertical-align: bottom;\n  position: relative; }\n  .elixirchat-chat-images__link:after {\n    content: \"\";\n    position: absolute;\n    border-radius: 3px;\n    top: 0;\n    left: 0;\n    right: 0;\n    bottom: 0;\n    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);\n    pointer-events: none; }\n\n.elixirchat-chat-images__img {\n  max-width: 256px;\n  max-height: 256px;\n  border-radius: 3px;\n  display: block; }\n\n.elixirchat-chat-images__item-not-found > img {\n  position: relative;\n  min-width: 180px;\n  pointer-events: none;\n  cursor: default; }\n  .elixirchat-chat-images__item-not-found > img:after {\n    content: \"(\" attr(alt) \")\";\n    color: rgba(0, 0, 0, 0.2);\n    display: block;\n    margin: 8px 0 0 20px;\n    white-space: nowrap;\n    overflow: hidden;\n    text-overflow: ellipsis;\n    position: absolute;\n    top: 50%;\n    transform: translateY(-50%);\n    width: calc(100% - 40px);\n    text-align: center; }\n  .elixirchat-chat-images__item-not-found > img:before {\n    content: attr(data-error-message);\n    color: rgba(0, 0, 0, 0.2);\n    position: absolute;\n    top: 0;\n    bottom: 0;\n    left: 0;\n    right: 0;\n    background: #fff;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    padding-bottom: 25px; }\n",
+  Widget: "/* GLOBAL */\n/* CUSTOM */\n/* GLOBAL */\n/* CUSTOM */\n@keyframes spinner {\n  to {\n    transform: rotate(360deg); } }\n\n.elixirchat-widget-button {\n  font-family: \"elixirchat-icons\";\n  position: fixed;\n  bottom: 30px;\n  right: 30px;\n  width: 60px;\n  height: 60px;\n  border: 0;\n  border-radius: 100%;\n  cursor: pointer;\n  background-color: #FF0066;\n  box-shadow: 0 0 25px rgba(0, 0, 0, 0.15);\n  outline: none;\n  z-index: 999999;\n  transition: background-color 200ms;\n  color: #ffffff;\n  /* TODO: replace w/ <i class\"icon...\"> element when button is rewritten as a React component */\n  /* TODO: replace w/ <i class\"icon...\"> element when button is rewritten as a React component */ }\n  .elixirchat-widget-button:hover {\n    background-color: #e0005a; }\n  .elixirchat-widget-button:after, .elixirchat-widget-button:before {\n    position: absolute;\n    width: 100%;\n    height: 100%;\n    top: 0;\n    left: 0;\n    transition: opacity 300ms;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    box-sizing: border-box; }\n  .elixirchat-widget-button:after {\n    content: \"\\e904\";\n    /* .icon-logo */\n    font-size: 28px;\n    padding-top: 5px;\n    -webkit-font-smoothing: antialiased;\n    -moz-osx-font-smoothing: grayscale; }\n  .elixirchat-widget-button:before {\n    content: \"\\e902\";\n    /* .icon-close-thin */\n    font-size: 21px;\n    opacity: 0; }\n  .elixirchat-widget-button--visible:after {\n    opacity: 0; }\n  .elixirchat-widget-button--visible:before {\n    opacity: 1; }\n  @media (min-width: 0px) and (max-width: 480px) {\n    .elixirchat-widget-button {\n      right: 20px;\n      bottom: 20px; } }\n\n.elixirchat-widget-button-counter {\n  font: 13px/20px Graphik, \"Helvetica Neue\", sans-serif;\n  display: none;\n  position: absolute;\n  padding: 1px 5px 0 5px;\n  height: 20px;\n  min-width: 20px;\n  box-sizing: border-box;\n  text-align: center;\n  border-radius: 20px;\n  background: #FF0066;\n  color: #FFFFFF;\n  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.2);\n  z-index: 2;\n  right: 0;\n  top: 0; }\n  .elixirchat-widget-button-counter--has-unread {\n    display: block; }\n\n.elixirchat-widget-iframe {\n  border-radius: 8px;\n  background: #ffffff;\n  position: fixed;\n  max-height: 600px;\n  height: calc(100vh - 130px);\n  width: 380px;\n  bottom: 100px;\n  right: 30px;\n  border: 0;\n  box-shadow: 0 0 60px rgba(0, 0, 0, 0.15);\n  z-index: 999998;\n  transition: all 200ms;\n  opacity: 1;\n  transform: none;\n  transform-origin: bottom;\n  display: none; }\n  .elixirchat-widget-iframe--opening {\n    opacity: 0;\n    transform: translateY(15px) scale(0.9); }\n  .elixirchat-widget-iframe--visible {\n    display: block; }\n  @media (min-width: 0px) and (max-width: 480px) {\n    .elixirchat-widget-iframe {\n      bottom: 0;\n      right: 0;\n      left: 0;\n      top: 0;\n      width: 100%;\n      height: 100%;\n      max-height: 100%;\n      z-index: 9999999;\n      border-radius: 0; } }\n\n.elixirchat-widget-image-preview {\n  position: fixed;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  top: 0;\n  z-index: 99999999;\n  background: rgba(0, 0, 0, 0.8);\n  overflow-y: auto;\n  overflow-x: hidden;\n  padding: 40px 50px 0 50px;\n  text-align: center;\n  display: none; }\n  .elixirchat-widget-image-preview--visible {\n    display: block; }\n\n.elixirchat-widget-image-preview__inner {\n  display: inline-block; }\n\n.elixirchat-widget-image-preview__img {\n  position: relative;\n  z-index: 2;\n  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);\n  margin-bottom: 40px;\n  transition: transform 200ms; }\n  .elixirchat-widget-image-preview__img--animated {\n    transform: translateX(-25px);\n    opacity: 0; }\n",
+  Chat: "/* GLOBAL */\n/* CUSTOM */\n/* GLOBAL */\n/* CUSTOM */\n@keyframes spinner {\n  to {\n    transform: rotate(360deg); } }\n\nbody {\n  margin: 0;\n  padding: 0; }\n\nbody,\ninput,\nbutton,\ntextarea {\n  font: 14px/18px Graphik, \"Helvetica Neue\", sans-serif;\n  outline: none;\n  color: #151319;\n  -webkit-font-smoothing: antialiased;\n  -moz-osx-font-smoothing: grayscale; }\n\n.elixirchat-chat-container {\n  position: absolute;\n  top: 0;\n  bottom: 0;\n  right: 0;\n  left: 0; }\n\n.elixirchat-chat-header {\n  margin: 0;\n  font-size: 16px;\n  height: 53px;\n  box-sizing: border-box;\n  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.15);\n  padding: 19px 72px 0 30px;\n  position: fixed;\n  top: 0;\n  left: 0;\n  right: 0;\n  z-index: 2;\n  border-radius: 8px 8px 0 0;\n  background: #FFFFFF;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis; }\n\n.elixirchat-chat-header__indicator {\n  display: inline-block;\n  width: 10px;\n  height: 10px;\n  border-radius: 100%;\n  background: #50C900;\n  vertical-align: middle;\n  margin-right: 8px;\n  margin-top: -2px; }\n\n.elixirchat-chat-header__close {\n  height: 53px;\n  border: 0;\n  opacity: .25;\n  position: absolute;\n  top: 1px;\n  right: 0;\n  transition: opacity 200ms;\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  background: none;\n  cursor: pointer;\n  padding: 0 18px 0 7px; }\n  .elixirchat-chat-header__close:hover {\n    opacity: .4; }\n  .elixirchat-chat-header__close [class^=icon] {\n    -webkit-font-smoothing: initial; }\n\n.elixirchat-chat-header__mute {\n  background: none;\n  border: none;\n  position: absolute;\n  height: 53px;\n  padding: 0 8px 0 18px;\n  top: 1px;\n  right: 40px;\n  transition: opacity 200ms;\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  opacity: .27;\n  cursor: pointer; }\n  .elixirchat-chat-header__mute:hover {\n    opacity: .4; }\n  .elixirchat-chat-header__mute [class^=icon] {\n    -webkit-font-smoothing: initial; }\n\n.elixirchat-chat-scroll {\n  position: fixed;\n  top: 53px;\n  left: 0;\n  right: 0;\n  bottom: 110px;\n  overflow-x: hidden;\n  overflow-y: auto;\n  padding: 20px 30px; }\n\n.elixirchat-chat-scroll-progress-bar {\n  width: 0;\n  height: 1px;\n  background: rgba(0, 0, 0, 0.4);\n  position: fixed;\n  top: 53px;\n  left: 0; }\n  .elixirchat-chat-scroll-progress-bar--animating {\n    width: 100%;\n    transition: width 500ms; }\n\n.elixirchat-chat-spinner {\n  position: fixed;\n  top: 50%;\n  margin: -45px 0 0 -45px;\n  left: 50%;\n  display: block;\n  width: 90px;\n  height: 90px;\n  border-radius: 100%;\n  border: 1px solid #E2E2E2;\n  animation: spinner 1s linear infinite; }\n  .elixirchat-chat-spinner:after {\n    content: '';\n    background: #FFFFFF;\n    width: 5px;\n    height: 30px;\n    position: absolute;\n    top: 50%;\n    margin: -15px 0 0 0;\n    left: -2px; }\n\n.elixirchat-chat-fatal-error {\n  position: fixed;\n  top: 50%;\n  transform: translateY(-50%);\n  left: 0;\n  right: 0;\n  display: block;\n  padding: 0 50px;\n  color: #999999;\n  line-height: 22px;\n  text-align: center; }\n  .elixirchat-chat-fatal-error--nowrap {\n    white-space: nowrap; }\n\n.elixirchat-chat-draggable-backdrop {\n  position: fixed;\n  top: 0;\n  bottom: 0;\n  left: 0;\n  right: 0;\n  z-index: 3;\n  opacity: .2; }\n\n.elixirchat-chat-draggable-area {\n  position: fixed;\n  top: 0;\n  bottom: 0;\n  left: 0;\n  right: 0;\n  z-index: 2;\n  background: #FFFFFF;\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  text-align: center;\n  color: #b3b3b3;\n  font-size: 15px;\n  line-height: 21px; }\n\n.elixirchat-chat-draggable-area__icon {\n  font-size: 16px;\n  margin-bottom: 11px; }\n",
+  ChatMessages: "/* GLOBAL */\n/* CUSTOM */\n/* GLOBAL */\n/* CUSTOM */\n@keyframes spinner {\n  to {\n    transform: rotate(360deg); } }\n\n.elixirchat-chat-messages {\n  display: flex;\n  flex-direction: column;\n  align-items: flex-end; }\n  .elixirchat-chat-messages a {\n    text-decoration: none;\n    outline: none; }\n\n.elixirchat-chat-messages__date-title {\n  text-transform: uppercase;\n  font-size: 12px;\n  font-weight: bold;\n  border-bottom: 1px solid #151319;\n  line-height: 21px;\n  margin-bottom: 15px;\n  width: 100%; }\n\n.elixirchat-chat-messages__item {\n  max-width: 80%;\n  min-width: 50%;\n  margin-bottom: 15px;\n  transition: background-color 500ms; }\n  .elixirchat-chat-messages__item--by-operator {\n    align-self: flex-start;\n    padding-right: 20%;\n    width: 100%; }\n  .elixirchat-chat-messages__item:not(.elixirchat-chat-messages__item--by-me):not(.elixirchat-chat-messages__item--by-operator) {\n    padding-left: 20%;\n    width: 100%; }\n  .elixirchat-chat-messages__item--highlighted:not(.elixirchat-chat-messages__item--by-me) {\n    background: rgba(255, 0, 102, 0.05); }\n  .elixirchat-chat-messages__item--flashed:not(.elixirchat-chat-messages__item--by-me) {\n    background: rgba(255, 0, 102, 0.1); }\n\n.elixirchat-chat-messages__sender {\n  color: #0033FF;\n  font-weight: bold;\n  padding-bottom: 1px; }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__sender {\n    color: #FFFFFF; }\n  .elixirchat-chat-messages__item--by-operator .elixirchat-chat-messages__sender {\n    color: #FF0066; }\n\n.elixirchat-chat-messages__balloon + .elixirchat-chat-messages__balloon {\n  margin-top: 10px; }\n\n.elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__balloon {\n  padding: 9px 10px 7px 10px;\n  border-radius: 3px;\n  background: #0033FF;\n  color: #FFFFFF; }\n\n.elixirchat-chat-messages__reply-message {\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  position: relative;\n  color: #999999;\n  cursor: default;\n  border-left: 3px solid;\n  padding: 3px 0 0 8px;\n  line-height: 15px;\n  margin: 2px 0 5px 0; }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__reply-message {\n    color: rgba(255, 255, 255, 0.65);\n    border-left-color: rgba(255, 255, 255, 0.5); }\n\n.elixirchat-chat-messages__text {\n  white-space: pre-wrap;\n  word-break: break-word; }\n  .elixirchat-chat-messages__text kbd {\n    font: 13px/17px Graphik, \"Helvetica Neue\", sans-serif;\n    background: rgba(0, 0, 0, 0.05);\n    border: 1px solid rgba(0, 0, 0, 0.1);\n    border-bottom-width: 2px;\n    border-radius: 2px;\n    padding: 1px 2px;\n    display: inline-block;\n    margin: 0 1px; }\n  .elixirchat-chat-messages__item--by-operator .elixirchat-chat-messages__text a {\n    color: #0033FF; }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__text a {\n    color: #FFFFFF;\n    text-decoration: underline; }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__text + .elixirchat-chat-files {\n    padding-top: 8px; }\n\n.elixirchat-chat-messages__bottom {\n  text-align: right;\n  color: #999999;\n  padding-top: 2px;\n  white-space: nowrap; }\n  .elixirchat-chat-messages__item--by-operator .elixirchat-chat-messages__bottom {\n    text-align: left; }\n\n.elixirchat-chat-messages__submission-error {\n  color: #FF0066;\n  cursor: pointer; }\n\n.elixirchat-chat-messages__reply-button {\n  margin-left: 10px;\n  cursor: pointer; }\n  .elixirchat-chat-messages__reply-button:hover {\n    color: #FF0066; }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__reply-button {\n    margin-left: 0;\n    margin-right: 10px; }\n\n.elixirchat-chat-files {\n  list-style: none;\n  padding: 6px 0 3px 0;\n  margin: 0; }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-files {\n    padding-top: 2px; }\n\n.elixirchat-chat-files__item {\n  display: flex;\n  line-height: 21px;\n  margin-top: 10px;\n  padding: 0;\n  cursor: default; }\n  .elixirchat-chat-files__item:first-child {\n    margin-top: 0; }\n  .elixirchat-chat-files__item:hover .elixirchat-chat-files__preview {\n    background-color: #efefef; }\n  .elixirchat-chat-files__item:hover .elixirchat-chat-files__preview-image:after {\n    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1); }\n\n.elixirchat-chat-files__preview {\n  width: 50px;\n  height: 50px;\n  flex-basis: 50px;\n  flex-shrink: 0;\n  border-radius: 3px;\n  background: #F4F4F4;\n  transition: all 200ms;\n  position: relative;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  color: #a6a6a6 !important; }\n\n.elixirchat-chat-files__preview-image {\n  background-size: cover; }\n  .elixirchat-chat-files__preview-image:after {\n    content: \"\";\n    position: absolute;\n    border-radius: 3px;\n    top: 0;\n    left: 0;\n    right: 0;\n    bottom: 0;\n    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);\n    pointer-events: none;\n    transition: all 200ms; }\n\n.elixirchat-chat-files__preview-submitting {\n  background-image: none;\n  display: flex;\n  align-items: center;\n  justify-content: center; }\n\n.elixirchat-chat-files__text {\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  padding: 6px 0 0 9px; }\n\n.elixirchat-chat-files__text-link {\n  margin-left: -15px;\n  padding-left: 15px; }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-files__text-link {\n    color: #FFFFFF; }\n\n.elixirchat-chat-files__text-secondary {\n  color: rgba(0, 0, 0, 0.25); }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-files__text-secondary {\n    color: rgba(255, 255, 255, 0.5); }\n\n.elixirchat-chat-messages__take-screenshot {\n  background: #FF0066;\n  color: #FFFFFF;\n  border: 0;\n  border-radius: 4px;\n  padding: 1px 11px 0 11px;\n  height: 31px;\n  line-height: 31px;\n  margin: 6px 0 3px 0;\n  transition: background-color 300ms; }\n  .elixirchat-chat-messages__take-screenshot:hover {\n    background: #e0005a; }\n\n.elixirchat-chat-files__preview-spinner {\n  display: block;\n  width: 22px;\n  height: 22px;\n  font-size: 22.4px;\n  animation: spinner 1s linear infinite; }\n\n.elixirchat-chat-images {\n  list-style: none;\n  padding: 0 0 0 0;\n  margin: 6px 0 2px 0; }\n\n.elixirchat-chat-images__item {\n  padding: 0;\n  margin-top: 6px; }\n  .elixirchat-chat-images__item:first-child {\n    margin-top: 2px; }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-images__item {\n    text-align: right; }\n\n.elixirchat-chat-images__link {\n  display: inline-block;\n  vertical-align: bottom;\n  position: relative; }\n  .elixirchat-chat-images__link:after {\n    content: \"\";\n    position: absolute;\n    border-radius: 3px;\n    top: 0;\n    left: 0;\n    right: 0;\n    bottom: 0;\n    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);\n    pointer-events: none; }\n\n.elixirchat-chat-images__img {\n  max-width: 256px;\n  max-height: 256px;\n  border-radius: 3px;\n  display: block; }\n\n.elixirchat-chat-images__item-not-found > img {\n  position: relative;\n  min-width: 180px;\n  pointer-events: none;\n  cursor: default; }\n  .elixirchat-chat-images__item-not-found > img:after {\n    content: \"(\" attr(alt) \")\";\n    color: rgba(0, 0, 0, 0.2);\n    display: block;\n    margin: 8px 0 0 20px;\n    white-space: nowrap;\n    overflow: hidden;\n    text-overflow: ellipsis;\n    position: absolute;\n    top: 50%;\n    transform: translateY(-50%);\n    width: calc(100% - 40px);\n    text-align: center; }\n  .elixirchat-chat-images__item-not-found > img:before {\n    content: attr(data-error-message);\n    color: rgba(0, 0, 0, 0.2);\n    position: absolute;\n    top: 0;\n    bottom: 0;\n    left: 0;\n    right: 0;\n    background: #fff;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    padding-bottom: 25px; }\n",
   ChatTextarea: "/* GLOBAL */\n/* CUSTOM */\n.elixirchat-chat-textarea {\n  position: fixed;\n  bottom: 0;\n  left: 0;\n  right: 0;\n  background: #FFFFFF;\n  z-index: 3;\n  box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.15);\n  border-radius: 0 0 8px 8px; }\n\n.elixirchat-chat-typing {\n  position: absolute;\n  background: #FFFFFF;\n  color: #d5d5d5;\n  left: 0;\n  right: 0;\n  bottom: 100%;\n  font-weight: bold;\n  padding: 0 30px 18px 54px;\n  box-shadow: 0 -15px 15px 6px #FFFFFF, inset 0 -1px 0 rgba(0, 0, 0, 0.15); }\n\n.elixirchat-chat-typing__icon {\n  position: absolute;\n  left: 30px;\n  top: 3px;\n  font-size: 11px;\n  color: #d5d5d5;\n  z-index: 2; }\n\n.elixirchat-chat-textarea__reply-to {\n  color: #0033FF;\n  margin: 18px 0 -8px 30px;\n  position: relative;\n  z-index: 1;\n  background: #FFFFFF;\n  box-shadow: -2px 10px 3px #FFFFFF; }\n\n.elixirchat-chat-textarea__reply-to-text {\n  display: inline-block;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 140px);\n  vertical-align: middle; }\n\n.elixirchat-chat-textarea__reply-to-icon {\n  margin-right: 4px;\n  vertical-align: text-top; }\n\n.elixirchat-chat-textarea__reply-to-remove {\n  vertical-align: middle;\n  margin-left: 6px;\n  font-size: 11px;\n  line-height: 6px;\n  transform: translateY(1px);\n  display: inline-block; }\n\n.elixirchat-chat-textarea__actions {\n  position: absolute;\n  right: 20px;\n  bottom: 11px;\n  z-index: 2;\n  transition: transform 200ms; }\n\n.elixirchat-chat-textarea__actions-screenshot,\n.elixirchat-chat-textarea__actions-attach {\n  width: 38px;\n  height: 31px;\n  background: #FFFFFF;\n  border: 1px solid #d5d5d5;\n  border-radius: 7px;\n  position: relative;\n  margin-left: 10px;\n  display: inline-block;\n  vertical-align: top;\n  box-sizing: border-box;\n  overflow: hidden;\n  transition: background-color 200ms;\n  color: rgba(0, 0, 0, 0.32);\n  padding-top: 4px; }\n  .elixirchat-chat-textarea__actions-screenshot:hover,\n  .elixirchat-chat-textarea__actions-attach:hover {\n    background-color: #efefef; }\n\n.elixirchat-chat-textarea__actions-attach-input {\n  position: absolute;\n  z-index: 1;\n  opacity: 0; }\n\n.elixirchat-chat-textarea__actions-attach-label {\n  position: absolute;\n  z-index: 2;\n  left: 0;\n  right: 0;\n  top: 0;\n  bottom: 0;\n  padding-top: 8px;\n  text-align: center; }\n\n.elixirchat-chat-textarea__textarea {\n  border: 0;\n  position: relative;\n  left: 0;\n  top: 0;\n  bottom: 0;\n  right: 0;\n  padding: 17px 0 0 30px;\n  margin-bottom: 17px;\n  resize: none;\n  width: calc(100% - 120px); }\n\n.elixirchat-chat-attachment-list {\n  padding: 0;\n  margin: -2px 0 15px 30px;\n  list-style: none;\n  line-height: 22px;\n  color: #0033FF; }\n\n.elixirchat-chat-attachment-item {\n  margin: 0;\n  white-space: nowrap; }\n\n.elixirchat-chat-attachment-icon {\n  margin-right: 8px;\n  vertical-align: middle; }\n  .elixirchat-chat-attachment-icon.icon-screenshot {\n    font-size: 12px;\n    margin-left: -1px; }\n\n.elixirchat-chat-attachment-filename {\n  max-width: calc(100% - 165px);\n  display: inline-block;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  vertical-align: middle; }\n\n.elixirchat-chat-attachment-remove {\n  font-size: 11px;\n  margin-left: 7px;\n  vertical-align: middle; }\n",
   ImagePreview: ""
 };
@@ -12648,6 +12557,10 @@ var react_dom_1 = __importDefault(require("react-dom"));
 
 var classnames_1 = __importDefault(require("classnames"));
 
+var ElixirChatWidgetEventTypes_1 = require("../ElixirChatWidgetEventTypes");
+
+var ElixirChatEventTypes_1 = require("../../sdk/ElixirChatEventTypes");
+
 var utilsCommon_1 = require("../../utilsCommon");
 
 var utilsWidget_1 = require("../../utilsWidget");
@@ -12676,20 +12589,17 @@ function (_react_1$Component) {
 
     _this = _possibleConstructorReturn(this, _getPrototypeOf(Widget).apply(this, arguments));
     _this.state = {
+      isDefaultButtonHidden: false,
       isIFrameOpen: false,
       isIFrameOpeningAnimation: false,
       outsideIframeStyles: null,
       insideIframeStyles: null,
       extractedFontsStyles: null,
       customIframeStyles: null,
-      isImagePreviewOpen: false,
-      currentImagePreview: {},
-      imagePreviewGallery: [],
-      unreadMessagesCounter: 0,
-      unreadRepliesCount: 0
+      unreadMessagesCount: 0
     };
 
-    _this.onWindowLoad = function () {
+    _this.onParentWindowLoad = function () {
       var extractFontsFromParentWindow = _this.props.elixirChatWidget.extractFontsFromParentWindow;
 
       if (extractFontsFromParentWindow && extractFontsFromParentWindow.length) {
@@ -12719,7 +12629,7 @@ function (_react_1$Component) {
       };
     };
 
-    _this.onToggleButton =
+    _this.onPopupToggle =
     /*#__PURE__*/
     _asyncToGenerator(
     /*#__PURE__*/
@@ -12748,23 +12658,6 @@ function (_react_1$Component) {
         }
       }, _callee);
     }));
-
-    _this.onImagePreviewOpen = function (currentImagePreview, imagePreviewGallery) {
-      _this.setState({
-        isImagePreviewOpen: true,
-        currentImagePreview: currentImagePreview,
-        imagePreviewGallery: imagePreviewGallery
-      });
-    };
-
-    _this.onImagePreviewClose = function () {
-      _this.setState({
-        isImagePreviewOpen: false,
-        currentImagePreview: {},
-        imagePreviewGallery: []
-      });
-    };
-
     return _this;
   }
 
@@ -12780,21 +12673,18 @@ function (_react_1$Component) {
           insideIframeStyles = _this$generateStyles.insideIframeStyles;
 
       document.body.addEventListener('click', utilsWidget_1.unlockNotificationSoundAutoplay);
-      window.addEventListener('load', this.onWindowLoad);
+      window.addEventListener('load', this.onParentWindowLoad);
       this.setState({
         outsideIframeStyles: outsideIframeStyles,
         insideIframeStyles: insideIframeStyles,
-        customIframeStyles: elixirChatWidget.iframeStyles
+        customIframeStyles: elixirChatWidget.iframeStyles,
+        isDefaultButtonHidden: elixirChatWidget.hideDefaultButton,
+        unreadMessagesCount: elixirChatWidget.unreadMessagesCount
       });
-      elixirChatWidget.onToggleChatVisibility(this.onToggleButton);
-      elixirChatWidget.onUnreadMessagesChange(function (unreadMessagesCounter) {
+      elixirChatWidget.on(ElixirChatWidgetEventTypes_1.WIDGET_POPUP_TOGGLE, this.onPopupToggle);
+      elixirChatWidget.on(ElixirChatEventTypes_1.UNREAD_MESSAGES_CHANGE, function (unreadMessagesCount) {
         _this2.setState({
-          unreadMessagesCounter: unreadMessagesCounter
-        });
-      });
-      elixirChatWidget.onUnreadRepliesChange(function (unreadRepliesCount) {
-        _this2.setState({
-          unreadRepliesCount: unreadRepliesCount
+          unreadMessagesCount: unreadMessagesCount
         });
       });
     }
@@ -12805,33 +12695,27 @@ function (_react_1$Component) {
       var _this$state = this.state,
           isIFrameOpen = _this$state.isIFrameOpen,
           isIFrameOpeningAnimation = _this$state.isIFrameOpeningAnimation,
+          isDefaultButtonHidden = _this$state.isDefaultButtonHidden,
           outsideIframeStyles = _this$state.outsideIframeStyles,
           insideIframeStyles = _this$state.insideIframeStyles,
           extractedFontsStyles = _this$state.extractedFontsStyles,
           customIframeStyles = _this$state.customIframeStyles,
-          unreadMessagesCounter = _this$state.unreadMessagesCounter,
-          unreadRepliesCount = _this$state.unreadRepliesCount,
-          currentImagePreview = _this$state.currentImagePreview,
-          imagePreviewGallery = _this$state.imagePreviewGallery,
-          isImagePreviewOpen = _this$state.isImagePreviewOpen;
-      var visibleUnreadMessagesCounter = unreadMessagesCounter > 99 ? '99+' : unreadMessagesCounter;
+          unreadMessagesCount = _this$state.unreadMessagesCount;
+      var visibleUnreadMessagesCount = unreadMessagesCount > 99 ? '99+' : unreadMessagesCount;
       return react_1.default.createElement(react_1.Fragment, null, react_1.default.createElement("style", {
         dangerouslySetInnerHTML: {
           __html: outsideIframeStyles
         }
-      }), react_1.default.createElement("button", {
+      }), !isDefaultButtonHidden && react_1.default.createElement("button", {
         className: "elixirchat-widget-button",
-        onClick: elixirChatWidget.toggleChatVisibility
+        onClick: elixirChatWidget.togglePopup
       }, react_1.default.createElement("span", {
         className: classnames_1.default({
           'elixirchat-widget-button-counter': true,
-          'elixirchat-widget-button-counter--has-unread': visibleUnreadMessagesCounter
+          'elixirchat-widget-button-counter--has-unread': visibleUnreadMessagesCount
         })
-      }, Boolean(visibleUnreadMessagesCounter) && visibleUnreadMessagesCounter)), react_1.default.createElement(ImagePreview_1.ImagePreview, {
-        elixirChatWidget: elixirChatWidget,
-        preview: currentImagePreview,
-        gallery: imagePreviewGallery,
-        onClose: this.onImagePreviewClose
+      }, Boolean(visibleUnreadMessagesCount) && visibleUnreadMessagesCount)), react_1.default.createElement(ImagePreview_1.ImagePreview, {
+        elixirChatWidget: elixirChatWidget
       }), react_1.default.createElement(IFrameWrapper_1.IFrameWrapper, {
         elixirChatWidget: elixirChatWidget,
         className: classnames_1.default({
@@ -12852,9 +12736,7 @@ function (_react_1$Component) {
           __html: customIframeStyles
         }
       }), react_1.default.createElement(Chat_1.Chat, {
-        elixirChatWidget: elixirChatWidget,
-        isImagePreviewOpen: isImagePreviewOpen,
-        onImagePreviewOpen: this.onImagePreviewOpen
+        elixirChatWidget: elixirChatWidget
       }))));
     }
   }]);
@@ -12876,7 +12758,7 @@ function renderWidgetReactComponent(container, elixirChatWidget) {
 }
 
 exports.renderWidgetReactComponent = renderWidgetReactComponent;
-},{"react":"1n8/","react-dom":"NKHc","classnames":"9qb7","../../utilsCommon":"EjGt","../../utilsWidget":"4KO9","../FontExtractor":"vlE8","./Chat":"8tJY","./IFrameWrapper":"0q3/","./ImagePreview":"3Xfh","./styles":"xqZa","./assets":"GpM8"}],"Nvy6":[function(require,module,exports) {
+},{"react":"1n8/","react-dom":"NKHc","classnames":"9qb7","../ElixirChatWidgetEventTypes":"zWqG","../../sdk/ElixirChatEventTypes":"Cteb","../../utilsCommon":"EjGt","../../utilsWidget":"4KO9","../FontExtractor":"vlE8","./Chat":"8tJY","./IFrameWrapper":"0q3/","./ImagePreview":"3Xfh","./styles":"xqZa","./assets":"GpM8"}],"Nvy6":[function(require,module,exports) {
 "use strict";
 
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -12886,6 +12768,10 @@ function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try
 function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
 function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
 
@@ -12907,6 +12793,10 @@ var utilsCommon_1 = require("../utilsCommon");
 
 var Widget_1 = require("./DefaultWidget/Widget");
 
+var ElixirChatWidgetEventTypes_1 = require("./ElixirChatWidgetEventTypes");
+
+var ElixirChatEventTypes_1 = require("../sdk/ElixirChatEventTypes");
+
 var ElixirChat = window.ElixirChat;
 
 if (!ElixirChat) {
@@ -12914,15 +12804,17 @@ if (!ElixirChat) {
   /**
    * dist/sdk.js is generated on fly depending on the context:
    *
-   *  - When developing SDK locally, dist/sdk.js exports sdk/ElixirChat.ts
-   *  @see bin/dev.sh
+   *  - When developing SDK locally (npm run dev), dist/sdk.js exports sdk/ElixirChat.ts
+   *    @see bin/dev.sh
    *
-   *  - When building SDK locally, dist/sdk.js is empty so that sdk.js is not included into default-widget.js bundle
-   *  @see bin/build.sh
+   *  - When building SDK locally (npm run build), dist/sdk.js is empty
+   *    so that sdk.js is not included into default-widget.js bundle
+   *    @see bin/build.sh
    *
-   *  - When 'elixirchat-js-sdk' in being installed via npm in another project, dist/sdk.js exports build/sdk.js
-   *  so that it'd be possible to use `import ElixirChatWidget from 'elixirchat-js-sdk/widget'`
-   *  @see bin/postinstall.sh
+   *  - When 'elixirchat-js-sdk' in being installed via npm in another project (npm install elixirchat-js-sdk),
+   *    dist/sdk.js exports build/sdk.js so that sdk.js IS included into default-widget.js bundle
+   *    and it'd be possible to use `import ElixirChatWidget from 'elixirchat-js-sdk/widget'`
+   *    @see bin/postinstall.sh
    */
 }
 
@@ -12943,216 +12835,131 @@ function (_ElixirChat) {
     _classCallCheck(this, ElixirChatWidget);
 
     _this = _possibleConstructorReturn(this, _getPrototypeOf(ElixirChatWidget).apply(this, arguments));
-    _this.widgetIsVisible = false;
-    _this.widgetIsIFrameReady = false;
-    _this.widgetIsIFrameContentMounted = false;
-    _this.widgetChatReactComponent = {};
+    _this.isWidgetPopupOpen = false;
+    _this.isWidgetPopupFocused = false;
+    _this.isWidgetRendered = false;
+    _this.isWidgetMuted = false;
+    _this.isWidgetIFrameReady = false;
+    _this.widgetIFrameWindow = {};
     _this.widgetIFrameDocument = {};
-    _this.onToggleChatVisibilityCallbacks = [];
-    _this.onIFrameReadyCallbacks = [];
-    _this.onIFrameContentMountedCallbacks = [];
-    _this.toggleChatVisibility =
-    /*#__PURE__*/
-    _asyncToGenerator(
-    /*#__PURE__*/
-    regeneratorRuntime.mark(function _callee() {
-      var callbacks, i;
-      return regeneratorRuntime.wrap(function _callee$(_context) {
-        while (1) {
-          switch (_context.prev = _context.next) {
-            case 0:
-              _this.widgetIsVisible = !_this.widgetIsVisible;
-              callbacks = _this.onToggleChatVisibilityCallbacks;
-              i = 0;
 
-            case 3:
-              if (!(i < callbacks.length)) {
-                _context.next = 9;
-                break;
-              }
+    _this.togglePopup = function () {
+      _this.isWidgetPopupOpen = !_this.isWidgetPopupOpen;
 
-              _context.next = 6;
-              return callbacks[i](_this.widgetIsVisible);
+      _this.onToggleChatFocus(_this.isWidgetPopupOpen);
 
-            case 6:
-              i++;
-              _context.next = 3;
-              break;
+      localStorage.setItem('elixirchat-widget-is-visible', JSON.stringify(_this.isWidgetPopupOpen));
+      utilsCommon_1.logEvent(_this.debug, (_this.isWidgetPopupOpen ? 'Opened' : 'Closed') + ' widget popup');
 
-            case 9:
-              localStorage.setItem('elixirchat-widget-is-visible', JSON.stringify(_this.widgetIsVisible));
+      _this.triggerEvent(ElixirChatWidgetEventTypes_1.WIDGET_POPUP_TOGGLE, _this.isWidgetPopupOpen);
 
-            case 10:
-            case "end":
-              return _context.stop();
-          }
-        }
-      }, _callee);
-    }));
-
-    _this.onToggleChatVisibility = function (callback) {
-      _this.onToggleChatVisibilityCallbacks.push(callback);
+      _this.triggerEvent(_this.isWidgetPopupOpen ? ElixirChatWidgetEventTypes_1.WIDGET_POPUP_OPEN : ElixirChatWidgetEventTypes_1.WIDGET_POPUP_CLOSE);
     };
 
-    _this.setIFrameReady =
-    /*#__PURE__*/
-    function () {
-      var _ref2 = _asyncToGenerator(
-      /*#__PURE__*/
-      regeneratorRuntime.mark(function _callee2(iframeDocument) {
-        var callbacks, i;
-        return regeneratorRuntime.wrap(function _callee2$(_context2) {
-          while (1) {
-            switch (_context2.prev = _context2.next) {
-              case 0:
-                _this.widgetIsIFrameReady = true;
-                _this.widgetIFrameDocument = iframeDocument;
-                callbacks = _this.onIFrameReadyCallbacks;
-                i = 0;
+    _this.toggleMute = function () {
+      _this.isWidgetMuted = !_this.isWidgetMuted;
+      localStorage.setItem('elixirchat-notifications-muted', JSON.stringify(_this.isWidgetMuted));
+      utilsCommon_1.logEvent(_this.debug, (_this.isWidgetMuted ? 'Muted' : 'Unmuted') + ' widget');
 
-              case 4:
-                if (!(i < callbacks.length)) {
-                  _context2.next = 10;
-                  break;
-                }
-
-                _context2.next = 7;
-                return callbacks[i]();
-
-              case 7:
-                i++;
-                _context2.next = 4;
-                break;
-
-              case 10:
-              case "end":
-                return _context2.stop();
-            }
-          }
-        }, _callee2);
-      }));
-
-      return function (_x) {
-        return _ref2.apply(this, arguments);
-      };
-    }();
-
-    _this.onIFrameReady = function (callback) {
-      _this.onIFrameReadyCallbacks.push(callback);
-
-      if (_this.widgetIsIFrameReady) {
-        callback();
-      }
+      _this.triggerEvent(_this.isWidgetMuted ? ElixirChatWidgetEventTypes_1.WIDGET_MUTE : ElixirChatWidgetEventTypes_1.WIDGET_UNMUTE);
     };
 
-    _this.setIFrameContentMounted =
-    /*#__PURE__*/
-    _asyncToGenerator(
-    /*#__PURE__*/
-    regeneratorRuntime.mark(function _callee3() {
-      var callbacks, i;
-      return regeneratorRuntime.wrap(function _callee3$(_context3) {
-        while (1) {
-          switch (_context3.prev = _context3.next) {
-            case 0:
-              _this.widgetIsIFrameContentMounted = true;
-              callbacks = _this.onIFrameContentMountedCallbacks;
-              i = 0;
+    _this.onToggleChatFocus = function (isFocused) {
+      if (isFocused !== _this.isWidgetPopupFocused) {
+        _this.isWidgetPopupFocused = isFocused;
 
-            case 3:
-              if (!(i < callbacks.length)) {
-                _context3.next = 9;
-                break;
-              }
-
-              _context3.next = 6;
-              return callbacks[i]();
-
-            case 6:
-              i++;
-              _context3.next = 3;
-              break;
-
-            case 9:
-            case "end":
-              return _context3.stop();
-          }
-        }
-      }, _callee3);
-    }));
-
-    _this.onIFrameContentMounted = function (callback) {
-      _this.onIFrameContentMountedCallbacks.push(callback);
-
-      if (_this.widgetIsIFrameContentMounted) {
-        callback();
+        _this.triggerEvent(_this.isWidgetPopupFocused ? ElixirChatWidgetEventTypes_1.WIDGET_POPUP_FOCUS : ElixirChatWidgetEventTypes_1.WIDGET_POPUP_BLUR);
       }
     };
 
     _this.appendWidget =
     /*#__PURE__*/
     function () {
-      var _ref5 = _asyncToGenerator(
+      var _ref = _asyncToGenerator(
       /*#__PURE__*/
-      regeneratorRuntime.mark(function _callee4(_ref4) {
-        var container, iframeStyles, extractFontsFromParentWindow, errorMessage;
-        return regeneratorRuntime.wrap(function _callee4$(_context4) {
+      regeneratorRuntime.mark(function _callee(config) {
+        var container, iframeStyles, extractFontsFromParentWindow, hideDefaultButton, errorMessage;
+        return regeneratorRuntime.wrap(function _callee$(_context) {
           while (1) {
-            switch (_context4.prev = _context4.next) {
+            switch (_context.prev = _context.next) {
               case 0:
-                container = _ref4.container, iframeStyles = _ref4.iframeStyles, extractFontsFromParentWindow = _ref4.extractFontsFromParentWindow;
+                container = config.container, iframeStyles = config.iframeStyles, extractFontsFromParentWindow = config.extractFontsFromParentWindow, hideDefaultButton = config.hideDefaultButton;
 
                 if (container instanceof HTMLElement) {
-                  _context4.next = 5;
+                  _context.next = 5;
                   break;
                 }
 
                 errorMessage = 'You must provide an HTMLElement as a "container" option to appendWidget() method';
-                utilsCommon_1.logEvent(_this.debug, errorMessage, {
-                  container: container,
-                  iframeStyles: iframeStyles,
-                  extractFontsFromParentWindow: extractFontsFromParentWindow
-                }, 'error');
-                return _context4.abrupt("return");
+                utilsCommon_1.logEvent(_this.debug, errorMessage, config, 'error');
+                return _context.abrupt("return");
 
               case 5:
+                _this.initializeWidget();
+
                 _this.container = container;
                 _this.iframeStyles = iframeStyles || '';
                 _this.extractFontsFromParentWindow = extractFontsFromParentWindow || [];
-                _this.widgetChatReactComponent = Widget_1.renderWidgetReactComponent(_this.container, _assertThisInitialized(_this));
-
-                _this.onIFrameReady(function () {
-                  var isWidgetVisible = false;
-
-                  try {
-                    isWidgetVisible = JSON.parse(localStorage.getItem('elixirchat-widget-is-visible'));
-                  } catch (e) {}
-
-                  if (isWidgetVisible) {
-                    _this.toggleChatVisibility();
-                  }
-                });
-
+                _this.hideDefaultButton = hideDefaultButton || false;
+                _this.widgetReactComponent = Widget_1.renderWidgetReactComponent(_this.container, _assertThisInitialized(_this));
                 utilsCommon_1.logEvent(_this.debug, 'Appended ElixirChat default widget', {
                   container: container
                 });
-                return _context4.abrupt("return", _this.widgetChatReactComponent);
+                return _context.abrupt("return", _this.widgetReactComponent);
 
-              case 12:
+              case 13:
               case "end":
-                return _context4.stop();
+                return _context.stop();
             }
           }
-        }, _callee4);
+        }, _callee);
       }));
 
-      return function (_x2) {
-        return _ref5.apply(this, arguments);
+      return function (_x) {
+        return _ref.apply(this, arguments);
       };
     }();
 
     return _this;
   }
+
+  _createClass(ElixirChatWidget, [{
+    key: "initializeWidget",
+    value: function initializeWidget() {
+      var _this2 = this;
+
+      this.on(ElixirChatWidgetEventTypes_1.WIDGET_IFRAME_READY, function (iframeWindow) {
+        _this2.isWidgetIFrameReady = true;
+        _this2.widgetIFrameWindow = iframeWindow;
+        _this2.widgetIFrameDocument = iframeWindow.document;
+
+        _this2.widgetIFrameWindow.addEventListener('focus', function () {
+          _this2.onToggleChatFocus(true);
+        });
+
+        _this2.widgetIFrameWindow.addEventListener('blur', function () {
+          _this2.onToggleChatFocus(false);
+        });
+
+        var isWidgetMuted = utilsCommon_1.getJSONFromLocalStorage('elixirchat-notifications-muted', false);
+
+        if (isWidgetMuted) {
+          _this2.toggleMute();
+        }
+
+        var isWidgetVisible = utilsCommon_1.getJSONFromLocalStorage('elixirchat-widget-is-visible', false);
+
+        if (isWidgetVisible) {
+          _this2.togglePopup();
+        }
+      });
+      this.on(ElixirChatEventTypes_1.MESSAGES_FETCH_HISTORY_INITIAL_SUCCESS, function () {
+        _this2.isWidgetRendered = true;
+
+        _this2.triggerEvent(ElixirChatWidgetEventTypes_1.WIDGET_RENDERED);
+      });
+    }
+  }]);
 
   return ElixirChatWidget;
 }(ElixirChat);
@@ -13162,7 +12969,7 @@ exports.ElixirChatWidget = ElixirChatWidget;
 if (typeof window !== 'undefined') {
   window.ElixirChatWidget = ElixirChatWidget;
 }
-},{"babel-polyfill":"wllv","../utilsCommon":"EjGt","./DefaultWidget/Widget":"2RVT","../dist/sdk":"70rD"}],"7QCb":[function(require,module,exports) {
+},{"babel-polyfill":"wllv","../utilsCommon":"EjGt","./DefaultWidget/Widget":"2RVT","./ElixirChatWidgetEventTypes":"zWqG","../sdk/ElixirChatEventTypes":"Cteb","../dist/sdk":"70rD"}],"7QCb":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
