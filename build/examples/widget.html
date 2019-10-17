@@ -75,7 +75,7 @@
    * Feel free to use ElixirChat API methods
    * @see https://github.com/elixirchat/elixirchat-js-sdk#elixirchat-methods
    */
-  elixirChatWidget.onMessage(message => {
+  elixirChatWidget.on('MESSAGES_HISTORY_APPEND_ONE', message => {
     console.warn('New message', message);
   });
 
