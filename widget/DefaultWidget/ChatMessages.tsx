@@ -18,7 +18,7 @@ import {
   IMAGE_PREVIEW_OPEN,
   REPLY_MESSAGE,
   TEXTAREA_VERTICAL_RESIZE,
-  WIDGET_IFRAME_READY, WIDGET_POPUP_OPEN,
+  WIDGET_IFRAME_READY, WIDGET_POPUP_OPEN, WIDGET_POPUP_TOGGLE,
 } from '../ElixirChatWidgetEventTypes';
 import {
   JOIN_ROOM_ERROR,
@@ -44,6 +44,7 @@ export interface IDefaultWidgetMessagesState {
 export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaultWidgetMessagesState> {
 
   state = {
+    isPopupOpen: false,
     isLoading: true,
     isLoadingError: false,
     isLoadingPrecedingMessageHistory: false,
@@ -78,6 +79,14 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
     elixirChatWidget.on(WIDGET_IFRAME_READY, () => {
       elixirChatWidget.widgetIFrameDocument.body.addEventListener('click', unlockNotificationSoundAutoplay);
+      this.setState({ isPopupOpen: elixirChatWidget.isWidgetPopupOpen });
+    });
+
+    elixirChatWidget.on(WIDGET_POPUP_TOGGLE, (isPopupOpen) => {
+      this.setState({ isPopupOpen });
+      if (isPopupOpen) {
+        this.fff();
+      }
     });
 
     elixirChatWidget.on(WIDGET_POPUP_OPEN, () => {
@@ -86,6 +95,8 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
         this.scrollToBottom();
       }
     });
+
+
 
     elixirChatWidget.on(MESSAGES_HISTORY_APPEND_ONE, this.onMessageReceive);
     elixirChatWidget.on(MESSAGES_HISTORY_SET, messages => {
@@ -122,6 +133,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
   componentDidUpdate(prevProps, prevState){
     const { processedMessages, hasMessagesScrollEverBeenVisible } = this.state;
+    const { elixirChatWidget } = this.props;
 
     const currentLastMessageId = _get(_last(processedMessages), 'id');
     const previousLastMessageId = _get(_last(prevState.processedMessages), 'id');
@@ -133,32 +145,56 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
       (prevState.processedMessages.length !== processedMessages.length) &&
       (currentLastMessageId !== previousLastMessageId || currentFirstMessageId !== previousFirstMessageId);
 
-    const case1 = messagesDidRerender && hasMessagesScrollEverBeenVisible;
-    const case2 = hasMessagesScrollEverBeenVisible && !prevState.hasMessagesScrollEverBeenVisible;
+    // const case1 = messagesDidRerender && hasMessagesScrollEverBeenVisible;
+    // const case2 = hasMessagesScrollEverBeenVisible && !prevState.hasMessagesScrollEverBeenVisible;
+    //
+    // if ( (case1 || case2) &&  elixirChatWidget.isWidgetPopupOpen) {
+    //   console.error('__ INIT WATCH', { case1, case2 });
+    //   this.onMessageBeingScrolledToAndViewed(viewedMessageId => {
+    //     this.messageRefs[viewedMessageId].current.style.border = `4px solid #${randomDigitStringId(6)}`;
+    //     console.log('%c__ MARK READ 3', 'color: green', viewedMessageId);
+    //   });
+    // }
 
-    if (case1 || case2) {
-      console.error('__ INIT WATCH', { case1, case2 });
-      this.onMessageBeingScrolledToAndViewed(viewedMessageId => {
-        this.messageRefs[viewedMessageId].current.style.border = `4px solid #${randomDigitStringId(6)}`;
-        console.log('%c__ MARK READ 3', 'color: green', viewedMessageId);
-      });
+    if (messagesDidRerender) {
+      this.fff();
     }
 
   };
 
+  fff = () => {
+
+    requestAnimationFrame(() => {
+      console.log('%c INIT', 'color: green');
+      this.onMessageBeingScrolledToAndViewed(viewedMessageId => {
+        this.messageRefs[viewedMessageId].current.style.border = `4px solid #${randomDigitStringId(6)}`;
+        console.log('%cMARK READ', 'color: green', viewedMessageId);
+      });
+    });
+  };
+
   onMessageBeingScrolledToAndViewed = (callback) => {
     const timeInViewportToMarkMessageRead = 2 * 1000;
-    const maxConsiderableMessageHeight = this.scrollBlock.current.offsetHeight / 2;
+    const scrollBlockHeight = this.scrollBlock.current.offsetHeight;
+    if (!scrollBlockHeight) {
+      console.error('FAIL INIT');
+      return;
+    }
+    const maxConsiderableMessageHeight = scrollBlockHeight / 2;
 
     Object.values(this.messageRefs)
       .filter(ref => {
         if (!ref.isUnread) {
           ref.current.style.opacity = '0.5';
         }
-        return ref.isUnread;
+        if (ref.intersectionObserver) {
+          console.log('__ has observer');
+          ref.current.style.textShadow = '0 2px 2px red';
+        }
+        return ref.isUnread && !ref.intersectionObserver;
       })
       .forEach(ref => {
-        const intersectionObserver = new IntersectionObserver(([ entry ]) => {
+        ref.intersectionObserver = new IntersectionObserver(([ entry ]) => {
           const messageElement: HTMLElement = entry.target;
           const messageId = messageElement.dataset.id;
           if (this.alreadyMarkedReadMessageIds[messageId]) {
@@ -178,48 +214,28 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
           root: this.scrollBlock.current,
           threshold: Math.min(maxConsiderableMessageHeight / ref.current.offsetHeight, 0.8),
         });
-        intersectionObserver.observe(ref.current);
+
+        console.log('--- ', ref.current.offsetHeight);
+
+        ref.intersectionObserver.observe(ref.current);
     });
-  };
-
-  onScrollThroughUnreadMessage222 = (callback) => {
-
-    window.__this = this;
-
-    // const { elixirChatWidget } = this.props;
-    const { processedMessages } = this.state;
-
-    const intersectionObserver = new IntersectionObserver(entries => {
-      const [ entry ] = entries;
-      if (entry.isIntersecting) {
-        const messageElement: HTMLElement = entry.target;
-
-        console.log('%c__ ggg', 'color: green', messageElement.dataset);
-
-        messageElement.style.border = `4px solid #${randomDigitStringId(6)}`;
-
-        // if (messageElement.dataset.unread && !messageElement.dataset.byMe) {
-        //   const messageId = messageElement.dataset.id;
-        //   const message = processedMessages.filter(item => item.id === messageId);
-        //   console.log('%c__ MARK AS READ', 'color: green', messageId, message);
-        // }
-
-      }
-    }, {
-      // root: this.scrollBlock.current
-    });
-
-    Object.values(this.refs).forEach(messageElement => intersectionObserver.observe(messageElement));
   };
 
   onMessageReceive = message => {
     const { elixirChatWidget } = this.props;
 
     const hasUserScroll = this.hasUserScroll();
-    const shouldPlayNotificationSound = !message.sender.isCurrentClient;
+    const shouldPlayNotificationSound = !message.sender.isCurrentClient && !elixirChatWidget.isWidgetMuted;
     const shouldScrollMessagesToBottom = elixirChatWidget.isWidgetPopupOpen
       && elixirChatWidget.isWidgetPopupFocused
       && !hasUserScroll;
+
+    console.error('__ shouldScrollMessagesToBottom', {
+      shouldScrollMessagesToBottom,
+      hasUserScroll,
+      o: elixirChatWidget.isWidgetPopupOpen,
+      f: elixirChatWidget.isWidgetPopupFocused,
+    });
 
     this.setProcessedMessages([message], { insertAfter: true });
 
@@ -357,7 +373,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
   hasUserScroll = () => {
     const scrollBlock = this.scrollBlock.current;
-    return scrollBlock.scrollTop !== scrollBlock.scrollHeight - scrollBlock.offsetHeight;
+    return scrollBlock.scrollTop <= scrollBlock.scrollHeight - scrollBlock.offsetHeight - 30;
   };
 
   scrollToBottom = (): void => {
