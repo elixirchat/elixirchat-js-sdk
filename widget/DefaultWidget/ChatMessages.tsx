@@ -371,7 +371,8 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
   onReplyOriginalMessageTextClick = (messageId) => {
     const highlightedClassName = 'elixirchat-chat-messages__item--flashed';
-    const messageElement = this.refs[`message-${messageId}`];
+    const messageRef = this.messageRefs[messageId] || {};
+    const messageElement = messageRef.current;
 
     scrollToElement(messageElement, { isSmooth: true, position: 'center' }, () => {
       messageElement.classList.add(highlightedClassName);
