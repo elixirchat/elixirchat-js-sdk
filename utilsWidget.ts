@@ -58,7 +58,12 @@ export function unlockNotificationSoundAutoplay(e): void {
 
 export function playNotificationSound(): void {
   const notification = new Audio(assets.notificationSound);
-  notification.play();
+  try {
+    notification.play();
+  }
+  catch (e) {
+    console.error('Unable to play notification sound before any action was taken by the user');
+  }
 }
 
 

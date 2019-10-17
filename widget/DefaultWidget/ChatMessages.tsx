@@ -17,8 +17,8 @@ import { ElixirChatWidget } from '../ElixirChatWidget';
 import {
   IMAGE_PREVIEW_OPEN,
   REPLY_MESSAGE,
-  TEXTAREA_VERTICAL_RESIZE, WIDGET_IFRAME_READY,
-  WIDGET_POPUP_BLUR
+  TEXTAREA_VERTICAL_RESIZE,
+  WIDGET_IFRAME_READY, WIDGET_POPUP_OPEN,
 } from '../ElixirChatWidgetEventTypes';
 import {
   JOIN_ROOM_ERROR,
@@ -27,7 +27,9 @@ import {
   MESSAGES_HISTORY_SET,
   MESSAGES_HISTORY_APPEND_ONE,
   MESSAGES_HISTORY_PREPEND_MANY,
-  MESSAGES_HISTORY_CHANGE_MANY, MESSAGES_HISTORY_CHANGE_ONE, JOIN_ROOM_SUCCESS,
+  MESSAGES_HISTORY_CHANGE_MANY,
+  MESSAGES_HISTORY_CHANGE_ONE,
+  JOIN_ROOM_SUCCESS,
 } from '../../sdk/ElixirChatEventTypes';
 
 export interface IDefaultWidgetMessagesProps {
@@ -45,6 +47,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     isLoading: true,
     isLoadingError: false,
     isLoadingPrecedingMessageHistory: false,
+    hasMessagesScrollEverBeenVisible: false,
     processedMessages: [],
     imagePreviews: [],
     screenshotFallback: null,
@@ -57,6 +60,8 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
   maxThumbnailSize: number = 256;
   messageChunkSize: number = 20;
   messageRefs: object = {};
+  currentlyVisibleMessageIds: object = {};
+  alreadyMarkedReadMessageIds: object = {};
 
   componentDidMount() {
     const { elixirChatWidget } = this.props;
@@ -75,16 +80,23 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
       elixirChatWidget.widgetIFrameDocument.body.addEventListener('click', unlockNotificationSoundAutoplay);
     });
 
+    elixirChatWidget.on(WIDGET_POPUP_OPEN, () => {
+      if (!this.state.hasMessagesScrollEverBeenVisible && elixirChatWidget.hasMessageHistoryBeenEverFetched) {
+        this.setState({ hasMessagesScrollEverBeenVisible: true });
+        this.scrollToBottom();
+      }
+    });
+
     elixirChatWidget.on(MESSAGES_HISTORY_APPEND_ONE, this.onMessageReceive);
     elixirChatWidget.on(MESSAGES_HISTORY_SET, messages => {
       this.setProcessedMessages(messages);
       this.setState({ isLoading: false });
-      this.scrollToBottom();
-      this.onMessageBeingScrolledToAndViewed(viewedMessageId => {
-        this.messageRefs[viewedMessageId].current.style.border = `4px solid #${randomDigitStringId(6)}`;
-        console.log('%c__ MARK READ 2', 'color: green', viewedMessageId);
-      });
+      if (elixirChatWidget.isWidgetPopupOpen) {
+        this.setState({ hasMessagesScrollEverBeenVisible: true });
+        this.scrollToBottom();
+      }
     });
+
     elixirChatWidget.on(MESSAGES_HISTORY_PREPEND_MANY, messages => {
       this.setProcessedMessages(messages, { insertBefore: true });
     });
@@ -108,29 +120,59 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     window.__this = this;
   }
 
+  componentDidUpdate(prevProps, prevState){
+    const { processedMessages, hasMessagesScrollEverBeenVisible } = this.state;
+
+    const currentLastMessageId = _get(_last(processedMessages), 'id');
+    const previousLastMessageId = _get(_last(prevState.processedMessages), 'id');
+
+    const currentFirstMessageId = _get(processedMessages, '[0].id');
+    const previousFirstMessageId = _get(prevState.processedMessages, '[0].id');
+
+    const messagesDidRerender =
+      (prevState.processedMessages.length !== processedMessages.length) &&
+      (currentLastMessageId !== previousLastMessageId || currentFirstMessageId !== previousFirstMessageId);
+
+    const case1 = messagesDidRerender && hasMessagesScrollEverBeenVisible;
+    const case2 = hasMessagesScrollEverBeenVisible && !prevState.hasMessagesScrollEverBeenVisible;
+
+    if (case1 || case2) {
+      console.error('__ INIT WATCH', { case1, case2 });
+      this.onMessageBeingScrolledToAndViewed(viewedMessageId => {
+        this.messageRefs[viewedMessageId].current.style.border = `4px solid #${randomDigitStringId(6)}`;
+        console.log('%c__ MARK READ 3', 'color: green', viewedMessageId);
+      });
+    }
+
+  };
+
   onMessageBeingScrolledToAndViewed = (callback) => {
     const timeInViewportToMarkMessageRead = 2 * 1000;
     const maxConsiderableMessageHeight = this.scrollBlock.current.offsetHeight / 2;
-    const currentlyVisibleMessageIds = {};
-    const alreadyMarkedReadMessageIds = {};
 
     Object.values(this.messageRefs)
-      .filter(ref => ref.isUnread)
+      .filter(ref => {
+        if (!ref.isUnread) {
+          ref.current.style.opacity = '0.5';
+        }
+        return ref.isUnread;
+      })
       .forEach(ref => {
         const intersectionObserver = new IntersectionObserver(([ entry ]) => {
           const messageElement: HTMLElement = entry.target;
           const messageId = messageElement.dataset.id;
-          if (alreadyMarkedReadMessageIds[messageId]) {
+          if (this.alreadyMarkedReadMessageIds[messageId]) {
             return;
           }
           if (entry.isIntersecting) {
-            currentlyVisibleMessageIds[messageId] = setTimeout(() => {
+            this.currentlyVisibleMessageIds[messageId] = setTimeout(() => {
+              this.alreadyMarkedReadMessageIds[messageId] = true;
               callback(messageId);
             }, timeInViewportToMarkMessageRead);
           }
           else {
-            clearTimeout(currentlyVisibleMessageIds[messageId]);
-            delete currentlyVisibleMessageIds[messageId];
+            clearTimeout(this.currentlyVisibleMessageIds[messageId]);
+            delete this.currentlyVisibleMessageIds[messageId];
           }
         }, {
           root: this.scrollBlock.current,
@@ -322,6 +364,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     requestAnimationFrame(() => {
       this.scrollBlock.current.scrollTop = this.scrollBlock.current.scrollHeight;
     });
+    this.scrollBlock.current.scrollTop = this.scrollBlock.current.scrollHeight;
   };
 
   onReplyOriginalMessageTextClick = (messageId) => {
