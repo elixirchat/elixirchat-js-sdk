@@ -6,13 +6,18 @@ import { randomDigitStringId } from '../../utilsCommon';
 import { inflect, getImageDimensions } from '../../utilsWidget';
 import { getScreenshotCompatibilityFallback } from '../../sdk/ScreenshotTaker';
 import {
-  IMAGE_PREVIEW_CLOSE,
   REPLY_MESSAGE,
-  TEXTAREA_VERTICAL_RESIZE, WIDGET_IFRAME_READY,
+  IMAGE_PREVIEW_CLOSE,
+  TEXTAREA_VERTICAL_RESIZE,
+  WIDGET_IFRAME_READY,
   WIDGET_POPUP_OPEN,
   WIDGET_RENDERED
 } from '../ElixirChatWidgetEventTypes';
-import {TYPING_STATUS_CHANGE, TYPING_STATUS_SUBSCRIBE_SUCCESS} from '../../sdk/ElixirChatEventTypes';
+
+import {
+  TYPING_STATUS_CHANGE,
+  TYPING_STATUS_SUBSCRIBE_SUCCESS,
+} from '../../sdk/ElixirChatEventTypes';
 
 export interface IDefaultWidgetTextareaProps {
   elixirChatWidget: ElixirChatWidget;
@@ -57,16 +62,16 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
       elixirChatWidget.widgetIFrameDocument.body.addEventListener('drop', this.onBodyDrop);
     });
 
-    elixirChatWidget.on(WIDGET_RENDERED, () => {
-      if (elixirChatWidget.isWidgetPopupOpen) {
-        this.focusTextarea();
-      }
-    });
-
     elixirChatWidget.on(TYPING_STATUS_SUBSCRIBE_SUCCESS, () => {
       const textareaText = localStorage.getItem('elixirchat-typed-text') || '';
       elixirChatWidget.dispatchTypedText(textareaText);
       this.setState({ textareaText });
+    });
+
+    elixirChatWidget.on(WIDGET_RENDERED, () => {
+      if (elixirChatWidget.isWidgetPopupOpen) {
+        this.focusTextarea();
+      }
     });
 
     elixirChatWidget.on(WIDGET_POPUP_OPEN, () => {
@@ -74,11 +79,12 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
       this.focusTextarea();
     });
 
+    elixirChatWidget.on(IMAGE_PREVIEW_CLOSE, () => this.focusTextarea);
+
     elixirChatWidget.on(TYPING_STATUS_CHANGE, currentlyTypingUsers => {
       this.setState({ currentlyTypingUsers });
     });
 
-    elixirChatWidget.on(IMAGE_PREVIEW_CLOSE, () => this.focusTextarea);
     elixirChatWidget.on(REPLY_MESSAGE, messageId => {
       this.setState({ textareaResponseToMessageId: messageId });
       this.onVerticalResize();
@@ -88,16 +94,6 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
     this.setState({
       screenshotFallback: getScreenshotCompatibilityFallback(),
     });
-  }
-
-  componentDidUpdate(prevProps) {
-    const { textareaAttachments, textareaResponseToMessageId } = this.props;
-    const didResponseToMessageIdChange = textareaResponseToMessageId !== prevProps.textareaResponseToMessageId;
-    // const didAttachmentsChange = textareaAttachments !== prevProps.textareaAttachments;
-    if (didResponseToMessageIdChange) {
-      this.onVerticalResize();
-      this.focusTextarea();
-    }
   }
 
   componentWillUnmount(){
@@ -168,6 +164,7 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
           textareaResponseToMessageId: null,
           textareaAttachments: [],
         });
+        this.onVerticalResize();
       }
     }
   };

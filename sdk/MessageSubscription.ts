@@ -17,10 +17,10 @@ import { IMessage, serializeMessage, fragmentMessage } from './serializers/seria
 import { _get, logEvent, randomDigitStringId, isWebImage } from '../utilsCommon';
 import { GraphQLClientSocket } from './GraphQLClientSocket';
 import {
+  gql,
   GraphQLClient,
   simplifyGraphQLJSON,
   insertGraphQlFragments,
-  gql,
 } from './GraphQLClient';
 
 
@@ -251,13 +251,20 @@ export class MessageSubscription {
   public sendMessage = (params: ISentMessage): Promise<IMessage> => {
     const { backendStaticUrl, client, debug } = this.elixirChat;
     const { variables, binaries } = this.serializeSendMessageParams(params);
-    let temporaryMessage;
     let tempId;
+
+    if (!variables.text && !variables.attachments.length) {
+      const errorMessage = 'Either "text" or "attachments" parameter must not be empty';
+      logEvent(debug, errorMessage, { variables }, 'error');
+      return new Promise((resolve, reject) => {
+        reject({ message: errorMessage });
+      });
+    }
 
     if (params.appendConditionally) {
       tempId = randomDigitStringId(6);
       variables.tempId = tempId;
-      temporaryMessage = this.generateTemporaryMessage(tempId, params);
+      const temporaryMessage = this.generateTemporaryMessage(tempId, params);
       this.appendMessageConditionally(temporaryMessage);
     }
     else if (params.retrySubmissionByTempId) {
@@ -270,12 +277,6 @@ export class MessageSubscription {
     }
 
     return new Promise((resolve, reject) => {
-      if (!variables.text && !variables.attachments.length) {
-        const message = 'Either "text" or "attachments" parameter must not be empty';
-        logEvent(debug, message, { variables }, 'error');
-        reject({ message });
-        return;
-      }
       this.graphQLClient
         .query(this.sendMessageQuery, variables, binaries)
         .then(response => {
@@ -359,18 +360,18 @@ export class MessageSubscription {
             resolve(processedMessages);
           }
           else {
-            this.onFetchMessageHistoryFailure(response);
+            this.onGetMessageHistoryByCursorFailure(response);
             reject(response);
           }
         })
         .catch(error => {
-          this.onFetchMessageHistoryFailure(error);
+          this.onGetMessageHistoryByCursorFailure(error);
           reject(error);
         });
     });
   };
 
-  protected onFetchMessageHistoryFailure(error: any): void {
+  protected onGetMessageHistoryByCursorFailure(error: any): void {
     const { triggerEvent, debug } = this.elixirChat;
     if (this.hasMessageHistoryBeenEverFetched) {
       logEvent(debug, 'Failed to fetch message history', { error }, 'error');
@@ -391,11 +392,6 @@ export class MessageSubscription {
         logEvent(debug, 'Fetched new message history', { processedMessageHistory });
         triggerEvent(MESSAGES_HISTORY_SET, processedMessageHistory);
         return processedMessageHistory;
-      })
-      .catch(error => {
-        logEvent(debug, 'Failed to fetch initial message history', { error }, 'error');
-        triggerEvent(MESSAGES_FETCH_HISTORY_INITIAL_ERROR, error);
-        throw error;
       });
   };
 
@@ -416,11 +412,6 @@ export class MessageSubscription {
         logEvent(debug, 'Fetched and prepended additional message history', { processedMessageHistory });
         triggerEvent(MESSAGES_HISTORY_PREPEND_MANY, processedMessageHistory, this.messageHistory);
         return processedMessageHistory;
-      })
-      .catch(error => {
-        logEvent(debug, 'Failed to fetch message history', { error }, 'error');
-        triggerEvent(MESSAGES_FETCH_HISTORY_ERROR, error);
-        throw error;
       });
   };
 

@@ -1,14 +1,20 @@
-import {uniqueNamesGenerator} from 'unique-names-generator';
-import {_get, capitalize, getJSONFromLocalStorage, logEvent, randomDigitStringId,} from '../utilsCommon';
+import { uniqueNamesGenerator } from 'unique-names-generator';
+import {
+  _get,
+  logEvent,
+  capitalize,
+  randomDigitStringId,
+  getJSONFromLocalStorage,
+} from '../utilsCommon';
 
-import {IMessage} from './serializers/serializeMessage';
-import {fragmentClient} from './serializers/serializeUser';
-import {IScreenshot, ScreenshotTaker} from './ScreenshotTaker';
-import {IUnreadMessagesCounterData, UnreadMessagesCounter} from './UnreadMessagesCounter';
-import {TypingStatusSubscription} from './TypingStatusSubscription';
-import {OperatorOnlineStatusSubscription} from './OperatorOnlineStatusSubscription';
-import {ISentMessageSerialized, MessageSubscription} from './MessageSubscription';
-import {gql, GraphQLClient, insertGraphQlFragments} from './GraphQLClient';
+import { IMessage } from './serializers/serializeMessage';
+import { fragmentClient } from './serializers/serializeUser';
+import { IScreenshot, ScreenshotTaker } from './ScreenshotTaker';
+import { IUnreadMessagesCounterData, UnreadMessagesCounter } from './UnreadMessagesCounter';
+import { TypingStatusSubscription } from './TypingStatusSubscription';
+import { OperatorOnlineStatusSubscription } from './OperatorOnlineStatusSubscription';
+import { ISentMessageSerialized, MessageSubscription } from './MessageSubscription';
+import { gql, GraphQLClient, insertGraphQlFragments } from './GraphQLClient';
 import {
   JOIN_ROOM_ERROR,
   JOIN_ROOM_SUCCESS,
@@ -120,7 +126,7 @@ export class ElixirChat {
       return !this[paramKey];
     });
     if (missingRequiredParams.length) {
-      const message = `Required parameters ${missingRequiredParams.join(', ')} not provided: \nSee more: https://github.com/elixirchat/elixirchat-js-sdk#config`;
+      const message = `Required parameters: ${missingRequiredParams.join(', ')} not provided. \nSee more: https://github.com/elixirchat/elixirchat-js-sdk#config`;
       logEvent(this.debug, message, null, 'error');
       return false;
     }

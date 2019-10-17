@@ -22,6 +22,7 @@ export function inflectDayJSWeekDays(locale: 'en-US' | 'ru-RU', formattedDateStr
   if (locale === 'en-US') {
     return formattedDateString;
   }
+  // TODO: check out the proper way to customize date string in dayjs
   let updatedFormattedDateString = formattedDateString;
   const reDictRu = {
     'в понедельник': 'в понедельник',
@@ -62,7 +63,7 @@ export function playNotificationSound(): void {
     notification.play();
   }
   catch (e) {
-    console.error('Unable to play notification sound before any action was taken by the user');
+    console.error('Unable to play notification sound before any action was taken by the user in the current browser tab');
   }
 }
 
@@ -132,8 +133,8 @@ export interface IScrollToElement {
   (
     element: HTMLElement,
     options: {
-      isSmooth: boolean;
-      position: string;
+      isSmooth: boolean;  // same as native Element.scrollIntoView({ behavior: ... })
+      position: string;   // same as native Element.scrollIntoView({ block: ... })
     },
     callback: () => {}
   ): void

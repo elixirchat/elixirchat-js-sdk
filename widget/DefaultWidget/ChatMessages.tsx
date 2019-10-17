@@ -85,7 +85,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     elixirChatWidget.on(WIDGET_POPUP_TOGGLE, (isPopupOpen) => {
       this.setState({ isPopupOpen });
       if (isPopupOpen) {
-        this.fff();
+        this.onMultipleMessagesBeingViewedSimultaneously(this.markLatestViewedMessageRead);
       }
     });
 
@@ -104,9 +104,9 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
           lastReadMessageRef,
         });
 
-        requestAnimationFrame(() => {
+        setTimeout(() => {
           scrollToElement(lastReadMessageRef.current, { isSmooth: true, position: 'start' });
-        });
+        }, 500);
       }
     });
 
@@ -129,9 +129,9 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
           lastReadMessageRef,
         });
 
-        requestAnimationFrame(() => {
+        setTimeout(() => {
           scrollToElement(lastReadMessageRef.current, { isSmooth: true, position: 'start' });
-        });
+        }, 500);
       }
     });
 
@@ -172,119 +172,90 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
       (prevState.processedMessages.length !== processedMessages.length) &&
       (currentLastMessageId !== previousLastMessageId || currentFirstMessageId !== previousFirstMessageId);
 
-    // const case1 = messagesDidRerender && hasMessagesScrollEverBeenVisible;
-    // const case2 = hasMessagesScrollEverBeenVisible && !prevState.hasMessagesScrollEverBeenVisible;
-    //
-    // if ( (case1 || case2) &&  elixirChatWidget.isWidgetPopupOpen) {
-    //   console.error('__ INIT WATCH', { case1, case2 });
-    //   this.onMessageBeingScrolledToAndViewed(viewedMessageId => {
-    //     this.messageRefs[viewedMessageId].current.style.border = `4px solid #${randomDigitStringId(6)}`;
-    //     console.log('%c__ MARK READ 3', 'color: green', viewedMessageId);
-    //   });
-    // }
-
     if (messagesDidRerender) {
-      this.fff();
+      this.onMultipleMessagesBeingViewedSimultaneously(this.markLatestViewedMessageRead);
     }
 
   };
 
-  fff = () => {
-
+  markLatestViewedMessageRead = (messageIds) => {
     const { elixirChatWidget } = this.props;
+    const messagesSortedByTime = messageIds
+      .map(messageId => this.messageRefs[messageId])
+      .sort((a,b) => {
+        const aTime = +new Date(a.timestamp);
+        const bTime = +new Date(b.timestamp);
+        return aTime < bTime ? -1 : 1;
+      });
+    const latestMessage = _last(messagesSortedByTime);
+    elixirChatWidget.setLastReadMessage(latestMessage.id);
+  };
 
-    let ids = [];
-    let timeout;
-    let hasTimeout = false;
+  onMultipleMessagesBeingViewedSimultaneously = (callback) => {
+    let throttlingTimeoutRunning = false;
+    let viewedMessageIds = [];
 
     requestAnimationFrame(() => {
-      console.log('%c INIT', 'color: green');
-      this.onMessageBeingScrolledToAndViewed(viewedMessageId => {
+      this.onMessageBeingViewed(messageId => {
 
-        ids.push(viewedMessageId);
+        viewedMessageIds.push(messageId);
+        if (!throttlingTimeoutRunning) {
+          throttlingTimeoutRunning = true;
 
-        if (!hasTimeout) {
-          hasTimeout = true;
-          timeout = setTimeout(() => {
-
-            const msgs = ids.map(id => this.messageRefs[id]).sort((a,b) => {
-              const aTime = +new Date(a.timestamp);
-              const bTime = +new Date(b.timestamp);
-              return aTime < bTime ? -1 : 1;
-            });
-
-            const color = randomDigitStringId(6);
-            msgs.forEach(msg => {
-              msg.current.style.border = `4px solid #${color}`;
-            });
-            console.log(`%cMARK READ ${msgs.length} messages`, 'color: green', { msgs, LATEST: _last(msgs) });
-            window.__msgs = msgs;
-
-            elixirChatWidget.setLastReadMessage(_last(msgs).id);
-
-
-            hasTimeout = false;
-            ids = [];
-
-
+          setTimeout(() => {
+            callback(viewedMessageIds);
+            throttlingTimeoutRunning = false;
+            viewedMessageIds = [];
           }, 1000);
+
         }
-
-
       });
     });
   };
 
-  onMessageBeingScrolledToAndViewed = (callback) => {
-    const timeInViewportToMarkMessageRead = 2 * 1000;
+  onMessageBeingViewed = (callback) => {
     const scrollBlockHeight = this.scrollBlock.current.offsetHeight;
-    if (!scrollBlockHeight) {
-      console.error('FAIL INIT');
-      return;
+    if (scrollBlockHeight) {  // Zero scroll block height means popup is closed - therefore aborting watching
+      const maxConsiderableMessageHeight = scrollBlockHeight / 2;
+      Object.values(this.messageRefs)
+        .filter(ref => ref.isUnread && !ref.intersectionObserver)
+        .forEach(ref => {
+          ref.intersectionObserver = this.createMessageScrollObserver(
+            ref.current,
+            maxConsiderableMessageHeight,
+            callback
+          );
+      });
     }
-    const maxConsiderableMessageHeight = scrollBlockHeight / 2;
+  };
 
-    Object.values(this.messageRefs)
-      .filter(ref => {
-        if (!ref.isUnread) {
-          ref.current.style.opacity = '0.5';
-        }
-        if (ref.intersectionObserver) {
-          console.log('__ has observer');
-          ref.current.style.textShadow = '0 2px 2px red';
-        }
-        return ref.isUnread && !ref.intersectionObserver;
-      })
-      .forEach(ref => {
-        ref.intersectionObserver = new IntersectionObserver(([ entry ]) => {
-          const messageElement: HTMLElement = entry.target;
-          const messageId = messageElement.dataset.id;
-          if (!this.messageRefs[messageId].isUnread) {
-            console.error('__ already marked');
-            return;
-          }
-          if (this.alreadyMarkedReadMessageIds[messageId]) {
-            return;
-          }
-          if (entry.isIntersecting) {
-            this.currentlyVisibleMessageIds[messageId] = setTimeout(() => {
-              this.alreadyMarkedReadMessageIds[messageId] = true;
-              callback(messageId);
-            }, timeInViewportToMarkMessageRead);
-          }
-          else {
-            clearTimeout(this.currentlyVisibleMessageIds[messageId]);
-            delete this.currentlyVisibleMessageIds[messageId];
-          }
-        }, {
-          root: this.scrollBlock.current,
-          threshold: Math.min(maxConsiderableMessageHeight / ref.current.offsetHeight, 0.8),
-        });
+  createMessageScrollObserver = (messageElement, maxConsiderableMessageHeight, callback) => {
+    const delayToMarkMessageRead = 2 * 1000;
+    const observerOptions = {
+      root: this.scrollBlock.current,
+      threshold: Math.min(maxConsiderableMessageHeight / messageElement.offsetHeight, 0.8),
+    };
+    const intersectionObserver = new IntersectionObserver(([ entry ]) => {
+      const messageElement: HTMLElement = entry.target;
+      const messageId = messageElement.dataset.id;
+      const messageRef = this.messageRefs[messageId];
 
-        console.log('--- ', ref.current.offsetHeight);
-
-        ref.intersectionObserver.observe(ref.current);
-    });
+      if (this.alreadyMarkedReadMessageIds[messageId] || !messageRef.isUnread) {
+        return;
+      }
+      if (entry.isIntersecting) {
+        this.currentlyVisibleMessageIds[messageId] = setTimeout(() => {
+          this.alreadyMarkedReadMessageIds[messageId] = true;
+          callback(messageId);
+        }, delayToMarkMessageRead);
+      }
+      else {
+        clearTimeout(this.currentlyVisibleMessageIds[messageId]);
+        delete this.currentlyVisibleMessageIds[messageId];
+      }
+    }, observerOptions);
+    intersectionObserver.observe(messageElement);
+    return intersectionObserver;
   };
 
   onMessageReceive = message => {
@@ -498,12 +469,10 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
   createMessageRef = (messageElement, message) => {
     this.messageRefs[message.id] = {
       current: messageElement,
+      intersectionObserver: null,
       id: message.id,
       isUnread: message.isUnread,
       timestamp: message.timestamp,
-      sender: {
-        isCurrentClient: message.sender.isCurrentClient
-      }
     };
   };
 
