@@ -8,6 +8,8 @@ import {
   UNREAD_MESSAGES_CHANGE,
   UNREAD_REPLIES_CHANGE,
   LAST_READ_MESSAGE_CHANGE,
+  UNREAD_FETCH_COUNTS_SUCCESS,
+  UNREAD_FETCH_COUNTS_ERROR,
 } from './ElixirChatEventTypes';
 
 
@@ -42,6 +44,15 @@ export class UnreadMessagesCounter {
     }
   `;
 
+  protected fetchUnreadCountsQuery = gql`
+    query {
+      room {
+        unreadMessagesCount
+        unreadRepliesCount
+      }
+    }
+  `;
+
   protected elixirChat: ElixirChat;
   protected graphQLClient: GraphQLClient;
   protected graphQLClientSocket: GraphQLClientSocket;
@@ -56,6 +67,7 @@ export class UnreadMessagesCounter {
       url: apiUrl,
       token: authToken,
     });
+    this.fetchUnreadCounts();
     this.initializeSocketClient();
   };
 
@@ -89,13 +101,39 @@ export class UnreadMessagesCounter {
         logEvent(debug, 'Successfully subscribed to unread messages count');
         triggerEvent(UNREAD_MESSAGES_SUBSCRIBE_SUCCESS);
       },
-      onResult: this.onSocketResult,
+      onResult: response => {
+        const data: IUnreadMessagesCounterData = _get(response, 'data.updateReadMessages') || {};
+        this.onUnreadCountsUpdate(data);
+      },
     });
   };
-  
-  protected onSocketResult = (response: any): void => {
+
+  public fetchUnreadCounts = (): Promise<IUnreadMessagesCounterData> => {
     const { debug, triggerEvent } = this.elixirChat;
-    const data: IUnreadMessagesCounterData = _get(response, 'data.updateReadMessages') || {};
+    return this.graphQLClient
+      .query(this.fetchUnreadCountsQuery, {})
+      .then(response => {
+        if (response && response.room) {
+          logEvent(debug, 'Fetched unread counts', response.room);
+          triggerEvent(UNREAD_FETCH_COUNTS_SUCCESS, response);
+          this.onUnreadCountsUpdate(response.room);
+          return response;
+        }
+        else {
+          logEvent(debug, 'Failed to fetch unread counts', response, 'error');
+          triggerEvent(UNREAD_FETCH_COUNTS_ERROR, response);
+          throw response;
+        }
+      })
+      .catch(error => {
+        logEvent(debug, 'Failed to fetch unread counts', error, 'error');
+        triggerEvent(UNREAD_FETCH_COUNTS_ERROR, error);
+        throw error;
+      });
+  }
+  
+  protected onUnreadCountsUpdate = (data: IUnreadMessagesCounterData): void => {
+    const { debug, triggerEvent } = this.elixirChat;
     const { unreadMessagesCount, unreadRepliesCount, lastReadMessageId } = data;
 
     if (unreadMessagesCount !== this.unreadMessagesCount) {

@@ -24,7 +24,7 @@ export interface IWidgetState {
   insideIframeStyles: null | string;
   extractedFontsStyles: null | string;
   customIframeStyles: null | string;
-  unreadMessagesCounter: number,
+  unreadMessagesCount: number,
 }
 
 export class Widget extends Component<IWidgetProps, IWidgetState> {
@@ -37,7 +37,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
     insideIframeStyles: null,
     extractedFontsStyles: null,
     customIframeStyles: null,
-    unreadMessagesCounter: 0,
+    unreadMessagesCount: 0,
   };
 
   componentDidMount() {
@@ -51,6 +51,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
       insideIframeStyles,
       customIframeStyles: elixirChatWidget.iframeStyles,
       isDefaultButtonHidden: elixirChatWidget.hideDefaultButton,
+      unreadMessagesCount: elixirChatWidget.unreadMessagesCount,
     });
 
     elixirChatWidget.on(WIDGET_POPUP_TOGGLE, this.onPopupToggle);
@@ -120,10 +121,10 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
       insideIframeStyles,
       extractedFontsStyles,
       customIframeStyles,
-      unreadMessagesCounter,
+      unreadMessagesCount,
     } = this.state;
 
-    const visibleUnreadMessagesCounter = unreadMessagesCounter > 99 ? '99+' : unreadMessagesCounter;
+    const visibleUnreadMessagesCount = unreadMessagesCount > 99 ? '99+' : unreadMessagesCount;
 
     return (
       <Fragment>
@@ -133,9 +134,9 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
           <button className="elixirchat-widget-button" onClick={elixirChatWidget.togglePopup}>
             <span className={cn({
               'elixirchat-widget-button-counter': true,
-              'elixirchat-widget-button-counter--has-unread': visibleUnreadMessagesCounter,
+              'elixirchat-widget-button-counter--has-unread': visibleUnreadMessagesCount,
             })}>
-              {Boolean(visibleUnreadMessagesCounter) && visibleUnreadMessagesCounter}
+              {Boolean(visibleUnreadMessagesCount) && visibleUnreadMessagesCount}
             </span>
           </button>
         )}
