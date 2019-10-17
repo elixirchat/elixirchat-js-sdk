@@ -90,7 +90,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
         this.onMessageHistoryInitiallyBecomeVisible();
       }
     });
-    
+
     elixirChatWidget.on(MESSAGES_HISTORY_APPEND_ONE, this.onMessageReceive);
 
     elixirChatWidget.on(MESSAGES_HISTORY_SET, messages => {
@@ -262,13 +262,13 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     this.onMultipleMessagesBeingViewedSimultaneously(this.markLatestViewedMessageRead);
   };
 
-  processMessages = (messages, previousMessage) => {
+  processMessages = (messages, precedingMessage) => {
     const { elixirChatWidget } = this.props;
 
     let imagePreviews = [];
     let processedMessages = messages.map((message, i) => {
       const processedMessage = { ...message };
-      const previousMessage = messages[i - 1] || previousMessage;
+      const previousMessage = messages[i - 1] || precedingMessage;
       const isFirstMessageInChat = !previousMessage && elixirChatWidget.reachedBeginningOfMessageHistory;
       const isNextDayAfterPreviousMessage = previousMessage && dayjs(previousMessage.timestamp)
         .isBefore(dayjs(message.timestamp).startOf('day'));

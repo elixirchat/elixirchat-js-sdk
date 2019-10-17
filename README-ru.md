@@ -609,7 +609,7 @@ document.querySelector('button#load-previous-messages').addEventListener('click'
   });
 });
 
-if (elixirChat.connected) {
+if (elixirChat.isConnected) {
   document.getElementById('status').className = 'active';
 }
 

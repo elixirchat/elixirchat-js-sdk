@@ -55,7 +55,7 @@ export class ElixirChat {
   public elixirChatRoomId: string;
   public elixirChatClientId: string;
   public authToken: string;
-  public connected: boolean;
+  public isConnected: boolean;
   public isPrivate: boolean;
 
   public widgetTitle: string = '';
@@ -284,7 +284,7 @@ export class ElixirChat {
     return this.graphQLClient.query(query, variables)
       .then(({ joinRoom }: any) => {
         if (joinRoom) {
-          this.connected = true;
+          this.isConnected = true;
           this.authToken = joinRoom.token;
           this.widgetTitle = joinRoom.company.widgetTitle || this.defaultWidgetTitle;
           this.elixirChatClientId = joinRoom.client.id;
@@ -300,27 +300,45 @@ export class ElixirChat {
   }
 
   public sendMessage = (params: ISentMessageSerialized): Promise<IMessage> => {
+    if (!this.isConnected) {
+      return this.showDisconnectedError(true);
+    }
     this.typingStatusSubscription.dispatchTypedText(false);
     return this.messageSubscription.sendMessage(params);
   };
 
   public retrySendMessage = (message: IMessage): Promise<IMessage> => {
+    if (!this.isConnected) {
+      return this.showDisconnectedError(true);
+    }
     return this.messageSubscription.retrySendMessage(message);
   };
 
   public fetchMessageHistory = (limit: number): Promise<[IMessage]> => {
+    if (!this.isConnected) {
+      return this.showDisconnectedError(true);
+    }
     return this.messageSubscription.fetchMessageHistory(limit);
   };
 
   public fetchPrecedingMessageHistory = (limit: number): Promise<[IMessage]> => {
+    if (!this.isConnected) {
+      return this.showDisconnectedError(true);
+    }
     return this.messageSubscription.fetchPrecedingMessageHistory(limit);
   };
 
   public dispatchTypedText = (typedText: string): void => {
+    if (!this.isConnected) {
+      return this.showDisconnectedError();
+    }
     this.typingStatusSubscription.dispatchTypedText(typedText);
   };
 
   public setLastReadMessage = (messageId: string): Promise<IUnreadMessagesCounterData> => {
+    if (!this.isConnected) {
+      return this.showDisconnectedError(true);
+    }
     return this.unreadMessagesCounter.setLastReadMessage(messageId);
   };
 
@@ -328,24 +346,33 @@ export class ElixirChat {
     return this.screenshotTaker.takeScreenshot();
   };
 
-  public reconnect = ({ room, client }: { room?: IElixirChatRoom, client?: IElixirChatUser }): Promise<void> => {
-    logEvent(this.debug, 'Attempting to reconnect to another room', { room, client });
-    if (room) {
-      this.room = room;
+  public disconnect = (): void => {
+    if (!this.isConnected) {
+      return this.showDisconnectedError();
     }
-    if (client) {
-      this.client = client;
-    }
-
-    this.setRoomAndClient({ room, client });
+    logEvent(this.debug, 'Disconnecting from ElixirChat');
+    this.isConnected = false;
     this.messageSubscription.unsubscribe();
     this.unreadMessagesCounter.unsubscribe();
     this.typingStatusSubscription.unsubscribe();
     this.operatorOnlineStatusSubscription.unsubscribe();
+  };
 
-    this.joinRoom();
+  public reconnect = ({ room, client }: { room?: IElixirChatRoom, client?: IElixirChatUser }): Promise<void> => {
+    logEvent(this.debug, 'Attempting to reconnect to another room', { room, client });
+    this.setRoomAndClient({ room, client });
+    this.disconnect();
+    return this.joinRoom();
+  };
 
-    // TODO: resubscribe on JOIN_ROOM?
+  protected showDisconnectedError(returnPromise): void | Promise<any> {
+    const message = 'ElixirChat is not currently connected. Use reconnect() method to connect to another room.';
+    logEvent(this.debug, message, null, 'error');
+    if (returnPromise) {
+      return new Promise((resolve, reject) => {
+        reject({ message });
+      });
+    }
   };
 }
 
