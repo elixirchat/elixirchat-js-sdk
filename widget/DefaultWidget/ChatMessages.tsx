@@ -93,6 +93,20 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
       if (!this.state.hasMessagesScrollEverBeenVisible && elixirChatWidget.hasMessageHistoryBeenEverFetched) {
         this.setState({ hasMessagesScrollEverBeenVisible: true });
         this.scrollToBottom();
+
+
+        const lastReadMessage = _last(this.state.processedMessages.filter(message => !message.isUnread)) || this.state.processedMessages[0];
+        const lastReadMessageRef = this.messageRefs[lastReadMessage.id] || {};
+        window.__lastReadMessageRef = lastReadMessageRef;
+
+        console.warn('__ NADA SCROLL 1', {
+          lastReadMessage,
+          lastReadMessageRef,
+        });
+
+        requestAnimationFrame(() => {
+          scrollToElement(lastReadMessageRef.current, { isSmooth: true, position: 'start' });
+        });
       }
     });
 
@@ -105,6 +119,19 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
       if (elixirChatWidget.isWidgetPopupOpen) {
         this.setState({ hasMessagesScrollEverBeenVisible: true });
         this.scrollToBottom();
+
+        const lastReadMessage = _last(this.state.processedMessages.filter(message => !message.isUnread)) || this.state.processedMessages[0];
+        const lastReadMessageRef = this.messageRefs[lastReadMessage.id] || {};
+        window.__lastReadMessageRef = lastReadMessageRef;
+
+        console.warn('__ NADA SCROLL 2', {
+          lastReadMessage,
+          lastReadMessageRef,
+        });
+
+        requestAnimationFrame(() => {
+          scrollToElement(lastReadMessageRef.current, { isSmooth: true, position: 'start' });
+        });
       }
     });
 
@@ -164,11 +191,46 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
   fff = () => {
 
+    const { elixirChatWidget } = this.props;
+
+    let ids = [];
+    let timeout;
+    let hasTimeout = false;
+
     requestAnimationFrame(() => {
       console.log('%c INIT', 'color: green');
       this.onMessageBeingScrolledToAndViewed(viewedMessageId => {
-        this.messageRefs[viewedMessageId].current.style.border = `4px solid #${randomDigitStringId(6)}`;
-        console.log('%cMARK READ', 'color: green', viewedMessageId);
+
+        ids.push(viewedMessageId);
+
+        if (!hasTimeout) {
+          hasTimeout = true;
+          timeout = setTimeout(() => {
+
+            const msgs = ids.map(id => this.messageRefs[id]).sort((a,b) => {
+              const aTime = +new Date(a.timestamp);
+              const bTime = +new Date(b.timestamp);
+              return aTime < bTime ? -1 : 1;
+            });
+
+            const color = randomDigitStringId(6);
+            msgs.forEach(msg => {
+              msg.current.style.border = `4px solid #${color}`;
+            });
+            console.log(`%cMARK READ ${msgs.length} messages`, 'color: green', { msgs, LATEST: _last(msgs) });
+            window.__msgs = msgs;
+
+            elixirChatWidget.setLastReadMessage(_last(msgs).id);
+
+
+            hasTimeout = false;
+            ids = [];
+
+
+          }, 1000);
+        }
+
+
       });
     });
   };
@@ -197,6 +259,10 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
         ref.intersectionObserver = new IntersectionObserver(([ entry ]) => {
           const messageElement: HTMLElement = entry.target;
           const messageId = messageElement.dataset.id;
+          if (!this.messageRefs[messageId].isUnread) {
+            console.error('__ already marked');
+            return;
+          }
           if (this.alreadyMarkedReadMessageIds[messageId]) {
             return;
           }
@@ -434,6 +500,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
       current: messageElement,
       id: message.id,
       isUnread: message.isUnread,
+      timestamp: message.timestamp,
       sender: {
         isCurrentClient: message.sender.isCurrentClient
       }
