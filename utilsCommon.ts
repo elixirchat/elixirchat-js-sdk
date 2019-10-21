@@ -120,6 +120,9 @@ export function getJSONFromLocalStorage(key: string, defaultValue: any = ''): an
   let value = defaultValue;
   try {
     value = JSON.parse(localStorage.getItem(key));
+    if (value === null) {
+      value = defaultValue;
+    }
   }
   catch (e) {}
   return value;
