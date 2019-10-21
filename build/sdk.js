@@ -411,6 +411,10 @@ function getJSONFromLocalStorage(key) {
 
   try {
     value = JSON.parse(localStorage.getItem(key));
+
+    if (value === null) {
+      value = defaultValue;
+    }
   } catch (e) {}
 
   return value;
@@ -7713,8 +7717,8 @@ function () {
     value: function setRoomAndClient(data) {
       var room = data.room || {};
       var client = data.client || {};
-      var localStorageRoom = utilsCommon_1.getJSONFromLocalStorage('elixirchat-room');
-      var localStorageClient = utilsCommon_1.getJSONFromLocalStorage('elixirchat-client');
+      var localStorageRoom = utilsCommon_1.getJSONFromLocalStorage('elixirchat-room') || {};
+      var localStorageClient = utilsCommon_1.getJSONFromLocalStorage('elixirchat-client') || {};
       var anonymousClientData = this.generateAnonymousClientData();
       var clientId = client.id || localStorageClient.id || anonymousClientData.id;
       var clientFirstName = client.firstName || localStorageClient.firstName || anonymousClientData.firstName;
