@@ -186,8 +186,8 @@ export class ElixirChat {
     let room: any = data.room || {};
     let client: any = data.client || {};
 
-    const localStorageRoom: IElixirChatRoom = getJSONFromLocalStorage('elixirchat-room');
-    const localStorageClient: IElixirChatUser = getJSONFromLocalStorage('elixirchat-client');
+    const localStorageRoom: IElixirChatRoom = getJSONFromLocalStorage('elixirchat-room') || {};
+    const localStorageClient: IElixirChatUser = getJSONFromLocalStorage('elixirchat-client') || {};
     const anonymousClientData = this.generateAnonymousClientData();
 
     const clientId = client.id || localStorageClient.id || anonymousClientData.id;
