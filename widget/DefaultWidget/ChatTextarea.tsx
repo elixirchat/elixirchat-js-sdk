@@ -58,8 +58,9 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
     const { elixirChatWidget } = this.props;
 
     elixirChatWidget.on(WIDGET_IFRAME_READY, () => {
-      elixirChatWidget.widgetIFrameDocument.body.addEventListener('dragover', this.onBodyDrag);
+      elixirChatWidget.widgetIFrameDocument.body.addEventListener('dragover', this.onWidgetPopupDrag);
       elixirChatWidget.widgetIFrameDocument.body.addEventListener('drop', this.onBodyDrop);
+      document.addEventListener('dragover', this.onDragOutOfWidgetPopup);
     });
 
     elixirChatWidget.on(TYPING_STATUS_SUBSCRIBE_SUCCESS, () => {
@@ -98,13 +99,18 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
 
   componentWillUnmount(){
     const { elixirChatWidget } = this.props;
-    elixirChatWidget.widgetIFrameDocument.body.removeEventListener('dragover', this.onBodyDrag);
+    elixirChatWidget.widgetIFrameDocument.body.removeEventListener('dragover', this.onWidgetPopupDrag);
     elixirChatWidget.widgetIFrameDocument.body.removeEventListener('drop', this.onBodyDrop);
+    document.removeEventListener('dragover', this.onDragOutOfWidgetPopup);
   }
 
-  onBodyDrag = (e) => {
+  onWidgetPopupDrag = (e) => {
     e.preventDefault();
     this.setState({ isDraggingAttachments: true });
+  };
+
+  onDragOutOfWidgetPopup = () => {
+    this.setState({ isDraggingAttachments: false });
   };
 
   onBodyDrop = async (e) => {
