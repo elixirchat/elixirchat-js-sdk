@@ -18,7 +18,8 @@ import {
   IMAGE_PREVIEW_OPEN,
   REPLY_MESSAGE,
   TEXTAREA_VERTICAL_RESIZE,
-  WIDGET_IFRAME_READY, WIDGET_POPUP_OPEN, WIDGET_POPUP_TOGGLE,
+  WIDGET_IFRAME_READY,
+  WIDGET_POPUP_OPEN,
 } from '../ElixirChatWidgetEventTypes';
 import {
   JOIN_ROOM_ERROR,
@@ -44,7 +45,8 @@ export interface IDefaultWidgetMessagesState {
   hasMessageHistoryEverBeenVisible: boolean;
   processedMessages: Array<object>,
   imagePreviews: Array<object>,
-  screenshotFallback: null | object,
+  screenshotFallback: object | null,
+  scrollBlockBottomOffset: number | null;
 }
 
 export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaultWidgetMessagesState> {
@@ -57,6 +59,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     processedMessages: [],
     imagePreviews: [],
     screenshotFallback: null,
+    scrollBlockBottomOffset: null,
   };
 
   scrollBlock: { current: HTMLElement } = React.createRef();
@@ -112,9 +115,9 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     elixirChatWidget.on([JOIN_ROOM_ERROR, MESSAGES_SUBSCRIBE_ERROR, MESSAGES_FETCH_HISTORY_INITIAL_ERROR], () => {
       this.setState({ isLoading: false, isLoadingError: true });
     });
-    elixirChatWidget.on(TEXTAREA_VERTICAL_RESIZE, textareaHeight => {
+    elixirChatWidget.on(TEXTAREA_VERTICAL_RESIZE, scrollBlockBottomOffset => {
       const hasUserScroll = this.hasUserScroll();
-      this.scrollBlock.current.style.bottom = textareaHeight + 'px';
+      this.setState({ scrollBlockBottomOffset });
       if (!hasUserScroll) {
         this.scrollToBottom();
       }
@@ -427,17 +430,22 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
   };
 
   render(): void {
-    const { elixirChatWidget } = this.props;
+    const { elixirChatWidget, className } = this.props;
     const {
       processedMessages,
       screenshotFallback,
       isLoading,
       isLoadingError,
       isLoadingPrecedingMessageHistory,
+      scrollBlockBottomOffset,
     } = this.state;
 
     return (
-      <div className="elixirchat-chat-scroll" ref={this.scrollBlock} onScroll={this.onMessagesScroll}>
+      <div className={cn('elixirchat-chat-scroll', className)}
+        style={{ bottom: scrollBlockBottomOffset }}
+        onScroll={this.onMessagesScroll}
+        ref={this.scrollBlock}>
+
         <i className={cn({
           'elixirchat-chat-scroll-progress-bar': true,
           'elixirchat-chat-scroll-progress-bar--animating': isLoadingPrecedingMessageHistory,

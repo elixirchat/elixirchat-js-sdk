@@ -26,7 +26,6 @@ export interface IDefaultWidgetTextareaProps {
 
 export interface IDefaultWidgetTextareaState {
   screenshotFallback: null | object;
-  currentlyTypingUsers: Array<object>,
   textareaText: string,
   textareaAttachments: Array<{
     id: string;
@@ -47,7 +46,6 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
 
   state = {
     screenshotFallback: null,
-    currentlyTypingUsers: [],
     textareaText: '',
     textareaAttachments: [],
     textareaResponseToMessageId: null,
@@ -81,10 +79,6 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
     });
 
     elixirChatWidget.on(IMAGE_PREVIEW_CLOSE, () => this.focusTextarea);
-
-    elixirChatWidget.on(TYPING_STATUS_CHANGE, currentlyTypingUsers => {
-      this.setState({ currentlyTypingUsers });
-    });
 
     elixirChatWidget.on(REPLY_MESSAGE, messageId => {
       this.setState({ textareaResponseToMessageId: messageId });
@@ -285,7 +279,6 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
       textareaText,
       textareaAttachments,
       textareaResponseToMessageId,
-      currentlyTypingUsers,
       screenshotFallback,
       isDraggingAttachments,
     } = this.state;
@@ -297,13 +290,6 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
     return (
       <Fragment>
         <div className="elixirchat-chat-textarea" ref={this.container}>
-
-          {Boolean(currentlyTypingUsers.length) && (
-            <div className="elixirchat-chat-typing">
-              <i className="elixirchat-chat-typing__icon icon-typing"/>
-              {inflect('ru-RU', currentlyTypingUsers.length, ['человек пишет...', 'человека пишут...', 'человек пишут...'])}
-            </div>
-          )}
 
           {Boolean(responseToMessage) && (
             <div className="elixirchat-chat-textarea__reply-to">
