@@ -359,11 +359,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
   onTakeScreenshotClick = () => {
     const { elixirChatWidget } = this.props;
     elixirChatWidget.togglePopup();
-    elixirChatWidget.takeScreenshot().then(() => {
-      elixirChatWidget.togglePopup();
-    }).catch(() => {
-      elixirChatWidget.togglePopup();
-    });
+    elixirChatWidget.takeScreenshot();
   };
 
   onMessagesScroll = () => {
