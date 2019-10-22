@@ -35,6 +35,7 @@ export interface IDefaultWidgetTextareaState {
     height: number;
     isScreenshot?: boolean;
   }>,
+  isSubmittingMessage: boolean;
   isDraggingAttachments: boolean;
   hasCanceledDraggingAttachments: boolean;
 }
@@ -50,6 +51,7 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
     textareaText: '',
     textareaAttachments: [],
     textareaResponseToMessageId: null,
+    isSubmittingMessage: false,
     isDraggingAttachments: false,
     hasCanceledDraggingAttachments: false,
   };
@@ -62,24 +64,20 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
       elixirChatWidget.widgetIFrameDocument.body.addEventListener('drop', this.onBodyDrop);
       document.addEventListener('dragover', this.cancelWidgetPopupDrag);
     });
-
     elixirChatWidget.on(TYPING_STATUS_SUBSCRIBE_SUCCESS, () => {
       const textareaText = localStorage.getItem('elixirchat-typed-text') || '';
       elixirChatWidget.dispatchTypedText(textareaText);
       this.setState({ textareaText });
     });
-
     elixirChatWidget.on(WIDGET_RENDERED, () => {
       if (elixirChatWidget.isWidgetPopupOpen) {
         this.focusTextarea();
       }
     });
-
     elixirChatWidget.on(WIDGET_POPUP_OPEN, () => {
       this.onVerticalResize();
       this.focusTextarea();
     });
-
     elixirChatWidget.on(IMAGE_PREVIEW_CLOSE, () => this.focusTextarea);
 
     elixirChatWidget.on(REPLY_MESSAGE, messageId => {
@@ -87,9 +85,15 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
       this.onVerticalResize();
       this.focusTextarea();
     });
-
     elixirChatWidget.on([WIDGET_MUTE, WIDGET_UNMUTE], () => {
       this.focusTextarea();
+    });
+
+    window.addEventListener('beforeunload', (e) => {
+      if (this.state.isSubmittingMessage) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
     });
 
     this.setState({
@@ -286,12 +290,18 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
     const { textareaText, textareaResponseToMessageId, textareaAttachments } = this.state;
 
     if (textareaText.trim() || textareaAttachments.length) {
-      elixirChatWidget.sendMessage({
-        text: textareaText,
-        attachments: textareaAttachments,
-        responseToMessageId: textareaResponseToMessageId,
-        appendConditionally: true,
-      });
+      this.setState({ isSubmittingMessage: true });
+
+      elixirChatWidget
+        .sendMessage({
+          text: textareaText,
+          attachments: textareaAttachments,
+          responseToMessageId: textareaResponseToMessageId,
+          appendConditionally: true,
+        })
+        .finally(() => {
+          this.setState({ isSubmittingMessage: false });
+        });
       elixirChatWidget.dispatchTypedText(false);
       localStorage.removeItem('elixirchat-typed-text');
     }

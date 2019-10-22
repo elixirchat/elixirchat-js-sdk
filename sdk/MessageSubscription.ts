@@ -132,9 +132,7 @@ export class MessageSubscription {
     const message = serializeMessage(data, { backendStaticUrl, client });
 
     if (this.temporaryMessageTempIds.includes(message.tempId)) {
-      this.enrichTemporaryMessage(message.tempId, message, true);
-      logEvent(debug, 'Enriched temporary message with actual one', { message });
-      triggerEvent(MESSAGES_HISTORY_CHANGE_ONE, message, this.messageHistory);
+      this.forgetTemporaryMessage(message.tempId);
     }
     else {
       this.messageHistory.push(message);
@@ -230,16 +228,13 @@ export class MessageSubscription {
     triggerEvent(MESSAGES_HISTORY_APPEND_ONE, message);
   };
 
-  protected enrichTemporaryMessage(temporaryMessageTempId: string, messageData: IMessage, forgetThisTemporaryMessage: boolean = false): void {
+  protected enrichTemporaryMessage(temporaryMessageTempId: string, messageData: IMessage): void {
     const { triggerEvent } = this.elixirChat;
     if (this.temporaryMessageTempIds.includes(temporaryMessageTempId)) {
       this.messageHistory.forEach(message => {
         if (message.tempId === temporaryMessageTempId) {
           for (let key in messageData) {
             message[key] = messageData[key];
-          }
-          if (forgetThisTemporaryMessage) {
-            this.temporaryMessageTempIds = this.temporaryMessageTempIds.filter(id => id !== temporaryMessageTempId);
           }
           triggerEvent(MESSAGES_HISTORY_CHANGE_ONE, message, this.messageHistory);
           return;
@@ -248,8 +243,12 @@ export class MessageSubscription {
     }
   }
 
+  protected forgetTemporaryMessage(temporaryMessageTempId: string): void {
+    this.temporaryMessageTempIds = this.temporaryMessageTempIds.filter(id => id !== temporaryMessageTempId);
+  }
+
   public sendMessage = (params: ISentMessage): Promise<IMessage> => {
-    const { backendStaticUrl, client, debug } = this.elixirChat;
+    const { backendStaticUrl, client, debug, triggerEvent } = this.elixirChat;
     const { variables, binaries } = this.serializeSendMessageParams(params);
     let tempId;
 
@@ -282,7 +281,14 @@ export class MessageSubscription {
         .then(response => {
           if (response && response.sendMessage) {
             const message = serializeMessage(response.sendMessage, { backendStaticUrl, client });
-            logEvent(this.debug, 'Sent message', { params, variables, message });
+            const { tempId } = message;
+            if (tempId) {
+              this.enrichTemporaryMessage(tempId, message);
+              logEvent(debug, 'Enriched temporary message with actual one', { message });
+            }
+            else {
+              logEvent(debug, 'Sent message', { params, variables, message });
+            }
             resolve(message);
           }
           else {
