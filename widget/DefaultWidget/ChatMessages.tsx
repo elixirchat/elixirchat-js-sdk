@@ -165,7 +165,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
             callback(messagesViewedSimultaneously);
             isThrottlingTimeoutRunning = false;
             messagesViewedSimultaneously = [];
-          }, 1000);
+          }, 500);
         }
       });
     });
@@ -188,7 +188,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
   };
 
   createMessageScrollObserver = (messageElement, maxConsiderableMessageHeight, callback) => {
-    const delayToMarkMessageRead = 2 * 1000;
+    const delayToMarkMessageRead = 1200; // milliseconds
     const observerOptions = {
       root: this.scrollBlock.current,
       threshold: Math.min(maxConsiderableMessageHeight / messageElement.offsetHeight, 0.8),
