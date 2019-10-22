@@ -150,7 +150,7 @@ export function scrollToElement(element, options = {}, callback = () => {}): ISc
     });
 
     if (typeof IntersectionObserver !== 'undefined') {
-      const intersectionObserver = new IntersectionObserver(function(entries) {
+      const intersectionObserver = new IntersectionObserver(entries => {
         if (entries[0].isIntersecting) {
           intersectionObserver.unobserve(element);
           callback();

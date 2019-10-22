@@ -108,6 +108,23 @@ export function _flatten(arr: Array): Array {
 }
 
 
+export function detectBrowser(): 'opera' | 'chrome' | 'safari' | 'firefox' | 'ie' | null {
+  const userAgentKeywords = {
+    'Opera': 'opera',
+    'Chrome': 'chrome',
+    'Safari': 'safari',
+    'Firefox': 'firefox',
+    'MSIE': 'ie',
+  };
+  for (let keyword in userAgentKeywords) {
+    if (navigator.userAgent.indexOf(keyword) > -1) {
+      return userAgentKeywords[keyword];
+    }
+  }
+  return null;
+}
+
+
 export function detectPlatform(): { isWindows: boolean, isMac: boolean } {
   return {
     isWindows: navigator.platform.indexOf('Win') > -1,

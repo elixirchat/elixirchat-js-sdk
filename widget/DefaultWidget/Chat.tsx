@@ -1,18 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import cn from 'classnames';
-import { inflect } from '../../utilsWidget';
-import {
-  WIDGET_MUTE,
-  WIDGET_UNMUTE,
-  TEXTAREA_VERTICAL_RESIZE,
-} from '../ElixirChatWidgetEventTypes';
-
-import {
-  JOIN_ROOM_SUCCESS,
-  TYPING_STATUS_CHANGE,
-  OPERATOR_ONLINE_STATUS_CHANGE,
-} from '../../sdk/ElixirChatEventTypes';
-
+import { WIDGET_MUTE, WIDGET_UNMUTE } from '../ElixirChatWidgetEventTypes';
+import { JOIN_ROOM_SUCCESS, OPERATOR_ONLINE_STATUS_CHANGE } from '../../sdk/ElixirChatEventTypes';
 import { ChatMessages } from './ChatMessages';
 import { ChatTextarea } from './ChatTextarea';
 
@@ -24,8 +13,6 @@ export interface IDefaultWidgetState {
   widgetTitle: string;
   areAnyOperatorsOnline: boolean;
   isNotificationSoundMuted: boolean;
-  currentlyTypingUsers: Array<object>;
-  typingBlockBottomOffset: number | null;
 }
 
 export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
@@ -34,8 +21,6 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
     widgetTitle: '',
     isNotificationSoundMuted: false,
     areAnyOperatorsOnline: false,
-    currentlyTypingUsers: [],
-    typingBlockBottomOffset: null,
   };
 
   componentDidMount() {
@@ -51,30 +36,18 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
     elixirChatWidget.on(OPERATOR_ONLINE_STATUS_CHANGE, areAnyOperatorsOnline => {
       this.setState({ areAnyOperatorsOnline });
     });
-
-    elixirChatWidget.on(TYPING_STATUS_CHANGE, currentlyTypingUsers => {
-      this.setState({ currentlyTypingUsers });
-    });
-
-    elixirChatWidget.on(TEXTAREA_VERTICAL_RESIZE, typingBlockBottomOffset => {
-      this.setState({ typingBlockBottomOffset });
-    });
   }
 
   render(): void {
-    const { elixirChatWidget } = this.props;
+    const { elixirChatWidget, className } = this.props;
     const {
       widgetTitle,
       areAnyOperatorsOnline,
       isNotificationSoundMuted,
-      currentlyTypingUsers,
-      typingBlockBottomOffset,
     } = this.state;
 
-    const isCurrentlyTyping = Boolean(currentlyTypingUsers.length);
-
     return (
-      <div className="elixirchat-chat-container">
+      <div className={cn('elixirchat-chat-container', className)}>
 
         <h2 className="elixirchat-chat-header">
           {widgetTitle && (
@@ -99,26 +72,7 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
           </button>
         </h2>
 
-        <ChatMessages elixirChatWidget={elixirChatWidget} className={cn({
-          'elixirchat-chat--is-typing-visible': isCurrentlyTyping
-        })}/>
-
-        <div style={{ bottom: typingBlockBottomOffset }} className={cn({
-          'elixirchat-chat-typing': true,
-          'elixirchat-chat--is-typing-visible': isCurrentlyTyping,
-        })}>
-          {isCurrentlyTyping && (
-            <Fragment>
-              <i className="elixirchat-chat-typing__icon icon-typing"/>
-              {inflect('ru-RU', currentlyTypingUsers.length, [
-                'человек пишет...',
-                'человека пишут...',
-                'человек пишут...',
-              ])}
-            </Fragment>
-          )}
-        </div>
-
+        <ChatMessages elixirChatWidget={elixirChatWidget}/>
         <ChatTextarea elixirChatWidget={elixirChatWidget}/>
       </div>
     );
