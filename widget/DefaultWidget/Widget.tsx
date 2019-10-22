@@ -4,7 +4,7 @@ import cn from 'classnames';
 import { ElixirChatWidget } from '../ElixirChatWidget';
 import { WIDGET_POPUP_TOGGLE } from '../ElixirChatWidgetEventTypes';
 import { UNREAD_MESSAGES_CHANGE } from '../../sdk/ElixirChatEventTypes';
-import { _flatten } from '../../utilsCommon';
+import { _flatten, detectBrowser } from '../../utilsCommon';
 import { generateFontFaceRule, unlockNotificationSoundAutoplay } from '../../utilsWidget';
 import { FontExtractor } from '../FontExtractor';
 import { Chat } from './Chat';
@@ -18,6 +18,7 @@ export interface IWidgetProps {
 }
 
 export interface IWidgetState {
+  detectedBrowser: string | null,
   isIFrameOpen: boolean;
   isIFrameOpeningAnimation: boolean;
   outsideIframeStyles: null | string;
@@ -30,6 +31,7 @@ export interface IWidgetState {
 export class Widget extends Component<IWidgetProps, IWidgetState> {
 
   state = {
+    detectedBrowser: null,
     isDefaultButtonHidden: false,
     isIFrameOpen: false,
     isIFrameOpeningAnimation: false,
@@ -52,6 +54,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
       customIframeStyles: elixirChatWidget.iframeStyles,
       isDefaultButtonHidden: elixirChatWidget.hideDefaultButton,
       unreadMessagesCount: elixirChatWidget.unreadMessagesCount,
+      detectedBrowser: detectBrowser(),
     });
 
     elixirChatWidget.on(WIDGET_POPUP_TOGGLE, this.onPopupToggle);
@@ -114,6 +117,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
   render() {
     const { elixirChatWidget } = this.props;
     const {
+      detectedBrowser,
       isIFrameOpen,
       isIFrameOpeningAnimation,
       isDefaultButtonHidden,
@@ -152,7 +156,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
             <style dangerouslySetInnerHTML={{ __html: extractedFontsStyles }}/>
             <style dangerouslySetInnerHTML={{ __html: insideIframeStyles }}/>
             <style dangerouslySetInnerHTML={{ __html: customIframeStyles }}/>
-            <Chat elixirChatWidget={elixirChatWidget}/>
+            <Chat className={`elixirchat-browser--${detectedBrowser}`} elixirChatWidget={elixirChatWidget}/>
           </Fragment>
         </IFrameWrapper>
       </Fragment>

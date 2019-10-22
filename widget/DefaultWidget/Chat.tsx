@@ -62,7 +62,7 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
   }
 
   render(): void {
-    const { elixirChatWidget } = this.props;
+    const { elixirChatWidget, className } = this.props;
     const {
       widgetTitle,
       areAnyOperatorsOnline,
@@ -74,7 +74,7 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
     const isCurrentlyTyping = Boolean(currentlyTypingUsers.length);
 
     return (
-      <div className="elixirchat-chat-container">
+      <div className={cn('elixirchat-chat-container', className)}>
 
         <h2 className="elixirchat-chat-header">
           {widgetTitle && (

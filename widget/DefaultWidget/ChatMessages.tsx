@@ -520,9 +520,9 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                           {message.files.map(file => (
                             <li key={file.id} className="elixirchat-chat-files__item">
                               <a className={cn({
-                                ['elixirchat-chat-files__preview']: true,
-                                ['elixirchat-chat-files__preview-image']: file.thumbnailUrl,
-                                ['elixirchat-chat-files__preview-submitting']: message.isSubmitting,
+                                'elixirchat-chat-files__preview': true,
+                                'elixirchat-chat-files__preview-image': file.thumbnailUrl,
+                                'elixirchat-chat-files__preview-submitting': message.isSubmitting,
                               })}
                                 style={{ backgroundImage: `url(${file.thumbnailUrl})` }}
                                 href={file.url}
@@ -558,8 +558,13 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                             href={image.url}
                             target="_blank"
                             onClick={e => this.onImagePreviewClick(e, { ...image, sender: message.sender })}>
-
-                            <img className="elixirchat-chat-images__img"
+                            {message.isSubmitting && (
+                              <i className="elixirchat-chat-images__spinner icon-spinner-xs"/>
+                            )}
+                            <img className={cn({
+                              'elixirchat-chat-images__img': true,
+                              'elixirchat-chat-images__img--submitting': message.isSubmitting,
+                            })}
                               width={_round(image.thumbnailWidth, 2)}
                               height={_round(image.thumbnailHeight)}
                               src={image.thumbnailUrl}

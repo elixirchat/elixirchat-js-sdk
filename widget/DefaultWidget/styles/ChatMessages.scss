@@ -310,11 +310,37 @@
   }
 }
 
+.elixirchat-chat-images__spinner {
+  color: $color-black;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin: -16px 0 0 -16px;
+  z-index: 1;
+  display: block;
+  width: 32px;
+  height: 32px;
+  line-height: 32px;
+  text-align: center;
+  box-sizing: border-box;
+  opacity: .25;
+  font-size: 22px;
+  @include elixir-animation-spinner(1s);
+
+  .elixirchat-browser--safari & {
+    padding-left: 0.06em;
+  }
+}
+
 .elixirchat-chat-images__img {
   max-width: 256px;
   max-height: 256px;
   border-radius: 3px;
   display: block;
+
+  &--submitting {
+    opacity: .25;
+  }
 }
 
 .elixirchat-chat-images__item-not-found > img {
