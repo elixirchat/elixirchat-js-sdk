@@ -11,7 +11,9 @@ import {
   TEXTAREA_VERTICAL_RESIZE,
   WIDGET_IFRAME_READY,
   WIDGET_POPUP_OPEN,
-  WIDGET_RENDERED
+  WIDGET_RENDERED,
+  WIDGET_MUTE,
+  WIDGET_UNMUTE,
 } from '../ElixirChatWidgetEventTypes';
 
 import {
@@ -83,6 +85,10 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
     elixirChatWidget.on(REPLY_MESSAGE, messageId => {
       this.setState({ textareaResponseToMessageId: messageId });
       this.onVerticalResize();
+      this.focusTextarea();
+    });
+
+    elixirChatWidget.on([WIDGET_MUTE, WIDGET_UNMUTE], () => {
       this.focusTextarea();
     });
 
