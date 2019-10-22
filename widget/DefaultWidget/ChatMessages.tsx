@@ -4,14 +4,21 @@ import dayjs from 'dayjs';
 import dayjsCalendar from 'dayjs/plugin/calendar';
 import 'dayjs/locale/ru';
 import AutoLinkText from 'react-autolink-text2';
-import {_get, _last, _round, isWebImage, logEvent, randomDigitStringId} from '../../utilsCommon';
+import {
+  _get,
+  _last,
+  _round,
+  isWebImage,
+} from '../../utilsCommon';
+
 import {
   getHumanReadableFileSize,
   inflectDayJSWeekDays,
   playNotificationSound,
   unlockNotificationSoundAutoplay,
-  scrollToElement,
+  scrollToElement, inflect,
 } from '../../utilsWidget';
+
 import { getScreenshotCompatibilityFallback } from '../../sdk/ScreenshotTaker';
 import { ElixirChatWidget } from '../ElixirChatWidget';
 import {
@@ -31,6 +38,7 @@ import {
   MESSAGES_HISTORY_CHANGE_MANY,
   MESSAGES_HISTORY_CHANGE_ONE,
   JOIN_ROOM_SUCCESS,
+  TYPING_STATUS_CHANGE,
 } from '../../sdk/ElixirChatEventTypes';
 
 export interface IDefaultWidgetMessagesProps {
@@ -47,6 +55,7 @@ export interface IDefaultWidgetMessagesState {
   imagePreviews: Array<object>,
   screenshotFallback: object | null,
   scrollBlockBottomOffset: number | null;
+  currentlyTypingUsers: Array<object>;
 }
 
 export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaultWidgetMessagesState> {
@@ -60,6 +69,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     imagePreviews: [],
     screenshotFallback: null,
     scrollBlockBottomOffset: null,
+    currentlyTypingUsers: [],
   };
 
   scrollBlock: { current: HTMLElement } = React.createRef();
@@ -121,6 +131,9 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
       if (!hasUserScroll) {
         this.scrollToBottom();
       }
+    });
+    elixirChatWidget.on(TYPING_STATUS_CHANGE, currentlyTypingUsers => {
+      this.setState({ currentlyTypingUsers });
     });
   }
 
@@ -438,6 +451,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
       isLoadingError,
       isLoadingPrecedingMessageHistory,
       scrollBlockBottomOffset,
+      currentlyTypingUsers,
     } = this.state;
 
     return (
@@ -677,6 +691,21 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
             </Fragment>
           ))}
+        </div>
+
+
+        <div className={cn({
+          'elixirchat-chat-typing': true,
+          'elixirchat-chat-typing--visible': Boolean(currentlyTypingUsers.length),
+        })}>
+          <Fragment>
+            <i className="elixirchat-chat-typing__icon icon-typing"/>
+            {inflect('ru-RU', Math.max(1, currentlyTypingUsers.length), [
+              'человек пишет...',
+              'человека пишут...',
+              'человек пишут...',
+            ])}
+          </Fragment>
         </div>
       </div>
     );
