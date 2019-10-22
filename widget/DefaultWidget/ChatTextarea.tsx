@@ -14,6 +14,7 @@ import {
   WIDGET_RENDERED,
   WIDGET_MUTE,
   WIDGET_UNMUTE,
+  SCREENSHOT_REQUEST_SUCCESS,
 } from '../ElixirChatWidgetEventTypes';
 
 import { TYPING_STATUS_SUBSCRIBE_SUCCESS } from '../../sdk/ElixirChatEventTypes';
@@ -78,6 +79,7 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
       this.onVerticalResize();
       this.focusTextarea();
     });
+    elixirChatWidget.on(SCREENSHOT_REQUEST_SUCCESS, this.onScreenshotRequestSuccess);
     elixirChatWidget.on(IMAGE_PREVIEW_CLOSE, () => this.focusTextarea);
 
     elixirChatWidget.on(REPLY_MESSAGE, messageId => {
@@ -89,12 +91,7 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
       this.focusTextarea();
     });
 
-    window.addEventListener('beforeunload', (e) => {
-      if (this.state.isSubmittingMessage) {
-        e.preventDefault();
-        e.returnValue = '';
-      }
-    });
+    window.addEventListener('beforeunload', this.preventLoosingUploadingFiles);
 
     this.setState({
       screenshotFallback: getScreenshotCompatibilityFallback(),
@@ -107,6 +104,14 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
     elixirChatWidget.widgetIFrameDocument.body.removeEventListener('drop', this.onBodyDrop);
     document.removeEventListener('dragover', this.cancelWidgetPopupDrag);
   }
+
+  preventLoosingUploadingFiles = (e) => {
+    const { isSubmittingMessage } = this.state;
+    if (isSubmittingMessage) {
+      e.preventDefault();
+      e.returnValue = '';
+    }
+  };
 
   onWidgetPopupDrag = (e) => {
     const { hasCanceledDraggingAttachments } = this.state;
@@ -256,22 +261,23 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
 
   onScreenShotClick = () => {
     const { elixirChatWidget } = this.props;
-    const { textareaText } = this.state;
     elixirChatWidget.togglePopup();
-    elixirChatWidget.takeScreenshot().then(screenshot => {
-      this.addAttachments([{
-        name: 'Скриншот экрана',
-        file: screenshot.file,
-        isScreenshot: true,
-      }]);
+    elixirChatWidget.takeScreenshot();
+  };
 
-      const updatedText = textareaText.trim() ? textareaText : 'Вот скриншот моего экрана';
-      this.setState({ textareaText: updatedText });
-      elixirChatWidget.togglePopup();
+  onScreenshotRequestSuccess = (screenshot) => {
+    const { elixirChatWidget } = this.props;
+    const { textareaText } = this.state;
 
-    }).catch(() => {
-      elixirChatWidget.togglePopup();
-    });
+    this.addAttachments([{
+      name: 'Скриншот экрана',
+      file: screenshot.file,
+      isScreenshot: true,
+    }]);
+
+    elixirChatWidget.togglePopup();
+    const updatedText = textareaText.trim() ? textareaText : 'Вот скриншот моего экрана';
+    this.setState({ textareaText: updatedText });
   };
 
   onInputFileChange = (e) => {
