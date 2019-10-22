@@ -9,6 +9,7 @@ import {
   _last,
   _round,
   isWebImage,
+  detectBrowser,
 } from '../../utilsCommon';
 
 import {
@@ -101,6 +102,9 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
       this.onMultipleMessagesBeingViewedSimultaneously(this.markLatestViewedMessageRead);
       if (!hasMessageHistoryEverBeenVisible && elixirChatWidget.hasMessageHistoryBeenEverFetched) {
         this.onMessageHistoryInitiallyBecomeVisible();
+      }
+      if (detectBrowser() === 'safari') {
+        this.preventSafariFromLockingScroll();
       }
     });
 
@@ -227,6 +231,16 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
       });
     const latestMessage = _last(messagesSortedByTime);
     elixirChatWidget.setLastReadMessage(latestMessage.id);
+  };
+
+  // Hack to fix weird Safari bug when it disables scrolling of this.scrollBlock
+  // when new messages were received when popup was closed
+  preventSafariFromLockingScroll = () => {
+    const { backgroundColor = '' } = this.scrollBlock.current.style.backgroundColor;
+    this.scrollBlock.current.style.backgroundColor = 'inherit';
+    requestAnimationFrame(() => {
+      this.scrollBlock.current.style.backgroundColor = backgroundColor;
+    });
   };
 
   onMessageReceive = message => {
