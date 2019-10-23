@@ -131,6 +131,8 @@ export class MessageSubscription {
     }
     const message = serializeMessage(data, { backendStaticUrl, client });
 
+    // Messages within temporaryMessageTempIds are handled in this.sendMessage Promise
+
     if (this.temporaryMessageTempIds.includes(message.tempId)) {
       this.forgetTemporaryMessage(message.tempId);
     }
@@ -233,7 +235,7 @@ export class MessageSubscription {
     console.error('__ enrichTemporaryMessage 1', { temporaryMessageTempId, messageData, temporaryMessageTempIds: this.temporaryMessageTempIds });
 
     const { triggerEvent } = this.elixirChat;
-    if (this.temporaryMessageTempIds.includes(temporaryMessageTempId)) {
+    if (this.temporaryMessageTempIds.includes(temporaryMessageTempId) || 1) {
 
       console.error('__ enrichTemporaryMessage 2', { temporaryMessageTempId, messageData, messageHistory: this.messageHistory });
       window.__messageHistory = this.messageHistory;
@@ -307,6 +309,7 @@ export class MessageSubscription {
             const { tempId } = message;
             if (tempId) {
               this.enrichTemporaryMessage(tempId, message);
+              // this.forgetTemporaryMessage(message.tempId);
               logEvent(debug, 'Enriched temporary message with actual one', { message });
             }
             else {
