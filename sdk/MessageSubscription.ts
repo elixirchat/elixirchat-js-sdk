@@ -271,7 +271,7 @@ export class MessageSubscription {
       variables.tempId = tempId;
       this.enrichTemporaryMessage(tempId, {
         isSubmitting: true,
-        isSubmissionError: false,
+        submissionErrorCode: null,
       });
     }
 
@@ -312,14 +312,18 @@ export class MessageSubscription {
     });
   };
 
-  protected onSendMessageFailure(tempId: string, error: any): void {
-    const { triggerEvent, debug } = this.elixirChat;
-    logEvent(debug, 'Failed to send message', { error, tempId }, 'error');
-
+  protected onSendMessageFailure(tempId: string, response: any): void {
+    const { debug } = this.elixirChat;
+    const defaultErrorCode = 400;
+    let submissionErrorCode = _get(response, 'errors[0].status') || defaultErrorCode;
+    if (!navigator.onLine) {
+      submissionErrorCode = 503;
+    }
+    logEvent(debug, 'Failed to send message with code: ' + submissionErrorCode, { response, tempId }, 'error');
     if (tempId) {
       this.enrichTemporaryMessage(tempId, {
         isSubmitting: false,
-        isSubmissionError: true,
+        submissionErrorCode,
       });
     }
   }

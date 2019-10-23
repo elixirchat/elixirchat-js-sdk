@@ -141,7 +141,10 @@
 
 .elixirchat-chat-messages__submission-error {
   color: $color-pink-dark;
-  cursor: pointer;
+  white-space: normal;
+  line-height: 17px;
+  padding-top: 3px;
+  display: inline-block;
 }
 
 .elixirchat-chat-messages__reply-button {

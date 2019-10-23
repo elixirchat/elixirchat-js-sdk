@@ -76,7 +76,7 @@ export interface IMessage {
   },
   attachments: Array<IFile>,
   isSubmitting: boolean,
-  isSubmissionError: boolean,
+  submissionErrorCode: number | null,
 }
 
 export interface ISerializeMessageOptions {
@@ -110,7 +110,7 @@ export function serializeMessage(message: any, elixirChat: ElixirChat): IMessage
     responseToMessage: serializedResponseToMessage.id ? serializedResponseToMessage : null,
     attachments: serializedAttachments,
     isSubmitting: _get(message, 'isSubmitting') || false,
-    isSubmissionError: _get(message, 'isSubmissionError') || false,
+    submissionErrorCode: _get(message, 'submissionErrorCode') || null,
     isUnread: _get(message, 'unread') || false,
     isSystem,
     systemData: !isSystem ? null : {

@@ -442,6 +442,24 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     );
   };
 
+  getSubmissionErrorMessage = (message) => {
+    const { elixirChatWidget } = this.props;
+    const defaultMessage = (
+      <Fragment>
+        Произошла ошибка при отправке <span className="m-pointer m-nw"
+          onClick={() => elixirChatWidget.retrySendMessage(message)}>
+          Попробовать еще раз
+        </span>
+      </Fragment>
+    );
+    const messageDict = {
+      '415': <Fragment>Вложения такого типа<br/> не поддерживаются</Fragment>,
+      '413': <Fragment>Поддерживаются файлы до 5Мб</Fragment>,
+      '503': <span className="m-pointer" onClick={() => elixirChatWidget.retrySendMessage(message)}>Не отправлено</span>,
+    };
+    return messageDict[message.submissionErrorCode] || defaultMessage;
+  };
+
   createMessageRef = (messageElement, message) => {
     this.messageRefs[message.id] = {
       current: messageElement,
@@ -484,7 +502,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
             <div className="elixirchat-chat-fatal-error">
               Ошибка загрузки. <br/>
               Пожалуйста, перезагрузите
-              страницу <span className="elixirchat-chat-fatal-error--nowrap">или напишите</span> администратору
+              страницу <span className="m-nw">или напишите</span> администратору
               на support@elixir.chat.
             </div>
           )}
@@ -603,14 +621,12 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                   )}
 
                   <div className="elixirchat-chat-messages__bottom">
-                    {message.isSubmissionError && (
-                      <span className="elixirchat-chat-messages__submission-error"
-                        title="Нажмите, чтобы отправить еще раз"
-                        onClick={() => elixirChatWidget.retrySendMessage(message)}>
-                        Не отправлено
+                    {message.submissionErrorCode && (
+                      <span className="elixirchat-chat-messages__submission-error">
+                        {this.getSubmissionErrorMessage(message)}
                       </span>
                     )}
-                    {!message.isSubmissionError && (
+                    {!message.submissionErrorCode && (
                       <Fragment>
                         {!message.sender.isCurrentClient && dayjs(message.timestamp).format('H:mm')}
                         {!message.isSystem && (

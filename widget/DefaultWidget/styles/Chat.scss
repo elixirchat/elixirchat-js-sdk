@@ -19,6 +19,14 @@ textarea {
   -moz-osx-font-smoothing: grayscale;
 }
 
+.m-pointer {
+  cursor: pointer;
+}
+
+.m-nw {
+  white-space: nowrap;
+}
+
 .elixirchat-chat-container {
   position: absolute;
   top: 0;
@@ -165,10 +173,6 @@ textarea {
   color: $color-gray-dark;
   line-height: 22px;
   text-align: center;
-
-  &--nowrap {
-    white-space: nowrap;
-  }
 }
 
 .elixirchat-chat-draggable-backdrop {
