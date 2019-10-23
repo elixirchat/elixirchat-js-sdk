@@ -6916,7 +6916,7 @@ function serializeMessage(message, elixirChat) {
     responseToMessage: serializedResponseToMessage.id ? serializedResponseToMessage : null,
     attachments: serializedAttachments,
     isSubmitting: utilsCommon_1._get(message, 'isSubmitting') || false,
-    isSubmissionError: utilsCommon_1._get(message, 'isSubmissionError') || false,
+    submissionErrorCode: utilsCommon_1._get(message, 'submissionErrorCode') || null,
     isUnread: utilsCommon_1._get(message, 'unread') || false,
     isSystem: isSystem,
     systemData: !isSystem ? null : {
@@ -7095,7 +7095,7 @@ function () {
 
         _this.enrichTemporaryMessage(tempId, {
           isSubmitting: true,
-          isSubmissionError: false
+          submissionErrorCode: null
         });
       }
 
@@ -7401,28 +7401,33 @@ function () {
     }
   }, {
     key: "onSendMessageFailure",
-    value: function onSendMessageFailure(tempId, error) {
-      var _this$elixirChat9 = this.elixirChat,
-          triggerEvent = _this$elixirChat9.triggerEvent,
-          debug = _this$elixirChat9.debug;
-      utilsCommon_1.logEvent(debug, 'Failed to send message', {
-        error: error,
+    value: function onSendMessageFailure(tempId, response) {
+      var debug = this.elixirChat.debug;
+      var defaultErrorCode = 400;
+      var submissionErrorCode = utilsCommon_1._get(response, 'errors[0].status') || defaultErrorCode;
+
+      if (!navigator.onLine) {
+        submissionErrorCode = 503;
+      }
+
+      utilsCommon_1.logEvent(debug, 'Failed to send message with code: ' + submissionErrorCode, {
+        response: response,
         tempId: tempId
       }, 'error');
 
       if (tempId) {
         this.enrichTemporaryMessage(tempId, {
           isSubmitting: false,
-          isSubmissionError: true
+          submissionErrorCode: submissionErrorCode
         });
       }
     }
   }, {
     key: "onGetMessageHistoryByCursorFailure",
     value: function onGetMessageHistoryByCursorFailure(error) {
-      var _this$elixirChat10 = this.elixirChat,
-          triggerEvent = _this$elixirChat10.triggerEvent,
-          debug = _this$elixirChat10.debug;
+      var _this$elixirChat9 = this.elixirChat,
+          triggerEvent = _this$elixirChat9.triggerEvent,
+          debug = _this$elixirChat9.debug;
 
       if (this.hasMessageHistoryBeenEverFetched) {
         utilsCommon_1.logEvent(debug, 'Failed to fetch message history', {
