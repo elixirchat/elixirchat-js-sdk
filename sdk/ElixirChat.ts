@@ -52,6 +52,7 @@ export class ElixirChat {
   public client?: IElixirChatUser;
   public debug: boolean;
 
+  public isInitialized: boolean = false;
   public elixirChatRoomId: string;
   public elixirChatClientId: string;
   public authToken: string;
@@ -145,6 +146,8 @@ export class ElixirChat {
       client: this.client,
       debug: this.debug,
     });
+
+    this.isInitialized = true;
 
     this.on(JOIN_ROOM_SUCCESS, data => {
       logEvent(this.debug, 'Joined room', data);

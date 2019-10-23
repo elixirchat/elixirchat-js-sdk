@@ -396,6 +396,26 @@ function _flatten(arr) {
 
 exports._flatten = _flatten;
 
+function detectBrowser() {
+  var userAgentKeywords = {
+    'Opera': 'opera',
+    'Chrome': 'chrome',
+    'Safari': 'safari',
+    'Firefox': 'firefox',
+    'MSIE': 'ie'
+  };
+
+  for (var keyword in userAgentKeywords) {
+    if (navigator.userAgent.indexOf(keyword) > -1) {
+      return userAgentKeywords[keyword];
+    }
+  }
+
+  return null;
+}
+
+exports.detectBrowser = detectBrowser;
+
 function detectPlatform() {
   return {
     isWindows: navigator.platform.indexOf('Win') > -1,
@@ -7026,12 +7046,7 @@ function () {
       });
 
       if (_this.temporaryMessageTempIds.includes(message.tempId)) {
-        _this.enrichTemporaryMessage(message.tempId, message, true);
-
-        utilsCommon_1.logEvent(debug, 'Enriched temporary message with actual one', {
-          message: message
-        });
-        triggerEvent(ElixirChatEventTypes_1.MESSAGES_HISTORY_CHANGE_ONE, message, _this.messageHistory);
+        _this.forgetTemporaryMessage(message.tempId);
       } else {
         _this.messageHistory.push(message);
 
@@ -7046,7 +7061,8 @@ function () {
       var _this$elixirChat3 = _this.elixirChat,
           backendStaticUrl = _this$elixirChat3.backendStaticUrl,
           client = _this$elixirChat3.client,
-          debug = _this$elixirChat3.debug;
+          debug = _this$elixirChat3.debug,
+          triggerEvent = _this$elixirChat3.triggerEvent;
 
       var _this$serializeSendMe = _this.serializeSendMessageParams(params),
           variables = _this$serializeSendMe.variables,
@@ -7090,11 +7106,22 @@ function () {
               backendStaticUrl: backendStaticUrl,
               client: client
             });
-            utilsCommon_1.logEvent(_this.debug, 'Sent message', {
-              params: params,
-              variables: variables,
-              message: message
-            });
+            var _tempId = message.tempId;
+
+            if (_tempId) {
+              _this.enrichTemporaryMessage(_tempId, message);
+
+              utilsCommon_1.logEvent(debug, 'Enriched temporary message with actual one', {
+                message: message
+              });
+            } else {
+              utilsCommon_1.logEvent(debug, 'Sent message', {
+                params: params,
+                variables: variables,
+                message: message
+              });
+            }
+
             resolve(message);
           } else {
             _this.onSendMessageFailure(tempId, response);
@@ -7350,7 +7377,6 @@ function () {
     value: function enrichTemporaryMessage(temporaryMessageTempId, messageData) {
       var _this2 = this;
 
-      var forgetThisTemporaryMessage = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
       var triggerEvent = this.elixirChat.triggerEvent;
 
       if (this.temporaryMessageTempIds.includes(temporaryMessageTempId)) {
@@ -7360,17 +7386,18 @@ function () {
               message[key] = messageData[key];
             }
 
-            if (forgetThisTemporaryMessage) {
-              _this2.temporaryMessageTempIds = _this2.temporaryMessageTempIds.filter(function (id) {
-                return id !== temporaryMessageTempId;
-              });
-            }
-
             triggerEvent(ElixirChatEventTypes_1.MESSAGES_HISTORY_CHANGE_ONE, message, _this2.messageHistory);
             return;
           }
         });
       }
+    }
+  }, {
+    key: "forgetTemporaryMessage",
+    value: function forgetTemporaryMessage(temporaryMessageTempId) {
+      this.temporaryMessageTempIds = this.temporaryMessageTempIds.filter(function (id) {
+        return id !== temporaryMessageTempId;
+      });
     }
   }, {
     key: "onSendMessageFailure",
@@ -7476,6 +7503,7 @@ function () {
 
     _classCallCheck(this, ElixirChat);
 
+    this.isInitialized = false;
     this.widgetTitle = '';
     this.defaultWidgetTitle = 'Служба поддержки';
     this.eventCallbacks = {};
@@ -7672,6 +7700,7 @@ function () {
         client: this.client,
         debug: this.debug
       });
+      this.isInitialized = true;
       this.on(ElixirChatEventTypes_1.JOIN_ROOM_SUCCESS, function (data) {
         utilsCommon_1.logEvent(_this3.debug, 'Joined room', data);
 

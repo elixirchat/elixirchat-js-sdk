@@ -125,10 +125,16 @@ export class ElixirChatWidget extends ElixirChat {
       hideDefaultButton,
     } = config;
 
+    if (!this.isInitialized) {
+      const errorMessage = 'SDK has not been initialized yet';
+      logEvent(this.debug, errorMessage, config, 'error');
+      throw errorMessage;
+    }
+
     if (!(container instanceof HTMLElement)) {
       const errorMessage = 'You must provide an HTMLElement as a "container" option to appendWidget() method';
       logEvent(this.debug, errorMessage, config, 'error');
-      return;
+      throw errorMessage;
     }
 
     this.initializeWidget();

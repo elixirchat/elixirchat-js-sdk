@@ -8201,6 +8201,26 @@ function _flatten(arr) {
 
 exports._flatten = _flatten;
 
+function detectBrowser() {
+  var userAgentKeywords = {
+    'Opera': 'opera',
+    'Chrome': 'chrome',
+    'Safari': 'safari',
+    'Firefox': 'firefox',
+    'MSIE': 'ie'
+  };
+
+  for (var keyword in userAgentKeywords) {
+    if (navigator.userAgent.indexOf(keyword) > -1) {
+      return userAgentKeywords[keyword];
+    }
+  }
+
+  return null;
+}
+
+exports.detectBrowser = detectBrowser;
+
 function detectPlatform() {
   return {
     isWindows: navigator.platform.indexOf('Win') > -1,
@@ -10329,8 +10349,6 @@ exports.getScreenshotCompatibilityFallback = function () {
 
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
 
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
@@ -10424,7 +10442,8 @@ function (_react_1$Component) {
       processedMessages: [],
       imagePreviews: [],
       screenshotFallback: null,
-      scrollBlockBottomOffset: null
+      scrollBlockBottomOffset: null,
+      currentlyTypingUsers: []
     };
     _this.scrollBlock = react_1.default.createRef();
     _this.scrollBlockInner = react_1.default.createRef();
@@ -10469,7 +10488,7 @@ function (_react_1$Component) {
               callback(messagesViewedSimultaneously);
               isThrottlingTimeoutRunning = false;
               messagesViewedSimultaneously = [];
-            }, 1000);
+            }, 500);
           }
         });
       });
@@ -10490,7 +10509,8 @@ function (_react_1$Component) {
     };
 
     _this.createMessageScrollObserver = function (messageElement, maxConsiderableMessageHeight, callback) {
-      var delayToMarkMessageRead = 2 * 1000;
+      var delayToMarkMessageRead = 1200; // milliseconds
+
       var observerOptions = {
         root: _this.scrollBlock.current,
         threshold: Math.min(maxConsiderableMessageHeight / messageElement.offsetHeight, 0.8)
@@ -10534,6 +10554,17 @@ function (_react_1$Component) {
       var latestMessage = utilsCommon_1._last(messagesSortedByTime);
 
       elixirChatWidget.setLastReadMessage(latestMessage.id);
+    }; // Hack to fix weird Safari bug when it disables scrolling of this.scrollBlock
+    // when new messages were received when popup was closed
+
+
+    _this.preventSafariFromLockingScroll = function () {
+      var _this$scrollBlock$cur = _this.scrollBlock.current.style.backgroundColor.backgroundColor,
+          backgroundColor = _this$scrollBlock$cur === void 0 ? '' : _this$scrollBlock$cur;
+      _this.scrollBlock.current.style.backgroundColor = 'inherit';
+      requestAnimationFrame(function () {
+        _this.scrollBlock.current.style.backgroundColor = backgroundColor;
+      });
     };
 
     _this.onMessageReceive = function (message) {
@@ -10672,11 +10703,7 @@ function (_react_1$Component) {
     _this.onTakeScreenshotClick = function () {
       var elixirChatWidget = _this.props.elixirChatWidget;
       elixirChatWidget.togglePopup();
-      elixirChatWidget.takeScreenshot().then(function () {
-        elixirChatWidget.togglePopup();
-      }).catch(function () {
-        elixirChatWidget.togglePopup();
-      });
+      elixirChatWidget.takeScreenshot();
     };
 
     _this.onMessagesScroll = function () {
@@ -10786,6 +10813,10 @@ function (_react_1$Component) {
         if (!hasMessageHistoryEverBeenVisible && elixirChatWidget.hasMessageHistoryBeenEverFetched) {
           _this2.onMessageHistoryInitiallyBecomeVisible();
         }
+
+        if (utilsCommon_1.detectBrowser() === 'safari') {
+          _this2.preventSafariFromLockingScroll();
+        }
       });
       elixirChatWidget.on(ElixirChatEventTypes_1.MESSAGES_HISTORY_APPEND_ONE, this.onMessageReceive);
       elixirChatWidget.on(ElixirChatEventTypes_1.MESSAGES_HISTORY_SET, function (messages) {
@@ -10827,6 +10858,11 @@ function (_react_1$Component) {
           _this2.scrollToBottom();
         }
       });
+      elixirChatWidget.on(ElixirChatEventTypes_1.TYPING_STATUS_CHANGE, function (currentlyTypingUsers) {
+        _this2.setState({
+          currentlyTypingUsers: currentlyTypingUsers
+        });
+      });
     }
   }, {
     key: "render",
@@ -10842,7 +10878,8 @@ function (_react_1$Component) {
           isLoading = _this$state.isLoading,
           isLoadingError = _this$state.isLoadingError,
           isLoadingPrecedingMessageHistory = _this$state.isLoadingPrecedingMessageHistory,
-          scrollBlockBottomOffset = _this$state.scrollBlockBottomOffset;
+          scrollBlockBottomOffset = _this$state.scrollBlockBottomOffset,
+          currentlyTypingUsers = _this$state.currentlyTypingUsers;
       return react_1.default.createElement("div", {
         className: classnames_1.default('elixirchat-chat-scroll', className),
         style: {
@@ -10908,13 +10945,15 @@ function (_react_1$Component) {
         })), Boolean(message.files) && Boolean(message.files.length) && react_1.default.createElement("ul", {
           className: "elixirchat-chat-files"
         }, message.files.map(function (file) {
-          var _classnames_1$default;
-
           return react_1.default.createElement("li", {
             key: file.id,
             className: "elixirchat-chat-files__item"
           }, react_1.default.createElement("a", {
-            className: classnames_1.default((_classnames_1$default = {}, _defineProperty(_classnames_1$default, 'elixirchat-chat-files__preview', true), _defineProperty(_classnames_1$default, 'elixirchat-chat-files__preview-image', file.thumbnailUrl), _defineProperty(_classnames_1$default, 'elixirchat-chat-files__preview-submitting', message.isSubmitting), _classnames_1$default)),
+            className: classnames_1.default({
+              'elixirchat-chat-files__preview': true,
+              'elixirchat-chat-files__preview-image': file.thumbnailUrl,
+              'elixirchat-chat-files__preview-submitting': message.isSubmitting
+            }),
             style: {
               backgroundImage: "url(".concat(file.thumbnailUrl, ")")
             },
@@ -10948,8 +10987,13 @@ function (_react_1$Component) {
                 sender: message.sender
               }));
             }
-          }, react_1.default.createElement("img", {
-            className: "elixirchat-chat-images__img",
+          }, message.isSubmitting && react_1.default.createElement("i", {
+            className: "elixirchat-chat-images__spinner icon-spinner-xs"
+          }), react_1.default.createElement("img", {
+            className: classnames_1.default({
+              'elixirchat-chat-images__img': true,
+              'elixirchat-chat-images__img--submitting': message.isSubmitting
+            }),
             width: utilsCommon_1._round(image.thumbnailWidth, 2),
             height: utilsCommon_1._round(image.thumbnailHeight),
             src: image.thumbnailUrl,
@@ -11007,7 +11051,14 @@ function (_react_1$Component) {
         }, "\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439\u0442\u0435! \u041A\u0430\u043A \u043C\u044B \u043C\u043E\u0436\u0435\u043C \u0432\u0430\u043C \u043F\u043E\u043C\u043E\u0447\u044C?"))), react_1.default.createElement("div", {
           className: "elixirchat-chat-messages__bottom"
         }, dayjs_1.default(message.timestamp).format('H:mm'))));
-      })));
+      })), react_1.default.createElement("div", {
+        className: classnames_1.default({
+          'elixirchat-chat-typing': true,
+          'elixirchat-chat-typing--visible': Boolean(currentlyTypingUsers.length)
+        })
+      }, react_1.default.createElement(react_1.Fragment, null, react_1.default.createElement("i", {
+        className: "elixirchat-chat-typing__icon icon-typing"
+      }), utilsWidget_1.inflect('ru-RU', Math.max(1, currentlyTypingUsers.length), ['человек пишет...', 'человека пишут...', 'человек пишут...']))));
     }
   }]);
 
@@ -11527,18 +11578,50 @@ function (_react_1$Component) {
       textareaText: '',
       textareaAttachments: [],
       textareaResponseToMessageId: null,
-      isDraggingAttachments: false
+      isSubmittingMessage: false,
+      isDraggingAttachments: false,
+      hasCanceledDraggingAttachments: false
+    };
+
+    _this.preventLoosingUploadingFiles = function (e) {
+      var isSubmittingMessage = _this.state.isSubmittingMessage;
+
+      if (isSubmittingMessage) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
     };
 
     _this.onWidgetPopupDrag = function (e) {
+      var hasCanceledDraggingAttachments = _this.state.hasCanceledDraggingAttachments;
       e.preventDefault();
+      e.stopPropagation();
 
       _this.setState({
         isDraggingAttachments: true
       });
+
+      if (!hasCanceledDraggingAttachments) {
+        _this.setState({
+          hasCanceledDraggingAttachments: true
+        });
+
+        requestAnimationFrame(function () {
+          elixirChatWidget.widgetIFrameDocument.body.addEventListener('dragleave', _this.onWidgetPopupDragLeave);
+        });
+      }
     };
 
-    _this.onDragOutOfWidgetPopup = function () {
+    _this.onWidgetPopupDragLeave = function () {
+      elixirChatWidget.widgetIFrameDocument.body.removeEventListener('dragleave', _this.onWidgetPopupDragLeave);
+
+      _this.setState({
+        isDraggingAttachments: false,
+        hasCanceledDraggingAttachments: false
+      });
+    };
+
+    _this.cancelWidgetPopupDrag = function () {
       _this.setState({
         isDraggingAttachments: false
       });
@@ -11569,9 +11652,7 @@ function (_react_1$Component) {
 
                 _this.addAttachments(attachments);
 
-                _this.setState({
-                  isDraggingAttachments: false
-                });
+                _this.cancelWidgetPopupDrag();
 
               case 5:
               case "end":
@@ -11747,24 +11828,25 @@ function (_react_1$Component) {
 
     _this.onScreenShotClick = function () {
       var elixirChatWidget = _this.props.elixirChatWidget;
-      var textareaText = _this.state.textareaText;
       elixirChatWidget.togglePopup();
-      elixirChatWidget.takeScreenshot().then(function (screenshot) {
-        _this.addAttachments([{
-          name: 'Скриншот экрана',
-          file: screenshot.file,
-          isScreenshot: true
-        }]);
+      elixirChatWidget.takeScreenshot();
+    };
 
-        var updatedText = textareaText.trim() ? textareaText : 'Вот скриншот моего экрана';
+    _this.onScreenshotRequestSuccess = function (screenshot) {
+      var elixirChatWidget = _this.props.elixirChatWidget;
+      var textareaText = _this.state.textareaText;
 
-        _this.setState({
-          textareaText: updatedText
-        });
+      _this.addAttachments([{
+        name: 'Скриншот экрана',
+        file: screenshot.file,
+        isScreenshot: true
+      }]);
 
-        elixirChatWidget.togglePopup();
-      }).catch(function () {
-        elixirChatWidget.togglePopup();
+      elixirChatWidget.togglePopup();
+      var updatedText = textareaText.trim() ? textareaText : 'Вот скриншот моего экрана';
+
+      _this.setState({
+        textareaText: updatedText
       });
     };
 
@@ -11796,11 +11878,19 @@ function (_react_1$Component) {
               _this$state2 = _this.state, textareaText = _this$state2.textareaText, textareaResponseToMessageId = _this$state2.textareaResponseToMessageId, textareaAttachments = _this$state2.textareaAttachments;
 
               if (textareaText.trim() || textareaAttachments.length) {
+                _this.setState({
+                  isSubmittingMessage: true
+                });
+
                 elixirChatWidget.sendMessage({
                   text: textareaText,
                   attachments: textareaAttachments,
                   responseToMessageId: textareaResponseToMessageId,
                   appendConditionally: true
+                }).finally(function () {
+                  _this.setState({
+                    isSubmittingMessage: false
+                  });
                 });
                 elixirChatWidget.dispatchTypedText(false);
                 localStorage.removeItem('elixirchat-typed-text');
@@ -11823,9 +11913,9 @@ function (_react_1$Component) {
 
       var elixirChatWidget = this.props.elixirChatWidget;
       elixirChatWidget.on(ElixirChatWidgetEventTypes_1.WIDGET_IFRAME_READY, function () {
-        elixirChatWidget.widgetIFrameDocument.body.addEventListener('dragover', _this2.onWidgetPopupDrag);
+        elixirChatWidget.widgetIFrameDocument.addEventListener('dragover', _this2.onWidgetPopupDrag);
         elixirChatWidget.widgetIFrameDocument.body.addEventListener('drop', _this2.onBodyDrop);
-        document.addEventListener('dragover', _this2.onDragOutOfWidgetPopup);
+        document.addEventListener('dragover', _this2.cancelWidgetPopupDrag);
       });
       elixirChatWidget.on(ElixirChatEventTypes_1.TYPING_STATUS_SUBSCRIBE_SUCCESS, function () {
         var textareaText = localStorage.getItem('elixirchat-typed-text') || '';
@@ -11845,6 +11935,7 @@ function (_react_1$Component) {
 
         _this2.focusTextarea();
       });
+      elixirChatWidget.on(ElixirChatWidgetEventTypes_1.SCREENSHOT_REQUEST_SUCCESS, this.onScreenshotRequestSuccess);
       elixirChatWidget.on(ElixirChatWidgetEventTypes_1.IMAGE_PREVIEW_CLOSE, function () {
         return _this2.focusTextarea;
       });
@@ -11857,6 +11948,10 @@ function (_react_1$Component) {
 
         _this2.focusTextarea();
       });
+      elixirChatWidget.on([ElixirChatWidgetEventTypes_1.WIDGET_MUTE, ElixirChatWidgetEventTypes_1.WIDGET_UNMUTE], function () {
+        _this2.focusTextarea();
+      });
+      window.addEventListener('beforeunload', this.preventLoosingUploadingFiles);
       this.setState({
         screenshotFallback: ScreenshotTaker_1.getScreenshotCompatibilityFallback()
       });
@@ -11867,7 +11962,7 @@ function (_react_1$Component) {
       var elixirChatWidget = this.props.elixirChatWidget;
       elixirChatWidget.widgetIFrameDocument.body.removeEventListener('dragover', this.onWidgetPopupDrag);
       elixirChatWidget.widgetIFrameDocument.body.removeEventListener('drop', this.onBodyDrop);
-      document.removeEventListener('dragover', this.onDragOutOfWidgetPopup);
+      document.removeEventListener('dragover', this.cancelWidgetPopupDrag);
     }
   }, {
     key: "render",
@@ -12014,8 +12109,6 @@ var react_1 = __importStar(require("react"));
 
 var classnames_1 = __importDefault(require("classnames"));
 
-var utilsWidget_1 = require("../../utilsWidget");
-
 var ElixirChatWidgetEventTypes_1 = require("../ElixirChatWidgetEventTypes");
 
 var ElixirChatEventTypes_1 = require("../../sdk/ElixirChatEventTypes");
@@ -12038,9 +12131,7 @@ function (_react_1$Component) {
     _this.state = {
       widgetTitle: '',
       isNotificationSoundMuted: false,
-      areAnyOperatorsOnline: false,
-      currentlyTypingUsers: [],
-      typingBlockBottomOffset: null
+      areAnyOperatorsOnline: false
     };
     return _this;
   }
@@ -12071,30 +12162,19 @@ function (_react_1$Component) {
           areAnyOperatorsOnline: areAnyOperatorsOnline
         });
       });
-      elixirChatWidget.on(ElixirChatEventTypes_1.TYPING_STATUS_CHANGE, function (currentlyTypingUsers) {
-        _this2.setState({
-          currentlyTypingUsers: currentlyTypingUsers
-        });
-      });
-      elixirChatWidget.on(ElixirChatWidgetEventTypes_1.TEXTAREA_VERTICAL_RESIZE, function (typingBlockBottomOffset) {
-        _this2.setState({
-          typingBlockBottomOffset: typingBlockBottomOffset
-        });
-      });
     }
   }, {
     key: "render",
     value: function render() {
-      var elixirChatWidget = this.props.elixirChatWidget;
+      var _this$props = this.props,
+          elixirChatWidget = _this$props.elixirChatWidget,
+          className = _this$props.className;
       var _this$state = this.state,
           widgetTitle = _this$state.widgetTitle,
           areAnyOperatorsOnline = _this$state.areAnyOperatorsOnline,
-          isNotificationSoundMuted = _this$state.isNotificationSoundMuted,
-          currentlyTypingUsers = _this$state.currentlyTypingUsers,
-          typingBlockBottomOffset = _this$state.typingBlockBottomOffset;
-      var isCurrentlyTyping = Boolean(currentlyTypingUsers.length);
+          isNotificationSoundMuted = _this$state.isNotificationSoundMuted;
       return react_1.default.createElement("div", {
-        className: "elixirchat-chat-container"
+        className: classnames_1.default('elixirchat-chat-container', className)
       }, react_1.default.createElement("h2", {
         className: "elixirchat-chat-header"
       }, widgetTitle && react_1.default.createElement(react_1.Fragment, null, areAnyOperatorsOnline && react_1.default.createElement("i", {
@@ -12112,21 +12192,8 @@ function (_react_1$Component) {
       }, react_1.default.createElement("i", {
         className: "icon-close-thin"
       }))), react_1.default.createElement(ChatMessages_1.ChatMessages, {
-        elixirChatWidget: elixirChatWidget,
-        className: classnames_1.default({
-          'elixirchat-chat--is-typing-visible': isCurrentlyTyping
-        })
-      }), react_1.default.createElement("div", {
-        style: {
-          bottom: typingBlockBottomOffset
-        },
-        className: classnames_1.default({
-          'elixirchat-chat-typing': true,
-          'elixirchat-chat--is-typing-visible': isCurrentlyTyping
-        })
-      }, isCurrentlyTyping && react_1.default.createElement(react_1.Fragment, null, react_1.default.createElement("i", {
-        className: "elixirchat-chat-typing__icon icon-typing"
-      }), utilsWidget_1.inflect('ru-RU', currentlyTypingUsers.length, ['человек пишет...', 'человека пишут...', 'человек пишут...']))), react_1.default.createElement(ChatTextarea_1.ChatTextarea, {
+        elixirChatWidget: elixirChatWidget
+      }), react_1.default.createElement(ChatTextarea_1.ChatTextarea, {
         elixirChatWidget: elixirChatWidget
       }));
     }
@@ -12136,7 +12203,7 @@ function (_react_1$Component) {
 }(react_1.Component);
 
 exports.Chat = Chat;
-},{"react":"1n8/","classnames":"9qb7","../../utilsWidget":"4KO9","../ElixirChatWidgetEventTypes":"zWqG","../../sdk/ElixirChatEventTypes":"Cteb","./ChatMessages":"17A3","./ChatTextarea":"Bm76"}],"0q3/":[function(require,module,exports) {
+},{"react":"1n8/","classnames":"9qb7","../ElixirChatWidgetEventTypes":"zWqG","../../sdk/ElixirChatEventTypes":"Cteb","./ChatMessages":"17A3","./ChatTextarea":"Bm76"}],"0q3/":[function(require,module,exports) {
 "use strict";
 
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -12549,8 +12616,8 @@ var fs = require('fs');
 exports.default = {
   icons: "/* GLOBAL */\n/* CUSTOM */\n[class^=\"icon-\"], [class*=\" icon-\"] {\n  font-family: \"elixirchat-icons\" !important;\n  speak: none;\n  font-style: normal;\n  font-weight: normal;\n  font-variant: normal;\n  text-transform: none;\n  line-height: 1;\n  -webkit-font-smoothing: antialiased;\n  -moz-osx-font-smoothing: grayscale; }\n\n.icon-arrow-down:before {\n  content: \"\\e900\"; }\n\n.icon-close-thick:before {\n  content: \"\\e901\"; }\n\n.icon-close-thin:before {\n  content: \"\\e902\"; }\n\n.icon-file:before {\n  content: \"\\e903\"; }\n\n.icon-logo:before {\n  content: \"\\e904\"; }\n\n.icon-reply-left:before {\n  content: \"\\e905\"; }\n\n.icon-reply-right:before {\n  content: \"\\e906\"; }\n\n.icon-screenshot:before {\n  content: \"\\e907\"; }\n\n.icon-spinner-lg:before {\n  content: \"\\e908\"; }\n\n.icon-spinner-xs:before {\n  content: \"\\e909\"; }\n\n.icon-typing:before {\n  content: \"\\e90a\"; }\n\n.icon-speaker-mute:before {\n  content: \"\\e90b\"; }\n\n.icon-speaker:before {\n  content: \"\\e90c\"; }\n",
   Widget: "/* GLOBAL */\n/* CUSTOM */\n/* GLOBAL */\n/* CUSTOM */\n@keyframes spinner {\n  to {\n    transform: rotate(360deg); } }\n\n.elixirchat-widget-button {\n  font-family: \"elixirchat-icons\";\n  position: fixed;\n  bottom: 30px;\n  right: 30px;\n  width: 60px;\n  height: 60px;\n  border: 0;\n  border-radius: 100%;\n  cursor: pointer;\n  background-color: #FF0066;\n  box-shadow: 0 0 25px rgba(0, 0, 0, 0.15);\n  outline: none;\n  z-index: 999999;\n  transition: background-color 200ms;\n  color: #ffffff;\n  /* TODO: replace w/ <i class\"icon...\"> element when button is rewritten as a React component */\n  /* TODO: replace w/ <i class\"icon...\"> element when button is rewritten as a React component */ }\n  .elixirchat-widget-button:hover {\n    background-color: #e0005a; }\n  .elixirchat-widget-button:after, .elixirchat-widget-button:before {\n    position: absolute;\n    width: 100%;\n    height: 100%;\n    top: 0;\n    left: 0;\n    transition: opacity 300ms;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    box-sizing: border-box; }\n  .elixirchat-widget-button:after {\n    content: \"\\e904\";\n    /* .icon-logo */\n    font-size: 28px;\n    padding-top: 5px;\n    -webkit-font-smoothing: antialiased;\n    -moz-osx-font-smoothing: grayscale; }\n  .elixirchat-widget-button:before {\n    content: \"\\e902\";\n    /* .icon-close-thin */\n    font-size: 21px;\n    opacity: 0; }\n  .elixirchat-widget-button--visible:after {\n    opacity: 0; }\n  .elixirchat-widget-button--visible:before {\n    opacity: 1; }\n  @media (min-width: 0px) and (max-width: 480px) {\n    .elixirchat-widget-button {\n      right: 20px;\n      bottom: 20px; } }\n\n.elixirchat-widget-button-counter {\n  font: 13px/20px Graphik, \"Helvetica Neue\", sans-serif;\n  display: none;\n  position: absolute;\n  padding: 1px 5px 0 5px;\n  height: 20px;\n  min-width: 20px;\n  box-sizing: border-box;\n  text-align: center;\n  border-radius: 20px;\n  background: #FF0066;\n  color: #FFFFFF;\n  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.2);\n  z-index: 2;\n  right: 0;\n  top: 0; }\n  .elixirchat-widget-button-counter--has-unread {\n    display: block; }\n\n.elixirchat-widget-iframe {\n  border-radius: 8px;\n  background: #ffffff;\n  position: fixed;\n  max-height: 600px;\n  height: calc(100vh - 130px);\n  width: 380px;\n  bottom: 100px;\n  right: 30px;\n  border: 0;\n  box-shadow: 0 0 60px rgba(0, 0, 0, 0.15);\n  z-index: 999998;\n  transition: all 200ms;\n  opacity: 1;\n  transform: none;\n  transform-origin: bottom;\n  display: none; }\n  .elixirchat-widget-iframe--opening {\n    opacity: 0;\n    transform: translateY(15px) scale(0.9); }\n  .elixirchat-widget-iframe--visible {\n    display: block; }\n  @media (min-width: 0px) and (max-width: 480px) {\n    .elixirchat-widget-iframe {\n      bottom: 0;\n      right: 0;\n      left: 0;\n      top: 0;\n      width: 100%;\n      height: 100%;\n      max-height: 100%;\n      z-index: 9999999;\n      border-radius: 0; } }\n\n.elixirchat-widget-image-preview {\n  position: fixed;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  top: 0;\n  z-index: 99999999;\n  background: rgba(0, 0, 0, 0.8);\n  overflow-y: auto;\n  overflow-x: hidden;\n  padding: 40px 50px 0 50px;\n  text-align: center;\n  display: none; }\n  .elixirchat-widget-image-preview--visible {\n    display: block; }\n\n.elixirchat-widget-image-preview__inner {\n  display: inline-block; }\n\n.elixirchat-widget-image-preview__img {\n  position: relative;\n  z-index: 2;\n  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);\n  margin-bottom: 40px;\n  transition: transform 200ms; }\n  .elixirchat-widget-image-preview__img--animated {\n    transform: translateX(-25px);\n    opacity: 0; }\n",
-  Chat: "/* GLOBAL */\n/* CUSTOM */\n/* GLOBAL */\n/* CUSTOM */\n@keyframes spinner {\n  to {\n    transform: rotate(360deg); } }\n\nbody {\n  margin: 0;\n  padding: 0; }\n\nbody,\ninput,\nbutton,\ntextarea {\n  font: 14px/18px Graphik, \"Helvetica Neue\", sans-serif;\n  outline: none;\n  color: #151319;\n  -webkit-font-smoothing: antialiased;\n  -moz-osx-font-smoothing: grayscale; }\n\n.elixirchat-chat-container {\n  position: absolute;\n  top: 0;\n  bottom: 0;\n  right: 0;\n  left: 0; }\n\n.elixirchat-chat-header {\n  margin: 0;\n  font-size: 16px;\n  height: 53px;\n  box-sizing: border-box;\n  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.15);\n  padding: 19px 72px 0 30px;\n  position: fixed;\n  top: 0;\n  left: 0;\n  right: 0;\n  z-index: 2;\n  border-radius: 8px 8px 0 0;\n  background: #FFFFFF;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis; }\n\n.elixirchat-chat-header__indicator {\n  display: inline-block;\n  width: 10px;\n  height: 10px;\n  border-radius: 100%;\n  background: #50C900;\n  vertical-align: middle;\n  margin-right: 8px;\n  margin-top: -2px; }\n\n.elixirchat-chat-header__close {\n  height: 53px;\n  border: 0;\n  opacity: .25;\n  position: absolute;\n  top: 1px;\n  right: 0;\n  transition: opacity 200ms;\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  background: none;\n  cursor: pointer;\n  padding: 0 18px 0 7px; }\n  .elixirchat-chat-header__close:hover {\n    opacity: .4; }\n  .elixirchat-chat-header__close [class^=icon] {\n    -webkit-font-smoothing: initial; }\n\n.elixirchat-chat-header__mute {\n  background: none;\n  border: none;\n  position: absolute;\n  height: 53px;\n  padding: 0 8px 0 18px;\n  top: 1px;\n  right: 40px;\n  transition: opacity 200ms;\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  opacity: .27;\n  cursor: pointer; }\n  .elixirchat-chat-header__mute:hover {\n    opacity: .4; }\n  .elixirchat-chat-header__mute [class^=icon] {\n    -webkit-font-smoothing: initial; }\n\n.elixirchat-chat-scroll {\n  position: fixed;\n  top: 53px;\n  left: 0;\n  right: 0;\n  bottom: 110px;\n  overflow-x: hidden;\n  overflow-y: auto;\n  padding: 20px 30px 15px 30px;\n  transition: transform 500ms; }\n\n.elixirchat-chat-scroll-progress-bar {\n  width: 0;\n  height: 1px;\n  background: rgba(0, 0, 0, 0.4);\n  position: fixed;\n  top: 53px;\n  left: 0; }\n  .elixirchat-chat-scroll-progress-bar--animating {\n    width: 100%;\n    transition: width 500ms; }\n\n.elixirchat-chat-spinner {\n  position: fixed;\n  top: 50%;\n  margin: -45px 0 0 -45px;\n  left: 50%;\n  display: block;\n  width: 90px;\n  height: 90px;\n  border-radius: 100%;\n  border: 1px solid #E2E2E2;\n  animation: spinner 1s linear infinite; }\n  .elixirchat-chat-spinner:after {\n    content: '';\n    background: #FFFFFF;\n    width: 5px;\n    height: 30px;\n    position: absolute;\n    top: 50%;\n    margin: -15px 0 0 0;\n    left: -2px; }\n\n.elixirchat-chat-fatal-error {\n  position: fixed;\n  top: 50%;\n  transform: translateY(-50%);\n  left: 0;\n  right: 0;\n  display: block;\n  padding: 0 50px;\n  color: #999999;\n  line-height: 22px;\n  text-align: center; }\n  .elixirchat-chat-fatal-error--nowrap {\n    white-space: nowrap; }\n\n.elixirchat-chat-draggable-backdrop {\n  position: fixed;\n  top: 0;\n  bottom: 0;\n  left: 0;\n  right: 0;\n  z-index: 3;\n  opacity: .2; }\n\n.elixirchat-chat-draggable-area {\n  position: fixed;\n  top: 0;\n  bottom: 0;\n  left: 0;\n  right: 0;\n  z-index: 2;\n  background: #FFFFFF;\n  border-radius: 8px 8px 0 0;\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  text-align: center;\n  color: #b3b3b3;\n  font-size: 15px;\n  line-height: 21px; }\n\n.elixirchat-chat-draggable-area__icon {\n  font-size: 16px;\n  margin-bottom: 11px; }\n\n.elixirchat-chat-typing {\n  position: absolute;\n  background: #FFFFFF;\n  color: #d5d5d5;\n  left: 0;\n  right: 28px;\n  z-index: 3;\n  font-weight: bold;\n  padding: 0 30px 0 54px;\n  height: 25px;\n  margin-bottom: -25px;\n  transition: transform 500ms;\n  opacity: 0; }\n  .elixirchat-chat-typing:after {\n    content: '';\n    position: absolute;\n    top: 0;\n    margin-top: -10px;\n    height: 10px;\n    background: red; }\n  .elixirchat-chat-typing.elixirchat-chat--is-typing-visible {\n    box-shadow: 0 -5px 11px 11px #FFFFFF;\n    opacity: 1; }\n\n.elixirchat-chat-typing__icon {\n  position: absolute;\n  left: 30px;\n  top: 3px;\n  font-size: 11px;\n  color: #d5d5d5;\n  z-index: 2; }\n\n.elixirchat-chat--is-typing-visible {\n  transform: translateY(-25px); }\n",
-  ChatMessages: "/* GLOBAL */\n/* CUSTOM */\n/* GLOBAL */\n/* CUSTOM */\n@keyframes spinner {\n  to {\n    transform: rotate(360deg); } }\n\n.elixirchat-chat-messages {\n  display: flex;\n  flex-direction: column;\n  align-items: flex-end; }\n  .elixirchat-chat-messages a {\n    text-decoration: none;\n    outline: none; }\n\n.elixirchat-chat-messages__date-title {\n  text-transform: uppercase;\n  font-size: 12px;\n  font-weight: bold;\n  border-bottom: 1px solid #151319;\n  line-height: 21px;\n  margin-bottom: 15px;\n  width: 100%; }\n\n.elixirchat-chat-messages__item {\n  max-width: 80%;\n  min-width: 50%;\n  margin-bottom: 15px;\n  transition: background-color 500ms; }\n  .elixirchat-chat-messages__item--by-operator {\n    align-self: flex-start;\n    padding-right: 20%;\n    width: 100%; }\n  .elixirchat-chat-messages__item:not(.elixirchat-chat-messages__item--by-me):not(.elixirchat-chat-messages__item--by-operator) {\n    padding-left: 20%;\n    width: 100%; }\n  .elixirchat-chat-messages__item--highlighted:not(.elixirchat-chat-messages__item--by-me) {\n    background: rgba(255, 0, 102, 0.05); }\n  .elixirchat-chat-messages__item--flashed:not(.elixirchat-chat-messages__item--by-me) {\n    background: rgba(255, 0, 102, 0.1); }\n\n.elixirchat-chat-messages__sender {\n  color: #0033FF;\n  font-weight: bold;\n  padding-bottom: 1px; }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__sender {\n    color: #FFFFFF; }\n  .elixirchat-chat-messages__item--by-operator .elixirchat-chat-messages__sender {\n    color: #FF0066; }\n\n.elixirchat-chat-messages__balloon + .elixirchat-chat-messages__balloon {\n  margin-top: 10px; }\n\n.elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__balloon {\n  padding: 9px 10px 7px 10px;\n  border-radius: 3px;\n  background: #0033FF;\n  color: #FFFFFF; }\n\n.elixirchat-chat-messages__reply-message {\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  position: relative;\n  color: #999999;\n  cursor: default;\n  border-left: 3px solid;\n  padding: 3px 0 0 8px;\n  line-height: 15px;\n  margin: 2px 0 5px 0; }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__reply-message {\n    color: rgba(255, 255, 255, 0.65);\n    border-left-color: rgba(255, 255, 255, 0.5); }\n\n.elixirchat-chat-messages__text {\n  white-space: pre-wrap;\n  word-break: break-word; }\n  .elixirchat-chat-messages__text kbd {\n    font: 13px/17px Graphik, \"Helvetica Neue\", sans-serif;\n    background: rgba(0, 0, 0, 0.05);\n    border: 1px solid rgba(0, 0, 0, 0.1);\n    border-bottom-width: 2px;\n    border-radius: 2px;\n    padding: 1px 2px;\n    display: inline-block;\n    margin: 0 1px; }\n  .elixirchat-chat-messages__item--by-operator .elixirchat-chat-messages__text a {\n    color: #0033FF; }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__text a {\n    color: #FFFFFF;\n    text-decoration: underline; }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__text + .elixirchat-chat-files {\n    padding-top: 8px; }\n\n.elixirchat-chat-messages__bottom {\n  text-align: right;\n  color: #999999;\n  padding-top: 2px;\n  white-space: nowrap; }\n  .elixirchat-chat-messages__item--by-operator .elixirchat-chat-messages__bottom {\n    text-align: left; }\n\n.elixirchat-chat-messages__submission-error {\n  color: #FF0066;\n  cursor: pointer; }\n\n.elixirchat-chat-messages__reply-button {\n  margin-left: 10px;\n  cursor: pointer; }\n  .elixirchat-chat-messages__reply-button:hover {\n    color: #FF0066; }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__reply-button {\n    margin-left: 0;\n    margin-right: 10px; }\n\n.elixirchat-chat-files {\n  list-style: none;\n  padding: 6px 0 3px 0;\n  margin: 0; }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-files {\n    padding-top: 2px; }\n\n.elixirchat-chat-files__item {\n  display: flex;\n  line-height: 21px;\n  margin-top: 10px;\n  padding: 0;\n  cursor: default; }\n  .elixirchat-chat-files__item:first-child {\n    margin-top: 0; }\n  .elixirchat-chat-files__item:hover .elixirchat-chat-files__preview {\n    background-color: #efefef; }\n  .elixirchat-chat-files__item:hover .elixirchat-chat-files__preview-image:after {\n    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1); }\n\n.elixirchat-chat-files__preview {\n  width: 50px;\n  height: 50px;\n  flex-basis: 50px;\n  flex-shrink: 0;\n  border-radius: 3px;\n  background: #F4F4F4;\n  transition: all 200ms;\n  position: relative;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  color: #a6a6a6 !important; }\n\n.elixirchat-chat-files__preview-image {\n  background-size: cover; }\n  .elixirchat-chat-files__preview-image:after {\n    content: \"\";\n    position: absolute;\n    border-radius: 3px;\n    top: 0;\n    left: 0;\n    right: 0;\n    bottom: 0;\n    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);\n    pointer-events: none;\n    transition: all 200ms; }\n\n.elixirchat-chat-files__preview-submitting {\n  background-image: none;\n  display: flex;\n  align-items: center;\n  justify-content: center; }\n\n.elixirchat-chat-files__text {\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  padding: 6px 0 0 9px; }\n\n.elixirchat-chat-files__text-link {\n  margin-left: -15px;\n  padding-left: 15px; }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-files__text-link {\n    color: #FFFFFF; }\n\n.elixirchat-chat-files__text-secondary {\n  color: rgba(0, 0, 0, 0.25); }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-files__text-secondary {\n    color: rgba(255, 255, 255, 0.5); }\n\n.elixirchat-chat-messages__take-screenshot {\n  background: #FF0066;\n  color: #FFFFFF;\n  border: 0;\n  border-radius: 4px;\n  padding: 1px 11px 0 11px;\n  height: 31px;\n  line-height: 31px;\n  margin: 6px 0 3px 0;\n  transition: background-color 300ms; }\n  .elixirchat-chat-messages__take-screenshot:hover {\n    background: #e0005a; }\n\n.elixirchat-chat-files__preview-spinner {\n  display: block;\n  width: 22px;\n  height: 22px;\n  font-size: 22.4px;\n  animation: spinner 1s linear infinite; }\n\n.elixirchat-chat-images {\n  list-style: none;\n  padding: 0 0 0 0;\n  margin: 6px 0 2px 0; }\n\n.elixirchat-chat-images__item {\n  padding: 0;\n  margin-top: 6px; }\n  .elixirchat-chat-images__item:first-child {\n    margin-top: 2px; }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-images__item {\n    text-align: right; }\n\n.elixirchat-chat-images__link {\n  display: inline-block;\n  vertical-align: bottom;\n  position: relative; }\n  .elixirchat-chat-images__link:after {\n    content: \"\";\n    position: absolute;\n    border-radius: 3px;\n    top: 0;\n    left: 0;\n    right: 0;\n    bottom: 0;\n    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);\n    pointer-events: none; }\n\n.elixirchat-chat-images__img {\n  max-width: 256px;\n  max-height: 256px;\n  border-radius: 3px;\n  display: block; }\n\n.elixirchat-chat-images__item-not-found > img {\n  position: relative;\n  min-width: 180px;\n  pointer-events: none;\n  cursor: default; }\n  .elixirchat-chat-images__item-not-found > img:after {\n    content: \"(\" attr(alt) \")\";\n    color: rgba(0, 0, 0, 0.2);\n    display: block;\n    margin: 8px 0 0 20px;\n    white-space: nowrap;\n    overflow: hidden;\n    text-overflow: ellipsis;\n    position: absolute;\n    top: 50%;\n    transform: translateY(-50%);\n    width: calc(100% - 40px);\n    text-align: center; }\n  .elixirchat-chat-images__item-not-found > img:before {\n    content: attr(data-error-message);\n    color: rgba(0, 0, 0, 0.2);\n    position: absolute;\n    top: 0;\n    bottom: 0;\n    left: 0;\n    right: 0;\n    background: #fff;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    padding-bottom: 25px; }\n",
+  Chat: "/* GLOBAL */\n/* CUSTOM */\n/* GLOBAL */\n/* CUSTOM */\n@keyframes spinner {\n  to {\n    transform: rotate(360deg); } }\n\nbody {\n  margin: 0;\n  padding: 0; }\n\nbody,\ninput,\nbutton,\ntextarea {\n  font: 14px/18px Graphik, \"Helvetica Neue\", sans-serif;\n  outline: none;\n  color: #151319;\n  -webkit-font-smoothing: antialiased;\n  -moz-osx-font-smoothing: grayscale; }\n\n.elixirchat-chat-container {\n  position: absolute;\n  top: 0;\n  bottom: 0;\n  right: 0;\n  left: 0; }\n\n.elixirchat-chat-header {\n  margin: 0;\n  font-size: 16px;\n  height: 53px;\n  box-sizing: border-box;\n  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.15);\n  padding: 19px 72px 0 30px;\n  position: fixed;\n  top: 0;\n  left: 0;\n  right: 0;\n  z-index: 2;\n  border-radius: 8px 8px 0 0;\n  background: #FFFFFF;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis; }\n\n.elixirchat-chat-header__indicator {\n  display: inline-block;\n  width: 10px;\n  height: 10px;\n  border-radius: 100%;\n  background: #50C900;\n  vertical-align: middle;\n  margin-right: 8px;\n  margin-top: -2px; }\n\n.elixirchat-chat-header__close {\n  height: 53px;\n  border: 0;\n  opacity: .25;\n  position: absolute;\n  top: 1px;\n  right: 0;\n  transition: opacity 200ms;\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  background: none;\n  cursor: pointer;\n  padding: 0 18px 0 7px; }\n  .elixirchat-chat-header__close:hover {\n    opacity: .4; }\n  .elixirchat-chat-header__close [class^=icon] {\n    -webkit-font-smoothing: initial; }\n\n.elixirchat-chat-header__mute {\n  background: none;\n  border: none;\n  position: absolute;\n  height: 53px;\n  padding: 0 8px 0 18px;\n  top: 1px;\n  right: 40px;\n  transition: opacity 200ms;\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  opacity: .27;\n  cursor: pointer; }\n  .elixirchat-chat-header__mute:hover {\n    opacity: .4; }\n  .elixirchat-chat-header__mute [class^=icon] {\n    -webkit-font-smoothing: initial; }\n\n.elixirchat-chat-scroll {\n  position: fixed;\n  top: 53px;\n  left: 0;\n  right: 0;\n  bottom: 110px;\n  overflow-x: hidden;\n  overflow-y: auto;\n  padding: 20px 30px 15px 30px; }\n\n.elixirchat-chat-scroll-progress-bar {\n  width: 0;\n  height: 1px;\n  background: rgba(0, 0, 0, 0.4);\n  position: fixed;\n  top: 53px;\n  left: 0; }\n  .elixirchat-chat-scroll-progress-bar--animating {\n    width: 100%;\n    transition: width 500ms; }\n\n.elixirchat-chat-spinner {\n  position: fixed;\n  top: 50%;\n  margin: -45px 0 0 -45px;\n  left: 50%;\n  display: block;\n  width: 90px;\n  height: 90px;\n  border-radius: 100%;\n  border: 1px solid #E2E2E2;\n  animation: spinner 1s linear infinite; }\n  .elixirchat-chat-spinner:after {\n    content: '';\n    background: #FFFFFF;\n    width: 5px;\n    height: 30px;\n    position: absolute;\n    top: 50%;\n    margin: -15px 0 0 0;\n    left: -2px; }\n\n.elixirchat-chat-fatal-error {\n  position: fixed;\n  top: 50%;\n  transform: translateY(-50%);\n  left: 0;\n  right: 0;\n  display: block;\n  padding: 0 50px;\n  color: #999999;\n  line-height: 22px;\n  text-align: center; }\n  .elixirchat-chat-fatal-error--nowrap {\n    white-space: nowrap; }\n\n.elixirchat-chat-draggable-backdrop {\n  position: fixed;\n  top: 0;\n  bottom: 0;\n  left: 0;\n  right: 0;\n  z-index: 3;\n  opacity: .2; }\n\n.elixirchat-chat-draggable-area {\n  position: fixed;\n  top: 0;\n  bottom: 0;\n  left: 0;\n  right: 0;\n  z-index: 2;\n  background: #FFFFFF;\n  border-radius: 8px;\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  text-align: center;\n  color: #b3b3b3;\n  font-size: 15px;\n  line-height: 21px; }\n\n.elixirchat-chat-draggable-area__icon {\n  font-size: 16px;\n  margin-bottom: 11px; }\n\n.elixirchat-chat-typing {\n  position: relative;\n  font-weight: bold;\n  padding: 0 30px 0 24px;\n  background: #FFFFFF;\n  color: #d5d5d5;\n  height: 18px;\n  opacity: 0;\n  transition: opacity 50ms; }\n  .elixirchat-chat-typing--visible {\n    opacity: 1;\n    transition: opacity 200ms; }\n\n.elixirchat-chat-typing__icon {\n  position: absolute;\n  left: 0;\n  top: 3px;\n  font-size: 11px;\n  color: #d5d5d5;\n  -webkit-font-smoothing: initial; }\n",
+  ChatMessages: "/* GLOBAL */\n/* CUSTOM */\n/* GLOBAL */\n/* CUSTOM */\n@keyframes spinner {\n  to {\n    transform: rotate(360deg); } }\n\n.elixirchat-chat-messages {\n  display: flex;\n  flex-direction: column;\n  align-items: flex-end; }\n  .elixirchat-chat-messages a {\n    text-decoration: none;\n    outline: none; }\n\n.elixirchat-chat-messages__date-title {\n  text-transform: uppercase;\n  font-size: 12px;\n  font-weight: bold;\n  border-bottom: 1px solid #151319;\n  line-height: 21px;\n  margin-bottom: 15px;\n  width: 100%; }\n\n.elixirchat-chat-messages__item {\n  max-width: 80%;\n  min-width: 50%;\n  margin-bottom: 15px;\n  transition: background-color 500ms; }\n  .elixirchat-chat-messages__item--by-operator {\n    align-self: flex-start;\n    padding-right: 20%;\n    width: 100%; }\n  .elixirchat-chat-messages__item:not(.elixirchat-chat-messages__item--by-me):not(.elixirchat-chat-messages__item--by-operator) {\n    padding-left: 20%;\n    width: 100%; }\n  .elixirchat-chat-messages__item--highlighted:not(.elixirchat-chat-messages__item--by-me) {\n    background: rgba(255, 0, 102, 0.05); }\n  .elixirchat-chat-messages__item--flashed:not(.elixirchat-chat-messages__item--by-me) {\n    background: rgba(255, 0, 102, 0.1); }\n\n.elixirchat-chat-messages__sender {\n  color: #0033FF;\n  font-weight: bold;\n  padding-bottom: 1px; }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__sender {\n    color: #FFFFFF; }\n  .elixirchat-chat-messages__item--by-operator .elixirchat-chat-messages__sender {\n    color: #FF0066; }\n\n.elixirchat-chat-messages__balloon + .elixirchat-chat-messages__balloon {\n  margin-top: 10px; }\n\n.elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__balloon {\n  padding: 9px 10px 7px 10px;\n  border-radius: 3px;\n  background: #0033FF;\n  color: #FFFFFF; }\n\n.elixirchat-chat-messages__reply-message {\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  position: relative;\n  color: #999999;\n  cursor: default;\n  border-left: 3px solid;\n  padding: 3px 0 0 8px;\n  line-height: 15px;\n  margin: 2px 0 5px 0; }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__reply-message {\n    color: rgba(255, 255, 255, 0.65);\n    border-left-color: rgba(255, 255, 255, 0.5); }\n\n.elixirchat-chat-messages__text {\n  white-space: pre-wrap;\n  word-break: break-word; }\n  .elixirchat-chat-messages__text kbd {\n    font: 13px/17px Graphik, \"Helvetica Neue\", sans-serif;\n    background: rgba(0, 0, 0, 0.05);\n    border: 1px solid rgba(0, 0, 0, 0.1);\n    border-bottom-width: 2px;\n    border-radius: 2px;\n    padding: 1px 2px;\n    display: inline-block;\n    margin: 0 1px; }\n  .elixirchat-chat-messages__item--by-operator .elixirchat-chat-messages__text a {\n    color: #0033FF; }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__text a {\n    color: #FFFFFF;\n    text-decoration: underline; }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__text + .elixirchat-chat-files {\n    padding-top: 8px; }\n\n.elixirchat-chat-messages__bottom {\n  text-align: right;\n  color: #999999;\n  padding-top: 2px;\n  white-space: nowrap; }\n  .elixirchat-chat-messages__item--by-operator .elixirchat-chat-messages__bottom {\n    text-align: left; }\n\n.elixirchat-chat-messages__submission-error {\n  color: #FF0066;\n  cursor: pointer; }\n\n.elixirchat-chat-messages__reply-button {\n  margin-left: 10px;\n  cursor: pointer; }\n  .elixirchat-chat-messages__reply-button:hover {\n    color: #FF0066; }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__reply-button {\n    margin-left: 0;\n    margin-right: 10px; }\n\n.elixirchat-chat-files {\n  list-style: none;\n  padding: 6px 0 3px 0;\n  margin: 0; }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-files {\n    padding-top: 2px; }\n\n.elixirchat-chat-files__item {\n  display: flex;\n  line-height: 21px;\n  margin-top: 10px;\n  padding: 0;\n  cursor: default; }\n  .elixirchat-chat-files__item:first-child {\n    margin-top: 0; }\n  .elixirchat-chat-files__item:hover .elixirchat-chat-files__preview {\n    background-color: #efefef; }\n  .elixirchat-chat-files__item:hover .elixirchat-chat-files__preview-image:after {\n    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1); }\n\n.elixirchat-chat-files__preview {\n  width: 50px;\n  height: 50px;\n  flex-basis: 50px;\n  flex-shrink: 0;\n  border-radius: 3px;\n  background: #F4F4F4;\n  transition: all 200ms;\n  position: relative;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  color: #a6a6a6 !important; }\n\n.elixirchat-chat-files__preview-image {\n  background-size: cover; }\n  .elixirchat-chat-files__preview-image:after {\n    content: \"\";\n    position: absolute;\n    border-radius: 3px;\n    top: 0;\n    left: 0;\n    right: 0;\n    bottom: 0;\n    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);\n    pointer-events: none;\n    transition: all 200ms; }\n\n.elixirchat-chat-files__preview-submitting {\n  background-image: none;\n  display: flex;\n  align-items: center;\n  justify-content: center; }\n\n.elixirchat-chat-files__text {\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  padding: 6px 0 0 9px; }\n\n.elixirchat-chat-files__text-link {\n  margin-left: -15px;\n  padding-left: 15px; }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-files__text-link {\n    color: #FFFFFF; }\n\n.elixirchat-chat-files__text-secondary {\n  color: rgba(0, 0, 0, 0.25); }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-files__text-secondary {\n    color: rgba(255, 255, 255, 0.5); }\n\n.elixirchat-chat-messages__take-screenshot {\n  background: #FF0066;\n  color: #FFFFFF;\n  border: 0;\n  border-radius: 4px;\n  padding: 1px 11px 0 11px;\n  height: 31px;\n  line-height: 31px;\n  margin: 6px 0 3px 0;\n  transition: background-color 300ms; }\n  .elixirchat-chat-messages__take-screenshot:hover {\n    background: #e0005a; }\n\n.elixirchat-chat-files__preview-spinner {\n  display: block;\n  width: 22px;\n  height: 22px;\n  font-size: 22.4px;\n  animation: spinner 1s linear infinite; }\n\n.elixirchat-chat-images {\n  list-style: none;\n  padding: 0 0 0 0;\n  margin: 6px 0 2px 0; }\n\n.elixirchat-chat-images__item {\n  padding: 0;\n  margin-top: 6px; }\n  .elixirchat-chat-images__item:first-child {\n    margin-top: 2px; }\n  .elixirchat-chat-messages__item--by-me .elixirchat-chat-images__item {\n    text-align: right; }\n\n.elixirchat-chat-images__link {\n  display: inline-block;\n  vertical-align: bottom;\n  position: relative; }\n  .elixirchat-chat-images__link:after {\n    content: \"\";\n    position: absolute;\n    border-radius: 3px;\n    top: 0;\n    left: 0;\n    right: 0;\n    bottom: 0;\n    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);\n    pointer-events: none; }\n\n.elixirchat-chat-images__spinner {\n  color: #151319;\n  position: absolute;\n  top: 50%;\n  left: 50%;\n  margin: -16px 0 0 -16px;\n  z-index: 1;\n  display: block;\n  width: 32px;\n  height: 32px;\n  line-height: 32px;\n  text-align: center;\n  box-sizing: border-box;\n  opacity: .25;\n  font-size: 22px;\n  animation: spinner 1s linear infinite; }\n  .elixirchat-browser--safari .elixirchat-chat-images__spinner {\n    padding-left: 0.06em; }\n\n.elixirchat-chat-images__img {\n  max-width: 256px;\n  max-height: 256px;\n  border-radius: 3px;\n  display: block; }\n  .elixirchat-chat-images__img--submitting {\n    opacity: .25; }\n\n.elixirchat-chat-images__item-not-found > img {\n  position: relative;\n  min-width: 180px;\n  pointer-events: none;\n  cursor: default; }\n  .elixirchat-chat-images__item-not-found > img:after {\n    content: \"(\" attr(alt) \")\";\n    color: rgba(0, 0, 0, 0.2);\n    display: block;\n    margin: 8px 0 0 20px;\n    white-space: nowrap;\n    overflow: hidden;\n    text-overflow: ellipsis;\n    position: absolute;\n    top: 50%;\n    transform: translateY(-50%);\n    width: calc(100% - 40px);\n    text-align: center; }\n  .elixirchat-chat-images__item-not-found > img:before {\n    content: attr(data-error-message);\n    color: rgba(0, 0, 0, 0.2);\n    position: absolute;\n    top: 0;\n    bottom: 0;\n    left: 0;\n    right: 0;\n    background: #fff;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    padding-bottom: 25px; }\n",
   ChatTextarea: "/* GLOBAL */\n/* CUSTOM */\n.elixirchat-chat-textarea {\n  position: fixed;\n  bottom: 0;\n  left: 0;\n  right: 0;\n  background: #FFFFFF;\n  z-index: 3;\n  box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.15);\n  border-radius: 0 0 8px 8px; }\n\n.elixirchat-chat-textarea__reply-to {\n  color: #0033FF;\n  margin: 18px 0 -8px 30px;\n  position: relative;\n  z-index: 1;\n  background: #FFFFFF;\n  box-shadow: -2px 10px 3px #FFFFFF; }\n\n.elixirchat-chat-textarea__reply-to-text {\n  display: inline-block;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 140px);\n  vertical-align: middle; }\n\n.elixirchat-chat-textarea__reply-to-icon {\n  margin-right: 4px;\n  vertical-align: text-top; }\n\n.elixirchat-chat-textarea__reply-to-remove {\n  vertical-align: middle;\n  margin-left: 6px;\n  font-size: 11px;\n  line-height: 6px;\n  transform: translateY(1px);\n  display: inline-block; }\n\n.elixirchat-chat-textarea__actions {\n  position: absolute;\n  right: 20px;\n  bottom: 11px;\n  z-index: 2;\n  transition: transform 200ms; }\n\n.elixirchat-chat-textarea__actions-screenshot,\n.elixirchat-chat-textarea__actions-attach {\n  width: 38px;\n  height: 31px;\n  background: #FFFFFF;\n  border: 1px solid #d5d5d5;\n  border-radius: 7px;\n  position: relative;\n  margin-left: 10px;\n  display: inline-block;\n  vertical-align: top;\n  box-sizing: border-box;\n  overflow: hidden;\n  transition: background-color 200ms;\n  color: rgba(0, 0, 0, 0.32);\n  padding-top: 4px; }\n  .elixirchat-chat-textarea__actions-screenshot:hover,\n  .elixirchat-chat-textarea__actions-attach:hover {\n    background-color: #efefef; }\n\n.elixirchat-chat-textarea__actions-attach-input {\n  position: absolute;\n  z-index: 1;\n  opacity: 0; }\n\n.elixirchat-chat-textarea__actions-attach-label {\n  position: absolute;\n  z-index: 2;\n  left: 0;\n  right: 0;\n  top: 0;\n  bottom: 0;\n  padding-top: 8px;\n  text-align: center; }\n\n.elixirchat-chat-textarea__textarea {\n  border: 0;\n  position: relative;\n  left: 0;\n  top: 0;\n  bottom: 0;\n  right: 0;\n  padding: 17px 0 0 30px;\n  margin-bottom: 17px;\n  resize: none;\n  width: calc(100% - 120px); }\n\n.elixirchat-chat-attachment-list {\n  padding: 0;\n  margin: -2px 0 15px 30px;\n  list-style: none;\n  line-height: 22px;\n  color: #0033FF; }\n\n.elixirchat-chat-attachment-item {\n  margin: 0;\n  white-space: nowrap; }\n\n.elixirchat-chat-attachment-icon {\n  margin-right: 8px;\n  vertical-align: middle; }\n  .elixirchat-chat-attachment-icon.icon-screenshot {\n    font-size: 12px;\n    margin-left: -1px; }\n\n.elixirchat-chat-attachment-filename {\n  max-width: calc(100% - 165px);\n  display: inline-block;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  vertical-align: middle; }\n\n.elixirchat-chat-attachment-remove {\n  font-size: 11px;\n  margin-left: 7px;\n  vertical-align: middle; }\n",
   ImagePreview: ""
 };
@@ -12637,6 +12704,7 @@ function (_react_1$Component) {
 
     _this = _possibleConstructorReturn(this, _getPrototypeOf(Widget).apply(this, arguments));
     _this.state = {
+      detectedBrowser: null,
       isDefaultButtonHidden: false,
       isIFrameOpen: false,
       isIFrameOpeningAnimation: false,
@@ -12727,7 +12795,8 @@ function (_react_1$Component) {
         insideIframeStyles: insideIframeStyles,
         customIframeStyles: elixirChatWidget.iframeStyles,
         isDefaultButtonHidden: elixirChatWidget.hideDefaultButton,
-        unreadMessagesCount: elixirChatWidget.unreadMessagesCount
+        unreadMessagesCount: elixirChatWidget.unreadMessagesCount,
+        detectedBrowser: utilsCommon_1.detectBrowser()
       });
       elixirChatWidget.on(ElixirChatWidgetEventTypes_1.WIDGET_POPUP_TOGGLE, this.onPopupToggle);
       elixirChatWidget.on(ElixirChatEventTypes_1.UNREAD_MESSAGES_CHANGE, function (unreadMessagesCount) {
@@ -12741,6 +12810,7 @@ function (_react_1$Component) {
     value: function render() {
       var elixirChatWidget = this.props.elixirChatWidget;
       var _this$state = this.state,
+          detectedBrowser = _this$state.detectedBrowser,
           isIFrameOpen = _this$state.isIFrameOpen,
           isIFrameOpeningAnimation = _this$state.isIFrameOpeningAnimation,
           isDefaultButtonHidden = _this$state.isDefaultButtonHidden,
@@ -12784,6 +12854,7 @@ function (_react_1$Component) {
           __html: customIframeStyles
         }
       }), react_1.default.createElement(Chat_1.Chat, {
+        className: "elixirchat-browser--".concat(detectedBrowser),
         elixirChatWidget: elixirChatWidget
       }))));
     }
@@ -12926,23 +12997,34 @@ function (_ElixirChat) {
       var _ref = _asyncToGenerator(
       /*#__PURE__*/
       regeneratorRuntime.mark(function _callee(config) {
-        var container, iframeStyles, extractFontsFromParentWindow, hideDefaultButton, errorMessage;
+        var container, iframeStyles, extractFontsFromParentWindow, hideDefaultButton, errorMessage, _errorMessage;
+
         return regeneratorRuntime.wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
               case 0:
                 container = config.container, iframeStyles = config.iframeStyles, extractFontsFromParentWindow = config.extractFontsFromParentWindow, hideDefaultButton = config.hideDefaultButton;
 
-                if (container instanceof HTMLElement) {
+                if (_this.isInitialized) {
                   _context.next = 5;
                   break;
                 }
 
-                errorMessage = 'You must provide an HTMLElement as a "container" option to appendWidget() method';
+                errorMessage = 'SDK has not been initialized yet';
                 utilsCommon_1.logEvent(_this.debug, errorMessage, config, 'error');
-                return _context.abrupt("return");
+                throw errorMessage;
 
               case 5:
+                if (container instanceof HTMLElement) {
+                  _context.next = 9;
+                  break;
+                }
+
+                _errorMessage = 'You must provide an HTMLElement as a "container" option to appendWidget() method';
+                utilsCommon_1.logEvent(_this.debug, _errorMessage, config, 'error');
+                throw _errorMessage;
+
+              case 9:
                 _this.initializeWidget();
 
                 _this.container = container;
@@ -12955,7 +13037,7 @@ function (_ElixirChat) {
                 });
                 return _context.abrupt("return", _this.widgetReactComponent);
 
-              case 13:
+              case 17:
               case "end":
                 return _context.stop();
             }
