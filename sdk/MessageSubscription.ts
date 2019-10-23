@@ -229,18 +229,41 @@ export class MessageSubscription {
   };
 
   protected enrichTemporaryMessage(temporaryMessageTempId: string, messageData: IMessage): void {
+
+    console.error('__ enrichTemporaryMessage 1', { temporaryMessageTempId, messageData, temporaryMessageTempIds: this.temporaryMessageTempIds });
+
     const { triggerEvent } = this.elixirChat;
     if (this.temporaryMessageTempIds.includes(temporaryMessageTempId)) {
+
+      console.error('__ enrichTemporaryMessage 2', { temporaryMessageTempId, messageData, messageHistory: this.messageHistory });
+      window.__messageHistory = this.messageHistory;
+
       this.messageHistory.forEach(message => {
+
+        console.log('__ enrichTemporaryMessage 3', { temporaryMessageTempId, message });
+
+
         if (message.tempId === temporaryMessageTempId) {
+
+          console.error('__ enrichTemporaryMessage 4', { temporaryMessageTempId, message });
+
           for (let key in messageData) {
             message[key] = messageData[key];
           }
+
+          console.error('__ enrichTemporaryMessage 5', { temporaryMessageTempId, message });
+
           triggerEvent(MESSAGES_HISTORY_CHANGE_ONE, message, this.messageHistory);
           return;
         }
       });
+
+      console.error('__ enrichTemporaryMessage 6', { temporaryMessageTempId });
+
     }
+
+    console.error('__ enrichTemporaryMessage 7', { temporaryMessageTempId });
+
   }
 
   protected forgetTemporaryMessage(temporaryMessageTempId: string): void {
