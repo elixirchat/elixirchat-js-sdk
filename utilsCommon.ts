@@ -109,7 +109,7 @@ export function _flatten(arr: Array): Array {
 
 
 export function detectBrowser(): 'opera' | 'chrome' | 'safari' | 'firefox' | 'ie' | null {
-  const userAgentKeywords = {
+  const userAgentKeywords = { // do not change order of keywords
     'Opera': 'opera',
     'Chrome': 'chrome',
     'Safari': 'safari',

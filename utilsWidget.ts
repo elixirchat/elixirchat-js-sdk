@@ -1,18 +1,16 @@
 import assets from './widget/DefaultWidget/assets';
 
 export function inflect(locale: 'en-US' | 'ru-RU', number: number, endings: [string], hideNumber?: boolean): string {
-  const getEnding = {};
-
-  getEnding['en-US'] = (number, endings) => {
-    return number === 1 ? endings[0] : endings[1];
+  const getEnding = {
+    'en-US': (number, endings) => {
+      return number === 1 ? endings[0] : endings[1];
+    },
+    'ru-RU': (number, endings) => {
+      const cases = [2, 0, 1, 1, 1, 2];
+      const endingIndex = (number % 100 > 4 && number % 100 < 20) ? 2 : cases[ Math.min(number % 10, 5) ];
+      return endings[endingIndex];
+    }
   };
-
-  getEnding['ru-RU'] = (number, endings) => {
-    const cases = [2, 0, 1, 1, 1, 2];
-    const endingIndex = (number % 100 > 4 && number % 100 < 20) ? 2 : cases[ Math.min(number % 10, 5) ];
-    return endings[endingIndex];
-  };
-
   const ending = getEnding[locale](number, endings) || endings[0];
   return hideNumber ? ending : number + ' ' + ending;
 }
@@ -77,7 +75,7 @@ export function generateFontFaceRule(fontFamily: string, fontWeight: string | nu
 }
 
 
-export function getHumanReadableFileSize(locale: 'ru-RU' | 'en-US', sizeInBytes: number): string {
+export function getHumanReadableFileSize(locale: 'en-US' | 'ru-RU', sizeInBytes: number): string {
   const unitsDict = {
     'ru-RU': {
       'kb': 'Кб',
@@ -133,7 +131,7 @@ export interface IScrollToElement {
   (
     element: HTMLElement,
     options: {
-      isSmooth: boolean;  // same as native Element.scrollIntoView({ behavior: ... })
+      isSmooth: boolean;  // same as native Element.scrollIntoView({ behavior: 'smooth' })
       position: string;   // same as native Element.scrollIntoView({ block: ... })
     },
     callback: () => {}
