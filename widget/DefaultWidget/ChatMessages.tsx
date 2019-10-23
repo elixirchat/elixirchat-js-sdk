@@ -452,12 +452,12 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
         </span>
       </Fragment>
     );
-    const messageDict = {
+    const messageByErrorCodeDict = {
       '415': <Fragment>Вложения такого типа<br/> не поддерживаются</Fragment>,
       '413': <Fragment>Поддерживаются файлы до 5Мб</Fragment>,
       '503': <span className="m-pointer" onClick={() => elixirChatWidget.retrySendMessage(message)}>Не отправлено</span>,
     };
-    return messageDict[message.submissionErrorCode] || defaultMessage;
+    return messageByErrorCodeDict[message.submissionErrorCode] || defaultMessage;
   };
 
   createMessageRef = (messageElement, message) => {
@@ -718,21 +718,23 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
             </Fragment>
           ))}
-        </div>
 
 
-        <div className={cn({
-          'elixirchat-chat-typing': true,
-          'elixirchat-chat-typing--visible': Boolean(currentlyTypingUsers.length),
-        })}>
-          <Fragment>
-            <i className="elixirchat-chat-typing__icon icon-typing"/>
-            {inflect('ru-RU', Math.max(1, currentlyTypingUsers.length), [
-              'человек пишет...',
-              'человека пишут...',
-              'человек пишут...',
-            ])}
-          </Fragment>
+          <div className={cn({
+            'elixirchat-chat-typing': true,
+            'elixirchat-chat-typing--visible': Boolean(currentlyTypingUsers.length),
+          })}>
+            <Fragment>
+              <i className="elixirchat-chat-typing__icon icon-typing"/>
+              {inflect('ru-RU', Math.max(1, currentlyTypingUsers.length), [
+                'человек пишет...',
+                'человека пишут...',
+                'человек пишут...',
+              ])}
+            </Fragment>
+          </div>
+
+
         </div>
       </div>
     );

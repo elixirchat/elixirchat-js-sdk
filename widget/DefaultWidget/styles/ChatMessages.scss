@@ -1,10 +1,74 @@
 @import "./variables";
 @import "./mixins";
+@import "./Chat";
+
+.elixirchat-chat-scroll {
+  position: fixed;
+  top: $chat-header-height;
+  left: 0;
+  right: 0;
+  bottom: 110px;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.elixirchat-chat-scroll-progress-bar {
+  width: 0;
+  height: 1px;
+  background: rgba($color-black, .4);
+  position: fixed;
+  top: $chat-header-height;
+  left: 0;
+
+  &--animating {
+    width: 100%;
+    transition: width 500ms;
+  }
+}
+
+.elixirchat-chat-spinner {
+  position: fixed;
+  top: 50%;
+  margin: -45px 0 0 -45px;
+  left: 50%;
+  display: block;
+  width: 90px;
+  height: 90px;
+  border-radius: 100%;
+  border: 1px solid $color-gray-light;
+  @include elixir-animation-spinner(1s);
+
+  &:after {
+    content: '';
+    background: $color-white;
+    width: 5px;
+    height: 30px;
+    position: absolute;
+    top: 50%;
+    margin: -15px 0 0 0;
+    left: -2px;
+  }
+}
+
+.elixirchat-chat-fatal-error {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 0;
+  right: 0;
+  display: block;
+  padding: 0 50px;
+  color: $color-gray-dark;
+  line-height: 22px;
+  text-align: center;
+}
 
 .elixirchat-chat-messages {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  padding: 20px 30px 6px 30px;
+  overflow: hidden;
 
   a {
     text-decoration: none;
@@ -385,4 +449,31 @@
     justify-content: center;
     padding-bottom: 25px;
   }
+}
+
+.elixirchat-chat-typing {
+  position: relative;
+  font-weight: bold;
+  padding: 0 30px 0 24px;
+  background: $color-white;
+  color: darken($color-gray-light, 5);
+  height: 18px;
+  opacity: 0;
+  transition: all 200ms;
+  transform: translateY(6px);
+  margin-top: -5px;
+
+  &--visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.elixirchat-chat-typing__icon {
+  position: absolute;
+  left: 0;
+  top: 3px;
+  font-size: 11px;
+  color: darken($color-gray-light, 5);
+  -webkit-font-smoothing: initial;
 }
