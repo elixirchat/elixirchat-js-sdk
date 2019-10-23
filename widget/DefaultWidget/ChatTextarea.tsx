@@ -207,6 +207,7 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
       textareaResponseToMessageId: null,
     });
     this.onVerticalResize();
+    this.focusTextarea();
   };
 
   addAttachments = async newAttachments => {
@@ -243,6 +244,7 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
       textareaAttachments: textareaAttachments.filter(item => item.id !== attachmentId)
     });
     this.onVerticalResize();
+    this.focusTextarea();
   };
 
   handleAttachmentPaste = e => {
