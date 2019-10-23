@@ -508,7 +508,8 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                   'elixirchat-chat-messages__item': true,
                   'elixirchat-chat-messages__item--by-me': message.sender.isCurrentClient,
                   'elixirchat-chat-messages__item--by-operator': message.sender.isOperator,
-                  'elixirchat-chat-messages__item--highlighted': message.isUnread,
+                  'elixirchat-chat-messages__item--by-another-client': !message.sender.isOperator && !message.sender.isCurrentClient,
+                  'elixirchat-chat-messages__item--unread': message.isUnread,
                 })}
                   ref={element => this.createMessageRef(element, message)}
                   data-id={message.id}>
@@ -631,7 +632,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                   'elixirchat-chat-messages__item': true,
                   'elixirchat-chat-messages__item--by-operator': true,
                   'elixirchat-chat-messages__item--system': true,
-                  'elixirchat-chat-messages__item--highlighted': message.isUnread,
+                  'elixirchat-chat-messages__item--unread': message.isUnread,
                 })}
                   ref={element => this.createMessageRef(element, message)}
                   data-id={message.id}>

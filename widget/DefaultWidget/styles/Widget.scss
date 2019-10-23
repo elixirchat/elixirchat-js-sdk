@@ -12,7 +12,7 @@
   border-radius: 100%;
   cursor: pointer;
   background-color: $color-pink-dark;
-  box-shadow: 0 0 25px rgba(0,0,0,.15);
+  box-shadow: 0 0 25px rgba($color-black, .15);
   outline: none;
   z-index: 999999;
   transition: background-color 200ms;
@@ -79,7 +79,7 @@
   border-radius: 20px;
   background: $color-pink-dark;
   color: $color-white;
-  box-shadow: 0 3px 7px rgba(0,0,0,0.2);
+  box-shadow: 0 3px 7px rgba($color-black, .2);
   z-index: 2;
   right: 0;
   top: 0;
@@ -99,7 +99,7 @@
   bottom: 100px;
   right: 30px;
   border: 0;
-  box-shadow: 0 0 60px rgba(0,0,0,.15);
+  box-shadow: 0 0 60px rgba($color-black, .15);
   z-index: 999998;
   transition: all 200ms;
   opacity: 1;
@@ -136,7 +136,7 @@
   bottom: 0;
   top: 0;
   z-index: 99999999;
-  background: rgba(0,0,0,.8);
+  background: rgba($color-black, .8);
   overflow-y: auto;
   overflow-x: hidden;
   padding: 40px 50px 0 50px;
@@ -155,7 +155,7 @@
 .elixirchat-widget-image-preview__img {
   position: relative;
   z-index: 2;
-  box-shadow: 0 4px 8px rgba(0,0,0,.15);
+  box-shadow: 0 4px 8px rgba($color-black, .15);
   margin-bottom: 40px;
   transition: transform 200ms;
 

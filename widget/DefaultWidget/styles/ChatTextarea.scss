@@ -7,7 +7,7 @@
   right: 0;
   background: $color-white;
   z-index: 3;
-  box-shadow: 0 -1px 0 rgba(0, 0 ,0 , .15);
+  box-shadow: 0 -1px 0 rgba($color-black, .15);
   border-radius: 0 0 8px 8px;
 }
 
@@ -65,7 +65,7 @@
   box-sizing: border-box;
   overflow: hidden;
   transition: background-color 200ms;
-  color: rgba(0, 0, 0, 0.32);
+  color: rgba($color-black, .32);
   padding-top: 4px;
 
   &:hover {
