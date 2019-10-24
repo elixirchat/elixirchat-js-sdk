@@ -6537,19 +6537,25 @@ function () {
     this.dispatchTypedText = function (typedText) {
       if (_this.channel) {
         var trimmedText = typeof typedText === 'string' ? typedText.trim() : '';
+        var pushResult;
 
         if (typedText === false) {
-          _this.channel.push('typing', {
+          pushResult = _this.channel.push('typing', {
             typing: false,
             text: ''
           });
         } else if (_this.typedText !== trimmedText) {
-          _this.channel.push('typing', {
+          pushResult = _this.channel.push('typing', {
             typing: Boolean(trimmedText),
             text: trimmedText
           });
-
           _this.typedText = trimmedText;
+        }
+
+        if (!pushResult.sent) {
+          _this.joinChannel(function () {
+            _this.dispatchTypedText(typedText);
+          });
         }
       }
     };
@@ -6629,7 +6635,7 @@ function () {
     }
   }, {
     key: "joinChannel",
-    value: function joinChannel() {
+    value: function joinChannel(callback) {
       var _this3 = this;
 
       var _this$elixirChat2 = this.elixirChat,
@@ -6650,6 +6656,7 @@ function () {
         setTimeout(function () {
           return triggerEvent(ElixirChatEventTypes_1.TYPING_STATUS_SUBSCRIBE_SUCCESS, data);
         });
+        callback && callback();
       });
     }
   }, {
@@ -7061,8 +7068,7 @@ function () {
       var _this$elixirChat3 = _this.elixirChat,
           backendStaticUrl = _this$elixirChat3.backendStaticUrl,
           client = _this$elixirChat3.client,
-          debug = _this$elixirChat3.debug,
-          triggerEvent = _this$elixirChat3.triggerEvent;
+          debug = _this$elixirChat3.debug;
 
       var _this$serializeSendMe = _this.serializeSendMessageParams(params),
           variables = _this$serializeSendMe.variables,
@@ -7378,19 +7384,16 @@ function () {
       var _this2 = this;
 
       var triggerEvent = this.elixirChat.triggerEvent;
-
-      if (this.temporaryMessageTempIds.includes(temporaryMessageTempId)) {
-        this.messageHistory.forEach(function (message) {
-          if (message.tempId === temporaryMessageTempId) {
-            for (var key in messageData) {
-              message[key] = messageData[key];
-            }
-
-            triggerEvent(ElixirChatEventTypes_1.MESSAGES_HISTORY_CHANGE_ONE, message, _this2.messageHistory);
-            return;
+      this.messageHistory.forEach(function (message) {
+        if (message.tempId === temporaryMessageTempId) {
+          for (var key in messageData) {
+            message[key] = messageData[key];
           }
-        });
-      }
+
+          triggerEvent(ElixirChatEventTypes_1.MESSAGES_HISTORY_CHANGE_ONE, message, _this2.messageHistory);
+          return;
+        }
+      });
     }
   }, {
     key: "forgetTemporaryMessage",
