@@ -7758,8 +7758,14 @@ function () {
       var localStorageClient = utilsCommon_1.getJSONFromLocalStorage('elixirchat-client') || {};
       var anonymousClientData = this.generateAnonymousClientData();
       var clientId = client.id || localStorageClient.id || anonymousClientData.id;
-      var clientFirstName = client.firstName || localStorageClient.firstName || anonymousClientData.firstName;
-      var clientLastName = client.lastName || localStorageClient.lastName || anonymousClientData.lastName;
+      var clientFirstName = typeof client.firstName === 'string' ? client.firstName : localStorageClient.firstName || anonymousClientData.firstName;
+      var clientLastName = typeof client.lastName === 'string' ? client.lastName : localStorageClient.lastName || anonymousClientData.lastName;
+
+      if (!clientFirstName && !clientLastName) {
+        clientFirstName = localStorageClient.firstName || anonymousClientData.firstName;
+        clientLastName = localStorageClient.lastName || anonymousClientData.lastName;
+      }
+
       this.client = {
         id: clientId.toString(),
         firstName: clientFirstName,
