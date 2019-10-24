@@ -61,6 +61,7 @@ export class TypingStatusSubscription {
           typing: false,
           text: '',
         });
+        this.typedText = '';
       }
       else if (this.typedText !== trimmedText) {
         pushResult = this.channel.push('typing', {
