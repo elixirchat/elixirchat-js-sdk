@@ -194,8 +194,20 @@ export class ElixirChat {
     const anonymousClientData = this.generateAnonymousClientData();
 
     const clientId = client.id || localStorageClient.id || anonymousClientData.id;
-    const clientFirstName = client.firstName || localStorageClient.firstName || anonymousClientData.firstName;
-    const clientLastName = client.lastName || localStorageClient.lastName || anonymousClientData.lastName;
+
+    let clientFirstName = typeof client.firstName === 'string'
+      ? client.firstName
+      : localStorageClient.firstName || anonymousClientData.firstName;
+
+    let clientLastName = typeof client.lastName === 'string'
+      ? client.lastName
+      : localStorageClient.lastName || anonymousClientData.lastName;
+
+    if (!clientFirstName && !clientLastName) {
+      clientFirstName = localStorageClient.firstName || anonymousClientData.firstName;
+      clientLastName = localStorageClient.lastName || anonymousClientData.lastName;
+    }
+
     this.client = {
       id: clientId.toString(),
       firstName: clientFirstName,
