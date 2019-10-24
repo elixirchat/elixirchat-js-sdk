@@ -6552,7 +6552,7 @@ function () {
           _this.typedText = trimmedText;
         }
 
-        if (!pushResult.sent) {
+        if (pushResult && !pushResult.sent) {
           _this.joinChannel(function () {
             _this.dispatchTypedText(typedText);
           });
@@ -7761,7 +7761,7 @@ function () {
       var clientFirstName = client.firstName || localStorageClient.firstName || anonymousClientData.firstName;
       var clientLastName = client.lastName || localStorageClient.lastName || anonymousClientData.lastName;
       this.client = {
-        id: clientId,
+        id: clientId.toString(),
         firstName: clientFirstName,
         lastName: clientLastName
       };
@@ -7770,7 +7770,7 @@ function () {
       var roomTitle = room.title || localStorageRoom.title || clientFirstName + ' ' + clientLastName;
       var roomData = room.data || {};
       this.room = {
-        id: roomId,
+        id: roomId.toString(),
         title: roomTitle,
         data: roomData
       };
