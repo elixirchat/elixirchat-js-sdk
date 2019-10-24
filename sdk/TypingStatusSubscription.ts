@@ -54,19 +54,26 @@ export class TypingStatusSubscription {
   public dispatchTypedText = (typedText: string | false): void => {
     if (this.channel) {
       const trimmedText = typeof typedText === 'string' ? typedText.trim() : '';
+      let pushResult;
 
       if (typedText === false) {
-        this.channel.push('typing', {
+        pushResult = this.channel.push('typing', {
           typing: false,
           text: '',
         });
       }
       else if (this.typedText !== trimmedText) {
-        this.channel.push('typing', {
+        pushResult = this.channel.push('typing', {
           typing: Boolean(trimmedText),
           text: trimmedText,
         });
         this.typedText = trimmedText;
+      }
+
+      if (!pushResult.sent) {
+        this.joinChannel(() => {
+          this.dispatchTypedText(typedText);
+        });
       }
     }
   };
@@ -92,7 +99,7 @@ export class TypingStatusSubscription {
     this.phoenixSocket.connect();
   };
 
-  protected joinChannel(): void {
+  protected joinChannel(callback): void {
     const { triggerEvent, debug, elixirChatRoomId } = this.elixirChat;
 
     this.channel = this.phoenixSocket.channel('public:room:' + elixirChatRoomId, {});
@@ -109,6 +116,7 @@ export class TypingStatusSubscription {
         this.channel.on('presence_diff', this.onPresenceDiff);
         logEvent(debug, 'Successfully subscribed to typing status change', data);
         setTimeout(() => triggerEvent(TYPING_STATUS_SUBSCRIBE_SUCCESS, data));
+        callback && callback();
       })
   };
 
