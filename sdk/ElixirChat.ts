@@ -197,7 +197,7 @@ export class ElixirChat {
     const clientFirstName = client.firstName || localStorageClient.firstName || anonymousClientData.firstName;
     const clientLastName = client.lastName || localStorageClient.lastName || anonymousClientData.lastName;
     this.client = {
-      id: clientId,
+      id: clientId.toString(),
       firstName: clientFirstName,
       lastName: clientLastName,
     };
@@ -208,7 +208,7 @@ export class ElixirChat {
     const roomTitle = room.title || localStorageRoom.title || clientFirstName + ' ' + clientLastName;
     const roomData = room.data || {};
     this.room = {
-      id: roomId,
+      id: roomId.toString(),
       title: roomTitle,
       data: roomData,
     };

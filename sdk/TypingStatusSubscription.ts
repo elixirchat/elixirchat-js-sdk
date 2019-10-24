@@ -70,7 +70,7 @@ export class TypingStatusSubscription {
         this.typedText = trimmedText;
       }
 
-      if (!pushResult.sent) {
+      if (pushResult && !pushResult.sent) {
         this.joinChannel(() => {
           this.dispatchTypedText(typedText);
         });
