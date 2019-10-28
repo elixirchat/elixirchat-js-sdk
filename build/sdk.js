@@ -6544,6 +6544,7 @@ function () {
             typing: false,
             text: ''
           });
+          _this.typedText = '';
         } else if (_this.typedText !== trimmedText) {
           pushResult = _this.channel.push('typing', {
             typing: Boolean(trimmedText),

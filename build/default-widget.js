@@ -9512,7 +9512,7 @@ function () {
                 fontFamily: rule.style.getPropertyValue('font-family').replace(/["']/ig, ''),
                 fontWeight: rule.style.getPropertyValue('font-weight'),
                 fontStyle: rule.style.getPropertyValue('font-style'),
-                src: this.parseFontFaceSrc(rule.style.getPropertyValue('src'))
+                src: this.getSrcRuleValue(rule)
               });
             }
           }
@@ -9548,6 +9548,13 @@ function () {
         var sameStyle = params.fontStyle ? font.fontStyle === params.fontStyle : true;
         return sameFamily && sameWeight && sameStyle;
       });
+    }
+  }, {
+    key: "getSrcRuleValue",
+    value: function getSrcRuleValue(rule) {
+      return rule.style.cssText.split(/;[^(?base64)]/).filter(function (rule) {
+        return /^\s?src/.test(rule);
+      })[0].replace(/^\s?src:\s?/, '');
     }
   }]);
 
