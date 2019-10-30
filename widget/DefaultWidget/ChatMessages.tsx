@@ -13,11 +13,12 @@ import {
 } from '../../utilsCommon';
 
 import {
-  getHumanReadableFileSize,
   inflectDayJSWeekDays,
-  playNotificationSound,
+  getHumanReadableFileSize,
   unlockNotificationSoundAutoplay,
-  scrollToElement, inflect,
+  playNotificationSound,
+  scrollToElement,
+  inflect,
 } from '../../utilsWidget';
 
 import { getScreenshotCompatibilityFallback } from '../../sdk/ScreenshotTaker';
@@ -405,7 +406,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     const messageRef = this.messageRefs[messageId] || {};
     const messageElement = messageRef.current;
 
-    scrollToElement(messageElement, { isSmooth: true, position: 'center' }, () => {
+    scrollToElement(messageElement, { isSmooth: true, position: 'start' }, () => {
       messageElement.classList.add(highlightedClassName);
       setTimeout(() => {
         messageElement.classList.remove(highlightedClassName);
