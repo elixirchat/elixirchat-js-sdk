@@ -163,3 +163,35 @@ export function scrollToElement(element, options = {}, callback = () => {}): ISc
     }
   }
 }
+
+
+export function getCustomerSupportNameString(sender, widgetTitle) {
+  const { firstName, lastName } = sender || {};
+  if (firstName || lastName) {
+    return [firstName, lastName].join(' ');
+  }
+  else {
+    return widgetTitle;
+  }
+}
+
+
+export function generateMessageOrQuoteTitle(messageToReplyTo, widgetTitle, omitText = false) {
+  const { sender = {}, text = '' } = messageToReplyTo || {};
+  const { firstName, lastName } = sender;
+
+  if (text && !omitText) {
+    return text.substr(0, 100);
+  }
+  else if (!sender.isOperator) {
+    return [firstName, lastName].join(' ');
+  }
+  else {
+    if (firstName || lastName) {
+      return [firstName, lastName].join(' ');
+    }
+    else {
+      return widgetTitle;
+    }
+  }
+}

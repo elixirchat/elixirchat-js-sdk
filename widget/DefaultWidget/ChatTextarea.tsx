@@ -3,7 +3,7 @@ import cn from 'classnames';
 import TextareaAutosize from 'react-textarea-autosize';
 import { ElixirChatWidget } from '../ElixirChatWidget';
 import { randomDigitStringId } from '../../utilsCommon';
-import { getImageDimensions } from '../../utilsWidget';
+import { getImageDimensions, generateMessageOrQuoteTitle } from '../../utilsWidget';
 import { getScreenshotCompatibilityFallback } from '../../sdk/ScreenshotTaker';
 import {
   REPLY_MESSAGE,
@@ -338,10 +338,7 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
               <span className="elixirchat-chat-textarea__reply-to-text">
                 <i className="elixirchat-chat-textarea__reply-to-icon icon-reply-right"/>
                 <span title={responseToMessage.text}>
-                  {responseToMessage.text && responseToMessage.text.substr(0, 100)}
-                  {!responseToMessage.text && (
-                    responseToMessage.sender.firstName + ' ' + responseToMessage.sender.lastName
-                  )}
+                  {generateMessageOrQuoteTitle(responseToMessage, elixirChatWidget.widgetTitle)}
                 </span>
               </span>
               <span className="elixirchat-chat-textarea__reply-to-remove icon-close-thick"

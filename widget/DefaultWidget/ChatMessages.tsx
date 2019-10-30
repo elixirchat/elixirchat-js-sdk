@@ -15,6 +15,7 @@ import {
 import {
   inflectDayJSWeekDays,
   getHumanReadableFileSize,
+  generateMessageOrQuoteTitle,
   unlockNotificationSoundAutoplay,
   playNotificationSound,
   scrollToElement,
@@ -562,15 +563,14 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
                       {!message.sender.isCurrentClient && (
                         <div className="elixirchat-chat-messages__sender">
-                          {message.sender.firstName} {message.sender.lastName}
-                          {(!message.sender.firstName && !message.sender.lastName) && elixirChatWidget.widgetTitle}
+                          {generateMessageOrQuoteTitle(message, elixirChatWidget.widgetTitle, true)}
                         </div>
                       )}
 
                       {Boolean(message.responseToMessage) && (
                         <div className="elixirchat-chat-messages__reply-message"
                           onClick={() => this.onReplyOriginalMessageTextClick(message.responseToMessage.id)}>
-                          {message.responseToMessage.sender.firstName} {message.responseToMessage.sender.lastName} {message.responseToMessage.text.substr(0, 100)}
+                          {generateMessageOrQuoteTitle(message.responseToMessage, elixirChatWidget.widgetTitle)}
                         </div>
                       )}
 
@@ -684,8 +684,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
                   <div className="elixirchat-chat-messages__balloon">
                     <div className="elixirchat-chat-messages__sender">
-                      {message.sender.firstName} {message.sender.lastName}
-                      {(!message.sender.firstName && !message.sender.lastName) && elixirChatWidget.widgetTitle}
+                      {generateMessageOrQuoteTitle(message, elixirChatWidget.widgetTitle, true)}
                     </div>
 
                     {message.systemData.type === 'SCREENSHOT_REQUESTED' && (
