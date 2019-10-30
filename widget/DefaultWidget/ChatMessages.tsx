@@ -326,7 +326,12 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     const files = [];
 
     attachments.forEach(attachment => {
-      const thumbnailUrl = _get(attachment, 'thumbnails[0].url', null);
+      let thumbnailUrl = _get(attachment, 'thumbnails[0].url', null);
+
+      // TODO: remove when backend returns thumbnails for GIFs
+      if (attachment.contentType === 'image/gif') {
+        thumbnailUrl = attachment.url;
+      }
       const thumbnailRatio = this.maxThumbnailSize / Math.max(attachment.width, attachment.height);
 
       let thumbnailWidth = attachment.width;
@@ -613,7 +618,12 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                               src={image.thumbnailUrl}
                               alt={image.name}
                               data-error-message="Файл не найден"
-                              onError={e => e.target.parentNode.classList.add('elixirchat-chat-images__item-not-found')}/>
+                              onError={e => {
+
+                                console.warn('__ load err', e);
+                                e.target.parentNode.classList.add('elixirchat-chat-images__item-not-found')
+
+                              }}/>
                           </a>
                         </li>
                       ))}
