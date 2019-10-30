@@ -9454,14 +9454,6 @@ exports.scrollToElement = scrollToElement;
 },{"./widget/DefaultWidget/assets":"GpM8"}],"vlE8":[function(require,module,exports) {
 "use strict";
 
-function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
-
-function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
-
-function _iterableToArrayLimit(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
-
-function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
-
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
@@ -9508,11 +9500,10 @@ function () {
 
             if (rule instanceof CSSFontFaceRule) {
               fontFaceRules.push({
-                cssText: rule.cssText,
                 fontFamily: rule.style.getPropertyValue('font-family').replace(/["']/ig, ''),
-                fontWeight: rule.style.getPropertyValue('font-weight'),
+                fontWeight: rule.style.getPropertyValue('font-weight').toString(),
                 fontStyle: rule.style.getPropertyValue('font-style'),
-                src: this.getSrcRuleValue(rule)
+                cssText: rule.cssText
               });
             }
           }
@@ -9522,39 +9513,14 @@ function () {
       return fontFaceRules;
     }
   }, {
-    key: "parseFontFaceSrc",
-    value: function parseFontFaceSrc(fontFaceSrcString) {
-      return fontFaceSrcString.replace(/,\s*(local|url)\(/igm, '@@@$1(').split('@@@').map(function (urlString) {
-        return urlString.replace(/;$/, '').replace(/\)\s+([a-z]+)/ig, ')@@@$1').split('@@@');
-      }).map(function (params) {
-        var obj = {};
-        params.forEach(function (param) {
-          var _param$replace$split = param.replace(/^([^(]+)\('?([^']+)'?\)$/, '$1@@@$2').split('@@@'),
-              _param$replace$split2 = _slicedToArray(_param$replace$split, 2),
-              key = _param$replace$split2[0],
-              value = _param$replace$split2[1];
-
-          obj[key] = value.replace(/["']/ig, '');
-        });
-        return obj;
-      });
-    }
-  }, {
     key: "findMatchingFontFaceRules",
     value: function findMatchingFontFaceRules(fontList, params) {
       return fontList.filter(function (font) {
         var sameFamily = font.fontFamily === params.fontFamily;
-        var sameWeight = params.fontWeight ? font.fontWeight === params.fontWeight : true;
+        var sameWeight = params.fontWeight ? font.fontWeight === params.fontWeight.toString() : true;
         var sameStyle = params.fontStyle ? font.fontStyle === params.fontStyle : true;
         return sameFamily && sameWeight && sameStyle;
       });
-    }
-  }, {
-    key: "getSrcRuleValue",
-    value: function getSrcRuleValue(rule) {
-      return rule.style.cssText.split(/;[^(?base64)]/).filter(function (rule) {
-        return /^\s?src/.test(rule);
-      })[0].replace(/^\s?src:\s?/, '');
     }
   }]);
 

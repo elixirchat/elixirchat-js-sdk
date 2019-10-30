@@ -12,19 +12,23 @@
       font: 13px -apple-system, BlinkMacSystemFont, sans-serif;
       padding: 15px 30px;
     }
-    #elixirchat-widget .elixirchat-widget-button {
-      background-color: #22BBD2;
+    body .elixirchat-widget-button {
+      background: #FDEC4F;
+      color: black;
+      box-shadow: 0 8px 14px rgba(21, 19, 25, 0.1);
     }
-
+    body .elixirchat-widget-button:hover {
+      background: #f3e24c;
+    }
   </style>
-  <!-- TODO: remove fake HF styles-->
-  <link crossorigin="anonymous" href="https://demos-elixir-chat.firebaseapp.com/main.css" rel="stylesheet">
+  <link crossorigin="anonymous" href="https://fonts.googleapis.com/css?family=Rubik:400,700&display=swap&subset=cyrillic" rel="stylesheet">
 </head>
 
 <!--TODO: remove fake HF background-->
-<body style="background: url('https://demos-elixir-chat.firebaseapp.com/bg.png') right top no-repeat; background-size: 1280px 800px;">
+<body>
 <div>
-  <!-- TODO: restore default h3 title-->
+  <h3>ElixirChat Widget Example (customized with CSS)</h3>
+
   <div id="elixirchat-widget">
     <!-- Widget will be rendered here -->
   </div>
@@ -82,7 +86,9 @@
   elixirChatWidget.appendWidget({
     container: document.getElementById('elixirchat-widget'),
 
-    // TODO: replace iframeStyles back w/ yellow styles
+    /**
+     * Custom styles that will be applied inside the iframe
+     */
     iframeStyles: `
 
       /* Custom styles inside the iframe */
@@ -91,48 +97,50 @@
       input,
       button,
       textarea {
-        font: 14px/19px "Raleway Regular";
+        font: 14px/18px "Rubik", sans-serif;
       }
-
-      .elixirchat-chat-header,
-      .elixirchat-chat-messages__date-title,
-      .elixirchat-chat-messages__sender,
-      .elixirchat-chat-typing {
-        font-family: "Raleway Bold";
-        font-weight: 400;
+      .elixirchat-chat-header__indicator {
+        display: none;
       }
-
-      .elixirchat-chat-messages__sender {
-        color: #5951BD;
-      }
-
       .elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__balloon {
-        background-color: #5951BD;
+        background: #FDEC4F;
+        color: black;
       }
-
-      .elixirchat-chat-messages__reply-button:hover,
+      .elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__reply-message {
+        color: rgba(0,0,0,.4);
+        border-color: rgba(0,0,0,.25);
+      }
+      .elixirchat-chat-messages__item--by-me a,
+      .elixirchat-chat-messages__item--by-me .elixirchat-chat-files__text-link {
+        color: black;
+      }
+      .elixirchat-chat-messages__item--by-me .elixirchat-chat-files__text-secondary {
+        color: rgba(0,0,0,.4);
+      }
+      .elixirchat-chat-messages__sender,
+      .elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__sender,
       .elixirchat-chat-messages__item--by-operator .elixirchat-chat-messages__sender {
-        color: #22BBD2;
-      }
-
-      .elixirchat-chat-messages__take-screenshot {
-        background-color: #22BBD2;
-      }
-
-      .elixirchat-chat-messages__take-screenshot:hover {
-        background-color: #1ea6ba;
+        color: black;
       }
     `,
+
+    /**
+     * Find and pass a font from parent window into inside the iframe
+     * The font must be loaded from CORS-friendly sources i.e. the domain of the parent window
+     *
+     * TODO: elaborate & move to API docs
+     */
     extractFontsFromParentWindow: [
       {
-        fontFamily: 'Raleway Regular',
-        fontWeight: '400',
+        fontFamily: 'Rubik',
+        fontWeight: 400,
       },
       {
-        fontFamily: 'Raleway Bold',
-        fontWeight: '400',
+        fontFamily: 'Rubik',
+        fontWeight: 700,
       },
     ],
+    debug: true,
   });
 </script>
 </body>

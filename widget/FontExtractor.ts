@@ -41,7 +41,7 @@ export class FontExtractor {
           if (rule instanceof CSSFontFaceRule) {
             fontFaceRules.push({
               fontFamily: rule.style.getPropertyValue('font-family').replace(/["']/ig, ''),
-              fontWeight: rule.style.getPropertyValue('font-weight'),
+              fontWeight: rule.style.getPropertyValue('font-weight').toString(),
               fontStyle: rule.style.getPropertyValue('font-style'),
               cssText: rule.cssText,
             });
@@ -55,7 +55,7 @@ export class FontExtractor {
   protected findMatchingFontFaceRules(fontList: Array<IFontExtractorFont>, params: IFontExtractorExtractParams) :Array<IFontExtractorFont> {
     return fontList.filter(font => {
       const sameFamily = font.fontFamily === params.fontFamily;
-      const sameWeight = params.fontWeight ? font.fontWeight === params.fontWeight : true;
+      const sameWeight = params.fontWeight ? font.fontWeight === params.fontWeight.toString() : true;
       const sameStyle = params.fontStyle ? font.fontStyle === params.fontStyle : true;
       return sameFamily && sameWeight && sameStyle;
     });
