@@ -40,37 +40,16 @@ export class FontExtractor {
           const rule = rules[j];
           if (rule instanceof CSSFontFaceRule) {
             fontFaceRules.push({
-              cssText: rule.cssText,
               fontFamily: rule.style.getPropertyValue('font-family').replace(/["']/ig, ''),
               fontWeight: rule.style.getPropertyValue('font-weight'),
               fontStyle: rule.style.getPropertyValue('font-style'),
-              src: this.getSrcRuleValue(rule), // because getPropertyValue('src') not working in Edge
+              cssText: rule.cssText,
             });
           }
         }
       }
     }
     return fontFaceRules;
-  };
-
-  protected parseFontFaceSrc(fontFaceSrcString: string): { local: string } | { url: string, format: string } {
-    return fontFaceSrcString
-      .replace(/,\s*(local|url)\(/igm, '@@@$1(')
-      .split('@@@')
-      .map(urlString => {
-        return urlString
-          .replace(/;$/, '')
-          .replace(/\)\s+([a-z]+)/ig, ')@@@$1')
-          .split('@@@')
-      })
-      .map(params => {
-        const obj = {};
-        params.forEach(param => {
-          const [ key, value ] = param.replace(/^([^(]+)\('?([^']+)'?\)$/, '$1@@@$2').split('@@@');
-          obj[key] = value.replace(/["']/ig, '');
-        });
-        return obj;
-      });
   };
 
   protected findMatchingFontFaceRules(fontList: Array<IFontExtractorFont>, params: IFontExtractorExtractParams) :Array<IFontExtractorFont> {
@@ -80,14 +59,5 @@ export class FontExtractor {
       const sameStyle = params.fontStyle ? font.fontStyle === params.fontStyle : true;
       return sameFamily && sameWeight && sameStyle;
     });
-  }
-
-  protected getSrcRuleValue(rule){
-    return rule
-      .style
-      .cssText
-      .split(/;[^(?base64)]/)
-      .filter(rule => /^\s?src/.test(rule) )[0]
-      .replace(/^\s?src:\s?/, '');
   }
 }
