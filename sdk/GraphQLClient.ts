@@ -55,10 +55,13 @@ export class GraphQLClient {
         .then(response => response.json())
         .then(response => {
           if (response.errors) {
-            reject(response);
+            reject(response.errors);
+          }
+          else if (response.data) {
+            resolve(response.data);
           }
           else {
-            resolve(response.data);
+            reject(response);
           }
         })
         .catch(response => reject(response));

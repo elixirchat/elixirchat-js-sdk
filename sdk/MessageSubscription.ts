@@ -336,7 +336,7 @@ export class MessageSubscription {
       }
       this.graphQLClient.query(this.messageHistoryQuery, { limit, beforeCursor })
         .then(response => {
-          if (response.messages) {
+          if (response && response.messages) {
 
             const { hasMessageHistoryBeenEverFetched } = this;
             let processedMessages = <[IMessage]>simplifyGraphQLJSON(response.messages)

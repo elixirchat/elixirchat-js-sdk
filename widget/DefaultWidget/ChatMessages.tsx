@@ -51,6 +51,7 @@ export interface IDefaultWidgetMessagesProps {
 export interface IDefaultWidgetMessagesState {
   isLoading: boolean;
   isLoadingError: boolean;
+  loadingErrorInfo: string | null;
   isLoadingPrecedingMessageHistory: boolean;
   hasMessageHistoryEverBeenVisible: boolean;
   processedMessages: Array<object>,
@@ -65,6 +66,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
   state = {
     isLoading: true,
     isLoadingError: false,
+    loadingErrorInfo: null,
     isLoadingPrecedingMessageHistory: false,
     hasMessageHistoryEverBeenVisible: false,
     processedMessages: [],
@@ -127,8 +129,14 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     elixirChatWidget.on(MESSAGES_HISTORY_CHANGE_MANY, messages => {
       this.setProcessedMessages(messages);
     });
-    elixirChatWidget.on([JOIN_ROOM_ERROR, MESSAGES_SUBSCRIBE_ERROR, MESSAGES_FETCH_HISTORY_INITIAL_ERROR], () => {
-      this.setState({ isLoading: false, isLoadingError: true });
+    elixirChatWidget.on([JOIN_ROOM_ERROR, MESSAGES_SUBSCRIBE_ERROR, MESSAGES_FETCH_HISTORY_INITIAL_ERROR], (e) => {
+      const errorMessage = e && e.message ? e.message : 'Unknown error';
+      const loadingErrorInfo = `Message: ${errorMessage}\n\nData: ${JSON.stringify(e, 0, 2)}`;
+      this.setState({
+        isLoading: false,
+        isLoadingError: true,
+        loadingErrorInfo,
+      });
     });
     elixirChatWidget.on(TEXTAREA_VERTICAL_RESIZE, scrollBlockBottomOffset => {
       const hasUserScroll = this.hasUserScroll();
@@ -476,6 +484,16 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     };
   };
 
+  generateSupportMailtoLink = () => {
+    const { elixirChatWidget } = this.props;
+    const { client: { firstName, lastName, id } } = elixirChatWidget;
+    const { loadingErrorInfo } = this.state;
+    const subject = 'Ошибка загрузки чата поддержки';
+    const body = `Чат поддержки не загружается. Появляется сообщение:\n«Ошибка загрузки. Пожалуйста, перезагрузите страницу или напишите администратору»
+    \nВот данные из JavaScript-консоли:\n${loadingErrorInfo}\n\nМои данные:\n${firstName} ${lastName} (ID: ${id})`;
+    return `mailto:${elixirChatWidget.supportEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  };
+
   render(): void {
     const { elixirChatWidget, className } = this.props;
     const {
@@ -509,7 +527,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
               Ошибка загрузки. <br/>
               Пожалуйста, перезагрузите
               страницу <span className="m-nw">или напишите</span> администратору
-              на support@elixir.chat.
+              на <a href={this.generateSupportMailtoLink()} target="_blank">{elixirChatWidget.supportEmail}</a>
             </div>
           )}
 

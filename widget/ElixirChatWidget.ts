@@ -45,6 +45,7 @@ export interface IElixirChatWidgetAppendWidgetConfig {
   container: HTMLElement;
   iframeStyles?: string;
   hideDefaultButton?: boolean;
+  supportEmail?: string;
   extractFontsFromParentWindow?: Array<IFontExtractorExtractParams>;
 }
 
@@ -54,7 +55,9 @@ export class ElixirChatWidget extends ElixirChat {
   public iframeStyles: string;
   public extractFontsFromParentWindow: Array<IFontExtractorExtractParams>;
   public hideDefaultButton: boolean;
+  public supportEmail: string;
 
+  public defaultSupportEmail: string = 'support@elixir.chat';
   public isWidgetPopupOpen: boolean = false;
   public isWidgetPopupFocused: boolean = false;
   public isWidgetRendered: boolean = false;
@@ -123,6 +126,7 @@ export class ElixirChatWidget extends ElixirChat {
       iframeStyles,
       extractFontsFromParentWindow,
       hideDefaultButton,
+      supportEmail,
     } = config;
 
     if (!this.isInitialized) {
@@ -143,6 +147,8 @@ export class ElixirChatWidget extends ElixirChat {
     this.iframeStyles = iframeStyles || '';
     this.extractFontsFromParentWindow = extractFontsFromParentWindow || [];
     this.hideDefaultButton = hideDefaultButton || false;
+    this.supportEmail = supportEmail || this.defaultSupportEmail;
+
     this.widgetReactComponent = renderWidgetReactComponent(this.container, this);
 
     logEvent(this.debug, 'Appended ElixirChat default widget', { container });
