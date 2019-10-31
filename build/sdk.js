@@ -524,8 +524,10 @@ function () {
         }).then(function (response) {
           if (response.errors) {
             reject(response);
-          } else {
+          } else if (response.data) {
             resolve(response.data);
+          } else {
+            reject(response);
           }
         }).catch(function (response) {
           return reject(response);
@@ -7167,7 +7169,7 @@ function () {
           limit: limit,
           beforeCursor: beforeCursor
         }).then(function (response) {
-          if (response.messages) {
+          if (response && response.messages) {
             var hasMessageHistoryBeenEverFetched = _this.hasMessageHistoryBeenEverFetched;
             var processedMessages = GraphQLClient_1.simplifyGraphQLJSON(response.messages).map(function (message) {
               return serializeMessage_1.serializeMessage(message, {
