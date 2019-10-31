@@ -15,6 +15,7 @@ import {
   WIDGET_MUTE,
   WIDGET_UNMUTE,
   SCREENSHOT_REQUEST_SUCCESS,
+  SCREENSHOT_REQUEST_ERROR,
 } from '../ElixirChatWidgetEventTypes';
 
 import { TYPING_STATUS_SUBSCRIBE_SUCCESS } from '../../sdk/ElixirChatEventTypes';
@@ -80,6 +81,7 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
       this.focusTextarea();
     });
     elixirChatWidget.on(SCREENSHOT_REQUEST_SUCCESS, this.onScreenshotRequestSuccess);
+    elixirChatWidget.on(SCREENSHOT_REQUEST_ERROR, () => { elixirChatWidget.togglePopup(); });
     elixirChatWidget.on(IMAGE_PREVIEW_CLOSE, () => this.focusTextarea);
 
     elixirChatWidget.on(REPLY_MESSAGE, messageId => {
