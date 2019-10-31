@@ -149,3 +149,8 @@ export function getJSONFromLocalStorage(key: string, defaultValue: any = ''): an
 export function isWebImage(mimeType: string): boolean {
   return ['image/jpg', 'image/jpeg', 'image/png', 'image/gif'].includes(mimeType.toLowerCase());
 }
+
+
+export function trimEachRow(text: string): string {
+  return text.split(/\n/).map(row => row.trim()).join('\n');
+}

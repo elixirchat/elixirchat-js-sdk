@@ -10,6 +10,7 @@ import {
   _round,
   isWebImage,
   detectBrowser,
+  trimEachRow,
 } from '../../utilsCommon';
 
 import {
@@ -132,7 +133,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     });
     elixirChatWidget.on([JOIN_ROOM_ERROR, MESSAGES_SUBSCRIBE_ERROR, MESSAGES_FETCH_HISTORY_INITIAL_ERROR], (e) => {
       const errorMessage = e && e.message ? e.message : 'Unknown error';
-      const loadingErrorInfo = `Message: ${errorMessage}\n\nData: ${JSON.stringify(e, 0, 2)}`;
+      const loadingErrorInfo = `Message: ${errorMessage}\nData: ${JSON.stringify(e)}`;
       this.setState({
         isLoading: false,
         isLoadingError: true,
@@ -411,14 +412,14 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
   };
 
   onReplyOriginalMessageTextClick = (messageId) => {
-    const highlightedClassName = 'elixirchat-chat-messages__item--flashed';
+    const flashedClassName = 'elixirchat-chat-messages__item--flashed';
     const messageRef = this.messageRefs[messageId] || {};
     const messageElement = messageRef.current;
 
     scrollToElement(messageElement, { isSmooth: true, position: 'start' }, () => {
-      messageElement.classList.add(highlightedClassName);
+      messageElement.classList.add(flashedClassName);
       setTimeout(() => {
-        messageElement.classList.remove(highlightedClassName);
+        messageElement.classList.remove(flashedClassName);
       }, 1000);
     });
   };
@@ -483,12 +484,12 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     const tooLargeFileMessage = (
       <Fragment>Поддерживаются файлы до 5Мб</Fragment>
     );
-    const messageByErrorCodeDict = {
+    const messageByErrorCode = {
       '415': unsupportedFileTypeMessage,
       '413': tooLargeFileMessage,
       '503': badConnectionMessage,
     };
-    return messageByErrorCodeDict[message.submissionErrorCode] || defaultMessage;
+    return messageByErrorCode[message.submissionErrorCode] || defaultMessage;
   };
 
   createMessageRef = (messageElement, message) => {
@@ -506,8 +507,19 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     const { client: { firstName, lastName, id } } = elixirChatWidget;
     const { loadingErrorInfo } = this.state;
     const subject = 'Ошибка загрузки чата поддержки';
-    const body = `Чат поддержки не загружается. Появляется сообщение:\n«Ошибка загрузки. Пожалуйста, перезагрузите страницу или напишите администратору»
-    \nВот данные из JavaScript-консоли:\n${loadingErrorInfo}\n\nМои данные:\n${firstName} ${lastName} (ID: ${id})`;
+
+    const body = trimEachRow(`Чат поддержки не загружается. Появляется сообщение:
+      «Ошибка загрузки. Пожалуйста, перезагрузите страницу или напишите администратору»
+      
+      Вот технические данные:
+      ${loadingErrorInfo}
+      User-agent: ${navigator.userAgent}
+      Screen: ${screen.availWidth}x${screen.availHeight}
+      Device pixel ratio: ${devicePixelRatio}
+      
+      Мои данные:
+      ${firstName} ${lastName} (ID: ${id})
+    `);
     return `mailto:${elixirChatWidget.supportEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
 
