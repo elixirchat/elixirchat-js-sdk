@@ -461,16 +461,32 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     const { elixirChatWidget } = this.props;
     const defaultMessage = (
       <Fragment>
-        Произошла ошибка при отправке <span className="m-pointer m-nw"
+        Ошибка отправки
+        <span className="elixirchat-chat-messages__submission-error-link"
           onClick={() => elixirChatWidget.retrySendMessage(message)}>
-          Попробовать еще раз
+          Еще раз
         </span>
       </Fragment>
     );
+    const badConnectionMessage = (
+      <Fragment>
+        Не отправлено
+        <span className="elixirchat-chat-messages__submission-error-link"
+          onClick={() => elixirChatWidget.retrySendMessage(message)}>
+          Еще раз
+        </span>
+      </Fragment>
+    );
+    const unsupportedFileTypeMessage = (
+      <Fragment>Вложения такого типа<br/> не поддерживаются</Fragment>
+    );
+    const tooLargeFileMessage = (
+      <Fragment>Поддерживаются файлы до 5Мб</Fragment>
+    );
     const messageByErrorCodeDict = {
-      '415': <Fragment>Вложения такого типа<br/> не поддерживаются</Fragment>,
-      '413': <Fragment>Поддерживаются файлы до 5Мб</Fragment>,
-      '503': <span className="m-pointer" onClick={() => elixirChatWidget.retrySendMessage(message)}>Не отправлено</span>,
+      '415': unsupportedFileTypeMessage,
+      '413': tooLargeFileMessage,
+      '503': badConnectionMessage,
     };
     return messageByErrorCodeDict[message.submissionErrorCode] || defaultMessage;
   };

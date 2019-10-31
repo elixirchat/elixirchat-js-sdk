@@ -211,6 +211,17 @@
   display: inline-block;
 }
 
+.elixirchat-chat-messages__submission-error-link {
+  color: $color-gray-dark;
+  cursor: pointer;
+  white-space: nowrap;
+  margin-left: 10px;
+
+  &:hover {
+    color: $color-pink-dark;
+  }
+}
+
 .elixirchat-chat-messages__reply-button {
   margin-left: 10px;
   cursor: pointer;

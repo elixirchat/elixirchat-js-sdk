@@ -55,7 +55,7 @@ export class GraphQLClient {
         .then(response => response.json())
         .then(response => {
           if (response.errors) {
-            reject(response.errors);
+            reject(response);
           }
           else if (response.data) {
             resolve(response.data);
