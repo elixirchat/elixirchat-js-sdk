@@ -447,6 +447,14 @@ function isWebImage(mimeType) {
 }
 
 exports.isWebImage = isWebImage;
+
+function trimEachRow(text) {
+  return text.split(/\n/).map(function (row) {
+    return row.trim();
+  }).join('\n');
+}
+
+exports.trimEachRow = trimEachRow;
 },{}],"1fv+":[function(require,module,exports) {
 "use strict";
 
@@ -6508,15 +6516,12 @@ function () {
 
     _classCallCheck(this, TypingStatusSubscription);
 
-    this.hasConnectErrorOccurred = false;
     this.currentlyTypingUsers = [];
     this.typingTimeouts = {};
     this.typedText = '';
 
     this.subscribe = function () {
-      _this.initializeSocket(function () {
-        _this.joinChannel();
-      });
+      _this.initializeSocket();
     };
 
     this.unsubscribe = function () {
@@ -6525,10 +6530,9 @@ function () {
 
       _this.channel.leave();
 
-      _this.phoenixSocket = null;
       _this.channel = null;
+      _this.phoenixSocket = null;
       _this.currentlyTypingUsers = [];
-      _this.hasConnectErrorOccurred = false;
       Object.values(_this.typingTimeouts).forEach(function (timeout) {
         return clearTimeout(timeout);
       });
@@ -6537,27 +6541,18 @@ function () {
     };
 
     this.dispatchTypedText = function (typedText) {
+      var dispatchForcefully = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+
       if (_this.channel) {
-        var trimmedText = typeof typedText === 'string' ? typedText.trim() : '';
-        var pushResult;
+        var text = typeof typedText === 'string' ? typedText.trim() : '';
+        var typing = Boolean(text);
 
-        if (typedText === false) {
-          pushResult = _this.channel.push('typing', {
-            typing: false,
-            text: ''
-          });
-          _this.typedText = '';
-        } else if (_this.typedText !== trimmedText) {
-          pushResult = _this.channel.push('typing', {
-            typing: Boolean(trimmedText),
-            text: trimmedText
-          });
-          _this.typedText = trimmedText;
-        }
+        if (_this.typedText !== text || dispatchForcefully) {
+          _this.typedText = text;
 
-        if (pushResult && !pushResult.sent) {
-          _this.joinChannel(function () {
-            _this.dispatchTypedText(typedText);
+          _this.channel.push('typing', {
+            typing: typing,
+            text: text
           });
         }
       }
@@ -6614,7 +6609,6 @@ function () {
     value: function initializeSocket() {
       var _this2 = this;
 
-      var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {};
       var _this$elixirChat = this.elixirChat,
           triggerEvent = _this$elixirChat.triggerEvent,
           debug = _this$elixirChat.debug,
@@ -6626,25 +6620,29 @@ function () {
         }
       });
       this.phoenixSocket.onError(function (error) {
-        if (!_this2.hasConnectErrorOccurred) {
-          var message = 'Failed to subscribe to typing status change: could not open connection via Phoenix.Socket';
-          _this2.hasConnectErrorOccurred = true;
-          utilsCommon_1.logEvent(debug, message, error, 'error');
-          triggerEvent(ElixirChatEventTypes_1.TYPING_STATUS_SUBSCRIBE_ERROR, error);
-        }
+        var message = 'Failed to subscribe to typing status change: could not open connection via Phoenix.Socket';
+        utilsCommon_1.logEvent(debug, message, error, 'error');
+        triggerEvent(ElixirChatEventTypes_1.TYPING_STATUS_SUBSCRIBE_ERROR, error);
       });
-      this.phoenixSocket.onOpen(callback);
+      this.phoenixSocket.onOpen(function () {
+        _this2.joinChannel();
+      });
       this.phoenixSocket.connect();
     }
   }, {
     key: "joinChannel",
-    value: function joinChannel(callback) {
+    value: function joinChannel() {
       var _this3 = this;
 
       var _this$elixirChat2 = this.elixirChat,
           triggerEvent = _this$elixirChat2.triggerEvent,
           debug = _this$elixirChat2.debug,
           elixirChatRoomId = _this$elixirChat2.elixirChatRoomId;
+
+      if (this.channel) {
+        this.channel.leave();
+      }
+
       this.channel = this.phoenixSocket.channel('public:room:' + elixirChatRoomId, {});
       this.channel.join().receive('error', function (error) {
         utilsCommon_1.logEvent(debug, 'Failed to subscribe to typing status change: channel received error', error, 'error');
@@ -6655,16 +6653,17 @@ function () {
       }).receive('ok', function (data) {
         _this3.channel.on('presence_diff', _this3.onPresenceDiff);
 
+        _this3.dispatchTypedText(_this3.typedText, true);
+
         utilsCommon_1.logEvent(debug, 'Successfully subscribed to typing status change', data);
         setTimeout(function () {
           return triggerEvent(ElixirChatEventTypes_1.TYPING_STATUS_SUBSCRIBE_SUCCESS, data);
         });
-        callback && callback();
       });
     }
   }, {
     key: "removeFromCurrentlyTypingUsersAfterTimeout",
-    value: function removeFromCurrentlyTypingUsersAfterTimeout(userId, userFullName) {
+    value: function removeFromCurrentlyTypingUsersAfterTimeout(userId) {
       var _this4 = this;
 
       clearTimeout(this.typingTimeouts[userId]);

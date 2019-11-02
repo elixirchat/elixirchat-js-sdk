@@ -8252,6 +8252,14 @@ function isWebImage(mimeType) {
 }
 
 exports.isWebImage = isWebImage;
+
+function trimEachRow(text) {
+  return text.split(/\n/).map(function (row) {
+    return row.trim();
+  }).join('\n');
+}
+
+exports.trimEachRow = trimEachRow;
 },{}],"J4Nk":[function(require,module,exports) {
 /*
 object-assign
@@ -10465,6 +10473,8 @@ function (_react_1$Component) {
     _this.messageRefs = {};
     _this.messagesWithinCurrentViewport = {};
     _this.messagesAlreadyMarkedRead = {};
+    _this.multipleMessagesBeingViewedSimultaneouslyIsThrottling = false;
+    _this.multipleMessagesBeingViewedSimultaneouslyTimeout = null;
 
     _this.onMessageHistoryInitiallyBecomeVisible = function () {
       var processedMessages = _this.state.processedMessages;
@@ -10489,20 +10499,21 @@ function (_react_1$Component) {
     };
 
     _this.onMultipleMessagesBeingViewedSimultaneously = function (callback) {
-      var isThrottlingTimeoutRunning = false;
       var messagesViewedSimultaneously = [];
       requestAnimationFrame(function () {
         _this.onMessageBeingViewed(function (messageId) {
           messagesViewedSimultaneously.push(messageId);
 
-          if (!isThrottlingTimeoutRunning) {
-            isThrottlingTimeoutRunning = true;
-            setTimeout(function () {
-              callback(messagesViewedSimultaneously);
-              isThrottlingTimeoutRunning = false;
-              messagesViewedSimultaneously = [];
-            }, 500);
+          if (_this.multipleMessagesBeingViewedSimultaneouslyIsThrottling) {
+            clearTimeout(_this.multipleMessagesBeingViewedSimultaneouslyTimeout);
           }
+
+          _this.multipleMessagesBeingViewedSimultaneouslyTimeout = setTimeout(function () {
+            _this.multipleMessagesBeingViewedSimultaneouslyIsThrottling = false;
+            callback(messagesViewedSimultaneously);
+            messagesViewedSimultaneously = [];
+          }, 500);
+          _this.multipleMessagesBeingViewedSimultaneouslyIsThrottling = true;
         });
       });
     };
@@ -10669,12 +10680,7 @@ function (_react_1$Component) {
       var images = [];
       var files = [];
       attachments.forEach(function (attachment) {
-        var thumbnailUrl = utilsCommon_1._get(attachment, 'thumbnails[0].url', null); // TODO: remove when backend returns thumbnails for GIFs
-
-
-        if (attachment.contentType === 'image/gif') {
-          thumbnailUrl = attachment.url;
-        }
+        var thumbnailUrl = utilsCommon_1._get(attachment, 'thumbnails[0].url', null);
 
         var thumbnailRatio = _this.maxThumbnailSize / Math.max(attachment.width, attachment.height);
         var thumbnailWidth = attachment.width;
@@ -10745,16 +10751,16 @@ function (_react_1$Component) {
     };
 
     _this.onReplyOriginalMessageTextClick = function (messageId) {
-      var highlightedClassName = 'elixirchat-chat-messages__item--flashed';
+      var flashedClassName = 'elixirchat-chat-messages__item--flashed';
       var messageRef = _this.messageRefs[messageId] || {};
       var messageElement = messageRef.current;
       utilsWidget_1.scrollToElement(messageElement, {
         isSmooth: true,
         position: 'start'
       }, function () {
-        messageElement.classList.add(highlightedClassName);
+        messageElement.classList.add(flashedClassName);
         setTimeout(function () {
-          messageElement.classList.remove(highlightedClassName);
+          messageElement.classList.remove(flashedClassName);
         }, 1000);
       });
     };
@@ -10809,12 +10815,12 @@ function (_react_1$Component) {
       }, "\u0415\u0449\u0435 \u0440\u0430\u0437"));
       var unsupportedFileTypeMessage = react_1.default.createElement(react_1.Fragment, null, "\u0412\u043B\u043E\u0436\u0435\u043D\u0438\u044F \u0442\u0430\u043A\u043E\u0433\u043E \u0442\u0438\u043F\u0430", react_1.default.createElement("br", null), " \u043D\u0435 \u043F\u043E\u0434\u0434\u0435\u0440\u0436\u0438\u0432\u0430\u044E\u0442\u0441\u044F");
       var tooLargeFileMessage = react_1.default.createElement(react_1.Fragment, null, "\u041F\u043E\u0434\u0434\u0435\u0440\u0436\u0438\u0432\u0430\u044E\u0442\u0441\u044F \u0444\u0430\u0439\u043B\u044B \u0434\u043E 5\u041C\u0431");
-      var messageByErrorCodeDict = {
+      var messageByErrorCode = {
         '415': unsupportedFileTypeMessage,
         '413': tooLargeFileMessage,
         '503': badConnectionMessage
       };
-      return messageByErrorCodeDict[message.submissionErrorCode] || defaultMessage;
+      return messageByErrorCode[message.submissionErrorCode] || defaultMessage;
     };
 
     _this.createMessageRef = function (messageElement, message) {
@@ -10835,7 +10841,7 @@ function (_react_1$Component) {
           id = _elixirChatWidget$cli.id;
       var loadingErrorInfo = _this.state.loadingErrorInfo;
       var subject = 'Ошибка загрузки чата поддержки';
-      var body = "\u0427\u0430\u0442 \u043F\u043E\u0434\u0434\u0435\u0440\u0436\u043A\u0438 \u043D\u0435 \u0437\u0430\u0433\u0440\u0443\u0436\u0430\u0435\u0442\u0441\u044F. \u041F\u043E\u044F\u0432\u043B\u044F\u0435\u0442\u0441\u044F \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435:\n\xAB\u041E\u0448\u0438\u0431\u043A\u0430 \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0438. \u041F\u043E\u0436\u0430\u043B\u0443\u0439\u0441\u0442\u0430, \u043F\u0435\u0440\u0435\u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u0435 \u0441\u0442\u0440\u0430\u043D\u0438\u0446\u0443 \u0438\u043B\u0438 \u043D\u0430\u043F\u0438\u0448\u0438\u0442\u0435 \u0430\u0434\u043C\u0438\u043D\u0438\u0441\u0442\u0440\u0430\u0442\u043E\u0440\u0443\xBB\n    \n\u0412\u043E\u0442 \u0434\u0430\u043D\u043D\u044B\u0435 \u0438\u0437 JavaScript-\u043A\u043E\u043D\u0441\u043E\u043B\u0438:\n".concat(loadingErrorInfo, "\n\n\u041C\u043E\u0438 \u0434\u0430\u043D\u043D\u044B\u0435:\n").concat(firstName, " ").concat(lastName, " (ID: ").concat(id, ")");
+      var body = utilsCommon_1.trimEachRow("\u0427\u0430\u0442 \u043F\u043E\u0434\u0434\u0435\u0440\u0436\u043A\u0438 \u043D\u0435 \u0437\u0430\u0433\u0440\u0443\u0436\u0430\u0435\u0442\u0441\u044F. \u041F\u043E\u044F\u0432\u043B\u044F\u0435\u0442\u0441\u044F \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435:\n      \xAB\u041E\u0448\u0438\u0431\u043A\u0430 \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0438. \u041F\u043E\u0436\u0430\u043B\u0443\u0439\u0441\u0442\u0430, \u043F\u0435\u0440\u0435\u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u0435 \u0441\u0442\u0440\u0430\u043D\u0438\u0446\u0443 \u0438\u043B\u0438 \u043D\u0430\u043F\u0438\u0448\u0438\u0442\u0435 \u0430\u0434\u043C\u0438\u043D\u0438\u0441\u0442\u0440\u0430\u0442\u043E\u0440\u0443\xBB\n      \n      \u0412\u043E\u0442 \u0442\u0435\u0445\u043D\u0438\u0447\u0435\u0441\u043A\u0438\u0435 \u0434\u0430\u043D\u043D\u044B\u0435:\n      ".concat(loadingErrorInfo, "\n      User-agent: ").concat(navigator.userAgent, "\n      Screen: ").concat(screen.availWidth, "x").concat(screen.availHeight, "\n      Device pixel ratio: ").concat(devicePixelRatio, "\n      \n      \u041C\u043E\u0438 \u0434\u0430\u043D\u043D\u044B\u0435:\n      ").concat(firstName, " ").concat(lastName, " (ID: ").concat(id, ")\n    "));
       return "mailto:".concat(elixirChatWidget.supportEmail, "?subject=").concat(encodeURIComponent(subject), "&body=").concat(encodeURIComponent(body));
     };
 
@@ -10897,7 +10903,7 @@ function (_react_1$Component) {
       });
       elixirChatWidget.on([ElixirChatEventTypes_1.JOIN_ROOM_ERROR, ElixirChatEventTypes_1.MESSAGES_SUBSCRIBE_ERROR, ElixirChatEventTypes_1.MESSAGES_FETCH_HISTORY_INITIAL_ERROR], function (e) {
         var errorMessage = e && e.message ? e.message : 'Unknown error';
-        var loadingErrorInfo = "Message: ".concat(errorMessage, "\n\nData: ").concat(JSON.stringify(e, 0, 2));
+        var loadingErrorInfo = "Message: ".concat(errorMessage, "\nData: ").concat(JSON.stringify(e));
 
         _this2.setState({
           isLoading: false,
