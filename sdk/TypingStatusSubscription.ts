@@ -22,7 +22,6 @@ export class TypingStatusSubscription {
   protected elixirChat: ElixirChat;
   protected phoenixSocket: any;
   protected channel: any;
-  protected hasConnectErrorOccurred: boolean = false;
   protected currentlyTypingUsers: Array<ITypingUser> = [];
   protected typingTimeouts: any = {};
   protected typedText: string = '';
@@ -32,9 +31,7 @@ export class TypingStatusSubscription {
   }
 
   public subscribe = () => {
-    this.initializeSocket(() => {
-      this.joinChannel();
-    });
+    this.initializeSocket();
   };
 
   public unsubscribe = () => {
@@ -42,44 +39,28 @@ export class TypingStatusSubscription {
     logEvent(debug, 'Unsubscribing from typing status change...');
 
     this.channel.leave();
-    this.phoenixSocket = null;
     this.channel = null;
+    this.phoenixSocket = null;
     this.currentlyTypingUsers = [];
-    this.hasConnectErrorOccurred = false;
+
     Object.values(this.typingTimeouts).forEach(timeout => clearTimeout(timeout));
     this.typingTimeouts = [];
     this.typedText = '';
   };
 
-  public dispatchTypedText = (typedText: string | false): void => {
+  public dispatchTypedText = (typedText: string | false, dispatchForcefully: boolean = false): void => {
     if (this.channel) {
-      const trimmedText = typeof typedText === 'string' ? typedText.trim() : '';
-      let pushResult;
+      const text = typeof typedText === 'string' ? typedText.trim() : '';
+      const typing = Boolean(text);
 
-      if (typedText === false) {
-        pushResult = this.channel.push('typing', {
-          typing: false,
-          text: '',
-        });
-        this.typedText = '';
-      }
-      else if (this.typedText !== trimmedText) {
-        pushResult = this.channel.push('typing', {
-          typing: Boolean(trimmedText),
-          text: trimmedText,
-        });
-        this.typedText = trimmedText;
-      }
-
-      if (pushResult && !pushResult.sent) {
-        this.joinChannel(() => {
-          this.dispatchTypedText(typedText);
-        });
+      if (this.typedText !== text || dispatchForcefully) {
+        this.typedText = text;
+        this.channel.push('typing', { typing, text });
       }
     }
   };
 
-  protected initializeSocket(callback: () => void = function () {}): void {
+  protected initializeSocket(): void {
     const { triggerEvent, debug, socketUrl, authToken } = this.elixirChat;
 
     this.phoenixSocket = new Phoenix.Socket(socketUrl, {
@@ -89,19 +70,23 @@ export class TypingStatusSubscription {
     });
 
     this.phoenixSocket.onError(error => {
-      if (!this.hasConnectErrorOccurred) {
-        const message = 'Failed to subscribe to typing status change: could not open connection via Phoenix.Socket';
-        this.hasConnectErrorOccurred = true;
-        logEvent(debug, message, error, 'error');
-        triggerEvent(TYPING_STATUS_SUBSCRIBE_ERROR, error);
-      }
+      const message = 'Failed to subscribe to typing status change: could not open connection via Phoenix.Socket';
+      logEvent(debug, message, error, 'error');
+      triggerEvent(TYPING_STATUS_SUBSCRIBE_ERROR, error);
     });
-    this.phoenixSocket.onOpen(callback);
+
+    this.phoenixSocket.onOpen(() => {
+      this.joinChannel();
+    });
     this.phoenixSocket.connect();
   };
 
-  protected joinChannel(callback): void {
+  protected joinChannel(): void {
     const { triggerEvent, debug, elixirChatRoomId } = this.elixirChat;
+
+    if (this.channel) {
+      this.channel.leave();
+    }
 
     this.channel = this.phoenixSocket.channel('public:room:' + elixirChatRoomId, {});
     this.channel.join()
@@ -115,9 +100,9 @@ export class TypingStatusSubscription {
       })
       .receive('ok', (data) => {
         this.channel.on('presence_diff', this.onPresenceDiff);
+        this.dispatchTypedText(this.typedText, true);
         logEvent(debug, 'Successfully subscribed to typing status change', data);
         setTimeout(() => triggerEvent(TYPING_STATUS_SUBSCRIBE_SUCCESS, data));
-        callback && callback();
       })
   };
 
@@ -165,7 +150,7 @@ export class TypingStatusSubscription {
     }
   };
 
-  protected removeFromCurrentlyTypingUsersAfterTimeout(userId, userFullName): void {
+  protected removeFromCurrentlyTypingUsersAfterTimeout(userId): void {
     clearTimeout(this.typingTimeouts[userId]);
 
     this.typingTimeouts[userId] = setTimeout(() => {

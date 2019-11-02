@@ -86,6 +86,8 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
   messageRefs: object = {};
   messagesWithinCurrentViewport: object = {};
   messagesAlreadyMarkedRead: object = {};
+  multipleMessagesBeingViewedSimultaneouslyIsThrottling: boolean = false;
+  multipleMessagesBeingViewedSimultaneouslyTimeout: object = null;
 
   componentDidMount() {
     const { elixirChatWidget } = this.props;
@@ -167,21 +169,22 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
   };
 
   onMultipleMessagesBeingViewedSimultaneously = (callback) => {
-    let isThrottlingTimeoutRunning = false;
     let messagesViewedSimultaneously = [];
-
     requestAnimationFrame(() => {
       this.onMessageBeingViewed(messageId => {
         messagesViewedSimultaneously.push(messageId);
-        if (!isThrottlingTimeoutRunning) {
-          isThrottlingTimeoutRunning = true;
 
-          setTimeout(() => {
-            callback(messagesViewedSimultaneously);
-            isThrottlingTimeoutRunning = false;
-            messagesViewedSimultaneously = [];
-          }, 500);
+        if (this.multipleMessagesBeingViewedSimultaneouslyIsThrottling) {
+          clearTimeout(this.multipleMessagesBeingViewedSimultaneouslyTimeout);
         }
+
+        this.multipleMessagesBeingViewedSimultaneouslyTimeout = setTimeout(() => {
+          this.multipleMessagesBeingViewedSimultaneouslyIsThrottling = false;
+          callback(messagesViewedSimultaneously);
+          messagesViewedSimultaneously = [];
+        }, 500);
+
+        this.multipleMessagesBeingViewedSimultaneouslyIsThrottling = true;
       });
     });
   };
@@ -337,12 +340,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     const files = [];
 
     attachments.forEach(attachment => {
-      let thumbnailUrl = _get(attachment, 'thumbnails[0].url', null);
-
-      // TODO: remove when backend returns thumbnails for GIFs
-      if (attachment.contentType === 'image/gif') {
-        thumbnailUrl = attachment.url;
-      }
+      const thumbnailUrl = _get(attachment, 'thumbnails[0].url', null);
       const thumbnailRatio = this.maxThumbnailSize / Math.max(attachment.width, attachment.height);
 
       let thumbnailWidth = attachment.width;
