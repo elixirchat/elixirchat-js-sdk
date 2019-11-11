@@ -2,7 +2,7 @@
 
 # When 'elixirchat-js-sdk' in being installed via npm in another project, dist/sdk.js exports build/sdk.js
 # so that it'd be possible to use `import ElixirChatWidget from 'elixirchat-js-sdk/widget'`
-# See: widget/ElixirChatWidget.ts:8
+# See: widget/ElixirChatWidget.ts:19
 
 SDK_JS_CONTENTS="""
 const ElixirChat = require('../build/sdk').default;

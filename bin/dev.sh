@@ -3,7 +3,7 @@
 node-sass --recursive widget/DefaultWidget/styles/ --output dist/styles/
 
 # When developing SDK locally, dist/sdk.js refers to sdk/ElixirChat.ts
-# See: widget/ElixirChatWidget.ts:8
+# See: widget/ElixirChatWidget.ts:19
 echo """
 import { ElixirChat } from '../sdk/ElixirChat';
 export default ElixirChat;

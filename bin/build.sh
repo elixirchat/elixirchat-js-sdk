@@ -2,8 +2,8 @@
 
 node-sass --recursive widget/DefaultWidget/styles/ --output dist/styles/
 
-# When building SDK locally, dist/sdk.js is empty so that sdk.js in to included into default-widget.js bundle
-# See: widget/ElixirChatWidget.ts:8
+# When building SDK locally, dist/sdk.js is empty so that sdk.js is not included into default-widget.js bundle
+# See: widget/ElixirChatWidget.ts:19
 echo "" > dist/sdk.js
 
 parcel build sdk/index.ts --out-dir build --out-file sdk.js --no-source-maps --no-minify

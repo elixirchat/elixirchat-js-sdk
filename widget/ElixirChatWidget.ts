@@ -3,8 +3,11 @@ import { getJSONFromLocalStorage, logEvent } from '../utilsCommon';
 import { renderWidgetReactComponent } from './DefaultWidget/Widget';
 import { IFontExtractorExtractParams } from './FontExtractor';
 import {
-  WIDGET_IFRAME_READY, WIDGET_MUTE, WIDGET_POPUP_BLUR,
-  WIDGET_POPUP_CLOSE, WIDGET_POPUP_FOCUS,
+  WIDGET_IFRAME_READY,
+  WIDGET_MUTE,
+  WIDGET_POPUP_BLUR,
+  WIDGET_POPUP_CLOSE,
+  WIDGET_POPUP_FOCUS,
   WIDGET_POPUP_OPEN,
   WIDGET_POPUP_TOGGLE,
   WIDGET_RENDERED, WIDGET_UNMUTE,
