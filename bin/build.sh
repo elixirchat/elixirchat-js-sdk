@@ -3,12 +3,8 @@
 DEFAULT_BUILD_DIR="build"
 BUILD_DIR=$(npm config get dir)
 
-if [ -z "$BUILD_DIR" ] || [ "$BUILD_DIR" = "undefined" ];
-  then
-    echo "var is blank";
-    BUILD_DIR=$DEFAULT_BUILD_DIR
-  else
-    echo "var is set to '$BUILD_DIR'";
+if [ -z "$BUILD_DIR" ] || [ "$BUILD_DIR" = "undefined" ]; then
+  BUILD_DIR=$DEFAULT_BUILD_DIR
 fi
 
 printf "\nBuilding JS into '$BUILD_DIR' directory\n\n";
