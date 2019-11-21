@@ -8,6 +8,20 @@ IS_MINOR=$(echo "$NODE_ARGV" | grep minor)
 IS_PATCH=$(echo "$NODE_ARGV" | grep patch)
 
 
+if [ -n "$IS_MAJOR" ]; then
+  echo "-- yo major"
+fi
+
+if [ -n "$IS_MINOR" ]; then
+  echo "-- yo minor"
+fi
+
+if [ -n "$IS_PATCH" ]; then
+  echo "-- yo patch"
+fi
+
+
+
 echo 1111
 echo "NODE_ARGV $NODE_ARGV"
 echo "IS_MAJOR $IS_MAJOR"
