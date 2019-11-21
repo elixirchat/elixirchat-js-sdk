@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+
+node -e 'JSON.parse(process.env.npm_config_argv).original'
+
 IS_MAJOR=$(npm config get argv | grep major)
 IS_MINOR=$(npm config get argv | grep minor)
 IS_PATCH=$(npm config get argv | grep patch)
