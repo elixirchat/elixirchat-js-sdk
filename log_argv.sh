@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 
 
-FFF=$(node -e 'JSON.parse(process.env.npm_config_argv).original')
+node -e "console.log('Original npm args:', JSON.parse(process.env.npm_config_argv).original)"
+
+FFF=$(node -e "console.log('Original npm args:', JSON.parse(process.env.npm_config_argv).original)")
 
 IS_MAJOR=$(npm config get argv | grep major)
 IS_MINOR=$(npm config get argv | grep minor)
