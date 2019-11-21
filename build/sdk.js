@@ -7923,4 +7923,4 @@ Object.defineProperty(exports, "__esModule", {
 var ElixirChat_1 = require("./ElixirChat");
 
 exports.default = ElixirChat_1.ElixirChat;
-},{"./ElixirChat":"Pqo8"}]},{},["7QCb"], null)
+},{"./ElixirChat":"Pqo8"}]},{},["7QCb"], null);(function(){ if (typeof ElixirChat !== 'undefined') { ElixirChat.prototype.version = '1.1.1'; } }())

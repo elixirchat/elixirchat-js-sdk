@@ -7,6 +7,11 @@ if [ -z "$BUILD_DIR" ] || [ "$BUILD_DIR" = "undefined" ]; then
   BUILD_DIR=$DEFAULT_BUILD_DIR
 fi
 
+function write_version_to_sdk() {
+  js_code=";(function(){ if (typeof ElixirChat !== 'undefined') { ElixirChat.prototype.version = '1.1.1'; } }())"
+  echo "$js_code" >> "$1"
+}
+
 printf "\nBuilding JS into '$BUILD_DIR' directory\n\n";
 
 node-sass --recursive widget/DefaultWidget/styles/ --output dist/styles/
@@ -17,6 +22,8 @@ echo "" > dist/sdk.js
 
 parcel build sdk/index.ts --out-dir $BUILD_DIR --out-file sdk.js --no-source-maps --no-minify
 parcel build sdk/index.ts --out-dir $BUILD_DIR --out-file sdk.min.js --no-source-maps
+write_version_to_sdk $BUILD_DIR/sdk.js
+write_version_to_sdk $BUILD_DIR/sdk.min.js
 
 parcel build widget/index.ts --out-dir $BUILD_DIR --out-file default-widget.js --no-source-maps --no-minify
 parcel build widget/index.ts --out-dir $BUILD_DIR --out-file default-widget.min.js --no-source-maps
