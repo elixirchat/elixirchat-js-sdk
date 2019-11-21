@@ -1,17 +1,15 @@
 #!/usr/bin/env bash
 
 
-node -e "console.log('Original npm args:', JSON.parse(process.env.npm_config_argv).original)"
+NODE_ARGV=$(node -e "console.log(JSON.parse(process.env.npm_config_argv).original)")
 
-FFF=$(node -e "console.log('Original npm args:', JSON.parse(process.env.npm_config_argv).original)")
-
-IS_MAJOR=$(npm config get argv | grep major)
-IS_MINOR=$(npm config get argv | grep minor)
-IS_PATCH=$(npm config get argv | grep patch)
+IS_MAJOR=$(echo "$NODE_ARGV" | grep major)
+IS_MINOR=$(echo "$NODE_ARGV" | grep minor)
+IS_PATCH=$(echo "$NODE_ARGV" | grep patch)
 
 
 echo 1111
-echo "FFF $FFF"
+echo "NODE_ARGV $NODE_ARGV"
 echo "IS_MAJOR $IS_MAJOR"
 echo "IS_MINOR $IS_MINOR"
 echo "IS_PATCH $IS_PATCH"
