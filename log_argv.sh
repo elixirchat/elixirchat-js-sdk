@@ -9,7 +9,12 @@ IS_PATCH=$(echo "$NODE_ARGV" | grep patch)
 
 
 CURRENT_VERSION=$(node -p "require('./package.json').version")
+
+printf "\n===\nCURRENT_VERSION $CURRENT_VERSION\n"
+
 CURRENT_VERSION_ARR=($(echo "$CURRENT_VERSION" | tr '.' '\n'))
+
+printf "\n===\nCURRENT_VERSION_ARR $CURRENT_VERSION_ARR\n"
 
 if [ -n "$IS_MAJOR" ]; then
   echo "-- yo major"
@@ -28,6 +33,8 @@ fi
 
 
 NEW_VERSION="${CURRENT_VERSION_ARR[1]}.${CURRENT_VERSION_ARR[2]}.${CURRENT_VERSION_ARR[3]}"
+
+printf "\n===\nNEW_VERSION $NEW_VERSION\n"
 
 
 echo 1111
