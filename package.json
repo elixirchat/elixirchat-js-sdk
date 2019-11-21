@@ -9,7 +9,7 @@
     "link-with-backend": "./bin/link-with-backend.sh",
     "preinstall": "./bin/preinstall.sh",
     "postinstall": "./bin/postinstall.sh",
-    "preversion": "./log_argv.sh"
+    "preversion": "./preversion.sh"
   },
   "main": "./sdk",
   "repository": {
