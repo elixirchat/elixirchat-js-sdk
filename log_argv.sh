@@ -14,21 +14,28 @@ printf "\n===\nCURRENT_VERSION $CURRENT_VERSION\n"
 
 CURRENT_VERSION_ARR=($(echo "$CURRENT_VERSION" | tr '.' '\n'))
 
+CURRENT_VERSION_1=${CURRENT_VERSION_ARR[1]}
+CURRENT_VERSION_2=${CURRENT_VERSION_ARR[2]}
+CURRENT_VERSION_3=${CURRENT_VERSION_ARR[3]}
+
 printf "\n===\nCURRENT_VERSION_ARR $CURRENT_VERSION_ARR\n"
 
 if [ -n "$IS_MAJOR" ]; then
   echo "-- yo major"
   (( CURRENT_VERSION_ARR[1]++ ))
+  CURRENT_VERSION_1=$((CURRENT_VERSION_1 + 1))
 fi
 
 if [ -n "$IS_MINOR" ]; then
   echo "-- yo minor"
   (( CURRENT_VERSION_ARR[2]++ ))
+  CURRENT_VERSION_2=$((CURRENT_VERSION_2 + 2))
 fi
 
 if [ -n "$IS_PATCH" ]; then
+  echo "-- yo patch"
   (( CURRENT_VERSION_ARR[3]++ ))
-  echo "-- yo patch "
+  CURRENT_VERSION_3=$((CURRENT_VERSION_3 + 3))
 fi
 
 
