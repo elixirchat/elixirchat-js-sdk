@@ -3,12 +3,14 @@
 # Usage:
 # npm run examples                      # Browse examples working with local server (localhost:4000)
 # npm run examples --dev-server=true    # Browse examples working with dev-server (dev-admin.elixir.chat/api)
+# npm run examples --open=true          # Open examples in the browser automatically
 
 export API_URL="http:\/\/localhost:4000"
 export SOCKET_URL="ws:\/\/localhost:4000\/socket"
 export BACKEND_STATIC_URL="http:\/\/localhost:4000"
 
 export IS_DEV_SERVER=$(npm config get dev-server)
+export IS_OPEN=$(npm config get open)
 
 replace_env_variables () {
   sed -i '' -E -e "s/apiUrl: '[^']+'/apiUrl: '$API_URL'/" "$1"
@@ -47,9 +49,16 @@ export -f replace_env_variables
 
 update_examples_files
 
-concurrently "watch update_examples_files build" \
-"http-server dist/build -p 8002" \
-"http-server dist/build -p 8003" \
-"open http://localhost:8002/examples/sdk.html" \
-"open http://localhost:8002/examples/widget.html" \
-"open http://localhost:8003/examples/widget-private.html"
+if [ "$IS_OPEN" != "undefined" ];
+  then
+    concurrently "watch update_examples_files build" \
+    "http-server dist/build -p 8002" \
+    "http-server dist/build -p 8003" \
+    "open http://localhost:8002/examples/sdk.html" \
+    "open http://localhost:8002/examples/widget.html" \
+    "open http://localhost:8003/examples/widget-private.html"
+  else
+    concurrently "watch update_examples_files build" \
+    "http-server dist/build -p 8002" \
+    "http-server dist/build -p 8003"
+fi
