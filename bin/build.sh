@@ -1,16 +1,6 @@
 #!/usr/bin/env bash
 
-
 NEW_VERSION=$1
-
-echo "5555"
-echo $NEW_VERSION
-echo "6666"
-
-
-
-
-
 DEFAULT_BUILD_DIR="build"
 BUILD_DIR=$(npm config get dir)
 

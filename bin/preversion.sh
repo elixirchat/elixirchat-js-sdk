@@ -9,6 +9,7 @@ function get_new_version() {
 
   CURRENT_VERSION=$(node -p "require('./package.json').version")
 
+  # TODO: fix version containing double-digit numbers e.g. "2.19.1"
   CURRENT_VERSION_MAJOR=${CURRENT_VERSION:0:1}
   CURRENT_VERSION_MINOR=${CURRENT_VERSION:2:1}
   CURRENT_VERSION_PATCH=${CURRENT_VERSION:4:1}
@@ -28,9 +29,6 @@ function get_new_version() {
 }
 
 ./bin/build.sh $(get_new_version)
-
-
-exit 1
 
 git add build/default-widget.js
 git add build/default-widget.min.js

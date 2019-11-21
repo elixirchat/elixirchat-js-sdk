@@ -12251,7 +12251,9 @@ function (_react_1$Component) {
         className: "elixirchat-chat-header"
       }, widgetTitle && react_1.default.createElement(react_1.Fragment, null, areAnyOperatorsOnline && react_1.default.createElement("i", {
         className: "elixirchat-chat-header__indicator"
-      }), widgetTitle), react_1.default.createElement("button", {
+      }), react_1.default.createElement("span", {
+        title: elixirChatWidget.version ? 'Версия ' + elixirChatWidget.version : null
+      }, widgetTitle)), react_1.default.createElement("button", {
         className: "elixirchat-chat-header__mute",
         onClick: elixirChatWidget.toggleMute,
         title: isNotificationSoundMuted ? 'Включить звук уведомлений' : 'Выключить звук уведомлений'
