@@ -1,34 +1,30 @@
 #!/usr/bin/env bash
 
-function get_new_version() {
-  NODE_ARGV=$(node -e "console.log(JSON.parse(process.env.npm_config_argv).original)")
+current_version=$(node -p "require('./package.json').version")
+current_version_arr=($(echo "$current_version" | sed 's/\./ /g'))
 
-  IS_MAJOR=$(echo "$NODE_ARGV" | grep major)
-  IS_MINOR=$(echo "$NODE_ARGV" | grep minor)
-  IS_PATCH=$(echo "$NODE_ARGV" | grep patch)
+node_argv=$(node -e "console.log(JSON.parse(process.env.npm_config_argv).original)")
+is_major=$(echo "$node_argv" | grep major)
+is_minor=$(echo "$node_argv" | grep minor)
+is_patch=$(echo "$node_argv" | grep patch)
 
-  CURRENT_VERSION=$(node -p "require('./package.json').version")
+if [ -n "$is_major" ]; then
+  (( current_version_arr[0]++ ))
+fi
+if [ -n "$is_minor" ]; then
+  (( current_version_arr[1]++ ))
+fi
+if [ -n "$is_patch" ]; then
+  (( current_version_arr[2]++ ))
+fi
 
-  # TODO: fix version containing double-digit numbers e.g. "2.19.1"
-  CURRENT_VERSION_MAJOR=${CURRENT_VERSION:0:1}
-  CURRENT_VERSION_MINOR=${CURRENT_VERSION:2:1}
-  CURRENT_VERSION_PATCH=${CURRENT_VERSION:4:1}
+new_version="${current_version_arr[0]}.${current_version_arr[1]}.${current_version_arr[2]}"
 
-  if [ -n "$IS_MAJOR" ]; then
-    CURRENT_VERSION_MAJOR=$((CURRENT_VERSION_MAJOR + 1))
-  fi
-  if [ -n "$IS_MINOR" ]; then
-    CURRENT_VERSION_MINOR=$((CURRENT_VERSION_MINOR + 1))
-  fi
-  if [ -n "$IS_PATCH" ]; then
-    CURRENT_VERSION_PATCH=$((CURRENT_VERSION_PATCH + 1))
-  fi
+echo "Building new version v$new_version"
 
-  NEW_VERSION="${CURRENT_VERSION_MAJOR}.${CURRENT_VERSION_MINOR}.${CURRENT_VERSION_PATCH}"
-  echo $NEW_VERSION
-}
+./bin/build.sh $new_version
 
-./bin/build.sh $(get_new_version)
+exit 1
 
 git add build/default-widget.js
 git add build/default-widget.min.js

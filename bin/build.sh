@@ -3,6 +3,10 @@
 CURRENT_VERSION=$(node -p "require('./package.json').version")
 NEW_VERSION=$1
 
+echo "NEW_VERSION $NEW_VERSION"
+
+exit 1
+
 if [ -n "$NEW_VERSION" ];
   then
     OUTPUT_VERSION=$NEW_VERSION
