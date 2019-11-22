@@ -9,8 +9,8 @@ export API_URL="http:\/\/localhost:4000"
 export SOCKET_URL="ws:\/\/localhost:4000\/socket"
 export BACKEND_STATIC_URL="http:\/\/localhost:4000"
 
-export IS_DEV_SERVER=$(npm config get dev-server)
-export IS_OPEN=$(npm config get open)
+export is_dev_server=$(npm config get dev-server)
+export should_open_in_browser=$(npm config get open)
 
 replace_env_variables () {
   sed -i '' -E -e "s/apiUrl: '[^']+'/apiUrl: '$API_URL'/" "$1"
@@ -28,7 +28,7 @@ update_examples_files () {
   cp -rf build/examples/widget.html dist/build/examples/widget.html
   cp -rf build/examples/widget-private.html dist/build/examples/widget-private.html
 
-  if [ "$IS_DEV_SERVER" != "undefined" ];
+  if [ "$is_dev_server" != "undefined" ];
     then
       tput setaf 2
       printf "\nRunning SDK with DEV-SERVER (dev-admin.elixir.chat/api)\n\n"
@@ -49,7 +49,7 @@ export -f replace_env_variables
 
 update_examples_files
 
-if [ "$IS_OPEN" != "undefined" ];
+if [ "$should_open_in_browser" != "undefined" ];
   then
     concurrently "watch update_examples_files build" \
     "http-server dist/build -p 8002" \

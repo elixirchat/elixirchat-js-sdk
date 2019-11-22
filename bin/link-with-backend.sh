@@ -6,23 +6,21 @@
 # Example:
 # npm run link-with-backend --backend-dir=../elixirchat
 
-TRIMMED_BACKEND_PATH=$(npm config get backend-dir | sed 's:/*$::')
-FULL_BACKEND_PATH=$(echo $(cd "$TRIMMED_BACKEND_PATH" && pwd))
+trimmed_backend_path=$(npm config get backend-dir | sed 's:/*$::')
+full_backend_path=$(echo $(cd "$trimmed_backend_path" && pwd))
 
-SCHEMA_FILE_NAME=$(cat .graphqlconfig | python -c "import sys, json; print(json.load(sys.stdin)['schemaPath'])")
-SCHEMA_PATH=$FULL_BACKEND_PATH/$SCHEMA_FILE_NAME
+schema_file_name=$(cat .graphqlconfig | python -c "import sys, json; print(json.load(sys.stdin)['schemaPath'])")
+schema_path=$full_backend_path/$schema_file_name
 
-if [ ! -e "$SCHEMA_PATH" ]; then
+if [ ! -e "$schema_path" ]; then
   tput setaf 1
   printf "\nError: Backend directory not found. You must pass the correct path to elixirchat backend directory i.e.:\n  npm run link-with-backend --backend-dir=../elixirchat\n\n"
   tput sgr0
   exit 1
 fi
 
-
-
-echo "$FULL_BACKEND_PATH" > .env-backend
-ln "$SCHEMA_PATH" "$SCHEMA_FILE_NAME"
+echo "$full_backend_path" > .env-backend
+ln "$schema_path" "$schema_file_name"
 
 tput setaf 2
 printf "\nSuccessfully linked with backend directory"

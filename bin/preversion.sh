@@ -20,11 +20,7 @@ fi
 
 new_version="${current_version_arr[0]}.${current_version_arr[1]}.${current_version_arr[2]}"
 
-echo "Building new version v$new_version"
-
 ./bin/build.sh $new_version
-
-exit 1
 
 git add build/default-widget.js
 git add build/default-widget.min.js
