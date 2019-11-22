@@ -5,11 +5,13 @@
   "scripts": {
     "dev": "./bin/dev.sh",
     "build": "./bin/build.sh",
+    "deploy": "./bin/deploy.sh",
+    "release": "./bin/release.sh",
     "examples": "./bin/examples.sh",
-    "link-with-backend": "./bin/link-with-backend.sh",
     "preinstall": "./bin/preinstall.sh",
     "postinstall": "./bin/postinstall.sh",
-    "preversion": "./bin/preversion.sh"
+    "preversion": "./bin/preversion.sh",
+    "link-with-backend": "./bin/link-with-backend.sh"
   },
   "main": "./sdk",
   "repository": {
