@@ -136,7 +136,7 @@ export class MessageSubscription {
     else {
       this.messageHistory.push(message);
       logEvent(debug, 'Received new message', { message });
-      triggerEvent(MESSAGES_HISTORY_APPEND_ONE, message, this.messageHistory);
+      triggerEvent(MESSAGES_HISTORY_APPEND_ONE, message);
     }
   };
 
@@ -234,11 +234,9 @@ export class MessageSubscription {
         for (let key in messageData) {
           message[key] = messageData[key];
         }
-        triggerEvent(MESSAGES_HISTORY_CHANGE_ONE, message, this.messageHistory);
-        return;
+        triggerEvent(MESSAGES_HISTORY_CHANGE_ONE, message);
       }
     });
-
   }
 
   protected forgetTemporaryMessage(temporaryMessageTempId: string): void {
@@ -362,8 +360,7 @@ export class MessageSubscription {
               hasMessageHistoryBeenEverFetched
                 ? MESSAGES_FETCH_HISTORY_SUCCESS
                 : MESSAGES_FETCH_HISTORY_INITIAL_SUCCESS,
-              processedMessages,
-              this.messageHistory
+              processedMessages
             );
             resolve(processedMessages);
           }
@@ -418,7 +415,7 @@ export class MessageSubscription {
       .then(processedMessageHistory => {
         this.messageHistory = processedMessageHistory.concat(this.messageHistory);
         logEvent(debug, 'Fetched and prepended additional message history', { processedMessageHistory });
-        triggerEvent(MESSAGES_HISTORY_PREPEND_MANY, processedMessageHistory, this.messageHistory);
+        triggerEvent(MESSAGES_HISTORY_PREPEND_MANY, processedMessageHistory);
         return processedMessageHistory;
       });
   };

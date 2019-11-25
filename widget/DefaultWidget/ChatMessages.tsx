@@ -127,8 +127,8 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     elixirChatWidget.on(MESSAGES_HISTORY_PREPEND_MANY, messages => {
       this.setProcessedMessages(messages, { insertBefore: true });
     });
-    elixirChatWidget.on(MESSAGES_HISTORY_CHANGE_ONE, (changedMessage, messageHistory) => {
-      this.setProcessedMessages(messageHistory);
+    elixirChatWidget.on(MESSAGES_HISTORY_CHANGE_ONE, () => {
+      this.setProcessedMessages(elixirChatWidget.messageHistory);
     });
     elixirChatWidget.on(MESSAGES_HISTORY_CHANGE_MANY, messages => {
       this.setProcessedMessages(messages);
