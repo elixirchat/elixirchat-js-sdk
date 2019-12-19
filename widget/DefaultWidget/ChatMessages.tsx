@@ -123,6 +123,10 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
       if (elixirChatWidget.isWidgetPopupOpen) {
         this.onMessageHistoryInitiallyBecomeVisible();
       }
+      const lastMessage = _last(messages) || {};
+      if (lastMessage.openWidget && !elixirChatWidget.isWidgetPopupOpen) {
+        elixirChatWidget.togglePopup();
+      }
     });
     elixirChatWidget.on(MESSAGES_HISTORY_PREPEND_MANY, messages => {
       this.setProcessedMessages(messages, { insertBefore: true });
@@ -273,6 +277,9 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     }
     if (shouldPlayNotificationSound) {
       playNotificationSound();
+    }
+    if (message.openWidget && !elixirChatWidget.isWidgetPopupOpen) {
+      elixirChatWidget.togglePopup();
     }
   };
 
@@ -664,10 +671,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                               alt={image.name}
                               data-error-message="Файл не найден"
                               onError={e => {
-
-                                console.warn('__ load err', e);
                                 e.target.parentNode.classList.add('elixirchat-chat-images__item-not-found')
-
                               }}/>
                           </a>
                         </li>

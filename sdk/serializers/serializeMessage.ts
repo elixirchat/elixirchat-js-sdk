@@ -112,6 +112,7 @@ export function serializeMessage(message: any, elixirChat: ElixirChat): IMessage
     isSubmitting: _get(message, 'isSubmitting') || false,
     submissionErrorCode: _get(message, 'submissionErrorCode') || null,
     isUnread: _get(message, 'unread') || false,
+    openWidget: _get(message, 'openWidget') || false,
     isSystem,
     systemData: !isSystem ? null : {
       type: _get(message, 'data.type') || null,
