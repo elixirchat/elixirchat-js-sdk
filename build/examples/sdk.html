@@ -134,7 +134,7 @@ let attachments = [];
 let screenshot = null;
 let replyTo = null;
 
-elixirChat.onConnectSuccess(() => {
+elixirChat.on('JOIN_ROOM_SUCCESS', () => {
   elixirChat.fetchMessageHistory(5).then(history => {
     messages = history;
     renderMessages(messages, true);
@@ -143,12 +143,12 @@ elixirChat.onConnectSuccess(() => {
   document.getElementById('client').innerHTML = `<b>Client:</b> ${elixirChat.client.firstName} ${elixirChat.client.lastName} (ID: ${elixirChat.client.id})`;
 });
 
-elixirChat.onMessage(message => {
+elixirChat.on('MESSAGES_HISTORY_APPEND_ONE', message => {
   messages.push(message);
   renderMessages(messages, true);
 });
 
-elixirChat.onTyping(users => {
+elixirChat.on('TYPING_STATUS_CHANGE', users => {
   document.getElementById('typing').innerText = users.length ? users.length + ' user(s) typing...' : 'Nobody is currently typing';
 });
 
@@ -181,7 +181,7 @@ function sendMessage(text){
 }
 
 function loadPreviousMessages(e){
-  elixirChat.fetchMessageHistory(5, messages[0].cursor).then(history => {
+  elixirChat.fetchPrecedingMessageHistory(5).then(history => {
     messages = [...history, ...messages];
     renderMessages(messages);
     if (elixirChat.reachedBeginningOfMessageHistory) {

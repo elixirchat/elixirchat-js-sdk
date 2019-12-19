@@ -1,5 +1,12 @@
 @import "./variables";
 
+
+/*
+HOW TO ADD NEW ICONS INTO THE FONT:
+@see elixirchat-admin/src/styles/icons.scss
+ */
+
+
 [class^="icon-"], [class*=" icon-"] {
   font-family: $font-family-icons !important;
   speak: none;
@@ -62,4 +69,40 @@
 
 .icon-speaker:before {
   content: "\e90c";
+}
+
+.icon-system-case-closed:before {
+  content: "\e90d";
+}
+
+.icon-system-operator-assigned:before {
+  content: "\e90e";
+}
+
+.icon-system-reminder:before {
+  content: "\e90f";
+}
+
+.icon-system-screenshot:before {
+  content: "\e910";
+}
+
+.icon-ellipsis:before {
+  content: "\e911";
+}
+
+.icon-info:before {
+  content: "\e912";
+}
+
+.icon-menu:before {
+  content: "\e913";
+}
+
+.icon-submit:before {
+  content: "\e914";
+}
+
+.icon-close-medium:before {
+  content: "\e915";
 }

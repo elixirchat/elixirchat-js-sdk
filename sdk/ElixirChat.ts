@@ -90,7 +90,7 @@ export class ElixirChat {
   protected screenshotTaker: ScreenshotTaker;
 
   protected joinRoomQuery: string = insertGraphQlFragments(gql`
-    mutation($companyId: Uuid!, $room: ForeignRoom, $client: ForeignClient) {
+    mutation($companyId: Uuid!, $room: ForeignRoom, $client: ForeignClient!) {
       joinRoom (companyId: $companyId, room: $room, client: $client) {
         token
         company {

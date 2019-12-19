@@ -160,7 +160,7 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
   };
 
   focusTextarea = () => {
-    requestAnimationFrame(() => {
+    setTimeout(() => {
       this.textarea.focus();
     });
   };

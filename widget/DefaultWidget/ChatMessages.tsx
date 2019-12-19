@@ -263,7 +263,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     const hasUserScroll = this.hasUserScroll();
     const shouldPlayNotificationSound = !message.sender.isCurrentClient && !elixirChatWidget.isWidgetMuted;
     const shouldScrollMessagesToBottom = elixirChatWidget.isWidgetPopupOpen
-      && elixirChatWidget.isWidgetPopupFocused
+      && elixirChatWidget.isWidgetPopupFocused // TODO: replace /w document.hasFocus() or document.visibilityState
       && !hasUserScroll;
 
     this.setProcessedMessages([message], { insertAfter: true });
@@ -403,7 +403,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
   };
 
   scrollToBottom = (): void => {
-    requestAnimationFrame(() => {
+    setTimeout(() => {
       this.scrollBlock.current.scrollTop = this.scrollBlock.current.scrollHeight;
     });
     this.scrollBlock.current.scrollTop = this.scrollBlock.current.scrollHeight;
