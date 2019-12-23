@@ -15,7 +15,6 @@ export should_open_in_browser=$(npm config get open)
 replace_env_variables () {
   sed -i '' -E -e "s/apiUrl: '[^']+'/apiUrl: '$API_URL'/" "$1"
   sed -i '' -E -e "s/socketUrl: '[^']+'/socketUrl: '$SOCKET_URL'/" "$1"
-  sed -i '' -E -e "s/backendStaticUrl: '[^']+'/backendStaticUrl: '$BACKEND_STATIC_URL'/" "$1"
 }
 
 update_examples_files () {

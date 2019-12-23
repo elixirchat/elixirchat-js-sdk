@@ -52,7 +52,6 @@ import ElixirChatWidget from 'elixirchat-js-sdk/widget';
 const elixirChatWidget = new ElixirChatWidget({
   apiUrl: 'https://elixirchat.yoursite.com/api', // your ElixirChat API URL
   socketUrl: 'wss://elixirchat.yoursite.com/socket', // your ElixirChat websocket URL
-  backendStaticUrl: 'https://elixirchat.yoursite.com/api', // path to directory (before "uploads/") where files are uploaded on your ElixirChat backend
   companyId: 'your-company-id-here', // you will get companyId from ElixirChat team
   
   // You may also include optional "room" and "client" parameters here
@@ -76,7 +75,6 @@ Download [`/build/sdk.min.js`](https://github.com/elixirchat/elixirchat-js-sdk/b
   const elixirChatWidget = new ElixirChatWidget({
     apiUrl: 'https://elixirchat.yoursite.com/api', // your ElixirChat API URL
     socketUrl: 'wss://elixirchat.yoursite.com/socket', // your ElixirChat websocket URL
-    backendStaticUrl: 'https://elixirchat.yoursite.com/api', // path to directory (before "uploads/") where files are uploaded on your ElixirChat backend
     companyId: 'your-company-id-here', // you will get companyId from ElixirChat team
     
     // You may also include optional "room" and "client" parameters here
@@ -116,7 +114,6 @@ import ElixirChat from 'elixirchat-js-sdk';
 const elixirChat = new ElixirChat({
   apiUrl: 'https://elixirchat.yoursite.com/api', // your ElixirChat API URL
   socketUrl: 'wss://elixirchat.yoursite.com/socket', // your ElixirChat websocket URL
-  backendStaticUrl: 'https://elixirchat.yoursite.com/api', // path to directory (before "uploads/") where files are uploaded on your ElixirChat backend
   companyId: 'your-company-id-here', // you will get companyId from ElixirChat team
   
   // You may also include optional "room" and "client" parameters here
@@ -205,7 +202,6 @@ You have to pass over the config when initializing `new ElixirChat` or `new Elix
 new ElixirChat({
   apiUrl: 'https://elixirchat.yoursite.com/api',
   socketUrl: 'wss://elixirchat.yoursite.com/socket',
-  backendStaticUrl: 'https://elixirchat.yoursite.com/api',
   companyId: 'your-company-id-here',
   room: {
     id: 'your-room-id-here',
@@ -236,13 +232,6 @@ Your ElixirChat backend GraphQL URL (for example `https://elixirchat.yourcompany
 
 #### `socketUrl: string`
 Your ElixirChat backend WebSocket URL starting with `ws:`/`wss:` protocol (for example `wss://elixirchat.yourcompany.com/socket`)
-
-
-<br/>
-<a id="config-backendStaticUrl"></a>
-
-#### `backendStaticUrl: string`
-Path to directory (before "uploads/") where files are uploaded on your ElixirChat backend (for example 'https://elixirchat.yoursite.com/api')
 
 
 <br/>
@@ -581,7 +570,6 @@ elixirChat.onConnectError((error) => {
 
 - <a id="sdk-apiUrl"></a>`apiUrl: string` - Same as passed to [config](#config-apiUrl)
 - <a id="sdk-socketUrl"></a>`socketUrl: string` - Same as passed to [config](#config-socketUrl)
-- <a id="sdk-backendStaticUrl"></a>`backendStaticUrl: string` - Same as passed to [config](#config-backendStaticUrl)
 - <a id="sdk-companyId"></a>`companyId: string` - Same as passed to [config](#config-companyId)
 - <a id="sdk-room"></a>`room: object` - Same as passed to [config](#config-room)
 - <a id="sdk-client"></a>`client: object` - Same as passed to [config](#config-client)

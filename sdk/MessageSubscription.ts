@@ -124,12 +124,12 @@ export class MessageSubscription {
   };
 
   protected onMessageReceive = (response: any): void => {
-    const { backendStaticUrl, client, triggerEvent, debug } = this.elixirChat;
+    const { triggerEvent, debug } = this.elixirChat;
     const data = _get(response, 'data.newMessage');
     if (!data) {
       return;
     }
-    const message = serializeMessage(data, { backendStaticUrl, client });
+    const message = serializeMessage(data, this.elixirChat);
     if (this.temporaryMessageTempIds.includes(message.tempId)) {
       this.forgetTemporaryMessage(message.tempId);
     }
@@ -244,7 +244,7 @@ export class MessageSubscription {
   }
 
   public sendMessage = (params: ISentMessage): Promise<IMessage> => {
-    const { backendStaticUrl, client, debug } = this.elixirChat;
+    const { debug } = this.elixirChat;
     const { variables, binaries } = this.serializeSendMessageParams(params);
     let tempId;
 
@@ -276,7 +276,7 @@ export class MessageSubscription {
         .query(this.sendMessageQuery, variables, binaries)
         .then(response => {
           if (response && response.sendMessage) {
-            const message = serializeMessage(response.sendMessage, { backendStaticUrl, client });
+            const message = serializeMessage(response.sendMessage, this.elixirChat);
             const { tempId } = message;
             if (tempId) {
               this.enrichTemporaryMessage(tempId, message);
@@ -325,7 +325,7 @@ export class MessageSubscription {
   }
 
   public getMessageHistoryByCursor = (limit: number, beforeCursor: string): Promise<[IMessage]> => {
-    const { triggerEvent, backendStaticUrl, client } = this.elixirChat;
+    const { triggerEvent } = this.elixirChat;
 
     return new Promise((resolve, reject) => {
       if (this.reachedBeginningOfMessageHistory) {
@@ -338,7 +338,7 @@ export class MessageSubscription {
 
             const { hasMessageHistoryBeenEverFetched } = this;
             let processedMessages = <[IMessage]>simplifyGraphQLJSON(response.messages)
-              .map(message => serializeMessage(message, { backendStaticUrl, client }))
+              .map(message => serializeMessage(message, this.elixirChat))
               .filter(message => {
                 // Preventing message duplication if overlapping ranges of messages were fetched
                 return !this.latestMessageHistoryCursorsCache.includes(message.cursor);

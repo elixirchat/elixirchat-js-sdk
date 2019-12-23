@@ -3,7 +3,7 @@ import cn from 'classnames';
 import dayjs from 'dayjs';
 import dayjsCalendar from 'dayjs/plugin/calendar';
 import 'dayjs/locale/ru';
-import AutoLinkText from 'react-autolink-text2';
+// import AutoLinkText from 'react-autolink-text2';
 import {
   _get,
   _last,
@@ -16,11 +16,15 @@ import {
 import {
   inflectDayJSWeekDays,
   getHumanReadableFileSize,
-  generateMessageOrQuoteTitle,
+  generateReplyMessageQuote,
+  generateCustomerSupportSenderName,
   unlockNotificationSoundAutoplay,
   playNotificationSound,
   scrollToElement,
   inflect,
+  replaceMarkdownWithHTML,
+  replaceLinksInText,
+  sanitizeHTML,
 } from '../../utilsWidget';
 
 import { getScreenshotCompatibilityFallback } from '../../sdk/ScreenshotTaker';
@@ -596,23 +600,31 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
                       {!message.sender.isCurrentClient && (
                         <div className="elixirchat-chat-messages__sender">
-                          {generateMessageOrQuoteTitle(message, elixirChatWidget.widgetTitle, true)}
+                          <b>{generateCustomerSupportSenderName(message, elixirChatWidget.widgetTitle)}</b>
+                          {Boolean(message.mentions.length) && (
+                            <Fragment>
+                              &nbsp;→ @&nbsp;
+                              {message.mentions.map(mention => {
+                                return mention.value === 'ALL' ? 'Все' : [mention.firstName, mention.lastName].join('\u00A0');
+                              }).join(', ')}
+                            </Fragment>
+                          )}
                         </div>
                       )}
 
                       {Boolean(message.responseToMessage) && (
                         <div className="elixirchat-chat-messages__reply-message"
                           onClick={() => this.onReplyOriginalMessageTextClick(message.responseToMessage.id)}>
-                          {generateMessageOrQuoteTitle(message.responseToMessage, elixirChatWidget.widgetTitle)}
+                          {generateReplyMessageQuote(message.responseToMessage, elixirChatWidget.widgetTitle)}
                         </div>
                       )}
 
                       {message.text && (
-                        <div className="elixirchat-chat-messages__text">
-                          <AutoLinkText
-                            linkProps={{ target: '_blank', rel: 'noopener noreferrer' }}
-                            text={message.text}/>
-                        </div>
+                        <div className="elixirchat-chat-messages__text" dangerouslySetInnerHTML={{
+                          __html: replaceMarkdownWithHTML(
+                            replaceLinksInText( sanitizeHTML(message.text) )
+                          )
+                        }}/>
                       )}
 
                       {Boolean(message.files) && Boolean(message.files.length) && (
@@ -714,7 +726,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
                   <div className="elixirchat-chat-messages__balloon">
                     <div className="elixirchat-chat-messages__sender">
-                      {generateMessageOrQuoteTitle(message, elixirChatWidget.widgetTitle, true)}
+                      {generateCustomerSupportSenderName(message, elixirChatWidget.widgetTitle)}
                     </div>
 
                     {message.systemData.type === 'SCREENSHOT_REQUESTED' && (

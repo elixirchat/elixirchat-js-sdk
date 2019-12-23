@@ -60,7 +60,7 @@ export function serializeFile(fileData: any, elixirChat: ElixirChat): IFile {
     })
   }
 
-  const uploadsUrlPrefix = elixirChat.backendStaticUrl.replace(/\/$/, '') + '/';
+  const uploadsUrlPrefix = elixirChat.apiUrl.replace(/\/$/, '') + '/';
   let fileUrl = '';
   if (file.url) {
     fileUrl = /^uploads/i.test(file.url) ? uploadsUrlPrefix + file.url : file.url;

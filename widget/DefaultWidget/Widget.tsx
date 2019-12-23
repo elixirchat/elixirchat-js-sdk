@@ -76,15 +76,17 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
   };
 
   generateStyles = () => {
-    const fontFaceGraphikNormal = generateFontFaceRule('Graphik', 'normal', assets.fontGraphikRegularWeb, 'woff');
-    const fontFaceGraphikBold = generateFontFaceRule('Graphik', 'bold', assets.fontGraphikBoldWeb, 'woff');
-    const fontFaceElixirIcons = generateFontFaceRule('elixirchat-icons', null, assets.fontElixirchatIcons, 'woff');
+    const fontFaceGraphikRegular = generateFontFaceRule('Graphik', 'normal', 'normal', assets.fontGraphikRegular);
+    const fontFaceGraphikRegularItalic = generateFontFaceRule('Graphik', 'normal', 'italic', assets.fontGraphikRegularItalic);
+    const fontFaceGraphikMedium = generateFontFaceRule('Graphik', '500', 'normal', assets.fontGraphikMedium);
+    const fontFaceGraphikBold = generateFontFaceRule('Graphik', 'bold', 'normal', assets.fontGraphikBold);
+    const fontFaceElixirIcons = generateFontFaceRule('elixirchat-icons', null, null, assets.fontElixirchatIcons);
 
     const outsideIframeStyles = [
       styles.icons,
       styles.Widget,
       styles.ImagePreview,
-      fontFaceGraphikNormal,
+      fontFaceGraphikRegular,
       fontFaceElixirIcons,
     ].join('\n');
 
@@ -93,7 +95,9 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
       styles.Chat,
       styles.ChatMessages,
       styles.ChatTextarea,
-      fontFaceGraphikNormal,
+      fontFaceGraphikRegular,
+      fontFaceGraphikRegularItalic,
+      fontFaceGraphikMedium,
       fontFaceGraphikBold,
       fontFaceElixirIcons,
     ].join('\n');

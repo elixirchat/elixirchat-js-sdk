@@ -38,6 +38,10 @@ export const fragmentMessage = insertGraphQlFragments(gql`
         whenWouldWork
       }
       ... on NotSystemMessageData {
+        mentions {
+          ...on Client { ...fragmentClient }
+          ...on MentionAlias { value }
+        },
         responseToMessage {
           id
           text
@@ -71,6 +75,7 @@ export interface IMessage {
   };
   isSystem: boolean;
   isUnread: boolean;
+  mentions: Array<IUser & {value: string}>,
   systemData: null | {
     type: string | null;
   },
@@ -97,6 +102,12 @@ export function serializeMessage(message: any, elixirChat: ElixirChat): IMessage
     text: _get(responseToMessage, 'text') || '',
     sender: serializeUser(responseToMessageSender, elixirChat),
   };
+  const serializedMentions = (_get(data, 'mentions') || []).map(user => {
+    return {
+      ...serializeUser(user, elixirChat),
+      value: user.value, // value === 'ALL' when mentioning @all
+    };
+  });
 
   const isSystem = _get(message, 'system', false);
 
@@ -113,6 +124,7 @@ export function serializeMessage(message: any, elixirChat: ElixirChat): IMessage
     submissionErrorCode: _get(message, 'submissionErrorCode') || null,
     isUnread: _get(message, 'unread') || false,
     openWidget: _get(message, 'openWidget') || false,
+    mentions: serializedMentions,
     isSystem,
     systemData: !isSystem ? null : {
       type: _get(message, 'data.type') || null,
