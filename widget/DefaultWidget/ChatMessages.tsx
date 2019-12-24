@@ -3,7 +3,6 @@ import cn from 'classnames';
 import dayjs from 'dayjs';
 import dayjsCalendar from 'dayjs/plugin/calendar';
 import 'dayjs/locale/ru';
-// import AutoLinkText from 'react-autolink-text2';
 import {
   _get,
   _last,
