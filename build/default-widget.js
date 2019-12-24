@@ -10363,6 +10363,7 @@ function (_react_1$Component) {
       this.setState({
         screenshotFallback: ScreenshotTaker_1.getScreenshotCompatibilityFallback()
       });
+      window.__this2 = this;
       elixirChatWidget.on(ElixirChatEventTypes_1.JOIN_ROOM_SUCCESS, function () {
         elixirChatWidget.fetchMessageHistory(_this2.messageChunkSize);
       });
@@ -11841,6 +11842,7 @@ function (_react_1$Component) {
           areAnyOperatorsOnline: areAnyOperatorsOnline
         });
       });
+      window.__this = this;
     }
   }, {
     key: "render",
