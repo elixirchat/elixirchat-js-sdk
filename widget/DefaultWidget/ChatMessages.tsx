@@ -101,6 +101,8 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
       screenshotFallback: getScreenshotCompatibilityFallback(),
     });
 
+    window.__this2 = this;
+
     elixirChatWidget.on(JOIN_ROOM_SUCCESS, () => {
       elixirChatWidget.fetchMessageHistory(this.messageChunkSize);
     });
