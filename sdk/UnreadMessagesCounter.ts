@@ -130,7 +130,7 @@ export class UnreadMessagesCounter {
         triggerEvent(UNREAD_FETCH_COUNTS_ERROR, error);
         throw error;
       });
-  }
+  };
   
   protected onUnreadCountsUpdate = (data: IUnreadMessagesCounterData): void => {
     const { debug, triggerEvent } = this.elixirChat;

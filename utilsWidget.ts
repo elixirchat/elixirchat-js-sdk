@@ -218,8 +218,8 @@ export function replaceMarkdownWithHTML(markdown){
     .replace(/<[a-z]+[^>]*>[^<]*<\/[a-z]+>/igm, match => handleHtmlReplacement(match))
 
     // Font formatting <b> & <i>
-    .replace(/_(?=[^ ])([^_\n]+)(?=[^ ])_/igm, ' <i>$1</i> ')
-    .replace(/\*(?=[^ ])([^\*\n]+)(?=[^ ])\*/igm, ' <b>$1</b> ')
+    .replace(/_(?=[^ ])([^_\n]+)(?=[^ ])_/igm, '<i>$1</i>')
+    .replace(/\*(?=[^ ])([^\*\n]+)(?=[^ ])\*/igm, '<b>$1</b>')
 
     // <ul> / <ol> - replacing leading spaces before list items
     .replace(/\n\s*\*/gm, '\n*')

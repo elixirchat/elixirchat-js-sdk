@@ -178,7 +178,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
   onMultipleMessagesBeingViewedSimultaneously = (callback) => {
     let messagesViewedSimultaneously = [];
-    requestAnimationFrame(() => {
+    setTimeout(() => {
       this.onMessageBeingViewed(messageId => {
         messagesViewedSimultaneously.push(messageId);
 
@@ -260,7 +260,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
   preventSafariFromLockingScroll = () => {
     const { backgroundColor = '' } = this.scrollBlock.current.style.backgroundColor;
     this.scrollBlock.current.style.backgroundColor = 'inherit';
-    requestAnimationFrame(() => {
+    setTimeout(() => {
       this.scrollBlock.current.style.backgroundColor = backgroundColor;
     });
   };
@@ -726,7 +726,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
                   <div className="elixirchat-chat-messages__balloon">
                     <div className="elixirchat-chat-messages__sender">
-                      {generateCustomerSupportSenderName(message, elixirChatWidget.widgetTitle)}
+                      <b>{generateCustomerSupportSenderName(message, elixirChatWidget.widgetTitle)}</b>
                     </div>
 
                     {message.systemData.type === 'SCREENSHOT_REQUESTED' && (

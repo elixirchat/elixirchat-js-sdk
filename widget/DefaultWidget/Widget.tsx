@@ -78,8 +78,8 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
   generateStyles = () => {
     const fontFaceGraphikRegular = generateFontFaceRule('Graphik', 'normal', 'normal', assets.fontGraphikRegular);
     const fontFaceGraphikRegularItalic = generateFontFaceRule('Graphik', 'normal', 'italic', assets.fontGraphikRegularItalic);
-    const fontFaceGraphikMedium = generateFontFaceRule('Graphik', '500', 'normal', assets.fontGraphikMedium);
-    const fontFaceGraphikBold = generateFontFaceRule('Graphik', 'bold', 'normal', assets.fontGraphikBold);
+    const fontFaceGraphikMedium = generateFontFaceRule('Graphik', '500', null, assets.fontGraphikMedium);
+    const fontFaceGraphikBold = generateFontFaceRule('Graphik', 'bold', null, assets.fontGraphikBold);
     const fontFaceElixirIcons = generateFontFaceRule('elixirchat-icons', null, null, assets.fontElixirchatIcons);
 
     const outsideIframeStyles = [
