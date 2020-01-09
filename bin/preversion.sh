@@ -10,9 +10,12 @@ is_patch=$(echo "$node_argv" | grep patch)
 
 if [ -n "$is_major" ]; then
   (( current_version_arr[0]++ ))
+  current_version_arr[1]=0
+  current_version_arr[2]=0
 fi
 if [ -n "$is_minor" ]; then
   (( current_version_arr[1]++ ))
+  current_version_arr[2]=0
 fi
 if [ -n "$is_patch" ]; then
   (( current_version_arr[2]++ ))
