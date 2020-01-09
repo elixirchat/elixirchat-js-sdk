@@ -6432,7 +6432,6 @@ function () {
     };
 
     this.elixirChat = elixirChat;
-    window.__this3 = this;
   }
 
   _createClass(UnreadMessagesCounter, [{
@@ -7910,4 +7909,4 @@ var ElixirChat_1 = require("./ElixirChat");
 
 exports.default = ElixirChat_1.ElixirChat;
 },{"./ElixirChat":"Pqo8"}]},{},["QCba"], null)
-  ;(function(){ if (typeof ElixirChat !== 'undefined') { ElixirChat.prototype.version = '2.3.6'; } }())
+  ;(function(){ if (typeof ElixirChat !== 'undefined') { ElixirChat.prototype.version = '2.3.7'; } }())
