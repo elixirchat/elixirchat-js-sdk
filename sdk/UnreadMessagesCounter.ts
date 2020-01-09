@@ -59,8 +59,6 @@ export class UnreadMessagesCounter {
 
   constructor({ elixirChat }: { elixirChat: ElixirChat }){
     this.elixirChat = elixirChat;
-
-    window.__this3 = this;
   }
 
   public subscribe = () => {

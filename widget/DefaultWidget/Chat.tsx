@@ -36,8 +36,6 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
     elixirChatWidget.on(OPERATOR_ONLINE_STATUS_CHANGE, areAnyOperatorsOnline => {
       this.setState({ areAnyOperatorsOnline });
     });
-
-    window.__this = this;
   }
 
   render(): void {
