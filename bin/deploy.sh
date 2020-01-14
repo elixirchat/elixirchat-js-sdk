@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 # Usage:
+# npm run deploy --branch=my-feature
 # npm run deploy --release=v1.0.0
 
 if [ ! -e ".env-backend" ]; then
@@ -26,13 +27,41 @@ github_repo_owner=$REPO_OWNER
 github_repo_name=$REPO_NAME
 
 github_release_id=$(npm config get release)
+github_branch=$(npm config get branch)
 
-if [ -z "$github_release_id" ] || [ "$github_release_id" = "undefined" ]; then
-  tput setaf 1
-  printf "\nOption 'release' is required e.g. 'npm run deploy --release=v1.0.0'\n  See a list of available releases at https://github.com/$github_repo_owner/$github_repo_name/releases\n  or create a new release by running 'npm run release'\n\n"
-  tput sgr0
-  exit 1
+full_backend_path=$(cat .env-backend)
+ansible_dir=$full_backend_path/deploy/ansible/inventory/development
+ansible_config=$full_backend_path/deploy/ansible/playbooks/services-widget.yml
+
+
+if [ -n "$github_release_id" ] || [ "$github_release_id" != "undefined" ] || [ -n "$github_branch" ] || [ "$github_branch" != "undefined" ]
+  then
+    printf "
+Github release: $github_release_id
+Github branch: $github_branch
+
+  "
+  else
+    tput setaf 1
+    printf "
+Either 'release' or 'branch' option is required, e.g.
+> npm run deploy --branch=my-feature
+> npm run deploy --release=v1.0.0
+
+Also see the list of available releases at https://github.com/$github_repo_owner/$github_repo_name/releases
+or create a new release by running 'npm run release'
+
+  "
+    tput sgr0
+    exit 1
 fi
+
+
+if [ -n "$github_branch" ] && [ "$github_branch" != "undefined" ]; then
+  ansible-playbook -vvvv -u root -i "$ansible_dir" "$ansible_config" --extra-vars "widget_branch=$github_branch"
+  exit 0
+fi
+
 
 github_release_exists=$(
   curl -u $github_user:$github_token \
@@ -46,8 +75,5 @@ if [ -z "$github_release_exists" ]; then
   exit 1
 fi
 
-full_backend_path=$(cat .env-backend)
-ansible_dir=$full_backend_path/deploy/ansible/inventory/development
-ansible_config=$full_backend_path/deploy/ansible/playbooks/services-widget.yml
 
 ansible-playbook -vvvv -u root -i "$ansible_dir" "$ansible_config" --extra-vars "widget_branch=$github_release_id"
