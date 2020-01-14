@@ -258,6 +258,7 @@ export function replaceLinksInText(text){
 
   const fullUrlRe = /\b_?(?:https?|ftp):\/\/[a-z0-9\-\.]+\.([a-z]{2,10})(?::[0-9]{4,5})?(?:\/[a-zа-я0-9\-_\/\.?&%=#+;:,!~]*)?_?/igm;
   const localhostRe = /\b_?(?:http):\/\/([a-z0-9\-]+)(?::[0-9]{4,5})?(?:\/[a-zа-я0-9\-_\/\.?&%=#+;:,!~]*)?_?/igm;
+  const ipAddressRe = /\b_?(?:https?):\/\/((?:[0-9]{1,3}\.?){4})(?::[0-9]{4,5})?(?:\/[a-zа-я0-9\-_\/\.?&%=#+;:,!~]*)?_?/igm;
   const countryDomainRe = /\b_?[a-z0-9\-\.]+\.([a-z]{2})(?::[0-9]{4,5})?(?:\/[a-zа-я0-9\-_\/\.?&%=#+;:,!~]*)?(?![a-z])_?/igm;
   const nonCountryDomainRe = /\b_?[a-z0-9\-\.]+\.([a-z]{3,10})(?::[0-9]{4,5})?(?:\/[a-zа-я0-9\-_\/\.?&%=#+;:,!~]*)?_?/igm;
   const emailAddressRe = /\b_?[a-z0-9\.\-_+]+@[a-z0-9\.\-]+_?/igm;
@@ -288,6 +289,7 @@ export function replaceLinksInText(text){
 
   return text
     .replace(fullUrlRe, (match, topLevelDomain, offset) => handleLinkReplacement(match, offset))
+    .replace(ipAddressRe, (match, topLevelDomain, offset) => handleLinkReplacement(match, offset))
     .replace(localhostRe, (match, topLevelDomain, offset) => handleLinkReplacement(match, offset))
     .replace(emailAddressRe, (match, topLevelDomain, offset) => handleLinkReplacement(match, offset, 'mailto:'))
     .replace(nonCountryDomainRe, (match, topLevelDomain, offset) => {
