@@ -8,7 +8,7 @@ import {
 } from '../utilsCommon';
 
 import { IMessage } from './serializers/serializeMessage';
-import { fragmentClient } from './serializers/serializeUser';
+import { fragmentUser } from './serializers/serializeUser';
 import { IScreenshot, ScreenshotTaker } from './ScreenshotTaker';
 import { IUnreadMessagesCounterData, UnreadMessagesCounter } from './UnreadMessagesCounter';
 import { TypingStatusSubscription } from './TypingStatusSubscription';
@@ -92,11 +92,11 @@ export class ElixirChat {
       joinRoom (companyId: $companyId, room: $room, client: $client) {
         token
         company {
-          working
+          isWorking
           widgetTitle
         }
         client {
-          ...fragmentClient
+          ...fragmentUser
         }
         room {
           id
@@ -105,7 +105,7 @@ export class ElixirChat {
         }
       }
     }
-  `, { fragmentClient });
+  `, { fragmentUser });
 
   constructor(config: IElixirChatConfig) {
     this.apiUrl = config.apiUrl;
@@ -147,7 +147,7 @@ export class ElixirChat {
 
     this.on(JOIN_ROOM_SUCCESS, data => {
       logEvent(this.debug, 'Joined room', data);
-      const areAnyOperatorsOnline = _get(data, 'company.working');
+      const areAnyOperatorsOnline = _get(data, 'company.isWorking');
 
       this.messageSubscription.subscribe();
       this.unreadMessagesCounter.subscribe();

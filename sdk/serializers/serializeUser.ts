@@ -2,26 +2,27 @@ import { ElixirChat } from '../ElixirChat';
 import { gql } from '../GraphQLClient';
 import { _get } from '../../utilsCommon';
 
-export const fragmentClient = gql`
-  fragment fragmentClient on Client {
+
+// TODO: move lastName out of Client/Bot when supported on backend
+export const fragmentUser = gql`
+  fragment fragmentUser on Account {
     __typename
     id
-    foreignId
-    firstName
-    lastName
-  }
-`;
 
-export const fragmentCompanyEmployee = gql`
-  fragment fragmentCompanyEmployee on CompanyEmployee {
-    employee {
-      id
+    ... on Client {
+      firstName
+      lastName
+      foreignId
+    }
+    
+    ... on Employee {
       firstName
       lastName
     }
-    __typename
-    isWorking
-    role
+
+    ... on Bot {
+      firstName
+    }
   }
 `;
 
@@ -43,7 +44,7 @@ export interface ISerializeUserOptions {
 export function serializeUser(user: any, elixirChat: ElixirChat): IUser {
   const elixirChatId = _get(user, 'foreignId') || null;
   const isOperator = _get(user, '__typename') !== 'Client';
-  const id = isOperator ? _get(user, 'employee.id') : _get(user, 'id');
+  const id = _get(user, 'id');
 
   return {
     id: id || null,

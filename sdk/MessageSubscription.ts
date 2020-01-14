@@ -175,9 +175,7 @@ export class MessageSubscription {
       isSystem: true,
       sender: {},
       attachments: [],
-      systemData: {
-        type: 'NEW_CLIENT_PLACEHOLDER'
-      },
+      systemType: 'NewClientPlaceholderMessage',
     };
   };
 

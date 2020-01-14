@@ -9541,6 +9541,7 @@ function replaceLinksInText(text) {
   var allExtractedUrls = [];
   var fullUrlRe = /\b_?(?:https?|ftp):\/\/[a-z0-9\-\.]+\.([a-z]{2,10})(?::[0-9]{4,5})?(?:\/[a-zа-я0-9\-_\/\.?&%=#+;:,!~]*)?_?/igm;
   var localhostRe = /\b_?(?:http):\/\/([a-z0-9\-]+)(?::[0-9]{4,5})?(?:\/[a-zа-я0-9\-_\/\.?&%=#+;:,!~]*)?_?/igm;
+  var ipAddressRe = /\b_?(?:https?):\/\/((?:[0-9]{1,3}\.?){4})(?::[0-9]{4,5})?(?:\/[a-zа-я0-9\-_\/\.?&%=#+;:,!~]*)?_?/igm;
   var countryDomainRe = /\b_?[a-z0-9\-\.]+\.([a-z]{2})(?::[0-9]{4,5})?(?:\/[a-zа-я0-9\-_\/\.?&%=#+;:,!~]*)?(?![a-z])_?/igm;
   var nonCountryDomainRe = /\b_?[a-z0-9\-\.]+\.([a-z]{3,10})(?::[0-9]{4,5})?(?:\/[a-zа-я0-9\-_\/\.?&%=#+;:,!~]*)?_?/igm;
   var emailAddressRe = /\b_?[a-z0-9\.\-_+]+@[a-z0-9\.\-]+_?/igm;
@@ -9573,6 +9574,8 @@ function replaceLinksInText(text) {
   };
 
   return text.replace(fullUrlRe, function (match, topLevelDomain, offset) {
+    return handleLinkReplacement(match, offset);
+  }).replace(ipAddressRe, function (match, topLevelDomain, offset) {
     return handleLinkReplacement(match, offset);
   }).replace(localhostRe, function (match, topLevelDomain, offset) {
     return handleLinkReplacement(match, offset);
@@ -10223,7 +10226,7 @@ function (_react_1$Component) {
 
     _this.shouldHideMessageBalloon = function (message) {
       var hasText = message.text.trim();
-      var hasReply = message.responseToMessage;
+      var hasReply = message.responseToMessage.id;
       var hasFiles = message.files && message.files.length;
       return message.sender.isCurrentClient && !hasText && !hasReply && !hasFiles;
     };
@@ -10509,7 +10512,7 @@ function (_react_1$Component) {
           className: "elixirchat-chat-messages__sender"
         }, react_1.default.createElement("b", null, utilsWidget_1.generateCustomerSupportSenderName(message, elixirChatWidget.widgetTitle)), Boolean(message.mentions.length) && react_1.default.createElement(react_1.Fragment, null, "\xA0\u2192 @\xA0", message.mentions.map(function (mention) {
           return mention.value === 'ALL' ? 'Все' : [mention.firstName, mention.lastName].join("\xA0");
-        }).join(', '))), Boolean(message.responseToMessage) && react_1.default.createElement("div", {
+        }).join(', '))), Boolean(message.responseToMessage.id) && react_1.default.createElement("div", {
           className: "elixirchat-chat-messages__reply-message",
           onClick: function onClick() {
             return _this3.onReplyOriginalMessageTextClick(message.responseToMessage.id);
@@ -10605,21 +10608,21 @@ function (_react_1$Component) {
           className: "elixirchat-chat-messages__balloon"
         }, react_1.default.createElement("div", {
           className: "elixirchat-chat-messages__sender"
-        }, react_1.default.createElement("b", null, utilsWidget_1.generateCustomerSupportSenderName(message, elixirChatWidget.widgetTitle))), message.systemData.type === 'SCREENSHOT_REQUESTED' && react_1.default.createElement(react_1.Fragment, null, react_1.default.createElement("div", {
+        }, react_1.default.createElement("b", null, utilsWidget_1.generateCustomerSupportSenderName(message, elixirChatWidget.widgetTitle))), message.systemType === 'ScreenshotRequestedMessage' && react_1.default.createElement(react_1.Fragment, null, react_1.default.createElement("div", {
           className: "elixirchat-chat-messages__text"
         }, "\u041F\u043E\u0436\u0430\u043B\u0443\u0439\u0441\u0442\u0430, \u043F\u0440\u0438\u0448\u043B\u0438\u0442\u0435 \u0441\u043A\u0440\u0438\u043D\u0448\u043E\u0442 \u0432\u0430\u0448\u0435\u0433\u043E \u044D\u043A\u0440\u0430\u043D\u0430.", Boolean(screenshotFallback) && Boolean(screenshotFallback.pressKey) && react_1.default.createElement(react_1.Fragment, null, "\xA0\u0414\u043B\u044F \u044D\u0442\u043E\u0433\u043E \u043D\u0430\u0436\u043C\u0438\u0442\u0435 ", _this3.renderKeyShortcut(screenshotFallback.pressKey), screenshotFallback.pressKeySecondary && react_1.default.createElement(react_1.Fragment, null, "\xA0(", _this3.renderKeyShortcut(screenshotFallback.pressKeySecondary), ")"), ", \u0430 \u0437\u0430\u0442\u0435\u043C \u0432\u0441\u0442\u0430\u0432\u044C\u0442\u0435 \u0440\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442 \u0432 \u0442\u0435\u043A\u0441\u0442\u043E\u0432\u043E\u0435 \u043F\u043E\u043B\u0435.")), !Boolean(screenshotFallback) && react_1.default.createElement("button", {
           className: "elixirchat-chat-messages__take-screenshot",
           onClick: _this3.onTakeScreenshotClick
-        }, "\u0421\u0434\u0435\u043B\u0430\u0442\u044C \u0441\u043A\u0440\u0438\u043D\u0448\u043E\u0442")), message.systemData.type === 'NOBODY_WORKING' && react_1.default.createElement(react_1.Fragment, null, react_1.default.createElement("div", {
+        }, "\u0421\u0434\u0435\u043B\u0430\u0442\u044C \u0441\u043A\u0440\u0438\u043D\u0448\u043E\u0442")), message.systemType === 'NobodyWorkingMessage' && react_1.default.createElement(react_1.Fragment, null, react_1.default.createElement("div", {
           className: "elixirchat-chat-messages__text"
-        }, "\u041A \u0441\u043E\u0436\u0430\u043B\u0435\u043D\u0438\u044E, \u0432\u0441\u0435 \u043E\u043F\u0435\u0440\u0430\u0442\u043E\u0440\u044B \u043F\u043E\u0434\u0434\u0435\u0440\u0436\u043A\u0438 \u0441\u0435\u0439\u0447\u0430\u0441 \u043E\u0444\u0444\u043B\u0430\u0439\u043D", message.systemData.whenWouldWork && ', но будут снова в сети ' + utilsWidget_1.inflectDayJSWeekDays('ru-RU', dayjs_1.default(message.systemData.whenWouldWork).calendar(null, {
+        }, "\u041A \u0441\u043E\u0436\u0430\u043B\u0435\u043D\u0438\u044E, \u0432\u0441\u0435 \u043E\u043F\u0435\u0440\u0430\u0442\u043E\u0440\u044B \u043F\u043E\u0434\u0434\u0435\u0440\u0436\u043A\u0438 \u0441\u0435\u0439\u0447\u0430\u0441 \u043E\u0444\u0444\u043B\u0430\u0439\u043D", message.systemWorkHoursStartAt && ', но будут снова в сети ' + utilsWidget_1.inflectDayJSWeekDays('ru-RU', dayjs_1.default(message.systemWorkHoursStartAt).calendar(null, {
           nextWeek: '[в] dddd [в] H:mm',
           nextDay: '[завтра в] H:mm',
           sameDay: '[сегодня в] H:mm',
           lastDay: 'D MMMM [в] H:mm',
           lastWeek: 'D MMMM [в] H:mm',
           sameElse: 'D MMMM [в] H:mm'
-        })), ".")), message.systemData.type === 'NEW_CLIENT_PLACEHOLDER' && react_1.default.createElement(react_1.Fragment, null, react_1.default.createElement("div", {
+        })), ".")), message.systemType === 'NewClientPlaceholderMessage' && react_1.default.createElement(react_1.Fragment, null, react_1.default.createElement("div", {
           className: "elixirchat-chat-messages__text"
         }, "\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439\u0442\u0435! \u041A\u0430\u043A \u043C\u044B \u043C\u043E\u0436\u0435\u043C \u0432\u0430\u043C \u043F\u043E\u043C\u043E\u0447\u044C?"))), react_1.default.createElement("div", {
           className: "elixirchat-chat-messages__bottom"

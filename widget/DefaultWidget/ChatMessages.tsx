@@ -389,7 +389,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
   shouldHideMessageBalloon = (message) => { // TODO: move to process messages
     const hasText = message.text.trim();
-    const hasReply = message.responseToMessage;
+    const hasReply = message.responseToMessage.id;
     const hasFiles = message.files && message.files.length;
     return message.sender.isCurrentClient && !hasText && !hasReply && !hasFiles;
   };
@@ -611,7 +611,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                         </div>
                       )}
 
-                      {Boolean(message.responseToMessage) && (
+                      {Boolean(message.responseToMessage.id) && (
                         <div className="elixirchat-chat-messages__reply-message"
                           onClick={() => this.onReplyOriginalMessageTextClick(message.responseToMessage.id)}>
                           {generateReplyMessageQuote(message.responseToMessage, elixirChatWidget.widgetTitle)}
@@ -728,7 +728,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                       <b>{generateCustomerSupportSenderName(message, elixirChatWidget.widgetTitle)}</b>
                     </div>
 
-                    {message.systemData.type === 'SCREENSHOT_REQUESTED' && (
+                    {message.systemType === 'ScreenshotRequestedMessage' && (
                       <Fragment>
                         <div className="elixirchat-chat-messages__text">
                           Пожалуйста, пришлите скриншот вашего экрана.
@@ -751,13 +751,13 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                       </Fragment>
                     )}
 
-                    {message.systemData.type === 'NOBODY_WORKING' && (
+                    {message.systemType === 'NobodyWorkingMessage' && (
                       <Fragment>
                         <div className="elixirchat-chat-messages__text">
                           К сожалению, все операторы поддержки сейчас оффлайн
-                          {message.systemData.whenWouldWork &&
+                          {message.systemWorkHoursStartAt &&
                             ', но будут снова в сети ' +
-                            inflectDayJSWeekDays('ru-RU', dayjs(message.systemData.whenWouldWork).calendar(null, {
+                            inflectDayJSWeekDays('ru-RU', dayjs(message.systemWorkHoursStartAt).calendar(null, {
                               nextWeek: '[в] dddd [в] H:mm',
                               nextDay: '[завтра в] H:mm',
                               sameDay: '[сегодня в] H:mm',
@@ -770,7 +770,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                       </Fragment>
                     )}
 
-                    {message.systemData.type === 'NEW_CLIENT_PLACEHOLDER' && (
+                    {message.systemType === 'NewClientPlaceholderMessage' && (
                       <Fragment>
                         <div className="elixirchat-chat-messages__text">
                           Здравствуйте! Как мы можем вам помочь?

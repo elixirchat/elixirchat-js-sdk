@@ -580,18 +580,8 @@ exports.insertGraphQlFragments = function (query) {
 },{}],"lqyB":[function(require,module,exports) {
 "use strict";
 
-function _templateObject2() {
-  var data = _taggedTemplateLiteral(["\n  fragment fragmentCompanyEmployee on CompanyEmployee {\n    employee {\n      id\n      firstName\n      lastName\n    }\n    __typename\n    isWorking\n    role\n  }\n"]);
-
-  _templateObject2 = function _templateObject2() {
-    return data;
-  };
-
-  return data;
-}
-
 function _templateObject() {
-  var data = _taggedTemplateLiteral(["\n  fragment fragmentClient on Client {\n    __typename\n    id\n    foreignId\n    firstName\n    lastName\n  }\n"]);
+  var data = _taggedTemplateLiteral(["\n  fragment fragmentUser on Account {\n    __typename\n    id\n\n    ... on Client {\n      firstName\n      lastName\n      foreignId\n    }\n    \n    ... on Employee {\n      firstName\n      lastName\n    }\n\n    ... on Bot {\n      firstName\n    }\n  }\n"]);
 
   _templateObject = function _templateObject() {
     return data;
@@ -608,15 +598,17 @@ Object.defineProperty(exports, "__esModule", {
 
 var GraphQLClient_1 = require("../GraphQLClient");
 
-var utilsCommon_1 = require("../../utilsCommon");
+var utilsCommon_1 = require("../../utilsCommon"); // TODO: move lastName out of Client/Bot when supported on backend
 
-exports.fragmentClient = GraphQLClient_1.gql(_templateObject());
-exports.fragmentCompanyEmployee = GraphQLClient_1.gql(_templateObject2());
+
+exports.fragmentUser = GraphQLClient_1.gql(_templateObject());
 
 function serializeUser(user, elixirChat) {
   var elixirChatId = utilsCommon_1._get(user, 'foreignId') || null;
   var isOperator = utilsCommon_1._get(user, '__typename') !== 'Client';
-  var id = isOperator ? utilsCommon_1._get(user, 'employee.id') : utilsCommon_1._get(user, 'id');
+
+  var id = utilsCommon_1._get(user, 'id');
+
   return {
     id: id || null,
     firstName: utilsCommon_1._get(user, 'firstName') || utilsCommon_1._get(user, 'employee.firstName') || '',
@@ -6862,7 +6854,7 @@ exports.serializeFile = serializeFile;
 "use strict";
 
 function _templateObject() {
-  var data = _taggedTemplateLiteral(["\n  fragment fragmentMessage on Message {\n    id\n    tempId\n    text\n    timestamp\n    system\n    unread\n    sender {\n      ... on Client { ...fragmentClient }\n      ... on CompanyEmployee { ...fragmentCompanyEmployee }\n    }\n    attachments {\n      ...fragmentFile\n    }\n    data {\n      ... on SystemMessageData {\n        type\n        author {\n          ...fragmentCompanyEmployee\n        }\n        whenWouldWork\n      }\n      ... on NotSystemMessageData {\n        mentions {\n          ...on Client { ...fragmentClient }\n          ...on MentionAlias { value }\n        },\n        responseToMessage {\n          id\n          text\n          sender {\n            __typename\n            ... on Client { ...fragmentClient }\n            ... on CompanyEmployee { ...fragmentCompanyEmployee }\n          }\n        }\n      }\n    }\n  }\n"]);
+  var data = _taggedTemplateLiteral(["\n  fragment fragmentMessage on Message {\n    id\n    text\n    timestamp\n    isUnread\n    \n    ... on ManualMessage {\n      tempId\n      sender { ...fragmentUser }\n      attachments { ...fragmentFile }\n      mentions {\n        value\n        client { ...fragmentUser }\n      }\n      responseToMessage {\n        id\n        text\n        sender { ...fragmentUser }\n      }\n    }\n    \n    ... on ScreenshotRequestedMessage {\n      __typename\n      sender { ...fragmentUser }\n    }\n\n    ... on NobodyWorkingMessage {\n      __typename\n      workHoursStartAt\n    }\n  }\n"]);
 
   _templateObject = function _templateObject() {
     return data;
@@ -6886,40 +6878,30 @@ var serializeUser_1 = require("./serializeUser");
 var serializeFile_1 = require("./serializeFile");
 
 exports.fragmentMessage = GraphQLClient_1.insertGraphQlFragments(GraphQLClient_1.gql(_templateObject()), {
-  fragmentClient: serializeUser_1.fragmentClient,
-  fragmentCompanyEmployee: serializeUser_1.fragmentCompanyEmployee,
+  fragmentUser: serializeUser_1.fragmentUser,
   fragmentFile: serializeFile_1.fragmentFile
 });
 
 function serializeMessage(message, elixirChat) {
-  var _message$sender = message.sender,
-      sender = _message$sender === void 0 ? {} : _message$sender,
+  var sender = message.sender,
+      responseToMessage = message.responseToMessage,
       attachments = message.attachments,
-      _message$data = message.data,
-      data = _message$data === void 0 ? {} : _message$data;
-  var responseToMessage = data.responseToMessage,
-      _data$author = data.author,
-      author = _data$author === void 0 ? {} : _data$author;
-  var serializedSender = serializeUser_1.serializeUser(Object.assign({}, sender, author), elixirChat);
+      mentions = message.mentions;
+  var serializedSender = serializeUser_1.serializeUser(sender, elixirChat);
   var serializedAttachments = (attachments || []).map(function (attachment) {
     return serializeFile_1.serializeFile(attachment, elixirChat);
   });
-
-  var responseToMessageSender = utilsCommon_1._get(responseToMessage, 'sender', {});
-
   var serializedResponseToMessage = {
     id: utilsCommon_1._get(responseToMessage, 'id') || null,
     text: utilsCommon_1._get(responseToMessage, 'text') || '',
-    sender: serializeUser_1.serializeUser(responseToMessageSender, elixirChat)
+    sender: serializeUser_1.serializeUser(utilsCommon_1._get(responseToMessage, 'sender'), elixirChat)
   };
-  var serializedMentions = (utilsCommon_1._get(data, 'mentions') || []).map(function (user) {
-    return Object.assign({}, serializeUser_1.serializeUser(user, elixirChat), {
+  var serializedMentions = (mentions || []).map(function (user) {
+    return {
+      client: serializeUser_1.serializeUser(user, elixirChat),
       value: user.value
-    });
+    };
   });
-
-  var isSystem = utilsCommon_1._get(message, 'system', false);
-
   return {
     id: utilsCommon_1._get(message, 'id') || null,
     tempId: utilsCommon_1._get(message, 'tempId') || null,
@@ -6927,18 +6909,17 @@ function serializeMessage(message, elixirChat) {
     timestamp: utilsCommon_1._get(message, 'timestamp') || '',
     cursor: utilsCommon_1._get(message, 'cursor') || null,
     sender: serializedSender,
-    responseToMessage: serializedResponseToMessage.id ? serializedResponseToMessage : null,
+    responseToMessage: serializedResponseToMessage,
     attachments: serializedAttachments,
+    mentions: serializedMentions,
     isSubmitting: utilsCommon_1._get(message, 'isSubmitting') || false,
     submissionErrorCode: utilsCommon_1._get(message, 'submissionErrorCode') || null,
-    isUnread: utilsCommon_1._get(message, 'unread') || false,
     openWidget: utilsCommon_1._get(message, 'openWidget') || false,
-    mentions: serializedMentions,
-    isSystem: isSystem,
-    systemData: !isSystem ? null : {
-      type: utilsCommon_1._get(message, 'data.type') || null,
-      whenWouldWork: utilsCommon_1._get(message, 'data.whenWouldWork') || null
-    }
+    isUnread: utilsCommon_1._get(message, 'unread') || false,
+    // isSystem: _get(message, 'isSystem', false),
+    isSystem: !!utilsCommon_1._get(message, '__typename'),
+    systemType: utilsCommon_1._get(message, '__typename') || null,
+    systemWorkHoursStartAt: utilsCommon_1._get(message, 'workHoursStartAt') || null
   };
 }
 
@@ -7309,9 +7290,7 @@ function () {
         isSystem: true,
         sender: {},
         attachments: [],
-        systemData: {
-          type: 'NEW_CLIENT_PLACEHOLDER'
-        }
+        systemType: 'NewClientPlaceholderMessage'
       };
     }
   }, {
@@ -7451,7 +7430,7 @@ function _iterableToArrayLimit(arr, i) { var _arr = []; var _n = true; var _d = 
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
 function _templateObject() {
-  var data = _taggedTemplateLiteral(["\n    mutation($companyId: Uuid!, $room: ForeignRoom, $client: ForeignClient!) {\n      joinRoom (companyId: $companyId, room: $room, client: $client) {\n        token\n        company {\n          working\n          widgetTitle\n        }\n        client {\n          ...fragmentClient\n        }\n        room {\n          id\n          title\n          foreignId\n        }\n      }\n    }\n  "]);
+  var data = _taggedTemplateLiteral(["\n    mutation($companyId: Uuid!, $room: ForeignRoom, $client: ForeignClient!) {\n      joinRoom (companyId: $companyId, room: $room, client: $client) {\n        token\n        company {\n          isWorking\n          widgetTitle\n        }\n        client {\n          ...fragmentUser\n        }\n        room {\n          id\n          title\n          foreignId\n        }\n      }\n    }\n  "]);
 
   _templateObject = function _templateObject() {
     return data;
@@ -7505,7 +7484,7 @@ function () {
     this.defaultWidgetTitle = 'Служба поддержки';
     this.eventCallbacks = {};
     this.joinRoomQuery = GraphQLClient_1.insertGraphQlFragments(GraphQLClient_1.gql(_templateObject()), {
-      fragmentClient: serializeUser_1.fragmentClient
+      fragmentUser: serializeUser_1.fragmentUser
     });
 
     this.markPrecedingMessagesRead = function (lastReadMessageId) {
@@ -7699,7 +7678,7 @@ function () {
       this.on(ElixirChatEventTypes_1.JOIN_ROOM_SUCCESS, function (data) {
         utilsCommon_1.logEvent(_this3.debug, 'Joined room', data);
 
-        var areAnyOperatorsOnline = utilsCommon_1._get(data, 'company.working');
+        var areAnyOperatorsOnline = utilsCommon_1._get(data, 'company.isWorking');
 
         _this3.messageSubscription.subscribe();
 

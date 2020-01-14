@@ -1,64 +1,42 @@
 import { ElixirChat } from '../ElixirChat';
 import { gql, insertGraphQlFragments } from '../GraphQLClient';
 import { _get } from '../../utilsCommon';
-import {
-  IUser,
-  serializeUser,
-  fragmentClient,
-  fragmentCompanyEmployee,
-} from './serializeUser';
-
-import {
-  IFile,
-  serializeFile,
-  fragmentFile,
-} from './serializeFile';
+import { IUser, serializeUser, fragmentUser } from './serializeUser';
+import { IFile, serializeFile, fragmentFile } from './serializeFile';
 
 export const fragmentMessage = insertGraphQlFragments(gql`
   fragment fragmentMessage on Message {
     id
-    tempId
     text
     timestamp
-    system
-    unread
-    sender {
-      ... on Client { ...fragmentClient }
-      ... on CompanyEmployee { ...fragmentCompanyEmployee }
-    }
-    attachments {
-      ...fragmentFile
-    }
-    data {
-      ... on SystemMessageData {
-        type
-        author {
-          ...fragmentCompanyEmployee
-        }
-        whenWouldWork
+    isUnread
+    
+    ... on ManualMessage {
+      tempId
+      sender { ...fragmentUser }
+      attachments { ...fragmentFile }
+      mentions {
+        value
+        client { ...fragmentUser }
       }
-      ... on NotSystemMessageData {
-        mentions {
-          ...on Client { ...fragmentClient }
-          ...on MentionAlias { value }
-        },
-        responseToMessage {
-          id
-          text
-          sender {
-            __typename
-            ... on Client { ...fragmentClient }
-            ... on CompanyEmployee { ...fragmentCompanyEmployee }
-          }
-        }
+      responseToMessage {
+        id
+        text
+        sender { ...fragmentUser }
       }
+    }
+    
+    ... on ScreenshotRequestedMessage {
+      __typename
+      sender { ...fragmentUser }
+    }
+
+    ... on NobodyWorkingMessage {
+      __typename
+      workHoursStartAt
     }
   }
-`, {
-  fragmentClient,
-  fragmentCompanyEmployee,
-  fragmentFile,
-});
+`, { fragmentUser, fragmentFile });
 
 
 export interface IMessage {
@@ -75,10 +53,9 @@ export interface IMessage {
   };
   isSystem: boolean;
   isUnread: boolean;
-  mentions: Array<IUser & {value: string}>,
-  systemData: null | {
-    type: string | null;
-  },
+  mentions: Array<{value: string, client: IUser}>,
+  systemType: string | null;
+  systemWorkHoursStartAt: string | null;
   attachments: Array<IFile>,
   isSubmitting: boolean,
   submissionErrorCode: number | null,
@@ -90,26 +67,22 @@ export interface ISerializeMessageOptions {
 }
 
 export function serializeMessage(message: any, elixirChat: ElixirChat): IMessage {
-  let { sender = {}, attachments, data = {} } = message;
-  let { responseToMessage, author = {} } = data;
+  let { sender, responseToMessage, attachments, mentions } = message;
 
-  const serializedSender = serializeUser({ ...sender, ...author }, elixirChat);
+  const serializedSender = serializeUser(sender, elixirChat);
   const serializedAttachments = (attachments || []).map(attachment => serializeFile(attachment, elixirChat));
 
-  const responseToMessageSender = _get(responseToMessage, 'sender', {});
   const serializedResponseToMessage = {
     id: _get(responseToMessage, 'id') || null,
     text: _get(responseToMessage, 'text') || '',
-    sender: serializeUser(responseToMessageSender, elixirChat),
+    sender: serializeUser(_get(responseToMessage, 'sender'), elixirChat),
   };
-  const serializedMentions = (_get(data, 'mentions') || []).map(user => {
+  const serializedMentions = (mentions || []).map(user => {
     return {
-      ...serializeUser(user, elixirChat),
-      value: user.value, // value === 'ALL' when mentioning @all
+      client: serializeUser(user, elixirChat),
+      value: user.value,
     };
   });
-
-  const isSystem = _get(message, 'system', false);
 
   return {
     id: _get(message, 'id') || null,
@@ -118,17 +91,18 @@ export function serializeMessage(message: any, elixirChat: ElixirChat): IMessage
     timestamp: _get(message, 'timestamp') || '',
     cursor: _get(message, 'cursor') || null,
     sender: serializedSender,
-    responseToMessage: serializedResponseToMessage.id ? serializedResponseToMessage : null,
+    responseToMessage: serializedResponseToMessage,
     attachments: serializedAttachments,
+    mentions: serializedMentions,
     isSubmitting: _get(message, 'isSubmitting') || false,
     submissionErrorCode: _get(message, 'submissionErrorCode') || null,
-    isUnread: _get(message, 'unread') || false,
     openWidget: _get(message, 'openWidget') || false,
-    mentions: serializedMentions,
-    isSystem,
-    systemData: !isSystem ? null : {
-      type: _get(message, 'data.type') || null,
-      whenWouldWork: _get(message, 'data.whenWouldWork') || null,
-    },
+    isUnread: _get(message, 'unread') || false,
+
+    // isSystem: _get(message, 'isSystem', false),
+    isSystem: !!_get(message, '__typename'), // TODO: remove after supported by backend
+
+    systemType: _get(message, '__typename') || null,
+    systemWorkHoursStartAt: _get(message, 'workHoursStartAt') || null,
   };
 }
