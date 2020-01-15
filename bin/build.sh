@@ -33,13 +33,13 @@ echo "" > dist/sdk.js
 
 printf "\nBuilding SDK...\n\n";
 
-parcel build sdk/index.ts --out-dir $build_dir --out-file sdk.js --no-source-maps --no-minify
-parcel build sdk/index.ts --out-dir $build_dir --out-file sdk.min.js --no-source-maps
+#parcel build sdk/index.ts --out-dir $build_dir --out-file sdk.js --no-source-maps --no-minify
+#parcel build sdk/index.ts --out-dir $build_dir --out-file sdk.min.js --no-source-maps
 
 printf "\nWriting version ($output_version) into SDK...\n\n";
 
 write_version_to_sdk "$output_version" $build_dir/sdk.js
-write_version_to_sdk "$output_version" $build_dir/sdk.min.js
+#write_version_to_sdk "$output_version" $build_dir/sdk.min.js
 
 printf "\nBuilding widget...\n\n";
 
