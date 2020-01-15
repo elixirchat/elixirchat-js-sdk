@@ -34,16 +34,16 @@
     "unique-names-generator": "^3.0.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.5.4",
-    "@babel/plugin-proposal-class-properties": "^7.5.0",
-    "@babel/preset-env": "^7.5.4",
-    "@babel/preset-react": "^7.0.0",
-    "@babel/preset-typescript": "^7.3.3",
+    "@babel/core": "^7.8.3",
+    "@babel/plugin-proposal-class-properties": "^7.8.3",
+    "@babel/preset-env": "^7.8.3",
+    "@babel/preset-react": "^7.8.3",
+    "@babel/preset-typescript": "^7.8.3",
     "concurrently": "^4.1.2",
     "http-server": "^0.11.1",
-    "node-sass": "^4.12.0",
+    "node-sass": "^4.13.0",
     "parcel-bundler": "^1.12.4",
-    "typescript": "^3.5.3",
+    "typescript": "^3.7.4",
     "watch": "^1.0.2"
   }
 }
