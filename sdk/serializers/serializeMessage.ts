@@ -1,6 +1,5 @@
 import { ElixirChat } from '../ElixirChat';
 import { gql, insertGraphQlFragments } from '../GraphQLClient';
-import { _get } from '../../utilsCommon';
 import { IUser, serializeUser, fragmentUser } from './serializeUser';
 import { IFile, serializeFile, fragmentFile } from './serializeFile';
 
@@ -10,6 +9,7 @@ export const fragmentMessage = insertGraphQlFragments(gql`
     text
     timestamp
     isUnread
+    isSystem
     
     ... on ManualMessage {
       tempId
@@ -61,11 +61,6 @@ export interface IMessage {
   submissionErrorCode: number | null,
 }
 
-export interface ISerializeMessageOptions {
-  apiUrl?: string;
-  currentClientId?: string;
-}
-
 export function serializeMessage(message: any, elixirChat: ElixirChat): IMessage {
   let { sender, responseToMessage, attachments, mentions } = message;
 
@@ -73,9 +68,9 @@ export function serializeMessage(message: any, elixirChat: ElixirChat): IMessage
   const serializedAttachments = (attachments || []).map(attachment => serializeFile(attachment, elixirChat));
 
   const serializedResponseToMessage = {
-    id: _get(responseToMessage, 'id') || null,
-    text: _get(responseToMessage, 'text') || '',
-    sender: serializeUser(_get(responseToMessage, 'sender'), elixirChat),
+    id: responseToMessage?.id || null,
+    text: responseToMessage?.text || '',
+    sender: serializeUser(responseToMessage?.sender, elixirChat),
   };
   const serializedMentions = (mentions || []).map(user => {
     return {
@@ -85,24 +80,21 @@ export function serializeMessage(message: any, elixirChat: ElixirChat): IMessage
   });
 
   return {
-    id: _get(message, 'id') || null,
-    tempId: _get(message, 'tempId') || null,
-    text: _get(message, 'text') || '',
-    timestamp: _get(message, 'timestamp') || '',
-    cursor: _get(message, 'cursor') || null,
+    id: message?.id || null,
+    tempId: message?.tempId || null,
+    text: message?.text || '',
+    timestamp: message?.timestamp || '',
+    cursor: message?.cursor || null,
     sender: serializedSender,
     responseToMessage: serializedResponseToMessage,
     attachments: serializedAttachments,
     mentions: serializedMentions,
-    isSubmitting: _get(message, 'isSubmitting') || false,
-    submissionErrorCode: _get(message, 'submissionErrorCode') || null,
-    openWidget: _get(message, 'openWidget') || false,
-    isUnread: _get(message, 'unread') || false,
-
-    // isSystem: _get(message, 'isSystem', false),
-    isSystem: !!_get(message, '__typename'), // TODO: remove after supported by backend
-
-    systemType: _get(message, '__typename') || null,
-    systemWorkHoursStartAt: _get(message, 'workHoursStartAt') || null,
+    isSubmitting: message?.isSubmitting || false,
+    submissionErrorCode: message?.submissionErrorCode || null,
+    openWidget: message?.openWidget || false,
+    isUnread: message?.isUnread || false,
+    isSystem: message?.isSystem || false,
+    systemType: message?.__typename || null,
+    systemWorkHoursStartAt: message?.workHoursStartAt || null,
   };
 }

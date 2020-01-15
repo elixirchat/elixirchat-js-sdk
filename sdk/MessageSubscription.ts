@@ -14,7 +14,7 @@ import {
 
 import { IFile } from './serializers/serializeFile';
 import { IMessage, serializeMessage, fragmentMessage } from './serializers/serializeMessage';
-import { _get, logEvent, randomDigitStringId, isWebImage } from '../utilsCommon';
+import { logEvent, randomDigitStringId, isWebImage } from '../utilsCommon';
 import { GraphQLClientSocket } from './GraphQLClientSocket';
 import {
   gql,
@@ -125,7 +125,7 @@ export class MessageSubscription {
 
   protected onMessageReceive = (response: any): void => {
     const { triggerEvent, debug } = this.elixirChat;
-    const data = _get(response, 'data.newMessage');
+    const data = response?.data?.newMessage;
     if (!data) {
       return;
     }
@@ -167,7 +167,7 @@ export class MessageSubscription {
   };
 
   protected generateNewClientPlaceholderMessage(messageHistory: Array<IMessage>): IMessage {
-    const firstMessageTimestamp = _get(messageHistory, '[0].timestamp');
+    const firstMessageTimestamp = messageHistory?.[0]?.timestamp;
     const timestamp = firstMessageTimestamp || new Date().toISOString();
     return {
       timestamp,
@@ -301,7 +301,7 @@ export class MessageSubscription {
     this.sendMessage({
       text: message.text,
       attachments: message.attachments,
-      responseToMessageId: _get(message, 'responseToMessage.id'),
+      responseToMessageId: message?.responseToMessage?.id,
       retrySubmissionByTempId: message.tempId,
     });
   };
@@ -309,7 +309,7 @@ export class MessageSubscription {
   protected onSendMessageFailure(tempId: string, response: any): void {
     const { debug } = this.elixirChat;
     const defaultErrorCode = 400;
-    let submissionErrorCode = _get(response, 'errors[0].status') || defaultErrorCode;
+    let submissionErrorCode = response?.errors?.[0]?.status || defaultErrorCode;
     if (!navigator.onLine) {
       submissionErrorCode = 503;
     }

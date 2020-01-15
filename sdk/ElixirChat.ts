@@ -1,6 +1,5 @@
 import { uniqueNamesGenerator } from 'unique-names-generator';
 import {
-  _get,
   logEvent,
   capitalize,
   randomDigitStringId,
@@ -147,7 +146,7 @@ export class ElixirChat {
 
     this.on(JOIN_ROOM_SUCCESS, data => {
       logEvent(this.debug, 'Joined room', data);
-      const areAnyOperatorsOnline = _get(data, 'company.isWorking');
+      const areAnyOperatorsOnline = data?.company?.isWorking;
 
       this.messageSubscription.subscribe();
       this.unreadMessagesCounter.subscribe();

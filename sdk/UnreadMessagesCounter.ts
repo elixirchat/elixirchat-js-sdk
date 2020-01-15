@@ -1,4 +1,4 @@
-import { _get, logEvent } from '../utilsCommon';
+import { logEvent } from '../utilsCommon';
 import { ElixirChat } from './ElixirChat';
 import { gql, GraphQLClient } from './GraphQLClient';
 import { GraphQLClientSocket } from './GraphQLClientSocket';
@@ -102,7 +102,7 @@ export class UnreadMessagesCounter {
         triggerEvent(UNREAD_MESSAGES_SUBSCRIBE_SUCCESS);
       },
       onResult: response => {
-        const data: IUnreadMessagesCounterData = _get(response, 'data.updateReadMessages') || {};
+        const data: IUnreadMessagesCounterData = response?.data?.updateReadMessages || {};
         this.onUnreadCountsUpdate(data);
       },
     });
@@ -131,7 +131,7 @@ export class UnreadMessagesCounter {
         throw error;
       });
   };
-  
+
   protected onUnreadCountsUpdate = (data: IUnreadMessagesCounterData): void => {
     const { debug, triggerEvent } = this.elixirChat;
     const { unreadMessagesCount, unreadRepliesCount, lastReadMessageId } = data;
@@ -141,13 +141,13 @@ export class UnreadMessagesCounter {
       this.unreadMessagesCount = unreadMessagesCount;
       triggerEvent(UNREAD_MESSAGES_CHANGE, unreadMessagesCount);
     }
-    
+
     if (unreadRepliesCount !== this.unreadRepliesCount) {
       logEvent(debug, 'Unread replies count changed to ' + unreadRepliesCount);
       this.unreadRepliesCount = unreadRepliesCount;
       triggerEvent(UNREAD_REPLIES_CHANGE, unreadRepliesCount);
     }
-    
+
     if (lastReadMessageId !== this.lastReadMessageId) {
       logEvent(debug, 'Last message marked as read changed to ID: ' + lastReadMessageId);
       this.lastReadMessageId = lastReadMessageId;

@@ -4,7 +4,6 @@ import dayjs from 'dayjs';
 import dayjsCalendar from 'dayjs/plugin/calendar';
 import 'dayjs/locale/ru';
 import {
-  _get,
   _last,
   _round,
   isWebImage,
@@ -350,7 +349,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     const files = [];
 
     attachments.forEach(attachment => {
-      const thumbnailUrl = _get(attachment, 'thumbnails[0].url', null);
+      const thumbnailUrl = attachment?.thumbnails?.[0]?.url || null;
       const thumbnailRatio = this.maxThumbnailSize / Math.max(attachment.width, attachment.height);
 
       let thumbnailWidth = attachment.width;

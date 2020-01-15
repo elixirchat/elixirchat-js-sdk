@@ -53,18 +53,6 @@ export function randomDigitStringId(idLength: number): string {
 }
 
 
-// Lodash-like _.get
-export function _get(object: any, path: string, defaultValue?: any): any {
-  const prefix = /^\[/i.test(path) ? 'object' : 'object.';
-  try {
-    return eval(prefix + path);
-  }
-  catch (e) {
-    return defaultValue;
-  }
-}
-
-
 // Lodash-like _.merge
 export function _merge(object1: object, object2: object): object {
   const mergedObject = {};

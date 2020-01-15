@@ -35,11 +35,6 @@ export interface IFile {
   thumbnails?: Array<IFile>;
 }
 
-export interface ISerializeFileOptions {
-  apiUrl?: string;
-  currentClientId?: string;
-}
-
 export function serializeFile(fileData: any, elixirChat: ElixirChat): IFile {
   const file: any = fileData || {};
   let thumbnails = null;
@@ -73,8 +68,8 @@ export function serializeFile(fileData: any, elixirChat: ElixirChat): IFile {
     bytesSize: file.bytesSize || 0,
     height: file.height || 0,
     width: file.width || 0,
-    thumbnails: thumbnails,
     contentType: file.contentType || null,
     isScreenshot: file.isScreenshot || false,
+    thumbnails,
   };
 }
