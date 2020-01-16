@@ -175,6 +175,7 @@ export class MessageSubscription {
       isSystem: true,
       sender: {},
       attachments: [],
+      responseToMessage: {},
       systemType: 'NewClientPlaceholderMessage',
     };
   };
@@ -211,7 +212,7 @@ export class MessageSubscription {
         isOperator: false,
         isCurrentClient: true,
       },
-      responseToMessage: serializedResponseToMessage || null,
+      responseToMessage: serializedResponseToMessage || {},
       attachments: serializedAttachments,
       isSubmitting: true,
     };

@@ -317,8 +317,8 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
   processMessages = (messages, precedingMessage) => {
     const { elixirChatWidget } = this.props;
-
     let imagePreviews = [];
+
     let processedMessages = messages.map((message, i) => {
       const processedMessage = { ...message };
       const previousMessage = messages[i - 1] || precedingMessage;
@@ -335,6 +335,12 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
         processedMessage.files = files;
         processedMessage.images = images;
       }
+
+      const hasText = message.text?.trim();
+      const hasReply = message.responseToMessage?.id;
+      const hasFiles = message.files?.length;
+      processedMessage.messageHasImagesOnly = message.sender.isCurrentClient && !hasText && !hasReply && !hasFiles;
+
       return processedMessage;
     });
 
@@ -384,13 +390,6 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     const { imagePreviews } = this.state;
     elixirChatWidget.triggerEvent(IMAGE_PREVIEW_OPEN, preview, imagePreviews);
     e.preventDefault();
-  };
-
-  shouldHideMessageBalloon = (message) => { // TODO: move to process messages
-    const hasText = message.text.trim();
-    const hasReply = message.responseToMessage.id;
-    const hasFiles = message.files && message.files.length;
-    return message.sender.isCurrentClient && !hasText && !hasReply && !hasFiles;
   };
 
   onTakeScreenshotClick = () => {
@@ -592,7 +591,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                   ref={element => this.createMessageRef(element, message)}
                   data-id={message.id}>
 
-                  {!this.shouldHideMessageBalloon(message) && (
+                  {!message.messageHasImagesOnly && (
                     <div className="elixirchat-chat-messages__balloon"
                       onDoubleClick={() => this.onReplyMessageClick(message.id)}>
 
