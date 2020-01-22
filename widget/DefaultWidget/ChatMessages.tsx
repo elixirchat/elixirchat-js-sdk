@@ -338,7 +338,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
       const hasText = message.text?.trim();
       const hasReply = message.responseToMessage?.id;
-      const hasFiles = message.files?.length;
+      const hasFiles = processedMessage.files?.length;
       processedMessage.messageHasImagesOnly = message.sender.isCurrentClient && !hasText && !hasReply && !hasFiles;
 
       return processedMessage;
