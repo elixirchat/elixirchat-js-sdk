@@ -10179,7 +10179,7 @@ function (_react_1$Component) {
 
         var hasText = (_a = message.text) === null || _a === void 0 ? void 0 : _a.trim();
         var hasReply = (_b = message.responseToMessage) === null || _b === void 0 ? void 0 : _b.id;
-        var hasFiles = (_c = message.files) === null || _c === void 0 ? void 0 : _c.length;
+        var hasFiles = (_c = processedMessage.files) === null || _c === void 0 ? void 0 : _c.length;
         processedMessage.messageHasImagesOnly = message.sender.isCurrentClient && !hasText && !hasReply && !hasFiles;
         return processedMessage;
       });
