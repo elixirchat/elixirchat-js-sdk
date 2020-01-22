@@ -72,10 +72,10 @@ export function serializeMessage(message: any, elixirChat: ElixirChat): IMessage
     text: responseToMessage?.text || '',
     sender: serializeUser(responseToMessage?.sender, elixirChat),
   };
-  const serializedMentions = (mentions || []).map(user => {
+  const serializedMentions = (mentions || []).map(mention => {
     return {
-      client: serializeUser(user, elixirChat),
-      value: user.value,
+      client: serializeUser(mention.client, elixirChat),
+      value: mention.value,
     };
   });
 

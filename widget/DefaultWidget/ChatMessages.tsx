@@ -602,7 +602,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                             <Fragment>
                               &nbsp;→ @&nbsp;
                               {message.mentions.map(mention => {
-                                return mention.value === 'ALL' ? 'Все' : [mention.firstName, mention.lastName].join('\u00A0');
+                                return mention.value === 'ALL' ? 'Все' : [mention.client.firstName, mention.client.lastName].join('\u00A0');
                               }).join(', ')}
                             </Fragment>
                           )}
