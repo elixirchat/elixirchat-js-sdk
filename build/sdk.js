@@ -6908,10 +6908,10 @@ function serializeMessage(message, elixirChat) {
     text: ((_b = responseToMessage) === null || _b === void 0 ? void 0 : _b.text) || '',
     sender: serializeUser_1.serializeUser((_c = responseToMessage) === null || _c === void 0 ? void 0 : _c.sender, elixirChat)
   };
-  var serializedMentions = (mentions || []).map(function (user) {
+  var serializedMentions = (mentions || []).map(function (mention) {
     return {
-      client: serializeUser_1.serializeUser(user, elixirChat),
-      value: user.value
+      client: serializeUser_1.serializeUser(mention.client, elixirChat),
+      value: mention.value
     };
   });
   return {
@@ -7907,4 +7907,4 @@ var ElixirChat_1 = require("./ElixirChat");
 
 exports.default = ElixirChat_1.ElixirChat;
 },{"./ElixirChat":"Pqo8"}]},{},["QCba"], null)
-  ;(function(){ if (typeof ElixirChat !== 'undefined') { ElixirChat.prototype.version = '3.0.0'; } }())
+  ;(function(){ if (typeof ElixirChat !== 'undefined') { ElixirChat.prototype.version = '3.0.1'; } }())

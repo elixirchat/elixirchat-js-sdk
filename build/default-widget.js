@@ -10511,7 +10511,7 @@ function (_react_1$Component) {
         }, !message.sender.isCurrentClient && react_1.default.createElement("div", {
           className: "elixirchat-chat-messages__sender"
         }, react_1.default.createElement("b", null, utilsWidget_1.generateCustomerSupportSenderName(message, elixirChatWidget.widgetTitle)), Boolean(message.mentions.length) && react_1.default.createElement(react_1.Fragment, null, "\xA0\u2192 @\xA0", message.mentions.map(function (mention) {
-          return mention.value === 'ALL' ? 'Все' : [mention.firstName, mention.lastName].join("\xA0");
+          return mention.value === 'ALL' ? 'Все' : [mention.client.firstName, mention.client.lastName].join("\xA0");
         }).join(', '))), Boolean(message.responseToMessage.id) && react_1.default.createElement("div", {
           className: "elixirchat-chat-messages__reply-message",
           onClick: function onClick() {
