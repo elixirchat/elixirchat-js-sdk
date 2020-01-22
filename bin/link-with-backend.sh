@@ -7,10 +7,10 @@
 # npm run link-with-backend --backend-dir=../elixirchat
 
 trimmed_backend_path=$(npm config get backend-dir | sed 's:/*$::')
-full_backend_path=$(echo $(cd "$trimmed_backend_path" && pwd))
+absolute_backend_path=$(echo $(cd "$trimmed_backend_path" && pwd))
 
 schema_file_name=$(cat .graphqlconfig | python -c "import sys, json; print(json.load(sys.stdin)['schemaPath'])")
-schema_path=$full_backend_path/$schema_file_name
+schema_path=$absolute_backend_path/$schema_file_name
 
 if [ ! -e "$schema_path" ]; then
   tput setaf 1
@@ -19,7 +19,8 @@ if [ ! -e "$schema_path" ]; then
   exit 1
 fi
 
-echo "$full_backend_path" > .env-backend
+
+echo "ABSOLUTE_BACKEND_PATH=$absolute_backend_path" > .env-backend
 ln "$schema_path" "$schema_file_name"
 
 tput setaf 2

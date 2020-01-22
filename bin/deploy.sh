@@ -29,9 +29,10 @@ github_repo_name=$REPO_NAME
 github_release_id=$(npm config get release)
 github_branch=$(npm config get branch)
 
-full_backend_path=$(cat .env-backend)
-ansible_dir=$full_backend_path/deploy/ansible/inventory/development
-ansible_config=$full_backend_path/deploy/ansible/playbooks/services-widget.yml
+source .env-backend
+backend_path=$ABSOLUTE_BACKEND_PATH
+ansible_dir=$backend_path/deploy/ansible/inventory/development
+ansible_config=$backend_path/deploy/ansible/playbooks/services-widget.yml
 
 
 if [ -n "$github_release_id" ] || [ "$github_release_id" != "undefined" ] || [ -n "$github_branch" ] || [ "$github_branch" != "undefined" ]
