@@ -13,6 +13,7 @@ export const fragmentMessage = insertGraphQlFragments(gql`
     
     ... on ManualMessage {
       tempId
+      openWidget
       sender { ...fragmentUser }
       attachments { ...fragmentFile }
       mentions {
