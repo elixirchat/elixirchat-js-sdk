@@ -6866,7 +6866,7 @@ exports.serializeFile = serializeFile;
 "use strict";
 
 function _templateObject() {
-  var data = _taggedTemplateLiteral(["\n  fragment fragmentMessage on Message {\n    id\n    text\n    timestamp\n    isUnread\n    isSystem\n    \n    ... on ManualMessage {\n      tempId\n      sender { ...fragmentUser }\n      attachments { ...fragmentFile }\n      mentions {\n        value\n        client { ...fragmentUser }\n      }\n      responseToMessage {\n        id\n        text\n        sender { ...fragmentUser }\n      }\n    }\n    \n    ... on ScreenshotRequestedMessage {\n      __typename\n      sender { ...fragmentUser }\n    }\n\n    ... on NobodyWorkingMessage {\n      __typename\n      workHoursStartAt\n    }\n  }\n"]);
+  var data = _taggedTemplateLiteral(["\n  fragment fragmentMessage on Message {\n    id\n    text\n    timestamp\n    isUnread\n    isSystem\n    \n    ... on ManualMessage {\n      tempId\n      openWidget\n      sender { ...fragmentUser }\n      attachments { ...fragmentFile }\n      mentions {\n        value\n        client { ...fragmentUser }\n      }\n      responseToMessage {\n        id\n        text\n        sender { ...fragmentUser }\n      }\n    }\n    \n    ... on ScreenshotRequestedMessage {\n      __typename\n      sender { ...fragmentUser }\n    }\n\n    ... on NobodyWorkingMessage {\n      __typename\n      workHoursStartAt\n    }\n  }\n"]);
 
   _templateObject = function _templateObject() {
     return data;
@@ -7907,4 +7907,4 @@ var ElixirChat_1 = require("./ElixirChat");
 
 exports.default = ElixirChat_1.ElixirChat;
 },{"./ElixirChat":"Pqo8"}]},{},["QCba"], null)
-  ;(function(){ if (typeof ElixirChat !== 'undefined') { ElixirChat.prototype.version = '3.0.1'; } }())
+  ;(function(){ if (typeof ElixirChat !== 'undefined') { ElixirChat.prototype.version = '3.0.2'; } }())
