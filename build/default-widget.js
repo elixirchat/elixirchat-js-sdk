@@ -12763,7 +12763,12 @@ function (_ElixirChat) {
 
         var isWidgetVisible = utilsCommon_1.getJSONFromLocalStorage('elixirchat-widget-is-visible', false);
 
-        if (isWidgetVisible || _this2.widgetMustInitiallyOpen) {
+        if (isWidgetVisible && !_this2.isWidgetPopupOpen) {
+          _this2.togglePopup();
+        }
+      });
+      this.on(ElixirChatEventTypes_1.JOIN_ROOM_SUCCESS, function () {
+        if (_this2.widgetMustInitiallyOpen && !_this2.isWidgetPopupOpen) {
           _this2.togglePopup();
         }
       });
