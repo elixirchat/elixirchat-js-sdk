@@ -7907,4 +7907,4 @@ var ElixirChat_1 = require("./ElixirChat");
 
 exports.default = ElixirChat_1.ElixirChat;
 },{"./ElixirChat":"Pqo8"}]},{},["QCba"], null)
-  ;(function(){ if (typeof ElixirChat !== 'undefined') { ElixirChat.prototype.version = '3.0.2'; } }())
+  ;(function(){ if (typeof ElixirChat !== 'undefined') { ElixirChat.prototype.version = '3.0.3'; } }())

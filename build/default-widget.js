@@ -10397,9 +10397,11 @@ function (_react_1$Component) {
           _this2.onMessageHistoryInitiallyBecomeVisible();
         }
 
-        var lastMessage = utilsCommon_1._last(messages) || {};
+        var hasUnreadOpenWidgetMessages = messages.filter(function (message) {
+          return message.isUnread && message.openWidget;
+        }).length;
 
-        if (lastMessage.openWidget && !elixirChatWidget.isWidgetPopupOpen) {
+        if (hasUnreadOpenWidgetMessages && !elixirChatWidget.isWidgetPopupOpen) {
           elixirChatWidget.togglePopup();
         }
       });
