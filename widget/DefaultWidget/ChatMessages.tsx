@@ -125,8 +125,8 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
       if (elixirChatWidget.isWidgetPopupOpen) {
         this.onMessageHistoryInitiallyBecomeVisible();
       }
-      const lastMessage = _last(messages) || {};
-      if (lastMessage.openWidget && !elixirChatWidget.isWidgetPopupOpen) {
+      const hasUnreadOpenWidgetMessages = messages.filter(message => message.isUnread && message.openWidget).length;
+      if (hasUnreadOpenWidgetMessages && !elixirChatWidget.isWidgetPopupOpen) {
         elixirChatWidget.togglePopup();
       }
     });
