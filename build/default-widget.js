@@ -10114,7 +10114,7 @@ function (_react_1$Component) {
         utilsWidget_1.playNotificationSound();
       }
 
-      if (message.openWidget && !elixirChatWidget.isWidgetPopupOpen) {
+      if (message.mustOpenWidget && !elixirChatWidget.isWidgetPopupOpen) {
         elixirChatWidget.togglePopup();
       }
     };
@@ -10395,14 +10395,6 @@ function (_react_1$Component) {
 
         if (elixirChatWidget.isWidgetPopupOpen) {
           _this2.onMessageHistoryInitiallyBecomeVisible();
-        }
-
-        var hasUnreadOpenWidgetMessages = messages.filter(function (message) {
-          return message.isUnread && message.openWidget;
-        }).length;
-
-        if (hasUnreadOpenWidgetMessages && !elixirChatWidget.isWidgetPopupOpen) {
-          elixirChatWidget.togglePopup();
         }
       });
       elixirChatWidget.on(ElixirChatEventTypes_1.MESSAGES_HISTORY_PREPEND_MANY, function (messages) {
@@ -12771,7 +12763,7 @@ function (_ElixirChat) {
 
         var isWidgetVisible = utilsCommon_1.getJSONFromLocalStorage('elixirchat-widget-is-visible', false);
 
-        if (isWidgetVisible) {
+        if (isWidgetVisible || _this2.widgetMustInitiallyOpen) {
           _this2.togglePopup();
         }
       });

@@ -6866,7 +6866,7 @@ exports.serializeFile = serializeFile;
 "use strict";
 
 function _templateObject() {
-  var data = _taggedTemplateLiteral(["\n  fragment fragmentMessage on Message {\n    id\n    text\n    timestamp\n    isUnread\n    isSystem\n    \n    ... on ManualMessage {\n      tempId\n      openWidget\n      sender { ...fragmentUser }\n      attachments { ...fragmentFile }\n      mentions {\n        value\n        client { ...fragmentUser }\n      }\n      responseToMessage {\n        id\n        text\n        sender { ...fragmentUser }\n      }\n    }\n    \n    ... on ScreenshotRequestedMessage {\n      __typename\n      sender { ...fragmentUser }\n    }\n\n    ... on NobodyWorkingMessage {\n      __typename\n      workHoursStartAt\n    }\n  }\n"]);
+  var data = _taggedTemplateLiteral(["\n  fragment fragmentMessage on Message {\n    id\n    text\n    timestamp\n    isUnread\n    isSystem\n    \n    ... on ManualMessage {\n      tempId\n      mustOpenWidget\n      sender { ...fragmentUser }\n      attachments { ...fragmentFile }\n      mentions {\n        value\n        client { ...fragmentUser }\n      }\n      responseToMessage {\n        id\n        text\n        sender { ...fragmentUser }\n      }\n    }\n    \n    ... on ScreenshotRequestedMessage {\n      __typename\n      sender { ...fragmentUser }\n    }\n\n    ... on NobodyWorkingMessage {\n      __typename\n      workHoursStartAt\n    }\n  }\n"]);
 
   _templateObject = function _templateObject() {
     return data;
@@ -6926,7 +6926,7 @@ function serializeMessage(message, elixirChat) {
     mentions: serializedMentions,
     isSubmitting: ((_j = message) === null || _j === void 0 ? void 0 : _j.isSubmitting) || false,
     submissionErrorCode: ((_k = message) === null || _k === void 0 ? void 0 : _k.submissionErrorCode) || null,
-    openWidget: ((_l = message) === null || _l === void 0 ? void 0 : _l.openWidget) || false,
+    mustOpenWidget: ((_l = message) === null || _l === void 0 ? void 0 : _l.mustOpenWidget) || false,
     isUnread: ((_m = message) === null || _m === void 0 ? void 0 : _m.isUnread) || false,
     isSystem: ((_o = message) === null || _o === void 0 ? void 0 : _o.isSystem) || false,
     systemType: ((_p = message) === null || _p === void 0 ? void 0 : _p.__typename) || null,
@@ -7448,7 +7448,7 @@ function _iterableToArrayLimit(arr, i) { if (!(Symbol.iterator in Object(arr) ||
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
 function _templateObject() {
-  var data = _taggedTemplateLiteral(["\n    mutation($companyId: Uuid!, $room: ForeignRoom, $client: ForeignClient!) {\n      joinRoom (companyId: $companyId, room: $room, client: $client) {\n        token\n        company {\n          isWorking\n          widgetTitle\n        }\n        client {\n          ...fragmentUser\n        }\n        room {\n          id\n          title\n          foreignId\n        }\n      }\n    }\n  "]);
+  var data = _taggedTemplateLiteral(["\n    mutation($companyId: Uuid!, $room: ForeignRoom, $client: ForeignClient!) {\n      joinRoom (companyId: $companyId, room: $room, client: $client) {\n        token\n        company {\n          isWorking\n          widgetTitle\n        }\n        client {\n          ...fragmentUser\n        }\n        room {\n          id\n          title\n          foreignId\n          mustOpenWidget\n        }\n      }\n    }\n  "]);
 
   _templateObject = function _templateObject() {
     return data;
@@ -7498,6 +7498,7 @@ function () {
     _classCallCheck(this, ElixirChat);
 
     this.isInitialized = false;
+    this.widgetMustInitiallyOpen = false;
     this.widgetTitle = '';
     this.defaultWidgetTitle = 'Служба поддержки';
     this.eventCallbacks = {};
@@ -7831,6 +7832,7 @@ function () {
           _this4.isConnected = true;
           _this4.authToken = joinRoom.token;
           _this4.widgetTitle = joinRoom.company.widgetTitle || _this4.defaultWidgetTitle;
+          _this4.widgetMustInitiallyOpen = joinRoom.room.mustOpenWidget;
           _this4.elixirChatClientId = joinRoom.client.id;
           _this4.elixirChatRoomId = joinRoom.room.id;
 
@@ -7907,4 +7909,4 @@ var ElixirChat_1 = require("./ElixirChat");
 
 exports.default = ElixirChat_1.ElixirChat;
 },{"./ElixirChat":"Pqo8"}]},{},["QCba"], null)
-  ;(function(){ if (typeof ElixirChat !== 'undefined') { ElixirChat.prototype.version = '3.0.3'; } }())
+  ;(function(){ if (typeof ElixirChat !== 'undefined') { ElixirChat.prototype.version = '3.0.4'; } }())
