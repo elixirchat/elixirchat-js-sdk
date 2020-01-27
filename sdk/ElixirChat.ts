@@ -56,6 +56,7 @@ export class ElixirChat {
   public isConnected: boolean;
   public isPrivate: boolean;
 
+  public widgetMustInitiallyOpen: boolean = false;
   public widgetTitle: string = '';
   public defaultWidgetTitle: string = 'Служба поддержки';
 
@@ -101,6 +102,7 @@ export class ElixirChat {
           id
           title
           foreignId
+          mustOpenWidget
         }
       }
     }
@@ -297,9 +299,11 @@ export class ElixirChat {
           this.isConnected = true;
           this.authToken = joinRoom.token;
           this.widgetTitle = joinRoom.company.widgetTitle || this.defaultWidgetTitle;
+          this.widgetMustInitiallyOpen = joinRoom.room.mustOpenWidget;
           this.elixirChatClientId = joinRoom.client.id;
           this.elixirChatRoomId = joinRoom.room.id;
           this.triggerEvent(JOIN_ROOM_SUCCESS, joinRoom);
+
         }
         else {
           this.triggerEvent(JOIN_ROOM_ERROR, joinRoom);

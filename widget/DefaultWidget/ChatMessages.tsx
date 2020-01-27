@@ -125,10 +125,6 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
       if (elixirChatWidget.isWidgetPopupOpen) {
         this.onMessageHistoryInitiallyBecomeVisible();
       }
-      const hasUnreadOpenWidgetMessages = messages.filter(message => message.isUnread && message.openWidget).length;
-      if (hasUnreadOpenWidgetMessages && !elixirChatWidget.isWidgetPopupOpen) {
-        elixirChatWidget.togglePopup();
-      }
     });
     elixirChatWidget.on(MESSAGES_HISTORY_PREPEND_MANY, messages => {
       this.setProcessedMessages(messages, { insertBefore: true });
@@ -280,7 +276,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     if (shouldPlayNotificationSound) {
       playNotificationSound();
     }
-    if (message.openWidget && !elixirChatWidget.isWidgetPopupOpen) {
+    if (message.mustOpenWidget && !elixirChatWidget.isWidgetPopupOpen) {
       elixirChatWidget.togglePopup();
     }
   };

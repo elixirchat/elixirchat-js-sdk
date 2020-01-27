@@ -88,7 +88,7 @@ export class ElixirChatWidget extends ElixirChat {
         this.toggleMute();
       }
       const isWidgetVisible = getJSONFromLocalStorage('elixirchat-widget-is-visible', false);
-      if (isWidgetVisible) {
+      if (isWidgetVisible || this.widgetMustInitiallyOpen) {
         this.togglePopup();
       }
     });

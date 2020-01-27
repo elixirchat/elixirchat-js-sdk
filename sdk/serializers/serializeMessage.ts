@@ -13,7 +13,7 @@ export const fragmentMessage = insertGraphQlFragments(gql`
     
     ... on ManualMessage {
       tempId
-      openWidget
+      mustOpenWidget
       sender { ...fragmentUser }
       attachments { ...fragmentFile }
       mentions {
@@ -92,7 +92,7 @@ export function serializeMessage(message: any, elixirChat: ElixirChat): IMessage
     mentions: serializedMentions,
     isSubmitting: message?.isSubmitting || false,
     submissionErrorCode: message?.submissionErrorCode || null,
-    openWidget: message?.openWidget || false,
+    mustOpenWidget: message?.mustOpenWidget || false,
     isUnread: message?.isUnread || false,
     isSystem: message?.isSystem || false,
     systemType: message?.__typename || null,
