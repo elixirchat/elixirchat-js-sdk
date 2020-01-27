@@ -12,7 +12,11 @@ import {
   WIDGET_POPUP_TOGGLE,
   WIDGET_RENDERED, WIDGET_UNMUTE,
 } from './ElixirChatWidgetEventTypes';
-import {MESSAGES_FETCH_HISTORY_INITIAL_SUCCESS} from '../sdk/ElixirChatEventTypes';
+
+import {
+  MESSAGES_FETCH_HISTORY_INITIAL_SUCCESS,
+  JOIN_ROOM_SUCCESS,
+} from '../sdk/ElixirChatEventTypes';
 
 let ElixirChat = window.ElixirChat;
 if (!ElixirChat) {
@@ -88,7 +92,13 @@ export class ElixirChatWidget extends ElixirChat {
         this.toggleMute();
       }
       const isWidgetVisible = getJSONFromLocalStorage('elixirchat-widget-is-visible', false);
-      if (isWidgetVisible || this.widgetMustInitiallyOpen) {
+      if (isWidgetVisible && !this.isWidgetPopupOpen) {
+        this.togglePopup();
+      }
+    });
+
+    this.on(JOIN_ROOM_SUCCESS, () => {
+      if (this.widgetMustInitiallyOpen && !this.isWidgetPopupOpen) {
         this.togglePopup();
       }
     });
