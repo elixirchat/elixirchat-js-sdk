@@ -8,7 +8,7 @@ import {
 import { gql, insertGraphQlFragments } from './GraphQLClient';
 import { GraphQLClientSocket } from './GraphQLClientSocket';
 import { logEvent } from '../utilsCommon';
-import {fragmentMessage, serializeMessage} from './serializers/serializeMessage';
+import { fragmentMessage, serializeMessage } from './serializers/serializeMessage';
 
 
 export class UpdateMessageSubscription {
