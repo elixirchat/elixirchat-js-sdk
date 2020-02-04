@@ -9227,6 +9227,9 @@ exports.MESSAGES_FETCH_HISTORY_SUCCESS = 'MESSAGES_FETCH_HISTORY_SUCCESS';
 exports.MESSAGES_FETCH_HISTORY_INITIAL_SUCCESS = 'MESSAGES_FETCH_HISTORY_INITIAL_SUCCESS';
 exports.MESSAGES_FETCH_HISTORY_ERROR = 'MESSAGES_FETCH_HISTORY_ERROR';
 exports.MESSAGES_FETCH_HISTORY_INITIAL_ERROR = 'MESSAGES_FETCH_HISTORY_INITIAL_ERROR';
+exports.UPDATE_MESSAGES_SUBSCRIBE_SUCCESS = 'UPDATE_MESSAGES_SUBSCRIBE_SUCCESS';
+exports.UPDATE_MESSAGES_SUBSCRIBE_ERROR = 'UPDATE_MESSAGES_SUBSCRIBE_ERROR';
+exports.UPDATE_MESSAGES_CHANGE = 'UPDATE_MESSAGES_CHANGE';
 },{}],"rDCW":[function(require,module,exports) {
 
 },{}],"GpM8":[function(require,module,exports) {
@@ -10123,12 +10126,14 @@ function (_react_1$Component) {
       var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
       var insertBefore = params.insertBefore,
           insertAfter = params.insertAfter;
+      var elixirChatWidget = _this.props.elixirChatWidget;
       var previousProcessedMessages = _this.state.processedMessages;
       var previousImagePreviews = _this.state.imagePreviews;
 
       var _this$processMessages = _this.processMessages(messages, insertAfter ? utilsCommon_1._last(previousProcessedMessages) : null),
           processedMessages = _this$processMessages.processedMessages,
-          imagePreviews = _this$processMessages.imagePreviews;
+          imagePreviews = _this$processMessages.imagePreviews,
+          mustOpenWidget = _this$processMessages.mustOpenWidget;
 
       var updatedProcessedMessages;
       var updatedImagePreviews;
@@ -10144,6 +10149,10 @@ function (_react_1$Component) {
         updatedImagePreviews = imagePreviews;
       }
 
+      if (mustOpenWidget && !elixirChatWidget.isWidgetPopupOpen) {
+        elixirChatWidget.togglePopup();
+      }
+
       _this.setState({
         processedMessages: updatedProcessedMessages,
         imagePreviews: updatedImagePreviews
@@ -10155,6 +10164,7 @@ function (_react_1$Component) {
     _this.processMessages = function (messages, precedingMessage) {
       var elixirChatWidget = _this.props.elixirChatWidget;
       var imagePreviews = [];
+      var mustOpenWidget = false;
       var processedMessages = messages.map(function (message, i) {
         var _a, _b, _c;
 
@@ -10177,6 +10187,10 @@ function (_react_1$Component) {
           processedMessage.images = images;
         }
 
+        if (message.mustOpenWidget) {
+          mustOpenWidget = true;
+        }
+
         var hasText = (_a = message.text) === null || _a === void 0 ? void 0 : _a.trim();
         var hasReply = (_b = message.responseToMessage) === null || _b === void 0 ? void 0 : _b.id;
         var hasFiles = (_c = processedMessage.files) === null || _c === void 0 ? void 0 : _c.length;
@@ -10185,7 +10199,8 @@ function (_react_1$Component) {
       });
       return {
         processedMessages: processedMessages,
-        imagePreviews: imagePreviews
+        imagePreviews: imagePreviews,
+        mustOpenWidget: mustOpenWidget
       };
     };
 
@@ -10401,9 +10416,6 @@ function (_react_1$Component) {
         _this2.setProcessedMessages(messages, {
           insertBefore: true
         });
-      });
-      elixirChatWidget.on(ElixirChatEventTypes_1.MESSAGES_HISTORY_CHANGE_ONE, function () {
-        _this2.setProcessedMessages(elixirChatWidget.messageHistory);
       });
       elixirChatWidget.on(ElixirChatEventTypes_1.MESSAGES_HISTORY_CHANGE_MANY, function (messages) {
         _this2.setProcessedMessages(messages);

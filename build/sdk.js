@@ -6280,6 +6280,9 @@ exports.MESSAGES_FETCH_HISTORY_SUCCESS = 'MESSAGES_FETCH_HISTORY_SUCCESS';
 exports.MESSAGES_FETCH_HISTORY_INITIAL_SUCCESS = 'MESSAGES_FETCH_HISTORY_INITIAL_SUCCESS';
 exports.MESSAGES_FETCH_HISTORY_ERROR = 'MESSAGES_FETCH_HISTORY_ERROR';
 exports.MESSAGES_FETCH_HISTORY_INITIAL_ERROR = 'MESSAGES_FETCH_HISTORY_INITIAL_ERROR';
+exports.UPDATE_MESSAGES_SUBSCRIBE_SUCCESS = 'UPDATE_MESSAGES_SUBSCRIBE_SUCCESS';
+exports.UPDATE_MESSAGES_SUBSCRIBE_ERROR = 'UPDATE_MESSAGES_SUBSCRIBE_ERROR';
+exports.UPDATE_MESSAGES_CHANGE = 'UPDATE_MESSAGES_CHANGE';
 },{}],"xY1B":[function(require,module,exports) {
 "use strict";
 
@@ -6935,7 +6938,117 @@ function serializeMessage(message, elixirChat) {
 }
 
 exports.serializeMessage = serializeMessage;
-},{"../GraphQLClient":"fvSB","./serializeUser":"lqyB","./serializeFile":"sQAQ"}],"jRw6":[function(require,module,exports) {
+},{"../GraphQLClient":"fvSB","./serializeUser":"lqyB","./serializeFile":"sQAQ"}],"AgKM":[function(require,module,exports) {
+"use strict";
+
+function _templateObject() {
+  var data = _taggedTemplateLiteral(["\n    subscription {\n      updateMessage {\n        ...fragmentMessage\n      }\n    }\n  "]);
+
+  _templateObject = function _templateObject() {
+    return data;
+  };
+
+  return data;
+}
+
+function _taggedTemplateLiteral(strings, raw) { if (!raw) { raw = strings.slice(0); } return Object.freeze(Object.defineProperties(strings, { raw: { value: Object.freeze(raw) } })); }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var ElixirChatEventTypes_1 = require("./ElixirChatEventTypes");
+
+var GraphQLClient_1 = require("./GraphQLClient");
+
+var GraphQLClientSocket_1 = require("./GraphQLClientSocket");
+
+var utilsCommon_1 = require("../utilsCommon");
+
+var serializeMessage_1 = require("./serializers/serializeMessage");
+
+var UpdateMessageSubscription =
+/*#__PURE__*/
+function () {
+  function UpdateMessageSubscription(_ref) {
+    var _this = this;
+
+    var elixirChat = _ref.elixirChat;
+
+    _classCallCheck(this, UpdateMessageSubscription);
+
+    this.subscriptionQuery = GraphQLClient_1.insertGraphQlFragments(GraphQLClient_1.gql(_templateObject()), {
+      fragmentMessage: serializeMessage_1.fragmentMessage
+    });
+
+    this.subscribe = function () {
+      _this.initializeSocketClient();
+    };
+
+    this.unsubscribe = function () {
+      var debug = _this.elixirChat.debug;
+      utilsCommon_1.logEvent(debug, 'Unsubscribing from update message...');
+
+      _this.graphQLClientSocket.unsubscribe();
+
+      _this.graphQLClientSocket = null;
+    };
+
+    this.elixirChat = elixirChat;
+  }
+
+  _createClass(UpdateMessageSubscription, [{
+    key: "initializeSocketClient",
+    value: function initializeSocketClient() {
+      var _this2 = this;
+
+      var _this$elixirChat = this.elixirChat,
+          socketUrl = _this$elixirChat.socketUrl,
+          authToken = _this$elixirChat.authToken,
+          debug = _this$elixirChat.debug,
+          triggerEvent = _this$elixirChat.triggerEvent;
+      this.graphQLClientSocket = new GraphQLClientSocket_1.GraphQLClientSocket({
+        socketUrl: socketUrl,
+        authToken: authToken,
+        query: this.subscriptionQuery,
+        onAbort: function onAbort(error) {
+          utilsCommon_1.logEvent(debug, 'Failed to subscribe to update message', error, 'error');
+          triggerEvent(ElixirChatEventTypes_1.UPDATE_MESSAGES_SUBSCRIBE_ERROR, error);
+        },
+        onStart: function onStart() {
+          utilsCommon_1.logEvent(debug, 'Successfully subscribed to update message');
+          triggerEvent(ElixirChatEventTypes_1.UPDATE_MESSAGES_SUBSCRIBE_SUCCESS);
+        },
+        onResult: function onResult(response) {
+          var _a, _b;
+
+          var data = (_b = (_a = response) === null || _a === void 0 ? void 0 : _a.data) === null || _b === void 0 ? void 0 : _b.updateMessage;
+
+          if (!data) {
+            return;
+          }
+
+          var updatedMessage = serializeMessage_1.serializeMessage(data, _this2.elixirChat);
+          utilsCommon_1.logEvent(debug, 'A message was updated', {
+            updatedMessage: updatedMessage
+          });
+          triggerEvent(ElixirChatEventTypes_1.UPDATE_MESSAGES_CHANGE, updatedMessage);
+        }
+      });
+    }
+  }]);
+
+  return UpdateMessageSubscription;
+}();
+
+exports.UpdateMessageSubscription = UpdateMessageSubscription;
+},{"./ElixirChatEventTypes":"Cteb","./GraphQLClient":"fvSB","./GraphQLClientSocket":"P6qz","../utilsCommon":"EjGt","./serializers/serializeMessage":"ZEl5"}],"jRw6":[function(require,module,exports) {
 "use strict";
 
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
@@ -7061,6 +7174,26 @@ function () {
       }
     };
 
+    this.changeMessageBy = function (query, diff) {
+      var triggerEvent = _this.elixirChat.triggerEvent;
+      _this.messageHistory = _this.messageHistory.map(function (message) {
+        for (var queryKey in query) {
+          if (query[queryKey] !== message[queryKey]) {
+            return message;
+          }
+        }
+
+        var updatedMessage = Object.assign({}, message);
+
+        for (var messageField in diff) {
+          updatedMessage[messageField] = diff[messageField];
+        }
+
+        return updatedMessage;
+      });
+      triggerEvent(ElixirChatEventTypes_1.MESSAGES_HISTORY_CHANGE_MANY, _this.messageHistory);
+    };
+
     this.sendMessage = function (params) {
       var debug = _this.elixirChat.debug;
 
@@ -7093,7 +7226,9 @@ function () {
         tempId = params.retrySubmissionByTempId;
         variables.tempId = tempId;
 
-        _this.enrichTemporaryMessage(tempId, {
+        _this.changeMessageBy({
+          tempId: tempId
+        }, {
           isSubmitting: true,
           submissionErrorCode: null
         });
@@ -7106,7 +7241,9 @@ function () {
             var _tempId = message.tempId;
 
             if (_tempId) {
-              _this.enrichTemporaryMessage(_tempId, message);
+              _this.changeMessageBy({
+                tempId: _tempId
+              }, message);
 
               utilsCommon_1.logEvent(debug, 'Enriched temporary message with actual one', {
                 message: message
@@ -7366,20 +7503,6 @@ function () {
       triggerEvent(ElixirChatEventTypes_1.MESSAGES_HISTORY_APPEND_ONE, message);
     }
   }, {
-    key: "enrichTemporaryMessage",
-    value: function enrichTemporaryMessage(temporaryMessageTempId, messageData) {
-      var triggerEvent = this.elixirChat.triggerEvent;
-      this.messageHistory.forEach(function (message) {
-        if (message.tempId === temporaryMessageTempId) {
-          for (var key in messageData) {
-            message[key] = messageData[key];
-          }
-
-          triggerEvent(ElixirChatEventTypes_1.MESSAGES_HISTORY_CHANGE_ONE, message);
-        }
-      });
-    }
-  }, {
     key: "forgetTemporaryMessage",
     value: function forgetTemporaryMessage(temporaryMessageTempId) {
       this.temporaryMessageTempIds = this.temporaryMessageTempIds.filter(function (id) {
@@ -7405,7 +7528,9 @@ function () {
       }, 'error');
 
       if (tempId) {
-        this.enrichTemporaryMessage(tempId, {
+        this.changeMessageBy({
+          tempId: tempId
+        }, {
           isSubmitting: false,
           submissionErrorCode: submissionErrorCode
         });
@@ -7482,6 +7607,8 @@ var UnreadMessagesCounter_1 = require("./UnreadMessagesCounter");
 var TypingStatusSubscription_1 = require("./TypingStatusSubscription");
 
 var OperatorOnlineStatusSubscription_1 = require("./OperatorOnlineStatusSubscription");
+
+var UpdateMessageSubscription_1 = require("./UpdateMessageSubscription");
 
 var MessageSubscription_1 = require("./MessageSubscription");
 
@@ -7627,6 +7754,8 @@ function () {
 
       _this.messageSubscription.unsubscribe();
 
+      _this.updateMessageSubscription.unsubscribe();
+
       _this.unreadMessagesCounter.unsubscribe();
 
       _this.typingStatusSubscription.unsubscribe();
@@ -7702,6 +7831,8 @@ function () {
 
         _this3.messageSubscription.subscribe();
 
+        _this3.updateMessageSubscription.subscribe();
+
         _this3.unreadMessagesCounter.subscribe();
 
         _this3.typingStatusSubscription.subscribe();
@@ -7724,6 +7855,9 @@ function () {
       this.messageSubscription = new MessageSubscription_1.MessageSubscription({
         elixirChat: this
       });
+      this.updateMessageSubscription = new UpdateMessageSubscription_1.UpdateMessageSubscription({
+        elixirChat: this
+      });
       this.unreadMessagesCounter = new UnreadMessagesCounter_1.UnreadMessagesCounter({
         elixirChat: this
       });
@@ -7732,6 +7866,11 @@ function () {
       });
       this.operatorOnlineStatusSubscription = new OperatorOnlineStatusSubscription_1.OperatorOnlineStatusSubscription({
         elixirChat: this
+      });
+      this.on(ElixirChatEventTypes_1.UPDATE_MESSAGES_CHANGE, function (updatedMessage) {
+        _this3.messageSubscription.changeMessageBy({
+          id: updatedMessage.id
+        }, updatedMessage);
       });
       this.joinRoom();
     }
@@ -7898,7 +8037,7 @@ exports.ElixirChat = ElixirChat;
 if (typeof window !== 'undefined') {
   window.ElixirChat = ElixirChat;
 }
-},{"unique-names-generator":"Qz33","../utilsCommon":"EjGt","./serializers/serializeUser":"lqyB","./ScreenshotTaker":"CLsL","./UnreadMessagesCounter":"xY1B","./TypingStatusSubscription":"QERd","./OperatorOnlineStatusSubscription":"zgd1","./MessageSubscription":"jRw6","./GraphQLClient":"fvSB","./ElixirChatEventTypes":"Cteb"}],"QCba":[function(require,module,exports) {
+},{"unique-names-generator":"Qz33","../utilsCommon":"EjGt","./serializers/serializeUser":"lqyB","./ScreenshotTaker":"CLsL","./UnreadMessagesCounter":"xY1B","./TypingStatusSubscription":"QERd","./OperatorOnlineStatusSubscription":"zgd1","./UpdateMessageSubscription":"AgKM","./MessageSubscription":"jRw6","./GraphQLClient":"fvSB","./ElixirChatEventTypes":"Cteb"}],"QCba":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -7909,4 +8048,4 @@ var ElixirChat_1 = require("./ElixirChat");
 
 exports.default = ElixirChat_1.ElixirChat;
 },{"./ElixirChat":"Pqo8"}]},{},["QCba"], null)
-  ;(function(){ if (typeof ElixirChat !== 'undefined') { ElixirChat.prototype.version = '3.0.5'; } }())
+  ;(function(){ if (typeof ElixirChat !== 'undefined') { ElixirChat.prototype.version = '3.1.0'; } }())
