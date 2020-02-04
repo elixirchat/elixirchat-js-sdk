@@ -42,7 +42,6 @@ import {
   MESSAGES_HISTORY_APPEND_ONE,
   MESSAGES_HISTORY_PREPEND_MANY,
   MESSAGES_HISTORY_CHANGE_MANY,
-  MESSAGES_HISTORY_CHANGE_ONE,
   JOIN_ROOM_SUCCESS,
   TYPING_STATUS_CHANGE,
 } from '../../sdk/ElixirChatEventTypes';
@@ -128,9 +127,6 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     });
     elixirChatWidget.on(MESSAGES_HISTORY_PREPEND_MANY, messages => {
       this.setProcessedMessages(messages, { insertBefore: true });
-    });
-    elixirChatWidget.on(MESSAGES_HISTORY_CHANGE_ONE, () => {
-      this.setProcessedMessages(elixirChatWidget.messageHistory);
     });
     elixirChatWidget.on(MESSAGES_HISTORY_CHANGE_MANY, messages => {
       this.setProcessedMessages(messages);
@@ -283,9 +279,10 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
   setProcessedMessages = (messages, params = {}) => {
     const { insertBefore, insertAfter } = params;
+    const { elixirChatWidget } = this.props;
     const previousProcessedMessages = this.state.processedMessages;
     const previousImagePreviews = this.state.imagePreviews;
-    const { processedMessages, imagePreviews } = this.processMessages(
+    const { processedMessages, imagePreviews, mustOpenWidget } = this.processMessages(
       messages,
       insertAfter ? _last(previousProcessedMessages) : null
     );
@@ -304,6 +301,9 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
       updatedProcessedMessages = processedMessages;
       updatedImagePreviews = imagePreviews;
     }
+    if (mustOpenWidget && !elixirChatWidget.isWidgetPopupOpen) {
+      elixirChatWidget.togglePopup();
+    }
     this.setState({
       processedMessages: updatedProcessedMessages,
       imagePreviews: updatedImagePreviews,
@@ -314,6 +314,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
   processMessages = (messages, precedingMessage) => {
     const { elixirChatWidget } = this.props;
     let imagePreviews = [];
+    let mustOpenWidget = false;
 
     let processedMessages = messages.map((message, i) => {
       const processedMessage = { ...message };
@@ -332,6 +333,10 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
         processedMessage.images = images;
       }
 
+      if (message.mustOpenWidget) {
+        mustOpenWidget = true;
+      }
+
       const hasText = message.text?.trim();
       const hasReply = message.responseToMessage?.id;
       const hasFiles = processedMessage.files?.length;
@@ -342,7 +347,8 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
     return {
       processedMessages,
-      imagePreviews
+      imagePreviews,
+      mustOpenWidget,
     };
   };
 

@@ -8,8 +8,8 @@ import {
   MESSAGES_FETCH_HISTORY_INITIAL_ERROR,
   MESSAGES_HISTORY_SET,
   MESSAGES_HISTORY_APPEND_ONE,
-  MESSAGES_HISTORY_CHANGE_ONE,
   MESSAGES_HISTORY_PREPEND_MANY,
+  MESSAGES_HISTORY_CHANGE_MANY,
 } from './ElixirChatEventTypes';
 
 import { IFile } from './serializers/serializeFile';
@@ -226,21 +226,26 @@ export class MessageSubscription {
     triggerEvent(MESSAGES_HISTORY_APPEND_ONE, message);
   };
 
-  protected enrichTemporaryMessage(temporaryMessageTempId: string, messageData: IMessage): void {
-    const { triggerEvent } = this.elixirChat;
-    this.messageHistory.forEach(message => {
-      if (message.tempId === temporaryMessageTempId) {
-        for (let key in messageData) {
-          message[key] = messageData[key];
-        }
-        triggerEvent(MESSAGES_HISTORY_CHANGE_ONE, message);
-      }
-    });
-  }
-
   protected forgetTemporaryMessage(temporaryMessageTempId: string): void {
     this.temporaryMessageTempIds = this.temporaryMessageTempIds.filter(id => id !== temporaryMessageTempId);
   }
+
+  public changeMessageBy = (query: object, diff: object) => {
+    const { triggerEvent } = this.elixirChat;
+    this.messageHistory = this.messageHistory.map(message => {
+      for (let queryKey in query) {
+        if (query[queryKey] !== message[queryKey]) {
+          return message;
+        }
+      }
+      let updatedMessage = { ...message };
+      for (let messageField in diff) {
+        updatedMessage[messageField] = diff[messageField];
+      }
+      return updatedMessage;
+    });
+    triggerEvent(MESSAGES_HISTORY_CHANGE_MANY, this.messageHistory);
+  };
 
   public sendMessage = (params: ISentMessage): Promise<IMessage> => {
     const { debug } = this.elixirChat;
@@ -264,7 +269,7 @@ export class MessageSubscription {
     else if (params.retrySubmissionByTempId) {
       tempId = params.retrySubmissionByTempId;
       variables.tempId = tempId;
-      this.enrichTemporaryMessage(tempId, {
+      this.changeMessageBy({ tempId }, {
         isSubmitting: true,
         submissionErrorCode: null,
       });
@@ -278,7 +283,7 @@ export class MessageSubscription {
             const message = serializeMessage(response.sendMessage, this.elixirChat);
             const { tempId } = message;
             if (tempId) {
-              this.enrichTemporaryMessage(tempId, message);
+              this.changeMessageBy({ tempId }, message);
               logEvent(debug, 'Enriched temporary message with actual one', { message });
             }
             else {
@@ -316,7 +321,7 @@ export class MessageSubscription {
     }
     logEvent(debug, 'Failed to send message with code: ' + submissionErrorCode, { response, tempId }, 'error');
     if (tempId) {
-      this.enrichTemporaryMessage(tempId, {
+      this.changeMessageBy({ tempId }, {
         isSubmitting: false,
         submissionErrorCode,
       });

@@ -12,14 +12,16 @@ import { IScreenshot, ScreenshotTaker } from './ScreenshotTaker';
 import { IUnreadMessagesCounterData, UnreadMessagesCounter } from './UnreadMessagesCounter';
 import { TypingStatusSubscription } from './TypingStatusSubscription';
 import { OperatorOnlineStatusSubscription } from './OperatorOnlineStatusSubscription';
+import { UpdateMessageSubscription } from './UpdateMessageSubscription';
 import { ISentMessageSerialized, MessageSubscription } from './MessageSubscription';
 import { gql, GraphQLClient, insertGraphQlFragments } from './GraphQLClient';
 import {
   JOIN_ROOM_ERROR,
   JOIN_ROOM_SUCCESS,
   LAST_READ_MESSAGE_CHANGE,
-  MESSAGES_HISTORY_CHANGE_MANY,
+  MESSAGES_HISTORY_CHANGE_MANY, UPDATE_MESSAGES_CHANGE,
 } from './ElixirChatEventTypes';
+
 
 export interface IElixirChatRoom {
   id: string;
@@ -82,6 +84,7 @@ export class ElixirChat {
   protected eventCallbacks: object = {};
   protected graphQLClient: GraphQLClient;
   protected messageSubscription: MessageSubscription;
+  protected updateMessageSubscription: UpdateMessageSubscription;
   protected operatorOnlineStatusSubscription: OperatorOnlineStatusSubscription;
   protected typingStatusSubscription: TypingStatusSubscription;
   protected unreadMessagesCounter: UnreadMessagesCounter;
@@ -151,6 +154,7 @@ export class ElixirChat {
       const areAnyOperatorsOnline = data?.company?.isWorking;
 
       this.messageSubscription.subscribe();
+      this.updateMessageSubscription.subscribe();
       this.unreadMessagesCounter.subscribe();
       this.typingStatusSubscription.subscribe();
       this.operatorOnlineStatusSubscription.subscribe(areAnyOperatorsOnline);
@@ -165,9 +169,15 @@ export class ElixirChat {
     this.setRoomAndClient({ room: config.room, client: config.client });
     this.screenshotTaker = new ScreenshotTaker({ elixirChat: this });
     this.messageSubscription = new MessageSubscription({ elixirChat: this });
+    this.updateMessageSubscription = new UpdateMessageSubscription({ elixirChat: this });
     this.unreadMessagesCounter = new UnreadMessagesCounter({ elixirChat: this });
     this.typingStatusSubscription = new TypingStatusSubscription({ elixirChat: this });
     this.operatorOnlineStatusSubscription = new OperatorOnlineStatusSubscription({ elixirChat: this });
+
+    this.on(UPDATE_MESSAGES_CHANGE, updatedMessage => {
+      this.messageSubscription.changeMessageBy({ id: updatedMessage.id }, updatedMessage);
+    });
+
     this.joinRoom();
   }
 
@@ -367,6 +377,7 @@ export class ElixirChat {
     logEvent(this.debug, 'Disconnecting from ElixirChat');
     this.isConnected = false;
     this.messageSubscription.unsubscribe();
+    this.updateMessageSubscription.unsubscribe();
     this.unreadMessagesCounter.unsubscribe();
     this.typingStatusSubscription.unsubscribe();
     this.operatorOnlineStatusSubscription.unsubscribe();
