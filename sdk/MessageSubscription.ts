@@ -233,19 +233,33 @@ export class MessageSubscription {
   public changeMessageBy = (query: object, diff: object) => {
     const { triggerEvent } = this.elixirChat;
     this.messageHistory = this.messageHistory.map(message => {
-      for (let queryKey in query) {
-        if (query[queryKey] !== message[queryKey]) {
-          return message;
-        }
-      }
       let updatedMessage = { ...message };
-      for (let messageField in diff) {
-        updatedMessage[messageField] = diff[messageField];
+
+      if ( this.doesMessageMatchQuery(message, query) ) {
+        updatedMessage = {
+          ...updatedMessage,
+          ...diff,
+        };
+      }
+      if (message.responseToMessage?.id && this.doesMessageMatchQuery(message.responseToMessage, query)) {
+        updatedMessage.responseToMessage = {
+          ...updatedMessage.responseToMessage,
+          ...diff,
+        };
       }
       return updatedMessage;
     });
     triggerEvent(MESSAGES_HISTORY_CHANGE_MANY, this.messageHistory);
   };
+
+  protected doesMessageMatchQuery(message: IMessage, query: object){
+    for (let queryKey in query) {
+      if (query[queryKey] !== message[queryKey]) {
+        return false;
+      }
+    }
+    return true;
+  }
 
   public sendMessage = (params: ISentMessage): Promise<IMessage> => {
     const { debug } = this.elixirChat;

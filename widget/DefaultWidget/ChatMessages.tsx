@@ -204,6 +204,9 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
   };
 
   createMessageScrollObserver = (messageElement, maxConsiderableMessageHeight, callback) => {
+    if (!messageElement) {
+      return null;
+    }
     const delayToMarkMessageRead = 1200; // milliseconds
     const observerOptions = {
       root: this.scrollBlock.current,
@@ -338,7 +341,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
       }
 
       const hasText = message.text?.trim();
-      const hasReply = message.responseToMessage?.id;
+      const hasReply = message.responseToMessage?.id && !message.responseToMessage?.isDeleted;
       const hasFiles = processedMessage.files?.length;
       processedMessage.messageHasImagesOnly = message.sender.isCurrentClient && !hasText && !hasReply && !hasFiles;
 
@@ -582,7 +585,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                 </div>
               )}
 
-              {!message.isSystem && (
+              {!message.isSystem && !message.isDeleted && (
                 <div className={cn({
                   'elixirchat-chat-messages__item': true,
                   'elixirchat-chat-messages__item--by-me': message.sender.isCurrentClient,
@@ -611,7 +614,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                         </div>
                       )}
 
-                      {Boolean(message.responseToMessage.id) && (
+                      {Boolean(message.responseToMessage.id) && !message.responseToMessage.isDeleted && (
                         <div className="elixirchat-chat-messages__reply-message"
                           onClick={() => this.onReplyOriginalMessageTextClick(message.responseToMessage.id)}>
                           {generateReplyMessageQuote(message.responseToMessage, elixirChatWidget.widgetTitle)}
