@@ -10038,6 +10038,10 @@ function (_react_1$Component) {
     };
 
     _this.createMessageScrollObserver = function (messageElement, maxConsiderableMessageHeight, callback) {
+      if (!messageElement) {
+        return null;
+      }
+
       var delayToMarkMessageRead = 1200; // milliseconds
 
       var observerOptions = {
@@ -10166,7 +10170,7 @@ function (_react_1$Component) {
       var imagePreviews = [];
       var mustOpenWidget = false;
       var processedMessages = messages.map(function (message, i) {
-        var _a, _b, _c;
+        var _a, _b, _c, _d;
 
         var processedMessage = Object.assign({}, message);
         var previousMessage = messages[i - 1] || precedingMessage;
@@ -10192,8 +10196,8 @@ function (_react_1$Component) {
         }
 
         var hasText = (_a = message.text) === null || _a === void 0 ? void 0 : _a.trim();
-        var hasReply = (_b = message.responseToMessage) === null || _b === void 0 ? void 0 : _b.id;
-        var hasFiles = (_c = processedMessage.files) === null || _c === void 0 ? void 0 : _c.length;
+        var hasReply = ((_b = message.responseToMessage) === null || _b === void 0 ? void 0 : _b.id) && !((_c = message.responseToMessage) === null || _c === void 0 ? void 0 : _c.isDeleted);
+        var hasFiles = (_d = processedMessage.files) === null || _d === void 0 ? void 0 : _d.length;
         processedMessage.messageHasImagesOnly = message.sender.isCurrentClient && !hasText && !hasReply && !hasFiles;
         return processedMessage;
       });
@@ -10497,7 +10501,7 @@ function (_react_1$Component) {
           lastDay: '[Вчера, ] D MMMM',
           lastWeek: 'D MMMM',
           sameElse: 'D MMMM'
-        })), !message.isSystem && react_1.default.createElement("div", {
+        })), !message.isSystem && !message.isDeleted && react_1.default.createElement("div", {
           className: classnames_1.default({
             'elixirchat-chat-messages__item': true,
             'elixirchat-chat-messages__item--by-me': message.sender.isCurrentClient,
@@ -10518,7 +10522,7 @@ function (_react_1$Component) {
           className: "elixirchat-chat-messages__sender"
         }, react_1.default.createElement("b", null, utilsWidget_1.generateCustomerSupportSenderName(message, elixirChatWidget.widgetTitle)), Boolean(message.mentions.length) && react_1.default.createElement(react_1.Fragment, null, "\xA0\u2192 @\xA0", message.mentions.map(function (mention) {
           return mention.value === 'ALL' ? 'Все' : [mention.client.firstName, mention.client.lastName].join("\xA0");
-        }).join(', '))), Boolean(message.responseToMessage.id) && react_1.default.createElement("div", {
+        }).join(', '))), Boolean(message.responseToMessage.id) && !message.responseToMessage.isDeleted && react_1.default.createElement("div", {
           className: "elixirchat-chat-messages__reply-message",
           onClick: function onClick() {
             return _this3.onReplyOriginalMessageTextClick(message.responseToMessage.id);

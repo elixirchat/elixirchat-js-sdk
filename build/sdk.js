@@ -6869,7 +6869,7 @@ exports.serializeFile = serializeFile;
 "use strict";
 
 function _templateObject() {
-  var data = _taggedTemplateLiteral(["\n  fragment fragmentMessage on Message {\n    id\n    text\n    timestamp\n    isUnread\n    isSystem\n    \n    ... on ManualMessage {\n      tempId\n      mustOpenWidget\n      sender { ...fragmentUser }\n      attachments { ...fragmentFile }\n      mentions {\n        value\n        client { ...fragmentUser }\n      }\n      responseToMessage {\n        id\n        text\n        sender { ...fragmentUser }\n      }\n    }\n    \n    ... on ScreenshotRequestedMessage {\n      __typename\n      sender { ...fragmentUser }\n    }\n\n    ... on NobodyWorkingMessage {\n      __typename\n      workHoursStartAt\n    }\n  }\n"]);
+  var data = _taggedTemplateLiteral(["\n  fragment fragmentMessage on Message {\n    id\n    text\n    timestamp\n    isUnread\n    isSystem\n    \n    ... on ManualMessage {\n      tempId\n      deleted\n      mustOpenWidget\n      sender { ...fragmentUser }\n      attachments { ...fragmentFile }\n      mentions {\n        value\n        client { ...fragmentUser }\n      }\n      responseToMessage {\n        id\n        text\n        deleted\n        sender { ...fragmentUser }\n      }\n    }\n    \n    ... on ScreenshotRequestedMessage {\n      __typename\n      sender { ...fragmentUser }\n    }\n\n    ... on NobodyWorkingMessage {\n      __typename\n      workHoursStartAt\n    }\n  }\n"]);
 
   _templateObject = function _templateObject() {
     return data;
@@ -6896,7 +6896,7 @@ exports.fragmentMessage = GraphQLClient_1.insertGraphQlFragments(GraphQLClient_1
 });
 
 function serializeMessage(message, elixirChat) {
-  var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q;
+  var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s;
 
   var sender = message.sender,
       responseToMessage = message.responseToMessage,
@@ -6909,7 +6909,8 @@ function serializeMessage(message, elixirChat) {
   var serializedResponseToMessage = {
     id: ((_a = responseToMessage) === null || _a === void 0 ? void 0 : _a.id) || null,
     text: ((_b = responseToMessage) === null || _b === void 0 ? void 0 : _b.text) || '',
-    sender: serializeUser_1.serializeUser((_c = responseToMessage) === null || _c === void 0 ? void 0 : _c.sender, elixirChat)
+    sender: serializeUser_1.serializeUser((_c = responseToMessage) === null || _c === void 0 ? void 0 : _c.sender, elixirChat),
+    isDeleted: (_d = responseToMessage) === null || _d === void 0 ? void 0 : _d.deleted
   };
   var serializedMentions = (mentions || []).map(function (mention) {
     return {
@@ -6918,22 +6919,23 @@ function serializeMessage(message, elixirChat) {
     };
   });
   return {
-    id: ((_d = message) === null || _d === void 0 ? void 0 : _d.id) || null,
-    tempId: ((_e = message) === null || _e === void 0 ? void 0 : _e.tempId) || null,
-    text: ((_f = message) === null || _f === void 0 ? void 0 : _f.text) || '',
-    timestamp: ((_g = message) === null || _g === void 0 ? void 0 : _g.timestamp) || '',
-    cursor: ((_h = message) === null || _h === void 0 ? void 0 : _h.cursor) || null,
+    id: ((_e = message) === null || _e === void 0 ? void 0 : _e.id) || null,
+    tempId: ((_f = message) === null || _f === void 0 ? void 0 : _f.tempId) || null,
+    text: ((_g = message) === null || _g === void 0 ? void 0 : _g.text) || '',
+    timestamp: ((_h = message) === null || _h === void 0 ? void 0 : _h.timestamp) || '',
+    cursor: ((_j = message) === null || _j === void 0 ? void 0 : _j.cursor) || null,
     sender: serializedSender,
     responseToMessage: serializedResponseToMessage,
     attachments: serializedAttachments,
     mentions: serializedMentions,
-    isSubmitting: ((_j = message) === null || _j === void 0 ? void 0 : _j.isSubmitting) || false,
-    submissionErrorCode: ((_k = message) === null || _k === void 0 ? void 0 : _k.submissionErrorCode) || null,
-    mustOpenWidget: ((_l = message) === null || _l === void 0 ? void 0 : _l.mustOpenWidget) || false,
-    isUnread: ((_m = message) === null || _m === void 0 ? void 0 : _m.isUnread) || false,
-    isSystem: ((_o = message) === null || _o === void 0 ? void 0 : _o.isSystem) || false,
-    systemType: ((_p = message) === null || _p === void 0 ? void 0 : _p.__typename) || null,
-    systemWorkHoursStartAt: ((_q = message) === null || _q === void 0 ? void 0 : _q.workHoursStartAt) || null
+    isSubmitting: ((_k = message) === null || _k === void 0 ? void 0 : _k.isSubmitting) || false,
+    submissionErrorCode: ((_l = message) === null || _l === void 0 ? void 0 : _l.submissionErrorCode) || null,
+    mustOpenWidget: ((_m = message) === null || _m === void 0 ? void 0 : _m.mustOpenWidget) || false,
+    isUnread: ((_o = message) === null || _o === void 0 ? void 0 : _o.isUnread) || false,
+    isSystem: ((_p = message) === null || _p === void 0 ? void 0 : _p.isSystem) || false,
+    isDeleted: ((_q = message) === null || _q === void 0 ? void 0 : _q.deleted) || false,
+    systemType: ((_r = message) === null || _r === void 0 ? void 0 : _r.__typename) || null,
+    systemWorkHoursStartAt: ((_s = message) === null || _s === void 0 ? void 0 : _s.workHoursStartAt) || null
   };
 }
 
@@ -7177,16 +7179,16 @@ function () {
     this.changeMessageBy = function (query, diff) {
       var triggerEvent = _this.elixirChat.triggerEvent;
       _this.messageHistory = _this.messageHistory.map(function (message) {
-        for (var queryKey in query) {
-          if (query[queryKey] !== message[queryKey]) {
-            return message;
-          }
-        }
+        var _a;
 
         var updatedMessage = Object.assign({}, message);
 
-        for (var messageField in diff) {
-          updatedMessage[messageField] = diff[messageField];
+        if (_this.doesMessageMatchQuery(message, query)) {
+          updatedMessage = Object.assign(Object.assign({}, updatedMessage), diff);
+        }
+
+        if (((_a = message.responseToMessage) === null || _a === void 0 ? void 0 : _a.id) && _this.doesMessageMatchQuery(message.responseToMessage, query)) {
+          updatedMessage.responseToMessage = Object.assign(Object.assign({}, updatedMessage.responseToMessage), diff);
         }
 
         return updatedMessage;
@@ -7508,6 +7510,17 @@ function () {
       this.temporaryMessageTempIds = this.temporaryMessageTempIds.filter(function (id) {
         return id !== temporaryMessageTempId;
       });
+    }
+  }, {
+    key: "doesMessageMatchQuery",
+    value: function doesMessageMatchQuery(message, query) {
+      for (var queryKey in query) {
+        if (query[queryKey] !== message[queryKey]) {
+          return false;
+        }
+      }
+
+      return true;
     }
   }, {
     key: "onSendMessageFailure",
@@ -8048,4 +8061,4 @@ var ElixirChat_1 = require("./ElixirChat");
 
 exports.default = ElixirChat_1.ElixirChat;
 },{"./ElixirChat":"Pqo8"}]},{},["QCba"], null)
-  ;(function(){ if (typeof ElixirChat !== 'undefined') { ElixirChat.prototype.version = '3.1.0'; } }())
+  ;(function(){ if (typeof ElixirChat !== 'undefined') { ElixirChat.prototype.version = '3.1.1'; } }())
