@@ -13,7 +13,7 @@ export const fragmentMessage = insertGraphQlFragments(gql`
     
     ... on ManualMessage {
       tempId
-      deleted
+      isDeleted
       mustOpenWidget
       sender { ...fragmentUser }
       attachments { ...fragmentFile }
@@ -24,7 +24,7 @@ export const fragmentMessage = insertGraphQlFragments(gql`
       responseToMessage {
         id
         text
-        deleted
+        isDeleted
         sender { ...fragmentUser }
       }
     }
@@ -74,7 +74,7 @@ export function serializeMessage(message: any, elixirChat: ElixirChat): IMessage
     id: responseToMessage?.id || null,
     text: responseToMessage?.text || '',
     sender: serializeUser(responseToMessage?.sender, elixirChat),
-    isDeleted: responseToMessage?.deleted, // TODO: change when renamed on backend
+    isDeleted: responseToMessage?.isDeleted,
   };
   const serializedMentions = (mentions || []).map(mention => {
     return {
@@ -98,7 +98,7 @@ export function serializeMessage(message: any, elixirChat: ElixirChat): IMessage
     mustOpenWidget: message?.mustOpenWidget || false,
     isUnread: message?.isUnread || false,
     isSystem: message?.isSystem || false,
-    isDeleted: message?.deleted || false, // TODO: change when renamed on backend
+    isDeleted: message?.isDeleted || false,
     systemType: message?.__typename || null,
     systemWorkHoursStartAt: message?.workHoursStartAt || null,
   };
