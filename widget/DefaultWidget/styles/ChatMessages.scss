@@ -490,10 +490,9 @@
 
 .elixirchat-chat-typing {
   position: relative;
-  font-weight: bold;
   padding: 0 30px 0 24px;
   background: $color-white;
-  color: darken($color-gray-light, 5);
+  color: darken($color-gray-light, 8);
   height: 18px;
   opacity: 0;
   transition: all 200ms;
@@ -512,5 +511,4 @@
   top: 3px;
   font-size: 11px;
   color: darken($color-gray-light, 5);
-  -webkit-font-smoothing: initial;
 }

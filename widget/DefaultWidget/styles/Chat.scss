@@ -15,8 +15,6 @@ textarea {
   font: 14px/18px $font-family-text;
   outline: none;
   color: $color-black;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
 .m-pointer {
@@ -83,10 +81,6 @@ textarea {
   &:hover {
     opacity: .4;
   }
-
-  [class^=icon] {
-    -webkit-font-smoothing: initial;
-  }
 }
 
 .elixirchat-chat-header__mute {
@@ -106,9 +100,5 @@ textarea {
 
   &:hover {
     opacity: .4;
-  }
-
-  [class^=icon] {
-    -webkit-font-smoothing: initial;
   }
 }

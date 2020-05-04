@@ -30,13 +30,16 @@
 }
 
 .elixirchat-chat-textarea__reply-to-icon {
-  margin-right: 4px;
+  margin-right: 5px;
   vertical-align: text-top;
+  transform: translateY(-1px);
+  display: inline-block;
 }
 
 .elixirchat-chat-textarea__reply-to-remove {
   vertical-align: middle;
   margin-left: 6px;
+  padding: 6px;
   font-size: 11px;
   line-height: 6px;
   transform: translateY(1px);
@@ -66,7 +69,7 @@
   overflow: hidden;
   transition: background-color 200ms;
   color: rgba($color-black, .32);
-  padding-top: 4px;
+  padding-top: 2px;
 
   &:hover {
     background-color: lighten($color-gray-light, 5);

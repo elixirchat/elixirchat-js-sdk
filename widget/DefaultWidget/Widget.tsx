@@ -139,7 +139,12 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
         <style dangerouslySetInnerHTML={{ __html: outsideIframeStyles }}/>
 
         {!isDefaultButtonHidden && (
-          <button className="elixirchat-widget-button" onClick={elixirChatWidget.togglePopup}>
+          <button className={cn({
+            'elixirchat-widget-button': true,
+            'elixirchat-widget-button--widget-open': isIFrameOpen,
+          })} onClick={elixirChatWidget.togglePopup}>
+            <i className="elixirchat-widget-icon icon-logo"/>
+            <i className="elixirchat-widget-icon icon-close-thin"/>
             <span className={cn({
               'elixirchat-widget-button-counter': true,
               'elixirchat-widget-button-counter--has-unread': visibleUnreadMessagesCount,
