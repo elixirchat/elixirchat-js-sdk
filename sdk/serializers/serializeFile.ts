@@ -31,7 +31,6 @@ export interface IFile {
   height: number;
   width: number;
   contentType: string | null;
-  thumbType?: string | null;
   thumbnails?: Array<IFile>;
 }
 
@@ -41,17 +40,7 @@ export function serializeFile(fileData: any, elixirChat: ElixirChat): IFile {
 
   if (file.thumbnails && file.thumbnails.length) {
     thumbnails = file.thumbnails.map(thumbnail => {
-      const serializedThumbnail = serializeFile(thumbnail, elixirChat);
-      return {
-        id: serializedThumbnail.id,
-        url: serializedThumbnail.url,
-        name: serializedThumbnail.name,
-        bytesSize: serializedThumbnail.bytesSize,
-        width: serializedThumbnail.width,
-        height: serializedThumbnail.height,
-        contentType: serializedThumbnail.contentType,
-        thumbType: thumbnail.thumbType || null,
-      };
+      return serializeFile(thumbnail, elixirChat);
     })
   }
 
@@ -68,7 +57,7 @@ export function serializeFile(fileData: any, elixirChat: ElixirChat): IFile {
     bytesSize: file.bytesSize || 0,
     height: file.height || 0,
     width: file.width || 0,
-    contentType: file.contentType || null,
+    contentType: file.contentType || '',
     isScreenshot: file.isScreenshot || false,
     thumbnails,
   };

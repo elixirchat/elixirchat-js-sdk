@@ -9,7 +9,7 @@ import { generateFontFaceRule, unlockNotificationSoundAutoplay } from '../../uti
 import { FontExtractor } from '../FontExtractor';
 import { Chat } from './Chat';
 import { IFrameWrapper } from './IFrameWrapper';
-import { ImagePreview } from './ImagePreview';
+import { FullScreenPreview } from './FullScreenPreview';
 import styles from './styles';
 import assets from './assets';
 
@@ -85,7 +85,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
     const outsideIframeStyles = [
       styles.icons,
       styles.Widget,
-      styles.ImagePreview,
+      styles.FullScreenPreview,
       fontFaceGraphikRegular,
       fontFaceElixirIcons,
     ].join('\n');
@@ -149,7 +149,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
           </button>
         )}
 
-        <ImagePreview elixirChatWidget={elixirChatWidget}/>
+        <FullScreenPreview elixirChatWidget={elixirChatWidget}/>
 
         <IFrameWrapper elixirChatWidget={elixirChatWidget} className={cn({
           'elixirchat-widget-iframe': true,

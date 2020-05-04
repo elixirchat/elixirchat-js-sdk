@@ -138,6 +138,28 @@ export function isWebImage(mimeType: string): boolean {
   return ['image/jpg', 'image/jpeg', 'image/png', 'image/gif'].includes(mimeType.toLowerCase());
 }
 
+export function isVideoConvertibleIntoMp4(mimeType){
+  const supportedTypes = [
+    'video/mp4',
+    'video/x-msvideo',
+    'video/vnd.avi',
+    'video/avi',
+    'video/msvideo',
+    'video/quicktime',
+    'video/x-ms-wmv',
+    'video/x-ms-asf',
+    'video/webm',
+    'video/x-matroska',
+    'video/x-flv',
+    'video/dvd',
+    'video/mpeg',
+    'video/x-ms-vo',
+    'video/ogg',
+    'video/mp2t',
+    'video/x-m4v',
+  ];
+  return supportedTypes.includes(mimeType.toLowerCase().trim());
+}
 
 export function trimEachRow(text: string): string {
   return text.split(/\n/).map(row => row.trim()).join('\n');

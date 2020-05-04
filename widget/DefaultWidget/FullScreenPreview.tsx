@@ -3,11 +3,11 @@ import cn from 'classnames';
 import { ElixirChatWidget } from '../ElixirChatWidget';
 import {IMAGE_PREVIEW_CLOSE, IMAGE_PREVIEW_OPEN, WIDGET_IFRAME_READY} from '../ElixirChatWidgetEventTypes';
 
-export interface IImagePreviewProps {
+export interface IFullScreenPreviewProps {
   elixirChatWidget: ElixirChatWidget;
 }
 
-export interface IImagePreviewState {
+export interface IFullScreenPreviewState {
   preview: object,
   gallery: Array<object>,
   displaySize: {
@@ -19,7 +19,7 @@ export interface IImagePreviewState {
   isSlideAnimation: boolean;
 }
 
-export class ImagePreview extends Component<IImagePreviewProps, IImagePreviewState> {
+export class FullScreenPreview extends Component<IFullScreenPreviewProps, IFullScreenPreviewState> {
 
   state = {
     preview: {},
@@ -33,8 +33,10 @@ export class ImagePreview extends Component<IImagePreviewProps, IImagePreviewSta
     isSlideAnimation: false,
   };
 
-  previewHorizontalPaddings = 100;
-  previewVerticalPaddings = 120;
+  HORIZONTAL_PADDINGS = 100;
+  VERTICAL_PADDINGS = 120;
+
+  video = React.createRef();
 
   componentDidMount() {
     const { elixirChatWidget } = this.props;
@@ -57,15 +59,15 @@ export class ImagePreview extends Component<IImagePreviewProps, IImagePreviewSta
   updatePreviewDimensions = (preview) => {
     const { width, height, url } = preview;
     if (preview && url && width && height) {
-      const displaySize = this.calculateImagePreviewSize(width, height);
-      const marginTop = this.calculateImagePreviewTopMargin(displaySize.height);
+      const displaySize = this.calculateFullScreenPreviewSize(width, height);
+      const marginTop = this.calculateFullScreenPreviewTopMargin(displaySize.height);
       this.setState({ displaySize, marginTop });
       this.animateSlide();
     }
   };
 
-  calculateImagePreviewSize = (imageNativeWidth, imageNativeHeight) => {
-    const maxImageWidth = window.innerWidth - this.previewHorizontalPaddings; // window viewport width minus horizontal paddings
+  calculateFullScreenPreviewSize = (imageNativeWidth, imageNativeHeight) => {
+    const maxImageWidth = window.innerWidth - this.HORIZONTAL_PADDINGS; // window viewport width minus horizontal paddings
     let width = imageNativeWidth;
     let height = imageNativeHeight;
     if (imageNativeWidth > maxImageWidth) {
@@ -76,8 +78,8 @@ export class ImagePreview extends Component<IImagePreviewProps, IImagePreviewSta
     return { width, height };
   };
 
-  calculateImagePreviewTopMargin = (imageDisplayHeight) => {
-    const availableVerticalSpace = window.innerHeight - this.previewVerticalPaddings;
+  calculateFullScreenPreviewTopMargin = (imageDisplayHeight) => {
+    const availableVerticalSpace = window.innerHeight - this.VERTICAL_PADDINGS;
     if (availableVerticalSpace < imageDisplayHeight) {
       return 0;
     }
@@ -143,20 +145,30 @@ export class ImagePreview extends Component<IImagePreviewProps, IImagePreviewSta
 
     return (
       <div className={cn({
-        'elixirchat-widget-image-preview': true,
-        'elixirchat-widget-image-preview--visible': isVisible,
+        'elixirchat-widget-full-screen-preview': true,
+        'elixirchat-widget-full-screen-preview--visible': isVisible,
       })} onClick={this.onClose}>
-        <div className="elixirchat-widget-image-preview__inner">
-          {preview.url && (
+        <div className="elixirchat-widget-full-screen-preview__inner">
+          {preview.url && preview.previewType === 'image' && (
             <img className={cn({
-              'elixirchat-widget-image-preview__img': true,
-              'elixirchat-widget-image-preview__img--animated': isSlideAnimation,
+              'elixirchat-widget-full-screen-preview__img': true,
+              'elixirchat-widget-full-screen-preview__img--animated': isSlideAnimation,
             })}
               style={{ marginTop: marginTop }}
               width={displaySize.width}
               height={displaySize.height}
               src={preview.url}
               alt={preview.name}/>
+          )}
+          {preview.url && preview.previewType === 'video' && (
+            <video className="elixirchat-widget-full-screen-preview__video"
+              ref={this.video}
+              controls={true}
+              autoPlay={true}
+              // width={previewWidth}
+              // height={previewHeight}
+              // style={{ marginTop: previewTopMargin }}
+              src={preview.url}/>
           )}
         </div>
       </div>

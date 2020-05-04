@@ -8,7 +8,7 @@ import {
   _round,
   isWebImage,
   detectBrowser,
-  trimEachRow,
+  trimEachRow, isVideoConvertibleIntoMp4,
 } from '../../utilsCommon';
 
 import {
@@ -58,7 +58,7 @@ export interface IDefaultWidgetMessagesState {
   isLoadingPrecedingMessageHistory: boolean;
   hasMessageHistoryEverBeenVisible: boolean;
   processedMessages: Array<object>,
-  imagePreviews: Array<object>,
+  fullScreenPreviews: Array<object>,
   screenshotFallback: object | null,
   scrollBlockBottomOffset: number | null;
   currentlyTypingUsers: Array<object>;
@@ -73,7 +73,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     isLoadingPrecedingMessageHistory: false,
     hasMessageHistoryEverBeenVisible: false,
     processedMessages: [],
-    imagePreviews: [],
+    fullScreenPreviews: [],
     screenshotFallback: null,
     scrollBlockBottomOffset: null,
     currentlyTypingUsers: [],
@@ -284,39 +284,39 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     const { insertBefore, insertAfter } = params;
     const { elixirChatWidget } = this.props;
     const previousProcessedMessages = this.state.processedMessages;
-    const previousImagePreviews = this.state.imagePreviews;
-    const { processedMessages, imagePreviews, mustOpenWidget } = this.processMessages(
+    const previousFullScreenPreviews = this.state.fullScreenPreviews;
+    const { processedMessages, fullScreenPreviews, mustOpenWidget } = this.processMessages(
       messages,
       insertAfter ? _last(previousProcessedMessages) : null
     );
     let updatedProcessedMessages;
-    let updatedImagePreviews;
+    let updatedFullScreenPreviews;
 
     if (insertBefore) {
       updatedProcessedMessages = [...processedMessages, ...previousProcessedMessages];
-      updatedImagePreviews = [...imagePreviews, ...previousImagePreviews];
+      updatedFullScreenPreviews = [...fullScreenPreviews, ...previousFullScreenPreviews];
     }
     else if (insertAfter) {
       updatedProcessedMessages = [...previousProcessedMessages, ...processedMessages];
-      updatedImagePreviews = [...previousImagePreviews, ...imagePreviews];
+      updatedFullScreenPreviews = [...previousFullScreenPreviews, ...fullScreenPreviews];
     }
     else {
       updatedProcessedMessages = processedMessages;
-      updatedImagePreviews = imagePreviews;
+      updatedFullScreenPreviews = fullScreenPreviews;
     }
     if (mustOpenWidget && !elixirChatWidget.isWidgetPopupOpen) {
       elixirChatWidget.togglePopup();
     }
     this.setState({
       processedMessages: updatedProcessedMessages,
-      imagePreviews: updatedImagePreviews,
+      fullScreenPreviews: updatedFullScreenPreviews,
     });
     this.onMultipleMessagesBeingViewedSimultaneously(this.markLatestViewedMessageRead);
   };
 
   processMessages = (messages, precedingMessage) => {
     const { elixirChatWidget } = this.props;
-    let imagePreviews = [];
+    let fullScreenPreviews = [];
     let mustOpenWidget = false;
 
     let processedMessages = messages.map((message, i) => {
@@ -330,10 +330,10 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
         processedMessage.prependDateTitle = true;
       }
       if (processedMessage.attachments.length) {
-        const { files, images } = this.processAttachments(message.attachments, message.sender);
-        imagePreviews = imagePreviews.concat(images);
+        const { files, previews } = this.processAttachments(message.attachments, message.sender);
+        fullScreenPreviews = fullScreenPreviews.concat(previews);
         processedMessage.files = files;
-        processedMessage.images = images;
+        processedMessage.previews = previews;
       }
 
       if (message.mustOpenWidget) {
@@ -343,20 +343,20 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
       const hasText = message.text?.trim();
       const hasReply = message.responseToMessage?.id && !message.responseToMessage?.isDeleted;
       const hasFiles = processedMessage.files?.length;
-      processedMessage.messageHasImagesOnly = message.sender.isCurrentClient && !hasText && !hasReply && !hasFiles;
+      processedMessage.messageHasPreviewsOnly = message.sender.isCurrentClient && !hasText && !hasReply && !hasFiles;
 
       return processedMessage;
     });
 
     return {
       processedMessages,
-      imagePreviews,
+      fullScreenPreviews,
       mustOpenWidget,
     };
   };
 
   processAttachments = (attachments, sender) => {
-    const images = [];
+    const previews = [];
     const files = [];
 
     attachments.forEach(attachment => {
@@ -371,13 +371,17 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
         thumbnailHeight = attachment.height * thumbnailRatio;
       }
 
-      if (isWebImage(attachment.contentType) && thumbnailWidth && thumbnailHeight) {
-        images.push({
+      const isImage = isWebImage(attachment.contentType) && thumbnailWidth && thumbnailHeight;
+      const isVideo = isVideoConvertibleIntoMp4(attachment.contentType) && thumbnailWidth && thumbnailHeight;
+
+      if (isImage || isVideo) {
+        previews.push({
           ...attachment,
           sender,
           thumbnailUrl,
           thumbnailWidth,
           thumbnailHeight,
+          previewType: isImage ? 'image' : 'video',
         });
       }
       else {
@@ -387,13 +391,13 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
         })
       }
     });
-    return { images, files };
+    return { previews, files };
   };
 
-  onImagePreviewClick = (e, preview) => {
+  onPreviewClick = (e, preview) => {
     const { elixirChatWidget } = this.props;
-    const { imagePreviews } = this.state;
-    elixirChatWidget.triggerEvent(IMAGE_PREVIEW_OPEN, preview, imagePreviews);
+    const { fullScreenPreviews } = this.state;
+    elixirChatWidget.triggerEvent(IMAGE_PREVIEW_OPEN, preview, fullScreenPreviews);
     e.preventDefault();
   };
 
@@ -596,7 +600,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                   ref={element => this.createMessageRef(element, message)}
                   data-id={message.id}>
 
-                  {!message.messageHasImagesOnly && (
+                  {!message.messageHasPreviewsOnly && (
                     <div className="elixirchat-chat-messages__balloon"
                       onDoubleClick={() => this.onReplyMessageClick(message.id)}>
 
@@ -663,29 +667,28 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                     </div>
                   )}
 
-                  {Boolean(message.images) && Boolean(message.images.length) && (
-                    <ul className="elixirchat-chat-images">
-                      {message.images.map(image => (
-                        <li key={image.id} className="elixirchat-chat-images__item">
-
-                          <a className="elixirchat-chat-images__link"
-                            href={image.url}
+                  {Boolean(message.previews?.length) && (
+                    <ul className="elixirchat-chat-previews">
+                      {message.previews.map(preview => (
+                        <li key={preview.id} className="elixirchat-chat-previews__item">
+                          <a className="elixirchat-chat-previews__link"
+                            href={preview.url}
                             target="_blank"
-                            onClick={e => this.onImagePreviewClick(e, { ...image, sender: message.sender })}>
+                            onClick={e => this.onPreviewClick(e, { ...preview, sender: message.sender })}>
                             {message.isSubmitting && (
-                              <i className="elixirchat-chat-images__spinner icon-spinner-xs"/>
+                              <i className="elixirchat-chat-previews__spinner icon-spinner-xs"/>
                             )}
                             <img className={cn({
-                              'elixirchat-chat-images__img': true,
-                              'elixirchat-chat-images__img--submitting': message.isSubmitting,
+                              'elixirchat-chat-previews__img': true,
+                              'elixirchat-chat-previews__img--submitting': message.isSubmitting,
                             })}
-                              width={_round(image.thumbnailWidth, 2)}
-                              height={_round(image.thumbnailHeight)}
-                              src={image.thumbnailUrl}
-                              alt={image.name}
+                              width={_round(preview.thumbnailWidth, 2)}
+                              height={_round(preview.thumbnailHeight)}
+                              src={preview.thumbnailUrl}
+                              alt={preview.name}
                               data-error-message="Файл не найден"
                               onError={e => {
-                                e.target.parentNode.classList.add('elixirchat-chat-images__item-not-found')
+                                e.target.parentNode.classList.add('elixirchat-chat-previews__item-not-found')
                               }}/>
                           </a>
                         </li>

@@ -1,0 +1,42 @@
+@import "./variables";
+@import "./mixins";
+
+.elixirchat-widget-full-screen-preview {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: 0;
+  z-index: 99999999;
+  background: rgba($color-black, .8);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 40px 50px 0 50px;
+  text-align: center;
+  display: none;
+
+  &--visible {
+    display: block;
+  }
+}
+
+.elixirchat-widget-full-screen-preview__inner {
+  display: inline-block;
+}
+
+.elixirchat-widget-full-screen-preview__img {
+  position: relative;
+  z-index: 2;
+  box-shadow: 0 4px 8px rgba($color-black, .15);
+  margin-bottom: 40px;
+  transition: transform 200ms;
+
+  &--animated {
+    transform: translateX(-25px);
+    opacity: 0;
+  }
+}
+
+.elixirchat-widget-full-screen-preview__video {
+
+}

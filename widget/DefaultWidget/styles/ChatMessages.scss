@@ -381,13 +381,13 @@
   @include elixir-animation-spinner(1s);
 }
 
-.elixirchat-chat-images {
+.elixirchat-chat-previews {
   list-style: none;
   padding: 0 0 0 0;
   margin: 6px 0 2px 0;
 }
 
-.elixirchat-chat-images__item {
+.elixirchat-chat-previews__item {
   padding: 0;
   margin-top: 6px;
 
@@ -400,7 +400,7 @@
   }
 }
 
-.elixirchat-chat-images__link {
+.elixirchat-chat-previews__link {
   display: inline-block;
   vertical-align: bottom;
   position: relative;
@@ -418,7 +418,7 @@
   }
 }
 
-.elixirchat-chat-images__spinner {
+.elixirchat-chat-previews__spinner {
   color: $color-black;
   position: absolute;
   top: 50%;
@@ -440,7 +440,7 @@
   }
 }
 
-.elixirchat-chat-images__img {
+.elixirchat-chat-previews__img {
   max-width: 256px;
   max-height: 256px;
   border-radius: 3px;
@@ -451,7 +451,7 @@
   }
 }
 
-.elixirchat-chat-images__item-not-found > img {
+.elixirchat-chat-previews__item-not-found > img {
   position: relative;
   min-width: 180px;
   pointer-events: none;
