@@ -55,7 +55,7 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
               {areAnyOperatorsOnline && (
                 <i className="elixirchat-chat-header__indicator"/>
               )}
-              <span title={'Версия ' + process.env.ELIXIRCHAT_VERSION}>
+              <span title={'Версия ' + elixirChatWidget.version}>
                 {widgetTitle}
               </span>
             </Fragment>

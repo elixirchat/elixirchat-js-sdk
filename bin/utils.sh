@@ -29,19 +29,17 @@ function is_backend_path_unset() {
 
 function is_github_data_unset() {
   source .env
-  if [ -z "$GITHUB_REPO_OWNER" ] || [ -z "$GITHUB_REPO_NAME" ] || [ -z "$GITHUB_USER" ] || [ -z "$GITHUB_TOKEN" ]; then
+  if [ -z "$GITHUB_USER" ] || [ -z "$GITHUB_TOKEN" ]; then
     print_error "
       Error: Github data incomplete or missing from .env
 
       In order to be able to create releases on Github, you must add following variables into .env file:
-      GITHUB_REPO_OWNER=elixirchat
-      GITHUB_REPO_NAME=elixirchat-js-sdk
       GITHUB_USER=your-github-username
-      GITHUB_TOKEN=your-github-token    # see below ↓
+      GITHUB_TOKEN=your-github-token
 
       Where to get GITHUB_TOKEN:
       1. Generate a new token on https://github.com/settings/tokens
-      2. Under \"Select scopes\" title, check everything under \"repo\" (repo:status, repo_deployment, public_repo, repo:invite)\n\n"
+      2. Under \"Select scopes\", check everything under \"repo\" (repo:status, repo_deployment, public_repo, repo:invite)\n\n"
     true
   else
     false
