@@ -38,7 +38,7 @@
 
   /* TODO: replace w/ <i class"icon..."> element when button is rewritten as a React component */
   &:after {
-    content: "\e904"; /* .icon-logo */
+    content: "\f105"; /* .icon-logo */
     font-size: 28px;
     padding-top: 5px;
     -webkit-font-smoothing: antialiased;
@@ -47,7 +47,7 @@
 
   /* TODO: replace w/ <i class"icon..."> element when button is rewritten as a React component */
   &:before {
-    content: "\e902"; /* .icon-close-thin */
+    content: "\f103"; /* .icon-close-thin */
     font-size: 21px;
     opacity: 0;
   }

@@ -1,112 +1,65 @@
-@import "./variables";
-
-
 /*
-HOW TO ADD NEW ICONS INTO THE FONT:
-@see elixirchat-admin/src/styles/icons.scss
- */
 
+  THIS FILE WAS GENERATED AUTOMATICALLY VIA `npm run update-icon-font`
+  @see bin/update-icon-font.sh
 
-[class^="icon-"], [class*=" icon-"] {
-  font-family: $font-family-icons !important;
-  speak: none;
-  font-style: normal;
-  font-weight: normal;
-  font-variant: normal;
-  text-transform: none;
-  line-height: 1;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  In order to add new icons to the elixirchat-icons font:
+  1. Copy your SVG icons into widget/DefaultWidget/assets/fonts/elixirchat-icons-source
+  2. Run `npm update-icon-font` in terminal (this will regenerate elixirchat-icons.woff and icons.scss)
+  3. Use your new icons e.g. <i className="icon-my-new-icon"/> (for when your original SVG file was named my-new-icon.svg)
+
+  NOTE:
+  The icons are usually taken from Apple SF Symbols set:
+  @see https://developer.apple.com/design/human-interface-guidelines/sf-symbols/overview/
+
+*/
+
+@font-face {
+    font-family: "elixirchat-icons";
+    src: url("../assets/fonts/elixirchat-icons.woff?2092a6c4c5ca9b315694ea8debd7e0f7") format("woff");
 }
 
-.icon-arrow-down:before {
-  content: "\e900";
+*[class^="icon-"]:before, *[class*=" icon-"]:before {
+    font-family: elixirchat-icons !important;
+    font-style: normal;
+    font-weight: normal !important;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
+.icon-chevron-down:before {
+    content: "\f101";
+}
 .icon-close-thick:before {
-  content: "\e901";
+    content: "\f102";
 }
-
 .icon-close-thin:before {
-  content: "\e902";
+    content: "\f103";
 }
-
 .icon-file:before {
-  content: "\e903";
+    content: "\f104";
 }
-
 .icon-logo:before {
-  content: "\e904";
+    content: "\f105";
 }
-
-.icon-reply-left:before {
-  content: "\e905";
-}
-
 .icon-reply-right:before {
-  content: "\e906";
+    content: "\f106";
 }
-
 .icon-screenshot:before {
-  content: "\e907";
+    content: "\f107";
 }
-
-.icon-spinner-lg:before {
-  content: "\e908";
-}
-
-.icon-spinner-xs:before {
-  content: "\e909";
-}
-
-.icon-typing:before {
-  content: "\e90a";
-}
-
 .icon-speaker-mute:before {
-  content: "\e90b";
+    content: "\f108";
 }
-
 .icon-speaker:before {
-  content: "\e90c";
+    content: "\f109";
 }
-
-.icon-system-case-closed:before {
-  content: "\e90d";
+.icon-spinner-xs:before {
+    content: "\f10a";
 }
-
-.icon-system-operator-assigned:before {
-  content: "\e90e";
-}
-
-.icon-system-reminder:before {
-  content: "\e90f";
-}
-
-.icon-system-screenshot:before {
-  content: "\e910";
-}
-
-.icon-ellipsis:before {
-  content: "\e911";
-}
-
-.icon-info:before {
-  content: "\e912";
-}
-
-.icon-menu:before {
-  content: "\e913";
-}
-
-.icon-submit:before {
-  content: "\e914";
-}
-
-.icon-close-medium:before {
-  content: "\e915";
-}
-
-.icon-open-widget:before {
-  content: "\e916";
+.icon-typing:before {
+    content: "\f10b";
 }
