@@ -4,5 +4,4 @@ node_modules
 .cache
 .DS_Store
 *.graphql
-.env-backend
-.env-github
+.env

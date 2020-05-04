@@ -1,30 +1,34 @@
 #!/usr/bin/env bash
 
-current_version=$(node -p "require('./package.json').version")
-current_version_arr=($(echo "$current_version" | sed 's/\./ /g'))
+source bin/utils.sh
 
+package_json_version=$(node -p "require('./package.json').version")
+package_json_version_arr=($(echo "$package_json_version" | sed 's/\./ /g'))
 node_argv=$(node -e "console.log(JSON.parse(process.env.npm_config_argv).original)")
+
 is_major=$(echo "$node_argv" | grep major)
 is_minor=$(echo "$node_argv" | grep minor)
 is_patch=$(echo "$node_argv" | grep patch)
 
 if [ -n "$is_major" ]; then
-  (( current_version_arr[0]++ ))
-  current_version_arr[1]=0
-  current_version_arr[2]=0
+  (( package_json_version_arr[0]++ ))
+  package_json_version_arr[1]=0
+  package_json_version_arr[2]=0
 fi
 if [ -n "$is_minor" ]; then
-  (( current_version_arr[1]++ ))
-  current_version_arr[2]=0
+  (( package_json_version_arr[1]++ ))
+  package_json_version_arr[2]=0
 fi
 if [ -n "$is_patch" ]; then
-  (( current_version_arr[2]++ ))
+  (( package_json_version_arr[2]++ ))
 fi
 
-new_version="${current_version_arr[0]}.${current_version_arr[1]}.${current_version_arr[2]}"
+next_package_json_version="${package_json_version_arr[0]}.${package_json_version_arr[1]}.${package_json_version_arr[2]}"
 
-./bin/build.sh $new_version
+change_variable_in_env_file "ELIXIRCHAT_VERSION" "$next_package_json_version"
+git add .env
 
+./bin/build.sh $next_package_json_version
 git add build/default-widget.js
 git add build/default-widget.min.js
 git add build/sdk.js

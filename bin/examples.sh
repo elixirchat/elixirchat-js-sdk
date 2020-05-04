@@ -5,6 +5,8 @@
 # npm run examples --dev-server=true    # Browse examples working with dev-server (dev-admin.elixir.chat/api)
 # npm run examples --open=true          # Open examples in the browser automatically
 
+source bin/utils.sh
+
 export API_URL="http:\/\/localhost:4000"
 export SOCKET_URL="ws:\/\/localhost:4000\/socket"
 export BACKEND_STATIC_URL="http:\/\/localhost:4000"
@@ -29,14 +31,9 @@ update_examples_files () {
 
   if [ "$is_dev_server" != "undefined" ];
     then
-      tput setaf 2
-      printf "\nRunning SDK with DEV-SERVER (dev-admin.elixir.chat/api)\n\n"
-      tput sgr0
+      print_success "\nRunning SDK with DEV-SERVER (dev-admin.elixir.chat/api)\n\n"
     else
-      tput setaf 2
-      printf "\nRunning SDK examples with LOCAL SERVER (localhost:4000)\n\n"
-      tput sgr0
-
+      print_success "\nRunning SDK examples with LOCAL SERVER (localhost:4000)\n\n"
       replace_env_variables "dist/build/examples/sdk.html"
       replace_env_variables "dist/build/examples/widget.html"
       replace_env_variables "dist/build/examples/widget-private.html"
