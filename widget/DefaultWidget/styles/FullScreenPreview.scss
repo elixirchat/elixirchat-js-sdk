@@ -24,19 +24,17 @@
   display: inline-block;
 }
 
-.elixirchat-widget-full-screen-preview__img {
+.elixirchat-widget-full-screen-preview__img,
+.elixirchat-widget-full-screen-preview__video {
   position: relative;
   z-index: 2;
   box-shadow: 0 4px 8px rgba($color-black, .15);
   margin-bottom: 40px;
   transition: transform 200ms;
+  outline: none;
 
   &--animated {
     transform: translateX(-25px);
     opacity: 0;
   }
-}
-
-.elixirchat-widget-full-screen-preview__video {
-
 }

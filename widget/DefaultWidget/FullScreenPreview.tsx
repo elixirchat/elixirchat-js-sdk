@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import cn from 'classnames';
 import { ElixirChatWidget } from '../ElixirChatWidget';
-import {IMAGE_PREVIEW_CLOSE, IMAGE_PREVIEW_OPEN, WIDGET_IFRAME_READY} from '../ElixirChatWidgetEventTypes';
+import { IMAGE_PREVIEW_CLOSE, IMAGE_PREVIEW_OPEN, WIDGET_IFRAME_READY } from '../ElixirChatWidgetEventTypes';
+import { fitDimensionsIntoLimits } from '../../utilsWidget';
 
 export interface IFullScreenPreviewProps {
   elixirChatWidget: ElixirChatWidget;
@@ -10,11 +11,9 @@ export interface IFullScreenPreviewProps {
 export interface IFullScreenPreviewState {
   preview: object,
   gallery: Array<object>,
-  displaySize: {
-    width: number;
-    height: number;
-  };
-  marginTop: number;
+  previewWidth: number,
+  previewHeight: number,
+  previewTopMargin: number,
   isVisible: boolean;
   isSlideAnimation: boolean;
 }
@@ -24,17 +23,15 @@ export class FullScreenPreview extends Component<IFullScreenPreviewProps, IFullS
   state = {
     preview: {},
     gallery: [],
-    displaySize: {
-      width: 0,
-      height: 0,
-    },
-    marginTop: 0,
+    previewWidth: 0,
+    previewHeight: 0,
+    previewTopMargin: 0,
     isVisible: false,
     isSlideAnimation: false,
   };
 
   HORIZONTAL_PADDINGS = 100;
-  VERTICAL_PADDINGS = 120;
+  VERTICAL_PADDINGS = 80;
 
   video = React.createRef();
 
@@ -48,6 +45,7 @@ export class FullScreenPreview extends Component<IFullScreenPreviewProps, IFullS
     elixirChatWidget.on(IMAGE_PREVIEW_OPEN, (preview, gallery) => {
       this.setState({ preview, gallery, isVisible: true });
       this.updatePreviewDimensions(preview);
+      this.animateSlide();
     });
   }
 
@@ -57,45 +55,61 @@ export class FullScreenPreview extends Component<IFullScreenPreviewProps, IFullS
   }
 
   updatePreviewDimensions = (preview) => {
-    const { width, height, url } = preview;
-    if (preview && url && width && height) {
-      const displaySize = this.calculateFullScreenPreviewSize(width, height);
-      const marginTop = this.calculateFullScreenPreviewTopMargin(displaySize.height);
-      this.setState({ displaySize, marginTop });
-      this.animateSlide();
+    if (preview.previewType === 'image') {
+      this.setImageDimensions(preview);
+    }
+    else if (preview.previewType === 'video') {
+      this.setVideoDimensions(preview);
     }
   };
 
-  calculateFullScreenPreviewSize = (imageNativeWidth, imageNativeHeight) => {
-    const maxImageWidth = window.innerWidth - this.HORIZONTAL_PADDINGS; // window viewport width minus horizontal paddings
-    let width = imageNativeWidth;
-    let height = imageNativeHeight;
-    if (imageNativeWidth > maxImageWidth) {
-      const ratio = maxImageWidth / imageNativeWidth;
-      width = maxImageWidth;
-      height = Math.round(imageNativeHeight * ratio);
-    }
-    return { width, height };
+  setImageDimensions = (preview) => {
+    const { width, height } = preview;
+    const maxPreviewWidth = window.innerWidth - this.HORIZONTAL_PADDINGS;
+    const [ previewWidth, previewHeight ] = fitDimensionsIntoLimits(width, height, maxPreviewWidth, null);
+    const previewTopMargin = this.calculatePreviewTopMargin(previewHeight);
+    this.setState({
+      isLoading: false,
+      previewWidth,
+      previewHeight,
+      previewTopMargin,
+    });
   };
 
-  calculateFullScreenPreviewTopMargin = (imageDisplayHeight) => {
+  setVideoDimensions = (preview) => {
+    const { width, height } = preview;
+    const maxPreviewWidth = window.innerWidth - this.HORIZONTAL_PADDINGS;
+    const maxPreviewHeight = window.innerHeight - this.VERTICAL_PADDINGS;
+    const [ previewWidth, previewHeight ] = fitDimensionsIntoLimits(width, height, maxPreviewWidth, maxPreviewHeight);
+    const previewTopMargin = this.calculatePreviewTopMargin(previewHeight);
+    this.setState({
+      isLoading: false,
+      previewWidth,
+      previewHeight,
+      previewTopMargin,
+    }, () => {
+      this.video.current.focus();
+    });
+  };
+
+  calculatePreviewTopMargin = (previewHeight) => {
     const availableVerticalSpace = window.innerHeight - this.VERTICAL_PADDINGS;
-    if (availableVerticalSpace < imageDisplayHeight) {
+    if (availableVerticalSpace < previewHeight) {
       return 0;
     }
     else {
-      return (availableVerticalSpace - imageDisplayHeight) / 2;
+      return (availableVerticalSpace - previewHeight) / 2;
     }
   };
 
   onIframeBodyKeyup = (e) => {
-    if (e.which === 27 /* Esc */) {
+    if (e.key === 'Escape') {
       this.onClose();
     }
-    else if (e.which === 37 /* Arrow left */) {
+    else if (e.key === 'ArrowLeft') {
       this.onArrowNavigation(-1);
     }
-    else if (e.which === 39 /* Arrow right */) {
+    else if (e.key === 'ArrowRight') {
       this.onArrowNavigation(1);
     }
   };
@@ -137,8 +151,9 @@ export class FullScreenPreview extends Component<IFullScreenPreviewProps, IFullS
   render() {
     const {
       preview,
-      displaySize,
-      marginTop,
+      previewWidth,
+      previewHeight,
+      previewTopMargin,
       isSlideAnimation,
       isVisible,
     } = this.state;
@@ -154,20 +169,23 @@ export class FullScreenPreview extends Component<IFullScreenPreviewProps, IFullS
               'elixirchat-widget-full-screen-preview__img': true,
               'elixirchat-widget-full-screen-preview__img--animated': isSlideAnimation,
             })}
-              style={{ marginTop: marginTop }}
-              width={displaySize.width}
-              height={displaySize.height}
+              width={previewWidth}
+              height={previewHeight}
+              style={{ marginTop: previewTopMargin }}
               src={preview.url}
               alt={preview.name}/>
           )}
           {preview.url && preview.previewType === 'video' && (
-            <video className="elixirchat-widget-full-screen-preview__video"
+            <video  className={cn({
+              'elixirchat-widget-full-screen-preview__video': true,
+              'elixirchat-widget-full-screen-preview__video--animated': isSlideAnimation,
+            })}
               ref={this.video}
               controls={true}
               autoPlay={true}
-              // width={previewWidth}
-              // height={previewHeight}
-              // style={{ marginTop: previewTopMargin }}
+              width={previewWidth}
+              height={previewHeight}
+              style={{ marginTop: previewTopMargin }}
               src={preview.url}/>
           )}
         </div>

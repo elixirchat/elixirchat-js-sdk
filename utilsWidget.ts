@@ -1,4 +1,5 @@
 import assets from './widget/DefaultWidget/assets';
+import { _round } from './utilsCommon';
 
 export function inflect(locale: 'en-US' | 'ru-RU', number: number, endings: [string], hideNumber?: boolean): string {
   const getEnding = {
@@ -319,4 +320,14 @@ export function sanitizeHTML(html){
     .replace(/>/gm, '&gt;')
     .replace(/"/gm, '&quot;')
     .replace(/'/gm, '&apos;')
+}
+
+
+export function fitDimensionsIntoLimits(originalWidth, originalHeight, limitWidth, limitHeight){
+  limitWidth = limitWidth || Infinity;
+  limitHeight = limitHeight || Infinity;
+  const originalRatio = originalWidth / originalHeight;
+  const newWidth = Math.min(originalWidth, limitWidth, limitHeight * originalRatio);
+  const newHeight = newWidth / originalRatio;
+  return [_round(newWidth), _round(newHeight)];
 }
