@@ -67,9 +67,9 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
       document.addEventListener('dragover', this.cancelWidgetPopupDrag);
     });
     elixirChatWidget.on(TYPING_STATUS_SUBSCRIBE_SUCCESS, () => {
-      const textareaText = localStorage.getItem('elixirchat-typed-text') || '';
-      elixirChatWidget.dispatchTypedText(textareaText);
-      this.setState({ textareaText });
+      const savedTypedText = this.getLocallySavedTypedText();
+      elixirChatWidget.dispatchTypedText(savedTypedText.textareaText);
+      this.setState(savedTypedText);
     });
     elixirChatWidget.on(WIDGET_RENDERED, () => {
       if (elixirChatWidget.isWidgetPopupOpen) {
@@ -86,6 +86,7 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
 
     elixirChatWidget.on(REPLY_MESSAGE, messageId => {
       this.setState({ textareaResponseToMessageId: messageId });
+      this.updateLocallySavedTypedText({ textareaResponseToMessageId: messageId });
       this.onVerticalResize();
       this.focusTextarea();
     });
@@ -179,8 +180,28 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
     const { elixirChatWidget } = this.props;
     const textareaText = e.target.value;
     elixirChatWidget.dispatchTypedText(textareaText);
-    localStorage.setItem('elixirchat-typed-text', textareaText);
+    this.updateLocallySavedTypedText({ textareaText });
     this.setState({ textareaText });
+  };
+
+  getLocallySavedTypedText = () => {
+    let currentState = { textareaText: '', textareaResponseToMessageId: null };
+    try {
+      const { textareaText = '', textareaResponseToMessageId = null } = JSON.parse(
+        localStorage.getItem('elixirchat-typed-text')
+      );
+      currentState = { textareaText, textareaResponseToMessageId };
+    }
+    catch (e) {}
+    return currentState;
+  };
+
+  updateLocallySavedTypedText = (diff) => {
+    const updatedState = {
+      ...this.getLocallySavedTypedText(),
+      ...diff
+    };
+    localStorage.setItem('elixirchat-typed-text', JSON.stringify(updatedState));
   };
 
   onTextareaKeyDown = (e) => {
@@ -205,9 +226,8 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
   };
 
   onRemoveReplyTo = () => {
-    this.setState({
-      textareaResponseToMessageId: null,
-    });
+    this.setState({ textareaResponseToMessageId: null });
+    this.updateLocallySavedTypedText({ textareaResponseToMessageId: null });
     this.onVerticalResize();
     this.focusTextarea();
   };
@@ -313,7 +333,10 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
           this.setState({ isSubmittingMessage: false });
         });
       elixirChatWidget.dispatchTypedText(false);
-      localStorage.removeItem('elixirchat-typed-text');
+      this.updateLocallySavedTypedText({
+        textareaText: '',
+        textareaResponseToMessageId: null,
+      });
     }
   };
 
