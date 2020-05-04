@@ -38,3 +38,41 @@
     opacity: 0;
   }
 }
+
+.elixirchat-widget-full-screen-preview__nav {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: 50px;
+  transition: background-color 300ms;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $color-white;
+
+  &:hover {
+    background: rgba(0,0,0,.3);
+
+    .elixirchat-widget-full-screen-preview__nav-icon {
+      opacity: .8;
+    }
+  }
+
+  &--prev {
+    left: 0;
+    .elixirchat-widget-full-screen-preview__nav-icon {
+      transform: rotate(90deg);
+    }
+  }
+
+  &--next {
+    right: 0;
+    .elixirchat-widget-full-screen-preview__nav-icon {
+      transform: rotate(-90deg);
+    }
+  }
+}
+
+.elixirchat-widget-full-screen-preview__nav-icon {
+  opacity: .5;
+}

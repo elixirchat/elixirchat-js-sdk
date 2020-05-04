@@ -331,3 +331,14 @@ export function fitDimensionsIntoLimits(originalWidth, originalHeight, limitWidt
   const newHeight = newWidth / originalRatio;
   return [_round(newWidth), _round(newHeight)];
 }
+
+
+export function isWithinElement(target, container){
+  if (typeof container === 'string') {
+    return Boolean(target.closest('.' + container));
+  }
+  else if (container instanceof HTMLElement) {
+    return container.contains(target) || target === container;
+  }
+  return false;
+}

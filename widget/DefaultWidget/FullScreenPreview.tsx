@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import cn from 'classnames';
 import { ElixirChatWidget } from '../ElixirChatWidget';
 import { IMAGE_PREVIEW_CLOSE, IMAGE_PREVIEW_OPEN, WIDGET_IFRAME_READY } from '../ElixirChatWidgetEventTypes';
-import { fitDimensionsIntoLimits } from '../../utilsWidget';
+import { fitDimensionsIntoLimits, isWithinElement } from '../../utilsWidget';
 
 export interface IFullScreenPreviewProps {
   elixirChatWidget: ElixirChatWidget;
@@ -34,24 +34,27 @@ export class FullScreenPreview extends Component<IFullScreenPreviewProps, IFullS
   VERTICAL_PADDINGS = 80;
 
   video = React.createRef();
+  inner = React.createRef();
+  nav = React.createRef();
 
   componentDidMount() {
     const { elixirChatWidget } = this.props;
-
-    elixirChatWidget.on(WIDGET_IFRAME_READY, () => {
-      elixirChatWidget.widgetIFrameDocument.body.addEventListener('keyup', this.onIframeBodyKeyup);
-    });
 
     elixirChatWidget.on(IMAGE_PREVIEW_OPEN, (preview, gallery) => {
       this.setState({ preview, gallery, isVisible: true });
       this.updatePreviewDimensions(preview);
       this.animateSlide();
     });
+    elixirChatWidget.on(WIDGET_IFRAME_READY, () => {
+      elixirChatWidget.widgetIFrameDocument.body.addEventListener('keyup', this.onKeyNavigation);
+    });
+    document.body.addEventListener('keyup', this.onKeyNavigation);
   }
 
   componentWillUnmount() {
     const { elixirChatWidget } = this.props;
-    elixirChatWidget.widgetIFrameDocument.body.removeEventListener('keyup', this.onIframeBodyKeyup);
+    elixirChatWidget.widgetIFrameDocument.body.removeEventListener('keyup', this.onKeyNavigation);
+    document.body.removeEventListener('keyup', this.onKeyNavigation);
   }
 
   updatePreviewDimensions = (preview) => {
@@ -102,19 +105,21 @@ export class FullScreenPreview extends Component<IFullScreenPreviewProps, IFullS
     }
   };
 
-  onIframeBodyKeyup = (e) => {
+  onKeyNavigation = (e) => {
+    const { preview } = this.state;
+
     if (e.key === 'Escape') {
-      this.onClose();
+      this.closePreview();
     }
-    else if (e.key === 'ArrowLeft') {
-      this.onArrowNavigation(-1);
+    else if (e.key === 'ArrowLeft' && preview.previewType !== 'video') {
+      this.navigateToFollowingPreview(-1);
     }
-    else if (e.key === 'ArrowRight') {
-      this.onArrowNavigation(1);
+    else if (e.key === 'ArrowRight' && preview.previewType !== 'video') {
+      this.navigateToFollowingPreview(1);
     }
   };
 
-  onArrowNavigation = (delta) => {
+  navigateToFollowingPreview = (delta) => {
     const { isVisible, preview, gallery } = this.state;
 
     if (!isVisible) {
@@ -142,10 +147,18 @@ export class FullScreenPreview extends Component<IFullScreenPreviewProps, IFullS
     }, 200);
   };
 
-  onClose = () => {
+  closePreview = () => {
     const { elixirChatWidget } = this.props;
     elixirChatWidget.triggerEvent(IMAGE_PREVIEW_CLOSE);
     this.setState({ isVisible: false });
+  };
+
+  onContainerClick = (e) => {
+    const isWithinInner = isWithinElement(e.target, this.inner.current);
+    const isWithinNav = isWithinElement(e.target, this.nav.current);
+    if (!isWithinInner && !isWithinNav) {
+      this.closePreview();
+    }
   };
 
   render() {
@@ -162,8 +175,22 @@ export class FullScreenPreview extends Component<IFullScreenPreviewProps, IFullS
       <div className={cn({
         'elixirchat-widget-full-screen-preview': true,
         'elixirchat-widget-full-screen-preview--visible': isVisible,
-      })} onClick={this.onClose}>
-        <div className="elixirchat-widget-full-screen-preview__inner">
+      })} onClick={this.onContainerClick}>
+
+        <div ref={this.nav}>
+          <span
+            className="elixirchat-widget-full-screen-preview__nav elixirchat-widget-full-screen-preview__nav--prev"
+            onClick={() => this.navigateToFollowingPreview(-1)}>
+            <i className="elixirchat-widget-full-screen-preview__nav-icon icon-chevron-down"/>
+          </span>
+          <span
+            className="elixirchat-widget-full-screen-preview__nav elixirchat-widget-full-screen-preview__nav--next"
+            onClick={() => this.navigateToFollowingPreview(1)}>
+            <i className="elixirchat-widget-full-screen-preview__nav-icon icon-chevron-down"/>
+          </span>
+        </div>
+
+        <div className="elixirchat-widget-full-screen-preview__inner" ref={this.inner}>
           {preview.url && preview.previewType === 'image' && (
             <img className={cn({
               'elixirchat-widget-full-screen-preview__img': true,
@@ -173,7 +200,8 @@ export class FullScreenPreview extends Component<IFullScreenPreviewProps, IFullS
               height={previewHeight}
               style={{ marginTop: previewTopMargin }}
               src={preview.url}
-              alt={preview.name}/>
+              alt={preview.name}
+              onClick={this.closePreview}/>
           )}
           {preview.url && preview.previewType === 'video' && (
             <video  className={cn({
@@ -185,8 +213,8 @@ export class FullScreenPreview extends Component<IFullScreenPreviewProps, IFullS
               autoPlay={true}
               width={previewWidth}
               height={previewHeight}
-              style={{ marginTop: previewTopMargin }}
-              src={preview.url}/>
+              src={preview.url}
+              style={{ marginTop: previewTopMargin }}/>
           )}
         </div>
       </div>
