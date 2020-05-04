@@ -1,6 +1,8 @@
 @import "./variables";
 @import "./mixins";
 
+$mobile-max-size: 480px;
+
 .elixirchat-widget-button {
   font-family: $font-family-icons;
   position: fixed;
@@ -22,7 +24,7 @@
     background-color: darken($color-pink-dark, 6);
   }
 
-  @include elixir-media-query(0px, 480px) {
+  @include elixir-media-query(0px, $mobile-max-size) {
     right: 20px;
     bottom: 20px;
   }
@@ -109,7 +111,7 @@
     display: block;
   }
 
-  @include elixir-media-query(0px, 480px) {
+  @include elixir-media-query(0px, $mobile-max-size) {
     bottom: 0;
     right: 0;
     left: 0;

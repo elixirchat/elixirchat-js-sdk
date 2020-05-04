@@ -342,3 +342,8 @@ export function isWithinElement(target, container){
   }
   return false;
 }
+
+
+export function isMobileSizeScreen(){
+  return window.innerWidth < 480; // equals to $mobile-max-size from Widget.scss
+}

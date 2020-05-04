@@ -23,6 +23,7 @@ import {
   replaceMarkdownWithHTML,
   replaceLinksInText,
   sanitizeHTML,
+  isMobileSizeScreen,
 } from '../../utilsWidget';
 
 import { getScreenshotCompatibilityFallback } from '../../sdk/ScreenshotTaker';
@@ -82,7 +83,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
   scrollBlock: { current: HTMLElement } = React.createRef();
   scrollBlockInner: { current: HTMLElement } = React.createRef();
 
-  maxThumbnailSize: number = 256;
+  maxThumbnailSize: number = isMobileSizeScreen() ? 208 : 256;
   messageChunkSize: number = 20;
   messageRefs: object = {};
   messagesWithinCurrentViewport: object = {};
@@ -538,6 +539,23 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     return `mailto:${elixirChatWidget.supportEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
 
+  formatVideoDuration = (durationInSeconds) => {
+    const totalHours = Math.floor(durationInSeconds / 60 / 60);
+    const totalMinutes = Math.floor(durationInSeconds / 60);
+    const leftoverMinutes = totalMinutes - (totalHours * 60);
+    const leftoverSeconds = Math.round(durationInSeconds - (totalMinutes * 60));
+    const durationArr = [
+      leftoverMinutes.toString().padStart(2, '0'),
+      leftoverSeconds.toString().padStart(2, '0'),
+    ];
+    if (totalHours) {
+      durationArr.unshift(
+        totalHours.toString().padStart(2, '0')
+      )
+    }
+    return durationArr.join(':');
+  };
+
   render(): void {
     const { elixirChatWidget, className } = this.props;
     const {
@@ -675,8 +693,17 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                             href={preview.url}
                             target="_blank"
                             onClick={e => this.onPreviewClick(e, { ...preview, sender: message.sender })}>
+
                             {message.isSubmitting && (
                               <i className="elixirchat-chat-previews__spinner icon-spinner-xs"/>
+                            )}
+                            {preview.previewType === 'video' && (
+                              <Fragment>
+                                <span className="elixirchat-chat-previews__video-play">&#x25B6;</span>
+                                <span className="elixirchat-chat-previews__video-label">
+                                  {this.formatVideoDuration(preview.duration)}
+                                </span>
+                              </Fragment>
                             )}
                             <img className={cn({
                               'elixirchat-chat-previews__img': true,

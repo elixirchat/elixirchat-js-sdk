@@ -10,6 +10,7 @@ export const fragmentFile: string = gql`
     height
     width
     contentType
+    duration
     thumbnails {
       id
       url
@@ -57,6 +58,7 @@ export function serializeFile(fileData: any, elixirChat: ElixirChat): IFile {
     bytesSize: file.bytesSize || 0,
     height: file.height || 0,
     width: file.width || 0,
+    duration: file.duration || 0,
     contentType: file.contentType || '',
     isScreenshot: file.isScreenshot || false,
     thumbnails,

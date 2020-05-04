@@ -53,21 +53,6 @@ export function randomDigitStringId(idLength: number): string {
 }
 
 
-// Lodash-like _.merge
-export function _merge(object1: object, object2: object): object {
-  const mergedObject = {};
-  for (let a in object1) {
-    mergedObject[a] = object1[a];
-  }
-  for (let b in object2) {
-    if (object2[b]) {
-      mergedObject[b] = object2[b];
-    }
-  }
-  return mergedObject;
-}
-
-
 // Lodash-like _.last
 export function _last(arr: Array): any {
   return arr[arr.length - 1];

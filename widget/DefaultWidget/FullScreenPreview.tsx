@@ -30,8 +30,8 @@ export class FullScreenPreview extends Component<IFullScreenPreviewProps, IFullS
     isSlideAnimation: false,
   };
 
-  HORIZONTAL_PADDINGS = 100;
-  VERTICAL_PADDINGS = 80;
+  horizontalPaddings: number = 100;
+  verticalPaddings: number = 80;
 
   video = React.createRef();
   inner = React.createRef();
@@ -68,7 +68,7 @@ export class FullScreenPreview extends Component<IFullScreenPreviewProps, IFullS
 
   setImageDimensions = (preview) => {
     const { width, height } = preview;
-    const maxPreviewWidth = window.innerWidth - this.HORIZONTAL_PADDINGS;
+    const maxPreviewWidth = window.innerWidth - this.horizontalPaddings;
     const [ previewWidth, previewHeight ] = fitDimensionsIntoLimits(width, height, maxPreviewWidth, null);
     const previewTopMargin = this.calculatePreviewTopMargin(previewHeight);
     this.setState({
@@ -81,8 +81,8 @@ export class FullScreenPreview extends Component<IFullScreenPreviewProps, IFullS
 
   setVideoDimensions = (preview) => {
     const { width, height } = preview;
-    const maxPreviewWidth = window.innerWidth - this.HORIZONTAL_PADDINGS;
-    const maxPreviewHeight = window.innerHeight - this.VERTICAL_PADDINGS;
+    const maxPreviewWidth = window.innerWidth - this.horizontalPaddings;
+    const maxPreviewHeight = window.innerHeight - this.verticalPaddings;
     const [ previewWidth, previewHeight ] = fitDimensionsIntoLimits(width, height, maxPreviewWidth, maxPreviewHeight);
     const previewTopMargin = this.calculatePreviewTopMargin(previewHeight);
     this.setState({
@@ -96,7 +96,7 @@ export class FullScreenPreview extends Component<IFullScreenPreviewProps, IFullS
   };
 
   calculatePreviewTopMargin = (previewHeight) => {
-    const availableVerticalSpace = window.innerHeight - this.VERTICAL_PADDINGS;
+    const availableVerticalSpace = window.innerHeight - this.verticalPaddings;
     if (availableVerticalSpace < previewHeight) {
       return 0;
     }
