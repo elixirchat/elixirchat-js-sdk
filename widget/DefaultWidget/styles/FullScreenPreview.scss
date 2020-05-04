@@ -22,6 +22,7 @@
 
 .elixirchat-widget-full-screen-preview__inner {
   display: inline-block;
+  margin-bottom: 40px;
 }
 
 .elixirchat-widget-full-screen-preview__img,
@@ -29,7 +30,6 @@
   position: relative;
   z-index: 2;
   box-shadow: 0 4px 8px rgba($color-black, .15);
-  margin-bottom: 40px;
   transition: transform 200ms;
   outline: none;
 

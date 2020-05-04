@@ -190,7 +190,9 @@ export class FullScreenPreview extends Component<IFullScreenPreviewProps, IFullS
           </span>
         </div>
 
-        <div className="elixirchat-widget-full-screen-preview__inner" ref={this.inner}>
+        <div className="elixirchat-widget-full-screen-preview__inner"
+          ref={this.inner}
+          style={{ marginTop: previewTopMargin }}>
           {preview.url && preview.previewType === 'image' && (
             <img className={cn({
               'elixirchat-widget-full-screen-preview__img': true,
@@ -198,7 +200,6 @@ export class FullScreenPreview extends Component<IFullScreenPreviewProps, IFullS
             })}
               width={previewWidth}
               height={previewHeight}
-              style={{ marginTop: previewTopMargin }}
               src={preview.url}
               alt={preview.name}
               onClick={this.closePreview}/>
@@ -213,8 +214,7 @@ export class FullScreenPreview extends Component<IFullScreenPreviewProps, IFullS
               autoPlay={true}
               width={previewWidth}
               height={previewHeight}
-              src={preview.url}
-              style={{ marginTop: previewTopMargin }}/>
+              src={preview.url}/>
           )}
         </div>
       </div>
