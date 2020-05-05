@@ -363,25 +363,7 @@ function randomDigitStringId(idLength) {
   return (Array(idLength).join('0') + Math.random()).slice(-idLength);
 }
 
-exports.randomDigitStringId = randomDigitStringId; // Lodash-like _.merge
-
-function _merge(object1, object2) {
-  var mergedObject = {};
-
-  for (var a in object1) {
-    mergedObject[a] = object1[a];
-  }
-
-  for (var b in object2) {
-    if (object2[b]) {
-      mergedObject[b] = object2[b];
-    }
-  }
-
-  return mergedObject;
-}
-
-exports._merge = _merge; // Lodash-like _.last
+exports.randomDigitStringId = randomDigitStringId; // Lodash-like _.last
 
 function _last(arr) {
   return arr[arr.length - 1];
@@ -464,6 +446,13 @@ function isWebImage(mimeType) {
 }
 
 exports.isWebImage = isWebImage;
+
+function isVideoConvertibleIntoMp4(mimeType) {
+  var supportedTypes = ['video/mp4', 'video/x-msvideo', 'video/vnd.avi', 'video/avi', 'video/msvideo', 'video/quicktime', 'video/x-ms-wmv', 'video/x-ms-asf', 'video/webm', 'video/x-matroska', 'video/x-flv', 'video/dvd', 'video/mpeg', 'video/x-ms-vo', 'video/ogg', 'video/mp2t', 'video/x-m4v'];
+  return supportedTypes.includes(mimeType.toLowerCase().trim());
+}
+
+exports.isVideoConvertibleIntoMp4 = isVideoConvertibleIntoMp4;
 
 function trimEachRow(text) {
   return text.split(/\n/).map(function (row) {
@@ -6805,7 +6794,7 @@ exports.OperatorOnlineStatusSubscription = OperatorOnlineStatusSubscription;
 "use strict";
 
 function _templateObject() {
-  var data = _taggedTemplateLiteral(["\n  fragment fragmentFile on File {\n    id\n    url\n    name\n    bytesSize\n    height\n    width\n    contentType\n    thumbnails {\n      id\n      url\n      name\n      bytesSize\n      height\n      width\n      contentType\n      thumbType\n    }\n  }\n"]);
+  var data = _taggedTemplateLiteral(["\n  fragment fragmentFile on File {\n    id\n    url\n    name\n    bytesSize\n    height\n    width\n    contentType\n    duration\n    thumbnails {\n      id\n      url\n      name\n      bytesSize\n      height\n      width\n      contentType\n      thumbType\n    }\n  }\n"]);
 
   _templateObject = function _templateObject() {
     return data;
@@ -6830,17 +6819,7 @@ function serializeFile(fileData, elixirChat) {
 
   if (file.thumbnails && file.thumbnails.length) {
     thumbnails = file.thumbnails.map(function (thumbnail) {
-      var serializedThumbnail = serializeFile(thumbnail, elixirChat);
-      return {
-        id: serializedThumbnail.id,
-        url: serializedThumbnail.url,
-        name: serializedThumbnail.name,
-        bytesSize: serializedThumbnail.bytesSize,
-        width: serializedThumbnail.width,
-        height: serializedThumbnail.height,
-        contentType: serializedThumbnail.contentType,
-        thumbType: thumbnail.thumbType || null
-      };
+      return serializeFile(thumbnail, elixirChat);
     });
   }
 
@@ -6858,7 +6837,8 @@ function serializeFile(fileData, elixirChat) {
     bytesSize: file.bytesSize || 0,
     height: file.height || 0,
     width: file.width || 0,
-    contentType: file.contentType || null,
+    duration: file.duration || 0,
+    contentType: file.contentType || '',
     isScreenshot: file.isScreenshot || false,
     thumbnails: thumbnails
   };
@@ -8061,4 +8041,4 @@ var ElixirChat_1 = require("./ElixirChat");
 
 exports.default = ElixirChat_1.ElixirChat;
 },{"./ElixirChat":"Pqo8"}]},{},["QCba"], null)
-  ;(function(){ if (typeof ElixirChat !== 'undefined') { ElixirChat.prototype.version = '3.1.2'; } }())
+  ;(function(){ if (typeof ElixirChat !== 'undefined') { ElixirChat.prototype.version = '4.0.0'; } }())
