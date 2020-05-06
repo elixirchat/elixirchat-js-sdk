@@ -40,6 +40,11 @@ export function inflectDayJSWeekDays(locale: 'en-US' | 'ru-RU', formattedDateStr
 }
 
 
+export function getTimezoneNameByDate(locale: 'en-US' | 'ru-RU', date){
+
+}
+
+
 /**
  * Prevents browser from muting audio autoplay
  * @see https://medium.com/@curtisrobinson/how-to-auto-play-audio-in-safari-with-javascript-21d50b0a2765

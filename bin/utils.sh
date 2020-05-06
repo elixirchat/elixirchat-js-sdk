@@ -77,7 +77,7 @@ function get_env_elixirchat_dev_version() {
   echo "$dev_version"
 }
 
-function change_variable_in_env_file() {
+function change_variable_in_config() {
   var_name=$1
   new_value=$2
   has_variable_in_env=$(cat .env | grep "$var_name")

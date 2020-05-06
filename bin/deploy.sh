@@ -42,7 +42,7 @@ if [ -n "$github_branch" ] && [ "$github_branch" != "undefined" ]; then
 
   next_full_version="$version.$github_branch@$next_dev_version"
 
-  change_variable_in_env_file "ELIXIRCHAT_VERSION" "$next_full_version"
+  change_variable_in_config "ELIXIRCHAT_VERSION" "$next_full_version" .env
   git add .env
   git commit -am "Dev release $next_full_version"
   git push -f origin "$github_branch"

@@ -556,6 +556,74 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     return durationArr.join(':');
   };
 
+  generateNobodyWorkingMessage = (systemMessage) => {
+    let nobodyWorkingMessage = `К сожалению, все операторы поддержки сейчас оффлайн`;
+
+    if (systemMessage.systemWorkHoursStartAt) {
+      const date = new Date(systemMessage.systemWorkHoursStartAt);
+      const dateString = dayjs(date)
+        .calendar(null, {
+          nextWeek: '[в] dddd [в] H:mm',
+          nextDay: '[завтра в] H:mm',
+          sameDay: '[сегодня в] H:mm',
+          lastDay: 'D MMMM [в] H:mm',
+          lastWeek: 'D MMMM [в] H:mm',
+          sameElse: 'D MMMM [в] H:mm',
+        })
+        .replace('в вторник', 'во вторник')
+        .replace('в среда', 'в среду')
+        .replace('в пятница', 'в пятницу')
+        .replace('в суббота', 'в субботу')
+        .replace('в вторник', 'во вторник');
+
+      const timezoneDict = {
+        Moscow: 'по Москве',
+        Samara: 'по Самаре',
+        Yekaterinburg: 'по Екатеринбургу',
+        Novosibirsk: 'по Новосибирску',
+        Omsk: 'по Омску',
+        Krasnoyarsk: 'по Красноярску',
+        Irkutsk: 'по Иркутску',
+        Yakutsk: 'по Якутску',
+        Vladivostok: 'по Владивостоку',
+        Sakhalin: 'по Южно-Сахалинску',
+        Magadan: 'по Магадану',
+        Kamchat: 'по Петропавловску-Камчатскому',
+        Anadyr: 'по Анадырю',
+        Tajikistan: 'по Душанбе',
+        Turkmenistan: 'по Ашхабаду',
+        Uzbekistan: 'по Ташкенту',
+        Kyrgyzstan: 'по Бишкеку',
+        Azerbaijan: 'по Баку',
+        Armenia: 'по Еревану',
+        'East Kazakhstan': 'по Алматы',
+        'West Kazakhstan': 'по западноказахстанскому времени',
+        'Eastern Europe': 'по восточноевропейскому времени'
+      };
+      const timezoneName = date.toTimeString().replace(/.*\((.+)\)$/, '$1');
+      let timezoneNameHumanized = null;
+      for (let timezoneKeyword in timezoneDict) {
+        if (timezoneName.toLowerCase().includes(timezoneKeyword.toLowerCase())) {
+          timezoneNameHumanized = timezoneDict[timezoneKeyword];
+          break;
+        }
+      }
+      const timezoneOffset = date.getTimezoneOffset() / -60;
+      const timezoneSign = timezoneOffset < 0 ? '-' : '+';
+      const timezoneOffsetHours = Math.abs(Math.floor(timezoneOffset));
+      const timezoneOffsetMinutes = Math.abs(timezoneOffset % 1 * 60);
+      const timezoneOffsetHumanized = 'GMT'
+        + timezoneSign
+        + timezoneOffsetHours
+        + (timezoneOffsetMinutes ? ':' + timezoneOffsetMinutes : '');
+
+      nobodyWorkingMessage = nobodyWorkingMessage
+        + `, но будут снова в сети ${dateString}`
+        + ` (${timezoneNameHumanized ? timezoneNameHumanized + ', ' : ''}${timezoneOffsetHumanized})`;
+    }
+    return nobodyWorkingMessage;
+  };
+
   render(): void {
     const { elixirChatWidget, className } = this.props;
     const {
@@ -787,18 +855,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                     {message.systemType === 'NobodyWorkingMessage' && (
                       <Fragment>
                         <div className="elixirchat-chat-messages__text">
-                          К сожалению, все операторы поддержки сейчас оффлайн
-                          {message.systemWorkHoursStartAt &&
-                            ', но будут снова в сети ' +
-                            inflectDayJSWeekDays('ru-RU', dayjs(message.systemWorkHoursStartAt).calendar(null, {
-                              nextWeek: '[в] dddd [в] H:mm',
-                              nextDay: '[завтра в] H:mm',
-                              sameDay: '[сегодня в] H:mm',
-                              lastDay: 'D MMMM [в] H:mm',
-                              lastWeek: 'D MMMM [в] H:mm',
-                              sameElse: 'D MMMM [в] H:mm',
-                            })
-                          )}.
+                          {this.generateNobodyWorkingMessage(message)}
                         </div>
                       </Fragment>
                     )}
@@ -821,7 +878,6 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
             </Fragment>
           ))}
 
-
           <div className={cn({
             'elixirchat-chat-typing': true,
             'elixirchat-chat-typing--visible': Boolean(currentlyTypingUsers.length),
@@ -835,7 +891,6 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
               ])}
             </Fragment>
           </div>
-
 
         </div>
       </div>

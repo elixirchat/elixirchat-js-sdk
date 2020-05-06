@@ -19,7 +19,7 @@ if [ ! -e "$schema_path" ]; then
   exit 1
 fi
 
-change_variable_in_env_file "ABSOLUTE_BACKEND_PATH" "$absolute_backend_path"
+change_variable_in_config "ABSOLUTE_BACKEND_PATH" "$absolute_backend_path", .env
 ln "$schema_path" "$schema_file_name"
 
 print_success "\nSuccessfully linked with backend directory"

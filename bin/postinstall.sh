@@ -6,13 +6,14 @@
 
 source bin/utils.sh
 
-function generate_default_env() {
-  if [ ! -e ".env" ]; then
-    touch .env
+function generate_default_bin_config() {
+  if [ ! -e ".bin" ]; then
+    touch .bin
   fi
-  change_variable_in_env_file "ELIXIRCHAT_VERSION" $(node -p "require('./package.json').version")
-  change_variable_in_env_file "GITHUB_REPO_OWNER" "elixirchat"
-  change_variable_in_env_file "GITHUB_REPO_NAME" "elixirchat-js-sdk"
+  change_variable_in_config "GITHUB_REPO_OWNER" "elixirchat" .bin
+  change_variable_in_config "GITHUB_REPO_NAME" "elixirchat-js-sdk" .bin
+  change_variable_in_config "GITHUB_REPO_NAME" "elixirchat-js-sdk" .bin
+  change_variable_in_config "GITHUB_REPO_NAME" "elixirchat-js-sdk" .bin
 }
 
 sdk_js_contents="""
@@ -34,5 +35,5 @@ if [[ $script_dir =~ node_modules/elixirchat-js-sdk ]];
     parcel build widget/index.ts --out-dir build --out-file default-widget.min.js --no-source-maps
   else
     print_success "\nelixirchat-js-sdk/bin/postinstall.sh script_dir: $script_dir\nelixirchat-js-sdk is NOT being installed in ANOTHER project. Skipping rebuilding default-widget.js...\n\n"
-    generate_default_env
+    generate_default_bin_config
 fi
