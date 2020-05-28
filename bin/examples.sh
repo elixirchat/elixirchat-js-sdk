@@ -1,51 +1,50 @@
 #!/usr/bin/env bash
 
 # Usage:
-# npm run examples                      # Browse examples working with local server (localhost:4000)
-# npm run examples --dev-server=true    # Browse examples working with dev-server (dev-admin.elixir.chat/api)
-# npm run examples --open=true          # Open examples in the browser automatically
+# npm run examples          # Browse examples working with dev-server (dev-admin.elixir.chat/api)
+# npm run examples --local  # Browse examples working with local server (localhost:4000)
+# npm run examples --open   # Open examples in the browser automatically
 
 source bin/utils.sh
 
-export API_URL="http:\/\/localhost:4000"
-export SOCKET_URL="ws:\/\/localhost:4000\/socket"
-export BACKEND_STATIC_URL="http:\/\/localhost:4000"
-
-export is_dev_server=$(npm config get dev-server)
+export is_local_server=$(npm config get local)
 export should_open_in_browser=$(npm config get open)
 
-replace_env_variables () {
+function replace_api_urls_with_local_server () {
+  API_URL="http:\/\/localhost:4000"
+  SOCKET_URL="ws:\/\/localhost:4000\/socket"
+
   sed -i '' -E -e "s/apiUrl: '[^']+'/apiUrl: '$API_URL'/" "$1"
   sed -i '' -E -e "s/socketUrl: '[^']+'/socketUrl: '$SOCKET_URL'/" "$1"
 }
 
-update_examples_files () {
+function update_examples_files () {
   mkdir -p dist/build/examples
 
-  cp -rf build/sdk.min.js dist/build/sdk.min.js
-  cp -rf build/default-widget.min.js dist/build/default-widget.min.js
+  cp -rf build/sdk.min.js                   dist/build/sdk.min.js
+  cp -rf build/default-widget.min.js        dist/build/default-widget.min.js
 
-  cp -rf build/examples/sdk.html dist/build/examples/sdk.html
-  cp -rf build/examples/widget.html dist/build/examples/widget.html
+  cp -rf build/examples/sdk.html            dist/build/examples/sdk.html
+  cp -rf build/examples/widget.html         dist/build/examples/widget.html
   cp -rf build/examples/widget-private.html dist/build/examples/widget-private.html
 
-  if [ "$is_dev_server" != "undefined" ];
+  if [ "$is_local_server" == "true" ];
     then
-      print_success "\nRunning SDK with DEV-SERVER (dev-admin.elixir.chat/api)\n\n"
-    else
       print_success "\nRunning SDK examples with LOCAL SERVER (localhost:4000)\n\n"
-      replace_env_variables "dist/build/examples/sdk.html"
-      replace_env_variables "dist/build/examples/widget.html"
-      replace_env_variables "dist/build/examples/widget-private.html"
+      replace_api_urls_with_local_server "dist/build/examples/sdk.html"
+      replace_api_urls_with_local_server "dist/build/examples/widget.html"
+      replace_api_urls_with_local_server "dist/build/examples/widget-private.html"
+    else
+      print_success "\nRunning SDK with DEV-SERVER (dev-admin.elixir.chat/api)\n\n"
   fi
 }
 
 export -f update_examples_files
-export -f replace_env_variables
+export -f replace_api_urls_with_local_server
 
 update_examples_files
 
-if [ "$should_open_in_browser" != "undefined" ];
+if [ "$should_open_in_browser" == "true" ];
   then
     concurrently "watch update_examples_files build" \
     "http-server dist/build -p 8002" \

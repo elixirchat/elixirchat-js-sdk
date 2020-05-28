@@ -9319,6 +9319,10 @@ function inflectDayJSWeekDays(locale, formattedDateString) {
 }
 
 exports.inflectDayJSWeekDays = inflectDayJSWeekDays;
+
+function getTimezoneNameByDate(locale, date) {}
+
+exports.getTimezoneNameByDate = getTimezoneNameByDate;
 /**
  * Prevents browser from muting audio autoplay
  * @see https://medium.com/@curtisrobinson/how-to-auto-play-audio-in-safari-with-javascript-21d50b0a2765
@@ -10409,6 +10413,64 @@ function (_react_1$Component) {
       return durationArr.join(':');
     };
 
+    _this.generateNobodyWorkingMessage = function (systemMessage) {
+      var nobodyWorkingMessage = "\u041A \u0441\u043E\u0436\u0430\u043B\u0435\u043D\u0438\u044E, \u0432\u0441\u0435 \u043E\u043F\u0435\u0440\u0430\u0442\u043E\u0440\u044B \u043F\u043E\u0434\u0434\u0435\u0440\u0436\u043A\u0438 \u0441\u0435\u0439\u0447\u0430\u0441 \u043E\u0444\u0444\u043B\u0430\u0439\u043D";
+
+      if (systemMessage.systemWorkHoursStartAt) {
+        var date = new Date(systemMessage.systemWorkHoursStartAt);
+        var dateString = dayjs_1.default(date).calendar(null, {
+          nextWeek: '[в] dddd [в] H:mm',
+          nextDay: '[завтра в] H:mm',
+          sameDay: '[сегодня в] H:mm',
+          lastDay: 'D MMMM [в] H:mm',
+          lastWeek: 'D MMMM [в] H:mm',
+          sameElse: 'D MMMM [в] H:mm'
+        }).replace('в вторник', 'во вторник').replace('в среда', 'в среду').replace('в пятница', 'в пятницу').replace('в суббота', 'в субботу').replace('в вторник', 'во вторник');
+        var timezoneDict = {
+          Moscow: 'по Москве',
+          Samara: 'по Самаре',
+          Yekaterinburg: 'по Екатеринбургу',
+          Novosibirsk: 'по Новосибирску',
+          Omsk: 'по Омску',
+          Krasnoyarsk: 'по Красноярску',
+          Irkutsk: 'по Иркутску',
+          Yakutsk: 'по Якутску',
+          Vladivostok: 'по Владивостоку',
+          Sakhalin: 'по Южно-Сахалинску',
+          Magadan: 'по Магадану',
+          Kamchat: 'по Петропавловску-Камчатскому',
+          Anadyr: 'по Анадырю',
+          Tajikistan: 'по Душанбе',
+          Turkmenistan: 'по Ашхабаду',
+          Uzbekistan: 'по Ташкенту',
+          Kyrgyzstan: 'по Бишкеку',
+          Azerbaijan: 'по Баку',
+          Armenia: 'по Еревану',
+          'East Kazakhstan': 'по Алматы',
+          'West Kazakhstan': 'по западноказахстанскому времени',
+          'Eastern Europe': 'по восточноевропейскому времени'
+        };
+        var timezoneName = date.toTimeString().replace(/.*\((.+)\)$/, '$1');
+        var timezoneNameHumanized = null;
+
+        for (var timezoneKeyword in timezoneDict) {
+          if (timezoneName.toLowerCase().includes(timezoneKeyword.toLowerCase())) {
+            timezoneNameHumanized = timezoneDict[timezoneKeyword];
+            break;
+          }
+        }
+
+        var timezoneOffset = date.getTimezoneOffset() / -60;
+        var timezoneSign = timezoneOffset < 0 ? '-' : '+';
+        var timezoneOffsetHours = Math.abs(Math.floor(timezoneOffset));
+        var timezoneOffsetMinutes = Math.abs(timezoneOffset % 1 * 60);
+        var timezoneOffsetHumanized = 'GMT' + timezoneSign + timezoneOffsetHours + (timezoneOffsetMinutes ? ':' + timezoneOffsetMinutes : '');
+        nobodyWorkingMessage = nobodyWorkingMessage + ", \u043D\u043E \u0431\u0443\u0434\u0443\u0442 \u0441\u043D\u043E\u0432\u0430 \u0432 \u0441\u0435\u0442\u0438 ".concat(dateString) + " (".concat(timezoneNameHumanized ? timezoneNameHumanized + ', ' : '').concat(timezoneOffsetHumanized, ")");
+      }
+
+      return nobodyWorkingMessage;
+    };
+
     return _this;
   }
 
@@ -10669,14 +10731,7 @@ function (_react_1$Component) {
           onClick: _this3.onTakeScreenshotClick
         }, "\u0421\u0434\u0435\u043B\u0430\u0442\u044C \u0441\u043A\u0440\u0438\u043D\u0448\u043E\u0442")), message.systemType === 'NobodyWorkingMessage' && react_1.default.createElement(react_1.Fragment, null, react_1.default.createElement("div", {
           className: "elixirchat-chat-messages__text"
-        }, "\u041A \u0441\u043E\u0436\u0430\u043B\u0435\u043D\u0438\u044E, \u0432\u0441\u0435 \u043E\u043F\u0435\u0440\u0430\u0442\u043E\u0440\u044B \u043F\u043E\u0434\u0434\u0435\u0440\u0436\u043A\u0438 \u0441\u0435\u0439\u0447\u0430\u0441 \u043E\u0444\u0444\u043B\u0430\u0439\u043D", message.systemWorkHoursStartAt && ', но будут снова в сети ' + utilsWidget_1.inflectDayJSWeekDays('ru-RU', dayjs_1.default(message.systemWorkHoursStartAt).calendar(null, {
-          nextWeek: '[в] dddd [в] H:mm',
-          nextDay: '[завтра в] H:mm',
-          sameDay: '[сегодня в] H:mm',
-          lastDay: 'D MMMM [в] H:mm',
-          lastWeek: 'D MMMM [в] H:mm',
-          sameElse: 'D MMMM [в] H:mm'
-        })), ".")), message.systemType === 'NewClientPlaceholderMessage' && react_1.default.createElement(react_1.Fragment, null, react_1.default.createElement("div", {
+        }, _this3.generateNobodyWorkingMessage(message))), message.systemType === 'NewClientPlaceholderMessage' && react_1.default.createElement(react_1.Fragment, null, react_1.default.createElement("div", {
           className: "elixirchat-chat-messages__text"
         }, "\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439\u0442\u0435! \u041A\u0430\u043A \u043C\u044B \u043C\u043E\u0436\u0435\u043C \u0432\u0430\u043C \u043F\u043E\u043C\u043E\u0447\u044C?"))), react_1.default.createElement("div", {
           className: "elixirchat-chat-messages__bottom"
@@ -11959,7 +12014,7 @@ function (_react_1$Component) {
       }, widgetTitle && react_1.default.createElement(react_1.Fragment, null, areAnyOperatorsOnline && react_1.default.createElement("i", {
         className: "elixirchat-chat-header__indicator"
       }), react_1.default.createElement("span", {
-        title: 'Версия ' + elixirChatWidget.version
+        title: 'Версия ' + "4.0.0"
       }, widgetTitle)), react_1.default.createElement("button", {
         className: "elixirchat-chat-header__mute",
         onClick: elixirChatWidget.toggleMute,

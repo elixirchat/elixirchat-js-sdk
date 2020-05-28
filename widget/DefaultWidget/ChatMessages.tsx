@@ -624,7 +624,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     return nobodyWorkingMessage;
   };
 
-  render(): void {
+  render() {
     const { elixirChatWidget, className } = this.props;
     const {
       processedMessages,

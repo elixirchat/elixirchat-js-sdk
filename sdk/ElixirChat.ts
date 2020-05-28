@@ -44,6 +44,9 @@ export interface IElixirChatConfig {
 }
 
 export class ElixirChat {
+
+  public version: string = process.env.ELIXIRCHAT_VERSION;
+
   public apiUrl: string;
   public socketUrl: string;
   public companyId: string;

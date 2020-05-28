@@ -7617,6 +7617,7 @@ function () {
 
     _classCallCheck(this, ElixirChat);
 
+    this.version2 = "4.0.0";
     this.isInitialized = false;
     this.widgetMustInitiallyOpen = false;
     this.widgetTitle = '';
@@ -8041,4 +8042,3 @@ var ElixirChat_1 = require("./ElixirChat");
 
 exports.default = ElixirChat_1.ElixirChat;
 },{"./ElixirChat":"Pqo8"}]},{},["QCba"], null)
-  ;(function(){ if (typeof ElixirChat !== 'undefined') { ElixirChat.prototype.version = '4.0.0'; } }())
