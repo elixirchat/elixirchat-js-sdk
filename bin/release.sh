@@ -58,7 +58,7 @@ if [ -n "$release_already_exists" ];
         if [[ ! "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]; then
           exit 0
         fi
-        npm run deploy --release=v"$package_json_version"
+        npm run deploy release v"$package_json_version"
 
       else
         print_error "\nUnable to create a release v$package_json_version. Github responded with:\n$response\n"

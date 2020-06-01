@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 # Usage:
-# npm run deploy --branch=my-feature
-# npm run deploy --release=v1.0.0
+# npm run deploy branch my-feature
+# npm run deploy release v1.0.0
 
 source bin/utils.sh
 
@@ -11,14 +11,22 @@ if is_backend_path_unset || is_github_data_unset; then
 fi
 
 source .env-bin
-github_release_id=$(npm config get release)
-github_branch=$(npm config get branch)
+
+if [[ $1 = "branch" ]]; then
+  github_branch=$2
+fi
+
+if [[ $1 = "release" ]]; then
+  github_release_id=$2
+fi
+
+
 ansible_dir=$ABSOLUTE_BACKEND_PATH/deploy/ansible/inventory/development
 ansible_config=$ABSOLUTE_BACKEND_PATH/deploy/ansible/playbooks/services-widget.yml
 
 
 # DEPLOYING BRANCH
-if [ -n "$github_branch" ] && [ "$github_branch" != "undefined" ]; then
+if [ -n "$github_branch" ]; then
   if has_uncommited_changes; then
     print_error "\nCan't deploy branch to http://demos.elixir.chat while there are uncommited changes.\nCommit and push your changes and then try again.\n\n\n"
     exit 1
@@ -54,7 +62,7 @@ fi
 
 
 # DEPLOYING GITHUB RELEASE
-if [ -n "$github_release_id" ] && [ "$github_release_id" != "undefined" ]; then
+if [ -n "$github_release_id" ]; then
   github_release_exists=$(
     curl -u "$GITHUB_USER":"$GITHUB_TOKEN" \
       "https://api.github.com/repos/$GITHUB_REPO_OWNER/$GITHUB_REPO_NAME/releases" | grep '"tag_name": "'"$github_release_id"'"'
@@ -70,8 +78,8 @@ fi
 
 
 print_error "\nEither 'release' or 'branch' option is required, e.g.
-> npm run deploy --branch=my-feature
-> npm run deploy --release=v1.0.0
+> npm run deploy branch my-feature
+> npm run deploy release v1.0.0
 
 Also see the list of available releases at https://github.com/$GITHUB_REPO_OWNER/$GITHUB_REPO_NAME/releases
 or create a new release by running 'npm run release'\n\n\n"

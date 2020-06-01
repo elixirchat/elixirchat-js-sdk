@@ -28,7 +28,7 @@ next_package_json_version="${package_json_version_arr[0]}.${package_json_version
 change_variable_in_dotenv_file "ELIXIRCHAT_VERSION" "$next_package_json_version" .env
 git add .env
 
-./bin/build.sh $next_package_json_version
+npm run build $next_package_json_version
 git add build/default-widget.js
 git add build/default-widget.min.js
 git add build/sdk.js
