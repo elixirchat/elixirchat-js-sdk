@@ -7688,7 +7688,7 @@ function () {
 
     _classCallCheck(this, ElixirChat);
 
-    this.version = "4.0.0.dev@1";
+    this.version = "4.0.0.dev@2";
     this.isInitialized = false;
     this.widgetMustInitiallyOpen = false;
     this.widgetTitle = '';
