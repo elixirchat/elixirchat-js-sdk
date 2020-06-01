@@ -38,7 +38,7 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
     });
   }
 
-  render(): void {
+  render() {
     const { elixirChatWidget, className } = this.props;
     const {
       widgetTitle,

@@ -49,7 +49,6 @@ import {
 
 export interface IDefaultWidgetMessagesProps {
   elixirChatWidget: ElixirChatWidget;
-  messages: Array<any>;
 }
 
 export interface IDefaultWidgetMessagesState {

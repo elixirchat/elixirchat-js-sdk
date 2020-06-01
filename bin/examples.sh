@@ -29,7 +29,7 @@ function update_examples_files () {
   cp -rf build/examples/widget.html         dist/build/examples/widget.html
   cp -rf build/examples/widget-private.html dist/build/examples/widget-private.html
 
-  if [ "$is_local_server" == "true" ];
+  if [ -n "$is_local_server" ];
     then
       print_success "\nRunning SDK examples with LOCAL SERVER (localhost:4000)\n\n"
       replace_api_urls_with_local_server "dist/build/examples/sdk.html"
@@ -45,7 +45,7 @@ export -f replace_api_urls_with_local_server
 
 update_examples_files
 
-if [ "$should_open_in_browser" == "true" ];
+if [ -n "$should_open_in_browser" ];
   then
     concurrently "watch update_examples_files build" \
     "http-server dist/build -p 8002" \

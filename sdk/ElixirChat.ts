@@ -311,12 +311,13 @@ export class ElixirChat {
         if (joinRoom) {
           this.isConnected = true;
           this.authToken = joinRoom.token;
-          this.widgetTitle = joinRoom.company.widgetTitle || this.defaultWidgetTitle;
           this.widgetMustInitiallyOpen = joinRoom.room.mustOpenWidget;
           this.elixirChatClientId = joinRoom.client.id;
           this.elixirChatRoomId = joinRoom.room.id;
+          if (!this.widgetTitle) {
+            this.widgetTitle = joinRoom.company.widgetTitle || this.defaultWidgetTitle;
+          }
           this.triggerEvent(JOIN_ROOM_SUCCESS, joinRoom);
-
         }
         else {
           this.triggerEvent(JOIN_ROOM_ERROR, joinRoom);

@@ -22,7 +22,6 @@ import { TYPING_STATUS_SUBSCRIBE_SUCCESS } from '../../sdk/ElixirChatEventTypes'
 
 export interface IDefaultWidgetTextareaProps {
   elixirChatWidget: ElixirChatWidget;
-  onVerticalResize: any;
 }
 
 export interface IDefaultWidgetTextareaState {
@@ -340,7 +339,7 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
     }
   };
 
-  render(): void {
+  render() {
     const { elixirChatWidget } = this.props;
     const {
       textareaText,

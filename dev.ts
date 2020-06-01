@@ -27,6 +27,8 @@ window.elixirChatWidget = new ElixirChatWidget({
 
 window.elixirChatWidget.appendWidget({
   container: document.getElementById('elixirchat-widget'),
+  widgetTitle: 'Demo Widget',
+  supportEmail: 'test@test.com',
   iframeStyles: `
     /* Your iframe CSS */
   `
