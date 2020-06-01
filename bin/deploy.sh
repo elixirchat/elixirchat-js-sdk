@@ -55,7 +55,7 @@ if [ -n "$github_branch" ]; then
   git commit -am "Dev release $next_full_version"
   git push -f origin "$github_branch"
 
-  print_success "\nCreated dev release $next_full_version in branch \"$github_branch\".\nDeploying to http://demos.elixir.chat...\n\n\n"
+  print_success "\nCreated local dev release $next_full_version in branch \"$github_branch\".\nDeploying to http://demos.elixir.chat...\n\n\n"
   ansible-playbook -vvvv -u root -i "$ansible_dir" "$ansible_config" --extra-vars "widget_branch=$github_branch"
   exit 0
 fi
