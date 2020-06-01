@@ -17,7 +17,7 @@ if is_github_data_unset; then
   exit 1
 fi
 
-source .env
+source .env-bin
 
 package_json_version=$(node -p "require('./package.json').version")
 

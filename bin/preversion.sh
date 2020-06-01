@@ -25,7 +25,7 @@ fi
 
 next_package_json_version="${package_json_version_arr[0]}.${package_json_version_arr[1]}.${package_json_version_arr[2]}"
 
-change_variable_in_config "ELIXIRCHAT_VERSION" "$next_package_json_version" .env
+change_variable_in_dotenv_file "ELIXIRCHAT_VERSION" "$next_package_json_version" .env
 git add .env
 
 ./bin/build.sh $next_package_json_version

@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
 
 # Usage:
-# npm run examples          # Browse examples working with dev-server (dev-admin.elixir.chat/api)
-# npm run examples --local  # Browse examples working with local server (localhost:4000)
-# npm run examples --open   # Open examples in the browser automatically
+# npm run examples              # Browse examples working with dev-server (dev-admin.elixir.chat/api)
+# npm run examples local        # Browse examples working with local server (localhost:4000)
+# npm run examples open         # Open examples in the browser automatically
+# npm run examples local open   # Open examples working with local server in the browser automatically
 
 source bin/utils.sh
 
-export is_local_server=$(npm config get local)
-export should_open_in_browser=$(npm config get open)
+[[ $1 = "local" ]] || [[ $2 = "local" ]] && export is_local_server=1
+[[ $1 = "open" ]] || [[ $2 = "open" ]] && export should_open_in_browser=1
 
 function replace_api_urls_with_local_server () {
   API_URL="http:\/\/localhost:4000"

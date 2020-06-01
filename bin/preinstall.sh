@@ -11,14 +11,14 @@ source bin/utils.sh
 
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-get_package_version () {
+get_dev_package_version () {
   cat package.json | python3 -c "import sys, json; print(json.load(sys.stdin)['devDependencies']['$1'])"
 }
 
 if [[ $script_dir =~ node_modules/elixirchat-js-sdk ]];
   then
-    parcel_version=$(get_package_version "parcel-bundler")
-    node_saas_version=$(get_package_version "node-sass")
+    parcel_version=$(get_dev_package_version "parcel-bundler")
+    node_saas_version=$(get_dev_package_version "node-sass")
 
     print_success "elixirchat-js-sdk/bin/preinstall.sh script_dir: $script_dir\nConfirmed elixirchat-js-sdk is being installed in ANOTHER project.\nInstalling node-sass@$parcel_version and parcel-bundler@$parcel_version...\n\n"
     npm i "parcel-bundler@$parcel_version"
