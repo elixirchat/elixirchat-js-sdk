@@ -54,12 +54,30 @@ function has_uncommited_changes() {
   fi
 }
 
+function get_variable_from_dotenv_file() {
+  var_name=$1
+  file_name=$2
+  IFS='=' read -r variable value <<< "$(grep "^$var_name=" "$file_name" | head -1 )"
+  echo "$value"
+}
+
+function change_variable_in_dotenv_file() {
+  var_name=$1
+  new_value=$2
+  file_name=$3
+  has_variable_in_env=$(cat "$file_name" | grep "$var_name")
+
+  if [ -n "$has_variable_in_env" ]; then
+    sed -i '' "/$var_name/d" "$file_name"
+  fi
+  echo "$var_name=$new_value" >> "$file_name"
+}
+
 function parse_env() {
-  source .env
-  IFS='.' read -r v1 v2 v3 dev_postfix <<< "$ELIXIRCHAT_VERSION"
+  IFS='.' read -r v1 v2 v3 dev_postfix <<< "$(get_variable_from_dotenv_file "ELIXIRCHAT_VERSION" .env)"
   IFS='@' read -r dev_branch dev_version <<< "$dev_postfix"
   version="$v1.$v2.$v3"
-  echo "$version|$dev_branch|$dev_version"
+  echo "$version|$dev_branch|$dev_version" # Example: 1.0.0|dev|3 for ELIXIRCHAT_VERSION=1.0.0.dev@3
 }
 
 function get_env_elixirchat_version() {
@@ -75,16 +93,4 @@ function get_env_elixirchat_dev_branch() {
 function get_env_elixirchat_dev_version() {
   IFS='|' read -r version dev_branch dev_version <<< "$(parse_env)"
   echo "$dev_version"
-}
-
-function change_variable_in_dotenv_file() {
-  var_name=$1
-  new_value=$2
-  config_file_name=$3
-  has_variable_in_env=$(cat "$config_file_name" | grep "$var_name")
-
-  if [ -n "$has_variable_in_env" ]; then
-    sed -i '' "/$var_name/d" "$config_file_name"
-  fi
-  echo "$var_name=$new_value" >> "$config_file_name"
 }

@@ -5,7 +5,7 @@
 
 source bin/utils.sh
 
-output_version=$(get_env_elixirchat_version)
+output_version=$(get_variable_from_dotenv_file "ELIXIRCHAT_VERSION" .env)
 
 printf "\nBuilding JS (version $output_version) into 'build' directory\n\n";
 node-sass --recursive widget/DefaultWidget/styles/ --output dist/styles/

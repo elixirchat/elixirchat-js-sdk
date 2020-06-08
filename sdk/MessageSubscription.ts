@@ -62,6 +62,9 @@ export class MessageSubscription {
   protected latestMessageHistoryCursorsCache: Array<IMessage> = [];
   protected reachedBeginningOfMessageHistory: boolean = false;
 
+  protected messageHistoryRequestInterval: number = null;
+  protected MESSAGE_HISTORY_REQUEST_INTERVAL: number = 30 * 1000;
+
   protected subscriptionQuery: string = insertGraphQlFragments(gql`
     subscription {
       newMessage {
@@ -79,8 +82,8 @@ export class MessageSubscription {
   `, { fragmentMessage });
 
   protected messageHistoryQuery: string = insertGraphQlFragments(gql`
-    query ($beforeCursor: String, $limit: Int!) {
-      messages(before: $beforeCursor, last: $limit) {
+    query ($first: Int, $last: Int, $before: String, $after: String) {
+      messages(first: $first, last: $last, before: $before, after: $after) {
         edges {
           cursor
           node {
@@ -102,6 +105,7 @@ export class MessageSubscription {
       token: authToken,
     });
     this.initializeSocketClient();
+    this.updateMessageHistoryOnInterval();
   };
 
   protected initializeSocketClient(): void {
@@ -342,15 +346,33 @@ export class MessageSubscription {
     }
   }
 
-  public getMessageHistoryByCursor = (limit: number, beforeCursor: string): Promise<[IMessage]> => {
+  public getMessageHistoryByCursor = (params): Promise<[IMessage]> => {
     const { triggerEvent } = this.elixirChat;
-
+    const { limit, beforeCursor, afterCursor } = params;
+    let variables;
+    if (beforeCursor) {
+      variables = {
+        last: limit,
+        before: beforeCursor,
+      };
+    }
+    else if (afterCursor) {
+      variables = {
+        first: limit,
+        after: afterCursor,
+      };
+    }
+    else {
+      variables = {
+        last: limit,
+      }
+    }
     return new Promise((resolve, reject) => {
       if (this.reachedBeginningOfMessageHistory) {
         resolve([]);
         return;
       }
-      this.graphQLClient.query(this.messageHistoryQuery, { limit, beforeCursor })
+      this.graphQLClient.query(this.messageHistoryQuery, variables)
         .then(response => {
           if (response && response.messages) {
 
@@ -409,7 +431,7 @@ export class MessageSubscription {
   public fetchMessageHistory = (limit: number): Promise<[IMessage | any]> => {
     const { triggerEvent, debug } = this.elixirChat;
 
-    return this.getMessageHistoryByCursor(limit, null)
+    return this.getMessageHistoryByCursor({ limit })
       .then(processedMessageHistory => {
         this.messageHistory = processedMessageHistory;
         logEvent(debug, 'Fetched new message history', { processedMessageHistory });
@@ -429,7 +451,7 @@ export class MessageSubscription {
         reject({ message: errorMessage });
       });
     }
-    return this.getMessageHistoryByCursor(limit, latestCursor)
+    return this.getMessageHistoryByCursor({ limit, beforeCursor: latestCursor })
       .then(processedMessageHistory => {
         this.messageHistory = processedMessageHistory.concat(this.messageHistory);
         logEvent(debug, 'Fetched and prepended additional message history', { processedMessageHistory });
@@ -437,6 +459,21 @@ export class MessageSubscription {
         return processedMessageHistory;
       });
   };
+
+  protected updateMessageHistoryOnInterval(){
+    const { debug } = this.elixirChat;
+    this.messageHistoryRequestInterval = setInterval(() => {
+      const limit = 20;
+      const afterCursor = this.messageHistory.slice(-1)[0].cursor; // TODO: use lodash-like findLast()
+      this.getMessageHistoryByCursor({ limit, afterCursor })
+        .then(newMessages => {
+          newMessages.forEach(this.onMessageReceive);
+        })
+        .catch(error => {
+          logEvent(debug, 'MessageSubscription: Failed to update message history on interval', { error }, 'error');
+        });
+    }, this.MESSAGE_HISTORY_REQUEST_INTERVAL);
+  }
 
   public unsubscribe = (): void => {
     const { debug } = this.elixirChat;
