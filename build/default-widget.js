@@ -12136,7 +12136,7 @@ function (_react_1$Component) {
       }, widgetTitle && react_1.default.createElement(react_1.Fragment, null, areAnyOperatorsOnline && react_1.default.createElement("i", {
         className: "elixirchat-chat-header__indicator"
       }), react_1.default.createElement("span", {
-        title: 'Версия ' + "4.0.0.dev@2"
+        title: 'Версия ' + "4.0.1"
       }, widgetTitle)), react_1.default.createElement("button", {
         className: "elixirchat-chat-header__mute",
         onClick: elixirChatWidget.toggleMute,

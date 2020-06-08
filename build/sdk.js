@@ -7107,7 +7107,7 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToAr
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 
 function _templateObject3() {
-  var data = _taggedTemplateLiteral(["\n    query ($beforeCursor: String, $limit: Int!) {\n      messages(before: $beforeCursor, last: $limit) {\n        edges {\n          cursor\n          node {\n            ...fragmentMessage\n          }\n        }\n      }\n    }\n  "]);
+  var data = _taggedTemplateLiteral(["\n    query ($first: Int, $last: Int, $before: String, $after: String) {\n      messages(first: $first, last: $last, before: $before, after: $after) {\n        edges {\n          cursor\n          node {\n            ...fragmentMessage\n          }\n        }\n      }\n    }\n  "]);
 
   _templateObject3 = function _templateObject3() {
     return data;
@@ -7174,6 +7174,8 @@ function () {
     this.temporaryMessageTempIds = [];
     this.latestMessageHistoryCursorsCache = [];
     this.reachedBeginningOfMessageHistory = false;
+    this.messageHistoryRequestInterval = null;
+    this.MESSAGE_HISTORY_REQUEST_INTERVAL = 30 * 1000;
     this.subscriptionQuery = GraphQLClient_1.insertGraphQlFragments(GraphQLClient_1.gql(_templateObject()), {
       fragmentMessage: serializeMessage_1.fragmentMessage
     });
@@ -7194,6 +7196,8 @@ function () {
       });
 
       _this.initializeSocketClient();
+
+      _this.updateMessageHistoryOnInterval();
     };
 
     this.onMessageReceive = function (response) {
@@ -7329,18 +7333,36 @@ function () {
       });
     };
 
-    this.getMessageHistoryByCursor = function (limit, beforeCursor) {
+    this.getMessageHistoryByCursor = function (params) {
       var triggerEvent = _this.elixirChat.triggerEvent;
+      var limit = params.limit,
+          beforeCursor = params.beforeCursor,
+          afterCursor = params.afterCursor;
+      var variables;
+
+      if (beforeCursor) {
+        variables = {
+          last: limit,
+          before: beforeCursor
+        };
+      } else if (afterCursor) {
+        variables = {
+          first: limit,
+          after: afterCursor
+        };
+      } else {
+        variables = {
+          last: limit
+        };
+      }
+
       return new Promise(function (resolve, reject) {
         if (_this.reachedBeginningOfMessageHistory) {
           resolve([]);
           return;
         }
 
-        _this.graphQLClient.query(_this.messageHistoryQuery, {
-          limit: limit,
-          beforeCursor: beforeCursor
-        }).then(function (response) {
+        _this.graphQLClient.query(_this.messageHistoryQuery, variables).then(function (response) {
           if (response && response.messages) {
             var hasMessageHistoryBeenEverFetched = _this.hasMessageHistoryBeenEverFetched;
             var processedMessages = GraphQLClient_1.simplifyGraphQLJSON(response.messages).map(function (message) {
@@ -7378,7 +7400,9 @@ function () {
       var _this$elixirChat3 = _this.elixirChat,
           triggerEvent = _this$elixirChat3.triggerEvent,
           debug = _this$elixirChat3.debug;
-      return _this.getMessageHistoryByCursor(limit, null).then(function (processedMessageHistory) {
+      return _this.getMessageHistoryByCursor({
+        limit: limit
+      }).then(function (processedMessageHistory) {
         _this.messageHistory = processedMessageHistory;
         utilsCommon_1.logEvent(debug, 'Fetched new message history', {
           processedMessageHistory: processedMessageHistory
@@ -7404,7 +7428,10 @@ function () {
         });
       }
 
-      return _this.getMessageHistoryByCursor(limit, latestCursor).then(function (processedMessageHistory) {
+      return _this.getMessageHistoryByCursor({
+        limit: limit,
+        beforeCursor: latestCursor
+      }).then(function (processedMessageHistory) {
         _this.messageHistory = processedMessageHistory.concat(_this.messageHistory);
         utilsCommon_1.logEvent(debug, 'Fetched and prepended additional message history', {
           processedMessageHistory: processedMessageHistory
@@ -7614,6 +7641,30 @@ function () {
         triggerEvent(ElixirChatEventTypes_1.MESSAGES_FETCH_HISTORY_INITIAL_ERROR, error);
       }
     }
+  }, {
+    key: "updateMessageHistoryOnInterval",
+    value: function updateMessageHistoryOnInterval() {
+      var _this2 = this;
+
+      var debug = this.elixirChat.debug;
+      this.messageHistoryRequestInterval = setInterval(function () {
+        var limit = 20;
+
+        var afterCursor = _this2.messageHistory.slice(-1)[0].cursor; // TODO: use lodash-like findLast()
+
+
+        _this2.getMessageHistoryByCursor({
+          limit: limit,
+          afterCursor: afterCursor
+        }).then(function (newMessages) {
+          newMessages.forEach(_this2.onMessageReceive);
+        }).catch(function (error) {
+          utilsCommon_1.logEvent(debug, 'MessageSubscription: Failed to update message history on interval', {
+            error: error
+          }, 'error');
+        });
+      }, this.MESSAGE_HISTORY_REQUEST_INTERVAL);
+    }
   }]);
 
   return MessageSubscription;
@@ -7688,7 +7739,7 @@ function () {
 
     _classCallCheck(this, ElixirChat);
 
-    this.version = "4.0.0.dev@2";
+    this.version = "4.0.1";
     this.isInitialized = false;
     this.widgetMustInitiallyOpen = false;
     this.widgetTitle = '';
