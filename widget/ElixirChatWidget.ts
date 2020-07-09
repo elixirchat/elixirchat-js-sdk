@@ -65,6 +65,8 @@ export class ElixirChatWidget extends ElixirChat {
   public extractFontsFromParentWindow: Array<IFontExtractorExtractParams>;
   public hideDefaultButton: boolean;
   public supportEmail: string;
+  public widgetTitle: string = '';
+  public defaultWidgetTitle: string = 'Служба поддержки';
 
   public defaultSupportEmail: string = 'support@elixir.chat';
   public isWidgetPopupOpen: boolean = false;
@@ -99,9 +101,12 @@ export class ElixirChatWidget extends ElixirChat {
       }
     });
 
-    this.on(JOIN_ROOM_SUCCESS, () => {
+    this.on(JOIN_ROOM_SUCCESS, joinRoom => {
       if (this.widgetMustInitiallyOpen && !this.isWidgetPopupOpen) {
         this.togglePopup();
+      }
+      if (!this.widgetTitle) {
+        this.widgetTitle = joinRoom.company.widgetTitle || this.defaultWidgetTitle;
       }
     });
 
@@ -164,7 +169,9 @@ export class ElixirChatWidget extends ElixirChat {
     this.extractFontsFromParentWindow = extractFontsFromParentWindow || [];
     this.hideDefaultButton = hideDefaultButton || false;
     this.supportEmail = supportEmail || this.defaultSupportEmail;
-    this.widgetTitle = widgetTitle || this.defaultSupportEmail;
+    if (widgetTitle) {
+      this.widgetTitle = widgetTitle;
+    }
 
     this.widgetReactComponent = renderWidgetReactComponent(this.container, this);
 

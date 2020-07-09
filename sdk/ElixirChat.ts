@@ -62,8 +62,6 @@ export class ElixirChat {
   public isPrivate: boolean;
 
   public widgetMustInitiallyOpen: boolean = false;
-  public widgetTitle: string = '';
-  public defaultWidgetTitle: string = 'Служба поддержки';
 
   public get areAnyOperatorsOnline(): boolean {
     return this.operatorOnlineStatusSubscription.areAnyOperatorsOnline;
@@ -314,9 +312,6 @@ export class ElixirChat {
           this.widgetMustInitiallyOpen = joinRoom.room.mustOpenWidget;
           this.elixirChatClientId = joinRoom.client.id;
           this.elixirChatRoomId = joinRoom.room.id;
-          if (!this.widgetTitle) {
-            this.widgetTitle = joinRoom.company.widgetTitle || this.defaultWidgetTitle;
-          }
           this.triggerEvent(JOIN_ROOM_SUCCESS, joinRoom);
         }
         else {
