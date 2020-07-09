@@ -12136,7 +12136,7 @@ function (_react_1$Component) {
       }, widgetTitle && react_1.default.createElement(react_1.Fragment, null, areAnyOperatorsOnline && react_1.default.createElement("i", {
         className: "elixirchat-chat-header__indicator"
       }), react_1.default.createElement("span", {
-        title: 'Версия ' + "4.0.1"
+        title: 'Версия ' + "4.0.2"
       }, widgetTitle)), react_1.default.createElement("button", {
         className: "elixirchat-chat-header__mute",
         onClick: elixirChatWidget.toggleMute,
@@ -13091,6 +13091,8 @@ function (_ElixirChat) {
     _classCallCheck(this, ElixirChatWidget);
 
     _this = _super.apply(this, arguments);
+    _this.widgetTitle = '';
+    _this.defaultWidgetTitle = 'Служба поддержки';
     _this.defaultSupportEmail = 'support@elixir.chat';
     _this.isWidgetPopupOpen = false;
     _this.isWidgetPopupFocused = false;
@@ -13170,7 +13172,11 @@ function (_ElixirChat) {
                 _this.extractFontsFromParentWindow = extractFontsFromParentWindow || [];
                 _this.hideDefaultButton = hideDefaultButton || false;
                 _this.supportEmail = supportEmail || _this.defaultSupportEmail;
-                _this.widgetTitle = widgetTitle || _this.defaultSupportEmail;
+
+                if (widgetTitle) {
+                  _this.widgetTitle = widgetTitle;
+                }
+
                 _this.widgetReactComponent = Widget_1.renderWidgetReactComponent(_this.container, _assertThisInitialized(_this));
                 utilsCommon_1.logEvent(_this.debug, 'Appended ElixirChat default widget', {
                   container: container
@@ -13223,9 +13229,13 @@ function (_ElixirChat) {
           _this2.togglePopup();
         }
       });
-      this.on(ElixirChatEventTypes_1.JOIN_ROOM_SUCCESS, function () {
+      this.on(ElixirChatEventTypes_1.JOIN_ROOM_SUCCESS, function (joinRoom) {
         if (_this2.widgetMustInitiallyOpen && !_this2.isWidgetPopupOpen) {
           _this2.togglePopup();
+        }
+
+        if (!_this2.widgetTitle) {
+          _this2.widgetTitle = joinRoom.company.widgetTitle || _this2.defaultWidgetTitle;
         }
       });
       this.on(ElixirChatEventTypes_1.MESSAGES_FETCH_HISTORY_INITIAL_SUCCESS, function () {

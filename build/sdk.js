@@ -7739,11 +7739,9 @@ function () {
 
     _classCallCheck(this, ElixirChat);
 
-    this.version = "4.0.1";
+    this.version = "4.0.2";
     this.isInitialized = false;
     this.widgetMustInitiallyOpen = false;
-    this.widgetTitle = '';
-    this.defaultWidgetTitle = 'Служба поддержки';
     this.eventCallbacks = {};
     this.joinRoomQuery = GraphQLClient_1.insertGraphQlFragments(GraphQLClient_1.gql(_templateObject()), {
       fragmentUser: serializeUser_1.fragmentUser
@@ -8089,10 +8087,6 @@ function () {
           _this4.widgetMustInitiallyOpen = joinRoom.room.mustOpenWidget;
           _this4.elixirChatClientId = joinRoom.client.id;
           _this4.elixirChatRoomId = joinRoom.room.id;
-
-          if (!_this4.widgetTitle) {
-            _this4.widgetTitle = joinRoom.company.widgetTitle || _this4.defaultWidgetTitle;
-          }
 
           _this4.triggerEvent(ElixirChatEventTypes_1.JOIN_ROOM_SUCCESS, joinRoom);
         } else {
