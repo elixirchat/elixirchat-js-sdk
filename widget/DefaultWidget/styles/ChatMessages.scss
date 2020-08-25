@@ -109,10 +109,10 @@
   &--by-operator,
   &--by-another-client {
     &.elixirchat-chat-messages__item--unread {
-      background: rgba($color-pink-dark, .05);
+      background: rgba($color-pink, .05);
     }
     &.elixirchat-chat-messages__item--flashed {
-      background: rgba($color-pink-dark, .1);
+      background: rgba($color-pink, .1);
     }
   }
 }
@@ -126,7 +126,7 @@
   }
 
   .elixirchat-chat-messages__item--by-operator & {
-    color: $color-pink-dark;
+    color: $color-pink;
   }
 }
 
@@ -230,7 +230,7 @@
 }
 
 .elixirchat-chat-messages__submission-error {
-  color: $color-pink-dark;
+  color: $color-pink;
   white-space: normal;
   line-height: 17px;
   padding-top: 3px;
@@ -244,7 +244,7 @@
   margin-left: 10px;
 
   &:hover {
-    color: $color-pink-dark;
+    color: $color-pink;
   }
 }
 
@@ -253,7 +253,7 @@
   cursor: pointer;
 
   &:hover {
-    color: $color-pink-dark;
+    color: $color-pink;
   }
 
   .elixirchat-chat-messages__item--by-me & {
@@ -358,7 +358,7 @@
 }
 
 .elixirchat-chat-messages__take-screenshot {
-  background: $color-pink-dark;
+  background: $color-pink;
   color: $color-white;
   border: 0;
   border-radius: 4px;
@@ -369,7 +369,7 @@
   transition: background-color 300ms;
 
   &:hover {
-    background: darken($color-pink-dark, 6);
+    background: darken($color-pink, 6);
   }
 }
 

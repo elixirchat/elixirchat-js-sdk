@@ -2,75 +2,151 @@
 @import "./mixins";
 
 .elixirchat-welcome-screen-container {
-  background: yellowgreen;
+  background: #FAFAFA;
+  min-height: 550px;
+  overflow: hidden;
 }
 
 .elixirchat-welcome-screen-close {
-  page-break-after: initial;
+  color: $color-white;
+  position: absolute;
+  top: 17px;
+  right: 15px;
+  padding: 10px;
+  font-size: 15px;
+  cursor: pointer;
 }
 
 .elixirchat-welcome-screen-top {
-  page-break-after: initial;
   background: $color-blue;
   color: $color-white;
+  padding: 36px 32px 125px 32px;
 }
 
 .elixirchat-welcome-screen-top__logo {
-  page-break-after: initial;
+  width: 50px;
+  height: 50px;
+  background: {
+    size: cover;
+    position: center;
+    repeat: no-repeat;
+  };
+  margin-bottom: 15px;
+  border-radius: 100%;
 }
 
 .elixirchat-welcome-screen-top__title {
-  page-break-after: initial;
-}
-
-.elixirchat-welcome-screen-top__status {
-  page-break-after: initial;
+  font-size: 20px;
+  line-height: 24px;
+  font-weight: bold;
+  margin: 0 0 9px 0;
 }
 
 .elixirchat-welcome-screen-top__status-indicator {
-  page-break-after: initial;
+  background: $color-green;
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 3px;
+  width: 9px;
+  height: 9px;
+  border-radius: 100%;
 }
 
 .elixirchat-welcome-screen-operators {
-  page-break-after: initial;
+  background: $color-white;
+  box-shadow: 0 6px 6px -4px rgba(0,0,0,.03);
+  border-radius: 3px;
+  margin: -95px 20px 50px 20px;
+  padding: 20px;
 }
 
 .elixirchat-welcome-screen-operators__title {
-  page-break-after: initial;
+  font-weight: bold;
+  margin-bottom: 15px;
 }
 
 .elixirchat-welcome-screen-operators__list {
-  page-break-after: initial;
+  padding: 0;
+  margin: 0 0 20px 0;
+  list-style: none;
 }
 
 .elixirchat-welcome-screen-operators__item {
-  page-break-after: initial;
-}
-
-.elixirchat-welcome-screen-operators__item--count {
-  page-break-after: initial;
+  display: inline-block;
+  margin: 0 -8px 0 0;
+  padding: 0;
+  width: 40px;
+  height: 40px;
+  line-height: 42px;
+  text-align: center;
+  border-radius: 100%;
+  vertical-align: top;
+  border: 2px solid $color-white;
+  background: {
+    color: #EDF2F3;
+    size: cover;
+    position: center;
+    repeat: no-repeat;
+  };
 }
 
 .elixirchat-welcome-screen-operators__button {
-  page-break-after: initial;
+  height: 45px;
+  line-height: 46px;
+  text-align: center;
+  background: $color-blue;
+  color: $color-white;
+  font-weight: bold;
+  width: 100%;
+  border: 0;
+  border-radius: 4px;
+  transition: background 200ms;
+  cursor: pointer;
+
+  &:hover {
+    background: darken($color-blue, 10);
+  }
 }
 
 .elixirchat-welcome-screen-channels {
-  page-break-after: initial;
+  text-align: center;
 }
 
 .elixirchat-welcome-screen-channels__title {
-  page-break-after: initial;
+  font-weight: bold;
+  margin-bottom: 17px;
 }
 
 .elixirchat-welcome-screen-channels__list {
-  page-break-after: initial;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .elixirchat-welcome-screen-channels__item {
-  page-break-after: initial;
+  display: inline-block;
+  width: 35px;
+  height: 35px;
+  margin: 0 0 0 13px;
+
+  &:first-child {
+    margin-left: 0;
+  }
 }
 
 .elixirchat-welcome-screen-channels__link {
-  page-break-after: initial;
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: {
+    size: contain;
+    position: center;
+    repeat: no-repeat;
+  };
+  cursor: pointer;
+  transition: all 200ms;
+
+  &:hover {
+    opacity: .8;
+  }
 }

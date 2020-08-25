@@ -13,7 +13,7 @@ $mobile-max-size: 480px;
   border: 0;
   border-radius: 100%;
   cursor: pointer;
-  background-color: $color-pink-dark;
+  background-color: $color-pink;
   box-shadow: 0 0 25px rgba($color-black, .15);
   outline: none;
   z-index: 999999;
@@ -21,7 +21,7 @@ $mobile-max-size: 480px;
   color: #ffffff;
 
   &:hover {
-    background-color: darken($color-pink-dark, 6);
+    background-color: darken($color-pink, 6);
   }
 
   @include elixir-media-query(0px, $mobile-max-size) {
@@ -72,7 +72,7 @@ $mobile-max-size: 480px;
   box-sizing: border-box;
   text-align: center;
   border-radius: 20px;
-  background: $color-pink-dark;
+  background: $color-pink;
   color: $color-white;
   box-shadow: 0 3px 7px rgba($color-black, .2);
   z-index: 2;

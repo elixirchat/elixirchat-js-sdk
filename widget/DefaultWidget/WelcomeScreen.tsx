@@ -30,6 +30,8 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
       preview,
     } = this.state;
 
+    let company_logo = 'https://omnichannel-mock.surge.sh/huntflow-logo.png';
+
     let __mock_operator_avatars = [
       'https://omnichannel-mock.surge.sh/operator-1.png',
       'https://omnichannel-mock.surge.sh/operator-2.png',
@@ -44,16 +46,16 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
       { name: 'facebook', url: 'https://www.facebook.com/messages/textback.io' },
       { name: 'vk', url: 'https://vk.me/textback?ref=start_chat_9987ef6c-5b10-1d23-ec14-017426db6e0b' },
       { name: 'viber', url: 'viber://pa?chatURI=TextBack&context=start_chat_9987ef6c-5b10-1d23-ec14-017426db6e0b' },
-      { name: 'skype', url: 'skype:skype.test.user.1' },
+      { name: 'skype', url: 'skype://live:feedback6_2?chat' },
     ];
 
     return (
       <div className="elixirchat-welcome-screen-container">
 
-        <i className="elixirchat-welcome-screen-close"/>
+        <i className="icon-close-thin elixirchat-welcome-screen-close"/>
 
         <div className="elixirchat-welcome-screen-top">
-          <div className="elixirchat-welcome-screen-top__logo" style={{ backgroundImage: `url(${null})` }}/>
+          <div className="elixirchat-welcome-screen-top__logo" style={{ backgroundImage: `url(${company_logo})` }}/>
           <h1 className="elixirchat-welcome-screen-top__title">Служба заботы Хантфлоу</h1>
           <div className="elixirchat-welcome-screen-top__status">
             Онлайн <i className="elixirchat-welcome-screen-top__status-indicator"/>
@@ -68,7 +70,7 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
                 key={url}
                 style={{ backgroundImage: `url(${url})` }}/>
             ))}
-            <li className="elixirchat-welcome-screen-operators__item elixirchat-welcome-screen-operators__item--count">+8</li>
+            <li className="elixirchat-welcome-screen-operators__item">+8</li>
           </ul>
           <button className="elixirchat-welcome-screen-operators__button">Написать в поддержку</button>
         </div>
