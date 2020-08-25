@@ -173,6 +173,10 @@ export class ElixirChatWidget extends ElixirChat {
       this.widgetTitle = widgetTitle;
     }
 
+    if (typeof window !== 'undefined') {
+      window.elixirChatWidget = this;
+    }
+
     this.widgetReactComponent = renderWidgetReactComponent(this.container, this);
 
     logEvent(this.debug, 'Appended ElixirChat default widget', { container });

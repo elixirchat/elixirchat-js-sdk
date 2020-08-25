@@ -5,13 +5,14 @@ import { ElixirChatWidget } from '../ElixirChatWidget';
 import { WIDGET_POPUP_TOGGLE } from '../ElixirChatWidgetEventTypes';
 import { UNREAD_MESSAGES_CHANGE } from '../../sdk/ElixirChatEventTypes';
 import { _flatten, detectBrowser } from '../../utilsCommon';
-import { generateFontFaceRule, unlockNotificationSoundAutoplay } from '../../utilsWidget';
+import {generateFontFaceRule, generateSVGIcons, unlockNotificationSoundAutoplay} from '../../utilsWidget';
 import { FontExtractor } from '../FontExtractor';
 import { Chat } from './Chat';
 import { IFrameWrapper } from './IFrameWrapper';
 import { FullScreenPreview } from './FullScreenPreview';
 import styles from './styles';
 import assets from './assets';
+import {WelcomeScreen} from './WelcomeScreen';
 
 export interface IWidgetProps {
   elixirChatWidget: ElixirChatWidget;
@@ -82,6 +83,15 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
     const fontFaceGraphikBold = generateFontFaceRule('Graphik', 'bold', null, assets.fontGraphikBold);
     const fontFaceElixirIcons = generateFontFaceRule('elixirchat-icons', null, null, assets.fontElixirchatIcons);
 
+    const svgIconStyles = generateSVGIcons({
+      whatsapp: assets.iconWhatsapp,
+      telegram: assets.iconTelegram,
+      facebook: assets.iconFacebook,
+      skype: assets.iconSkype,
+      viber: assets.iconViber,
+      vk: assets.iconVK,
+    });
+
     const outsideIframeStyles = [
       styles.icons,
       styles.Widget,
@@ -91,7 +101,9 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
     ].join('\n');
 
     const insideIframeStyles = [
+      svgIconStyles,
       styles.icons,
+      styles.WelcomeScreen,
       styles.Chat,
       styles.ChatMessages,
       styles.ChatTextarea,
@@ -165,7 +177,8 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
             <style dangerouslySetInnerHTML={{ __html: extractedFontsStyles }}/>
             <style dangerouslySetInnerHTML={{ __html: insideIframeStyles }}/>
             <style dangerouslySetInnerHTML={{ __html: customIframeStyles }}/>
-            <Chat className={`elixirchat-browser--${detectedBrowser}`} elixirChatWidget={elixirChatWidget}/>
+            {/*<Chat className={`elixirchat-browser--${detectedBrowser}`} elixirChatWidget={elixirChatWidget}/>*/}
+            <WelcomeScreen elixirChatWidget={elixirChatWidget}/>
           </Fragment>
         </IFrameWrapper>
       </Fragment>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="37px" height="35px" viewBox="0 0 37 35" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>FB</title>
+    <defs>
+        <linearGradient x1="50%" y1="97.0782153%" x2="50%" y2="0%" id="linearGradient-1">
+            <stop stop-color="#0062E0" offset="0%"></stop>
+            <stop stop-color="#19AFFF" offset="100%"></stop>
+        </linearGradient>
+        <rect id="path-2" x="0" y="0" width="34.807502" height="34.807502" rx="4"></rect>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Artboard" transform="translate(-238.000000, -545.000000)">
+            <g id="Widget-9" transform="translate(95.000000, 91.000000)">
+                <g id="chat">
+                    <g id="header">
+                        <g id="MESSENGERS-2" transform="translate(20.076733, 396.000000)">
+                            <g id="ICONS-3-EXPORT" transform="translate(26.000000, 58.000000)">
+                                <g id="FB" transform="translate(97.188003, 0.000000)">
+                                    <g id="Rectangle">
+                                        <use fill="url(#linearGradient-1)" xlink:href="#path-2"></use>
+                                        <use fill="#4665A8" xlink:href="#path-2"></use>
+                                    </g>
+                                    <path d="M23.5591187,34.8084527 L23.5591187,21.8972723 L27.4359658,21.8972723 L28.0164687,17.3959449 L23.5591187,17.3959449 L23.5591187,14.5221317 C23.5591187,13.2188935 23.9210071,12.3307797 25.789819,12.3307797 L28.1733989,12.3297381 L28.1733989,8.30371468 C27.7611678,8.24885855 26.3462499,8.12630023 24.7001031,8.12630023 C21.2634937,8.12630023 18.9106981,10.2240265 18.9106981,14.0763388 L18.9106981,17.3959449 L15.0238981,17.3959449 L15.0238981,21.8972723 L18.9106981,21.8972723 L18.9106981,34.8084527 L23.5591187,34.8084527 Z" id="f" fill="#FFFFFF" fill-rule="nonzero"></path>
+                                </g>
+                            </g>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

@@ -16,5 +16,6 @@ export default {
   Chat:               fs.readFileSync(__dirname + '../../../../dist/styles/Chat.css', 'utf8'),
   ChatMessages:       fs.readFileSync(__dirname + '../../../../dist/styles/ChatMessages.css', 'utf8'),
   ChatTextarea:       fs.readFileSync(__dirname + '../../../../dist/styles/ChatTextarea.css', 'utf8'),
+  WelcomeScreen:      fs.readFileSync(__dirname + '../../../../dist/styles/WelcomeScreen.css', 'utf8'),
   FullScreenPreview:  fs.readFileSync(__dirname + '../../../../dist/styles/FullScreenPreview.css', 'utf8'),
 };

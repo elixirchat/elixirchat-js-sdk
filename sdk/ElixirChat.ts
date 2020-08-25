@@ -121,6 +121,9 @@ export class ElixirChat {
     if (this.hasAllRequiredConfigParameters()) {
       this.initialize(config);
     }
+    if (typeof window !== 'undefined') {
+      window.elixirChat = this;
+    }
   }
 
   protected hasAllRequiredConfigParameters(): boolean {

@@ -1,0 +1,76 @@
+@import "./variables";
+@import "./mixins";
+
+.elixirchat-welcome-screen-container {
+  background: yellowgreen;
+}
+
+.elixirchat-welcome-screen-close {
+  page-break-after: initial;
+}
+
+.elixirchat-welcome-screen-top {
+  page-break-after: initial;
+  background: $color-blue;
+  color: $color-white;
+}
+
+.elixirchat-welcome-screen-top__logo {
+  page-break-after: initial;
+}
+
+.elixirchat-welcome-screen-top__title {
+  page-break-after: initial;
+}
+
+.elixirchat-welcome-screen-top__status {
+  page-break-after: initial;
+}
+
+.elixirchat-welcome-screen-top__status-indicator {
+  page-break-after: initial;
+}
+
+.elixirchat-welcome-screen-operators {
+  page-break-after: initial;
+}
+
+.elixirchat-welcome-screen-operators__title {
+  page-break-after: initial;
+}
+
+.elixirchat-welcome-screen-operators__list {
+  page-break-after: initial;
+}
+
+.elixirchat-welcome-screen-operators__item {
+  page-break-after: initial;
+}
+
+.elixirchat-welcome-screen-operators__item--count {
+  page-break-after: initial;
+}
+
+.elixirchat-welcome-screen-operators__button {
+  page-break-after: initial;
+}
+
+.elixirchat-welcome-screen-channels {
+  page-break-after: initial;
+}
+
+.elixirchat-welcome-screen-channels__title {
+  page-break-after: initial;
+}
+
+.elixirchat-welcome-screen-channels__list {
+  page-break-after: initial;
+}
+
+.elixirchat-welcome-screen-channels__item {
+  page-break-after: initial;
+}
+
+.elixirchat-welcome-screen-channels__link {
+  page-break-after: initial;
+}

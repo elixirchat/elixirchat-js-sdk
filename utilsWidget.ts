@@ -83,12 +83,56 @@ export interface IGenerateFontFaceRule {
 }
 
 export function generateFontFaceRule(fontFamily, fontWeight, fontStyle, fontUrl): IGenerateFontFaceRule {
+  const { contentType, data } = parseBase64DataUrl(fontUrl);
+  const fontBlobUrl = base64toBlobUrl(data, contentType);
+
   return `@font-face {
     font-family: "${fontFamily}";
     ${fontWeight ? `font-weight: ${fontWeight};` : ''}
     ${fontStyle ? `font-style: ${fontStyle};` : ''}
-    src: url("${fontUrl}") format("woff");
+    src: url("${fontBlobUrl}") format("woff");
   }`;
+}
+
+
+export function generateSVGIcons(iconsHashMap): string {
+  const iconsCSSArr = [];
+  for (let iconName in iconsHashMap) {
+    const iconBase64Url = iconsHashMap[iconName];
+    const { contentType, data } = parseBase64DataUrl(iconBase64Url);
+    const iconBlobUrl = base64toBlobUrl(data, contentType);
+    iconsCSSArr.push(
+      `.svg-icon-${iconName} { background-image: url("${iconBlobUrl}"); }`
+    );
+  }
+  return iconsCSSArr.join('\n');
+}
+
+
+export function base64toBlobUrl(base64Data, contentType = '', sliceSize = 512): string {
+  const byteCharacters = atob(base64Data);
+  const byteArrays = [];
+
+  for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+    const slice = byteCharacters.slice(offset, offset + sliceSize);
+
+    const byteNumbers = new Array(slice.length);
+    for (let i = 0; i < slice.length; i++) {
+      byteNumbers[i] = slice.charCodeAt(i);
+    }
+
+    const byteArray = new Uint8Array(byteNumbers);
+    byteArrays.push(byteArray);
+  }
+  const blob = new Blob(byteArrays, { type: contentType });
+  return URL.createObjectURL(blob);
+}
+
+
+export function parseBase64DataUrl(base64Url) {
+  const [ prefix, data ] = base64Url.trim().split(',');
+  const contentType = prefix.replace(/data:\s*/, '').replace(/s*;s*base64s*/, '');
+  return { contentType, data };
 }
 
 
