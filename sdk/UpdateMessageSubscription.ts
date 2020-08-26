@@ -49,11 +49,11 @@ export class UpdateMessageSubscription {
       query: this.subscriptionQuery,
       onAbort: error => {
         logEvent(debug, 'Failed to subscribe to update message', error, 'error');
-        triggerEvent(UPDATE_MESSAGES_SUBSCRIBE_ERROR, error);
+        triggerEvent(UPDATE_MESSAGES_SUBSCRIBE_ERROR, error, { firedOnce: true });
       },
       onStart: () => {
         logEvent(debug, 'Successfully subscribed to update message');
-        triggerEvent(UPDATE_MESSAGES_SUBSCRIBE_SUCCESS);
+        triggerEvent(UPDATE_MESSAGES_SUBSCRIBE_SUCCESS, null, { firedOnce: true });
       },
       onResult: (response) => {
         const data = response?.data?.updateMessage;

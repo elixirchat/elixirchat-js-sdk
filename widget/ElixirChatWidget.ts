@@ -4,7 +4,7 @@ import { renderWidgetReactComponent } from './DefaultWidget/Widget';
 import { IFontExtractorExtractParams } from './FontExtractor';
 import {
   WIDGET_IFRAME_READY,
-  WIDGET_MUTE,
+  WIDGET_MUTE, WIDGET_NAVIGATE_TO,
   WIDGET_POPUP_BLUR,
   WIDGET_POPUP_CLOSE,
   WIDGET_POPUP_FOCUS,
@@ -16,7 +16,7 @@ import {
 
 import {
   MESSAGES_FETCH_HISTORY_INITIAL_SUCCESS,
-  JOIN_ROOM_SUCCESS,
+  JOINED_ROOM,
 } from '../sdk/ElixirChatEventTypes';
 
 let ElixirChat = window.ElixirChat;
@@ -78,6 +78,7 @@ export class ElixirChatWidget extends ElixirChat {
   public widgetReactComponent: any;
   public widgetIFrameWindow: Window = {};
   public widgetIFrameDocument: Document = {};
+  public widgetDefaultView: string = 'welcome-screen';
 
   protected initializeWidget(): void {
     this.on(WIDGET_IFRAME_READY, (iframeWindow) => {
@@ -99,10 +100,11 @@ export class ElixirChatWidget extends ElixirChat {
       if (isWidgetVisible && !this.isWidgetPopupOpen) {
         this.togglePopup();
       }
+      this.setInitialWidgetView();
     });
 
-    this.on(JOIN_ROOM_SUCCESS, joinRoom => {
-      if (this.widgetMustInitiallyOpen && !this.isWidgetPopupOpen) {
+    this.on(JOINED_ROOM, joinRoom => {
+      if (this.shouldPopUp && !this.isWidgetPopupOpen) {
         this.togglePopup();
       }
       if (!this.widgetTitle) {
@@ -140,6 +142,16 @@ export class ElixirChatWidget extends ElixirChat {
     }
   };
 
+  public navigateTo = (params) => {
+    this.triggerEvent(WIDGET_NAVIGATE_TO, params);
+    localStorage.setItem('elixirchat-current-view', params.view);
+  };
+
+  protected setInitialWidgetView(){
+    const view = getJSONFromLocalStorage('elixirchat-current-view') || this.widgetDefaultView;
+    this.navigateTo({ view, animation: null });
+  };
+
   public appendWidget = async (config: IElixirChatWidgetAppendWidgetConfig): void => {
     const {
       container,
@@ -155,11 +167,13 @@ export class ElixirChatWidget extends ElixirChat {
       logEvent(this.debug, errorMessage, config, 'error');
       throw errorMessage;
     }
-
     if (!(container instanceof HTMLElement)) {
       const errorMessage = 'You must provide an HTMLElement as a "container" option to appendWidget() method';
       logEvent(this.debug, errorMessage, config, 'error');
       throw errorMessage;
+    }
+    if (typeof window !== 'undefined') {
+      window.elixirChatWidget = this;
     }
 
     this.initializeWidget();
@@ -171,10 +185,6 @@ export class ElixirChatWidget extends ElixirChat {
     this.supportEmail = supportEmail || this.defaultSupportEmail;
     if (widgetTitle) {
       this.widgetTitle = widgetTitle;
-    }
-
-    if (typeof window !== 'undefined') {
-      window.elixirChatWidget = this;
     }
 
     this.widgetReactComponent = renderWidgetReactComponent(this.container, this);

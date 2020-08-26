@@ -26,6 +26,8 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
   }
 
   render() {
+    const { elixirChatWidget } = this.props;
+
     const {
       preview,
     } = this.state;
@@ -72,7 +74,10 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
             ))}
             <li className="elixirchat-welcome-screen-operators__item">+8</li>
           </ul>
-          <button className="elixirchat-welcome-screen-operators__button">Написать в поддержку</button>
+          <button className="elixirchat-welcome-screen-operators__button"
+            onClick={() => elixirChatWidget.navigateTo({ view: 'chat', animation: 'slideLeft' })}>
+            Написать в поддержку
+          </button>
         </div>
 
         <div className="elixirchat-welcome-screen-channels">

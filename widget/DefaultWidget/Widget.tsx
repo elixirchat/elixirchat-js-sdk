@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import ReactDOM from 'react-dom';
 import cn from 'classnames';
 import { ElixirChatWidget } from '../ElixirChatWidget';
-import { WIDGET_POPUP_TOGGLE } from '../ElixirChatWidgetEventTypes';
+import {WIDGET_NAVIGATE_TO, WIDGET_POPUP_TOGGLE} from '../ElixirChatWidgetEventTypes';
 import { UNREAD_MESSAGES_CHANGE } from '../../sdk/ElixirChatEventTypes';
 import { _flatten, detectBrowser } from '../../utilsCommon';
 import {generateFontFaceRule, generateSVGIcons, unlockNotificationSoundAutoplay} from '../../utilsWidget';
@@ -27,6 +27,7 @@ export interface IWidgetState {
   extractedFontsStyles: null | string;
   customIframeStyles: null | string;
   unreadMessagesCount: number,
+  currentView: { view?: string, animation?: null | string },
 }
 
 export class Widget extends Component<IWidgetProps, IWidgetState> {
@@ -41,6 +42,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
     extractedFontsStyles: null,
     customIframeStyles: null,
     unreadMessagesCount: 0,
+    currentView: {},
   };
 
   componentDidMount() {
@@ -59,6 +61,9 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
     });
 
     elixirChatWidget.on(WIDGET_POPUP_TOGGLE, this.onPopupToggle);
+    elixirChatWidget.on(WIDGET_NAVIGATE_TO, currentView => {
+      this.setState({ currentView });
+    });
 
     elixirChatWidget.on(UNREAD_MESSAGES_CHANGE, unreadMessagesCount => {
       this.setState({ unreadMessagesCount });
@@ -134,6 +139,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
     const { elixirChatWidget } = this.props;
     const {
       detectedBrowser,
+      currentView,
       isIFrameOpen,
       isIFrameOpeningAnimation,
       isDefaultButtonHidden,
@@ -177,8 +183,12 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
             <style dangerouslySetInnerHTML={{ __html: extractedFontsStyles }}/>
             <style dangerouslySetInnerHTML={{ __html: insideIframeStyles }}/>
             <style dangerouslySetInnerHTML={{ __html: customIframeStyles }}/>
-            {/*<Chat className={`elixirchat-browser--${detectedBrowser}`} elixirChatWidget={elixirChatWidget}/>*/}
-            <WelcomeScreen elixirChatWidget={elixirChatWidget}/>
+            {currentView.view === 'chat' && (
+              <Chat className={`elixirchat-browser--${detectedBrowser}`} elixirChatWidget={elixirChatWidget}/>
+            )}
+            {currentView.view === 'welcome-screen' && (
+              <WelcomeScreen elixirChatWidget={elixirChatWidget}/>
+            )}
           </Fragment>
         </IFrameWrapper>
       </Fragment>

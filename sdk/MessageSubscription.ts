@@ -1,7 +1,5 @@
 import { ElixirChat } from './ElixirChat';
 import {
-  MESSAGES_SUBSCRIBE_SUCCESS,
-  MESSAGES_SUBSCRIBE_ERROR,
   MESSAGES_FETCH_HISTORY_SUCCESS,
   MESSAGES_FETCH_HISTORY_ERROR,
   MESSAGES_FETCH_HISTORY_INITIAL_SUCCESS,
@@ -9,7 +7,7 @@ import {
   MESSAGES_HISTORY_SET,
   MESSAGES_HISTORY_APPEND_ONE,
   MESSAGES_HISTORY_PREPEND_MANY,
-  MESSAGES_HISTORY_CHANGE_MANY,
+  MESSAGES_HISTORY_CHANGE_MANY, INITIALIZATION_ERROR,
 } from './ElixirChatEventTypes';
 
 import { IFile } from './serializers/serializeFile';
@@ -99,29 +97,17 @@ export class MessageSubscription {
   }
 
   public subscribe = (): void => {
-    const { apiUrl, authToken } = this.elixirChat;
-    this.graphQLClient = new GraphQLClient({
-      url: apiUrl,
-      token: authToken,
-    });
-    this.initializeSocketClient();
+    const { debug, triggerEvent, graphQLClientSocket } = this.elixirChat;
     this.updateMessageHistoryOnInterval();
-  };
 
-  protected initializeSocketClient(): void {
-    const { socketUrl, authToken, debug, triggerEvent } = this.elixirChat;
-
-    this.graphQLClientSocket = new GraphQLClientSocket({
-      socketUrl,
-      authToken,
+    graphQLClientSocket.subscribe({
       query: this.subscriptionQuery,
       onAbort: error => {
         logEvent(debug, 'Failed to subscribe to messages', error, 'error');
-        triggerEvent(MESSAGES_SUBSCRIBE_ERROR, error);
+        triggerEvent(INITIALIZATION_ERROR, error);
       },
       onStart: () => {
         logEvent(debug, 'Successfully subscribed to messages');
-        triggerEvent(MESSAGES_SUBSCRIBE_SUCCESS);
       },
       onResult: this.onMessageReceive,
     });
@@ -396,12 +382,11 @@ export class MessageSubscription {
                 this.generateNewClientPlaceholderMessage(processedMessages)
               );
             }
-            triggerEvent(
-              hasMessageHistoryBeenEverFetched
-                ? MESSAGES_FETCH_HISTORY_SUCCESS
-                : MESSAGES_FETCH_HISTORY_INITIAL_SUCCESS,
-              processedMessages
-            );
+            const eventType = hasMessageHistoryBeenEverFetched
+              ? MESSAGES_FETCH_HISTORY_SUCCESS
+              : MESSAGES_FETCH_HISTORY_INITIAL_SUCCESS;
+
+            triggerEvent(eventType, processedMessages, { firedOnce: true });
             resolve(processedMessages);
           }
           else {
@@ -420,11 +405,11 @@ export class MessageSubscription {
     const { triggerEvent, debug } = this.elixirChat;
     if (this.hasMessageHistoryBeenEverFetched) {
       logEvent(debug, 'Failed to fetch message history', { error }, 'error');
-      triggerEvent(MESSAGES_FETCH_HISTORY_ERROR, error);
+      triggerEvent(MESSAGES_FETCH_HISTORY_ERROR, error, { firedOnce: true });
     }
     else {
       logEvent(debug, 'Failed to fetch initial message history', { error }, 'error');
-      triggerEvent(MESSAGES_FETCH_HISTORY_INITIAL_ERROR, error);
+      triggerEvent(MESSAGES_FETCH_HISTORY_INITIAL_ERROR, error, { firedOnce: true });
     }
   };
 
@@ -435,7 +420,7 @@ export class MessageSubscription {
       .then(processedMessageHistory => {
         this.messageHistory = processedMessageHistory;
         logEvent(debug, 'Fetched new message history', { processedMessageHistory });
-        triggerEvent(MESSAGES_HISTORY_SET, processedMessageHistory);
+        triggerEvent(MESSAGES_HISTORY_SET, processedMessageHistory, { firedOnce: true });
         return processedMessageHistory;
       });
   };

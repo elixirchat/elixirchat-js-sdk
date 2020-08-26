@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import cn from 'classnames';
 import { WIDGET_MUTE, WIDGET_UNMUTE } from '../ElixirChatWidgetEventTypes';
-import { JOIN_ROOM_SUCCESS, OPERATOR_ONLINE_STATUS_CHANGE } from '../../sdk/ElixirChatEventTypes';
+import { JOINED_ROOM, OPERATOR_ONLINE_STATUS_CHANGE } from '../../sdk/ElixirChatEventTypes';
 import { ChatMessages } from './ChatMessages';
 import { ChatTextarea } from './ChatTextarea';
 
@@ -26,7 +26,7 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
   componentDidMount() {
     const { elixirChatWidget } = this.props;
 
-    elixirChatWidget.on(JOIN_ROOM_SUCCESS, () => {
+    elixirChatWidget.on(JOINED_ROOM, () => {
       this.setState({ widgetTitle: elixirChatWidget.widgetTitle });
     });
 

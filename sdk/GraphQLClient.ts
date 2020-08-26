@@ -11,28 +11,18 @@ export class GraphQLClient {
     'Accept': 'application/json',
   };
 
-  constructor({url, token}: IGraphQLClientConfig){
+  public initialize = ({ url, token }: IGraphQLClientConfig): void => {
     this.url = url;
     this.token = token;
     if (this.token) {
       this.headers.Authorization = `Bearer ${this.token}`;
     }
-  }
-
-  protected makeFormData(query: string, variables: object, binaryFiles?: object): FormData {
-    const formData = new FormData();
-    formData.append('query', query);
-    formData.append('variables', JSON.stringify(variables));
-
-    for (let fileName in binaryFiles) {
-      formData.append(fileName, binaryFiles[fileName]);
-    }
-    return formData;
   };
 
   public query(query: string, variables: object, binaryFiles: object): Promise<any> {
     let headers;
     let body;
+    variables = variables || {};
 
     if (binaryFiles) {
       body = this.makeFormData(query, variables, binaryFiles);
@@ -46,40 +36,41 @@ export class GraphQLClient {
       }
     }
 
-    return new Promise((resolve, reject) => {
-      fetch(this.url, {
-        method: 'POST',
-        headers,
-        body,
-      })
-        .then(response => response.json())
-        .then(response => {
-          if (response.errors) {
-            reject(response);
-          }
-          else if (response.data) {
-            resolve(response.data);
-          }
-          else {
-            reject(response);
-          }
-        })
-        .catch(response => reject(response));
-    });
+    return fetch(this.url, {
+      method: 'POST',
+      headers,
+      body,
+    })
+      .then(response => response.json())
+      .then(response => {
+        if (response.errors || !response.data) {
+          throw response;
+        }
+        else {
+          return response.data;
+        }
+      });
   }
+
+  protected makeFormData(query: string, variables: object, binaryFiles?: object): FormData {
+    const formData = new FormData();
+    formData.append('query', query);
+    formData.append('variables', JSON.stringify(variables));
+
+    for (let fileName in binaryFiles) {
+      formData.append(fileName, binaryFiles[fileName]);
+    }
+    return formData;
+  };
 }
 
 
-export interface ISimplifyGraphQLJSON {
-  (graphQLJSON: { edges: Array<any> }): object
-}
-
-export const simplifyGraphQLJSON: ISimplifyGraphQLJSON = (graphQLJSON) => {
+export function simplifyGraphQLJSON(graphQLJSON: { edges: Array<any> }): Array<any> {
   return graphQLJSON.edges.map(data => ({
     ...data.node,
     cursor: data.cursor,
   }));
-};
+}
 
 
 /**
@@ -89,27 +80,33 @@ export const simplifyGraphQLJSON: ISimplifyGraphQLJSON = (graphQLJSON) => {
  *
  * It's only designed to trigger WebStorm Plugin "JS GraphQL" highlight strings as graphql queries
  */
-export interface IGql {
-  (queryParts: Array<string>, ...variables: Array<any>): string
-}
-
-export const gql: IGql = (queryParts, ...variables) => {
+export function gql(queryParts: Array<string>, ...variables: Array<any>): string {
   let str = '';
   for (let i = 0; i < queryParts.length; i ++) {
     str += queryParts[i] + (variables[i] || '');
   }
   return str;
-};
-
-
-export interface IInsertGraphQlFragments {
-  (query: string, fragments: object): string
 }
 
-export const insertGraphQlFragments: IInsertGraphQlFragments = (query, fragments = {}) => {
+
+export function insertGraphQlFragments(query: string, fragments: object = {}): string {
   let fragmentsString = '';
   for (let name in fragments) {
     fragmentsString += fragments[name];
   }
   return query + fragmentsString;
-};
+}
+
+
+export function parseGraphQLMethodFromQuery(query: string): string {
+  try {
+    return query.trim()
+      .replace(/(\([^\)]*\))/ig, '')
+      .replace(/([a-z]+)?\s*/i, '')
+      .replace(/^\{\s*|\s*\}$/ig, '')
+      .split(/\s*\{/)[0];
+  }
+  catch (e) {
+    return '';
+  }
+}

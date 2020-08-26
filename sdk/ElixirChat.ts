@@ -16,16 +16,20 @@ import { UpdateMessageSubscription } from './UpdateMessageSubscription';
 import { ISentMessageSerialized, MessageSubscription } from './MessageSubscription';
 import { gql, GraphQLClient, insertGraphQlFragments } from './GraphQLClient';
 import {
-  JOIN_ROOM_ERROR,
-  JOIN_ROOM_SUCCESS,
+  INITIALIZATION_SUCCESS,
+  INITIALIZATION_ERROR,
   LAST_READ_MESSAGE_CHANGE,
-  MESSAGES_HISTORY_CHANGE_MANY, UPDATE_MESSAGES_CHANGE,
+  MESSAGES_HISTORY_CHANGE_MANY,   // TODO: refactor
+  UPDATE_MESSAGES_CHANGE,         // TODO: refactor
 } from './ElixirChatEventTypes';
+import {GraphQLClientSocket} from './GraphQLClientSocket';
 
 
 export interface IElixirChatRoom {
   id: string;
   title?: string;
+  data?: any;
+  isPrivate: boolean;
 }
 
 export interface IElixirChatUser {
@@ -46,22 +50,16 @@ export interface IElixirChatConfig {
 export class ElixirChat {
 
   public version: string = process.env.ELIXIRCHAT_VERSION;
-
-  public apiUrl: string;
-  public socketUrl: string;
-  public companyId: string;
+  public config: IElixirChatConfig = {};
   public room?: IElixirChatRoom;
   public client?: IElixirChatUser;
   public debug: boolean;
 
   public isInitialized: boolean = false;
+  public isConnected: boolean;
   public elixirChatRoomId: string;
   public elixirChatClientId: string;
-  public authToken: string;
-  public isConnected: boolean;
-  public isPrivate: boolean;
-
-  public widgetMustInitiallyOpen: boolean = false;
+  public shouldPopUp: boolean = false;
 
   public get areAnyOperatorsOnline(): boolean {
     return this.operatorOnlineStatusSubscription.areAnyOperatorsOnline;
@@ -82,43 +80,19 @@ export class ElixirChat {
     return this.messageSubscription.reachedBeginningOfMessageHistory;
   }
 
-  protected eventCallbacks: object = {};
-  protected graphQLClient: GraphQLClient;
-  protected messageSubscription: MessageSubscription;
-  protected updateMessageSubscription: UpdateMessageSubscription;
-  protected operatorOnlineStatusSubscription: OperatorOnlineStatusSubscription;
-  protected typingStatusSubscription: TypingStatusSubscription;
-  protected unreadMessagesCounter: UnreadMessagesCounter;
-  protected screenshotTaker: ScreenshotTaker;
+  public graphQLClient: GraphQLClient;
+  public graphQLClientSocket: GraphQLClientSocket;
+  public messageSubscription: MessageSubscription;
+  public updateMessageSubscription: UpdateMessageSubscription;
+  public operatorOnlineStatusSubscription: OperatorOnlineStatusSubscription;
+  public typingStatusSubscription: TypingStatusSubscription;
+  public unreadMessagesCounter: UnreadMessagesCounter;
+  public screenshotTaker: ScreenshotTaker;
 
-  protected joinRoomQuery: string = insertGraphQlFragments(gql`
-    mutation($companyId: Uuid!, $room: ForeignRoom, $client: ForeignClient!) {
-      joinRoom (companyId: $companyId, room: $room, client: $client) {
-        token
-        company {
-          isWorking
-          widgetTitle
-        }
-        client {
-          ...fragmentUser
-        }
-        room {
-          id
-          title
-          foreignId
-          mustOpenWidget
-        }
-      }
-    }
-  `, { fragmentUser });
+  private eventHandlers: object = {};
 
   constructor(config: IElixirChatConfig) {
-    this.apiUrl = config.apiUrl;
-    this.socketUrl = config.socketUrl;
-    this.companyId = config.companyId;
-    this.debug = config.debug || false;
-
-    if (this.hasAllRequiredConfigParameters()) {
+    if (this.hasAllRequiredConfigParameters(config)) {
       this.initialize(config);
     }
     if (typeof window !== 'undefined') {
@@ -126,14 +100,14 @@ export class ElixirChat {
     }
   }
 
-  protected hasAllRequiredConfigParameters(): boolean {
+  private hasAllRequiredConfigParameters(config: IElixirChatConfig): boolean {
     const requiredParams = ['apiUrl', 'socketUrl', 'companyId'];
     const missingRequiredParams = requiredParams.filter(paramKey => {
-      return !this[paramKey];
+      return !config[paramKey];
     });
     if (missingRequiredParams.length) {
       const message = `Required parameters: ${missingRequiredParams.join(', ')} not provided. \nSee more: https://github.com/elixirchat/elixirchat-js-sdk#config`;
-      logEvent(this.debug, message, null, 'error');
+      logEvent(true, message, null, 'error');
       return false;
     }
     else {
@@ -141,112 +115,78 @@ export class ElixirChat {
     }
   };
 
-  protected initialize(config: IElixirChatConfig): void {
-    logEvent(this.debug, 'Initializing ElixirChat', {
-      apiUrl: this.apiUrl,
-      socketUrl: this.socketUrl,
-      companyId: this.companyId,
-      room: this.room,
-      client: this.client,
-      debug: this.debug,
-    });
-
+  private initialize(config: IElixirChatConfig): void {
+    logEvent(this.debug, 'Initializing ElixirChat', config);
+    this.config = config || {};
+    this.debug = Boolean(config?.debug) || false;
     this.isInitialized = true;
 
-    this.on(JOIN_ROOM_SUCCESS, data => {
-      logEvent(this.debug, 'Joined room', data);
-      const areAnyOperatorsOnline = data?.company?.isWorking;
-
-      this.messageSubscription.subscribe();
-      this.updateMessageSubscription.subscribe();
-      this.unreadMessagesCounter.subscribe();
-      this.typingStatusSubscription.subscribe();
-      this.operatorOnlineStatusSubscription.subscribe(areAnyOperatorsOnline);
-    });
-
-    this.on(JOIN_ROOM_ERROR, error => {
-      logEvent(this.debug, 'Failed to join room', { error }, 'error');
-    });
-
-    this.on(LAST_READ_MESSAGE_CHANGE, this.markPrecedingMessagesRead);
-
-    this.setRoomAndClient({ room: config.room, client: config.client });
+    this.graphQLClient = new GraphQLClient();
+    this.graphQLClientSocket = new GraphQLClientSocket();
     this.screenshotTaker = new ScreenshotTaker({ elixirChat: this });
     this.messageSubscription = new MessageSubscription({ elixirChat: this });
-    this.updateMessageSubscription = new UpdateMessageSubscription({ elixirChat: this });
     this.unreadMessagesCounter = new UnreadMessagesCounter({ elixirChat: this });
+    this.updateMessageSubscription = new UpdateMessageSubscription({ elixirChat: this });
     this.typingStatusSubscription = new TypingStatusSubscription({ elixirChat: this });
     this.operatorOnlineStatusSubscription = new OperatorOnlineStatusSubscription({ elixirChat: this });
 
     this.on(UPDATE_MESSAGES_CHANGE, updatedMessage => {
       this.messageSubscription.changeMessageBy({ id: updatedMessage.id }, updatedMessage);
     });
+    this.on(LAST_READ_MESSAGE_CHANGE, this.markPrecedingMessagesRead);
 
-    this.joinRoom();
+    return this.joinRoom();
   }
 
-  protected markPrecedingMessagesRead = (lastReadMessageId: string): Array<IMessage> => {
-    const messageIds = this.messageHistory.map(message => message.id);
-    const lastReadMessageIndex = messageIds.indexOf(lastReadMessageId);
-    this.messageHistory.forEach((message, index) => {
-      if (lastReadMessageIndex >= index) {
-        message.isUnread = false;
+  private serializeRoom(rawRoom: any): IElixirChatRoom {
+    rawRoom = rawRoom || {};
+    const localStorageRoom: IElixirChatRoom = getJSONFromLocalStorage('elixirchat-room') || {};
+    const isPrivate = !(rawRoom.id || localStorageRoom.id);
+
+    const roomId = rawRoom.id || localStorageRoom.id || clientId;
+    const roomTitle = rawRoom.title || localStorageRoom.title || clientFirstName + ' ' + clientLastName;
+
+    const roomDataObj = {};
+    if (typeof rawRoom.data === 'object') {
+      for (let key in rawRoom.data) {
+        roomDataObj[key] = rawRoom.data[key].toString();
       }
-    });
-    this.triggerEvent(MESSAGES_HISTORY_CHANGE_MANY, this.messageHistory);
+    }
+    return {
+      id: roomId.toString(),
+      title: roomTitle,
+      data: JSON.stringify(roomDataObj),
+      isPrivate,
+    };
   };
 
-  protected setRoomAndClient(data: { room?: IElixirChatRoom, client?: IElixirChatUser }): void {
-    let room: any = data.room || {};
-    let client: any = data.client || {};
-
-    const localStorageRoom: IElixirChatRoom = getJSONFromLocalStorage('elixirchat-room') || {};
+  private serializeClient(rawClient: any): IElixirChatUser {
+    rawClient = rawClient || {};
     const localStorageClient: IElixirChatUser = getJSONFromLocalStorage('elixirchat-client') || {};
     const anonymousClientData = this.generateAnonymousClientData();
 
-    const clientId = client.id || localStorageClient.id || anonymousClientData.id;
+    const clientId = rawClient.id || localStorageClient.id || anonymousClientData.id;
 
-    let clientFirstName = typeof client.firstName === 'string'
-      ? client.firstName
+    let clientFirstName = typeof rawClient.firstName === 'string'
+      ? rawClient.firstName
       : localStorageClient.firstName || anonymousClientData.firstName;
 
-    let clientLastName = typeof client.lastName === 'string'
-      ? client.lastName
+    let clientLastName = typeof rawClient.lastName === 'string'
+      ? rawClient.lastName
       : localStorageClient.lastName || anonymousClientData.lastName;
 
     if (!clientFirstName && !clientLastName) {
       clientFirstName = localStorageClient.firstName || anonymousClientData.firstName;
       clientLastName = localStorageClient.lastName || anonymousClientData.lastName;
     }
-
-    this.client = {
+    return {
       id: clientId.toString(),
       firstName: clientFirstName,
       lastName: clientLastName,
     };
+  }
 
-    this.isPrivate = !(room.id || localStorageRoom.id);
-
-    const roomId = room.id || localStorageRoom.id || clientId;
-    const roomTitle = room.title || localStorageRoom.title || clientFirstName + ' ' + clientLastName;
-    const roomData = room.data || {};
-    this.room = {
-      id: roomId.toString(),
-      title: roomTitle,
-      data: roomData,
-    };
-
-    localStorage.setItem('elixirchat-room', JSON.stringify(room));
-    localStorage.setItem('elixirchat-client', JSON.stringify(client));
-
-    logEvent(this.debug, 'Set room and client values', {
-      room: this.room,
-      client: this.client,
-      isPrivate: this.isPrivate,
-    });
-  };
-
-  protected generateAnonymousClientData(): IElixirChatUser {
+  private generateAnonymousClientData(): IElixirChatUser {
     const baseTitle = uniqueNamesGenerator({ length: 2, separator: ' ', dictionaries: null });
     const [firstName, lastName] = baseTitle.split(' ').map(capitalize);
     const randomFourDigitPostfix = randomDigitStringId(4);
@@ -258,20 +198,111 @@ export class ElixirChat {
     };
   }
 
-  protected serializeRoomData(data){
-    const serializedData = {};
-    for (let key in data) {
-      serializedData[key] = data[key].toString();
+  private joinRoom(room: any, client: any): Promise<void> {
+    this.room = this.serializeRoom(room);
+    this.client = this.serializeClient(client);
+
+    localStorage.setItem('elixirchat-room', JSON.stringify(this.room));
+    localStorage.setItem('elixirchat-client', JSON.stringify(this.client));
+
+    const variables = {
+      companyId: this.config.companyId,
+      client: this.client,
+      room: this.room,
+    };
+    const query = insertGraphQlFragments(gql`
+      mutation($companyId: Uuid!, $room: ForeignRoom, $client: ForeignClient!) {
+        joinRoom (companyId: $companyId, room: $room, client: $client) {
+          token
+          company {
+            isWorking
+            widgetTitle
+          }
+          client { ...fragmentUser }
+          room {
+            id
+            title
+            foreignId
+            mustOpenWidget
+          }
+        }
+      }
+    `, { fragmentUser });
+
+    const publicGraphQLClient = new GraphQLClient();
+    publicGraphQLClient.initialize({ url: this.config.apiUrl });
+
+    return publicGraphQLClient.query(query, variables)
+      .then((response: any) => {
+        if (response?.joinRoom) {
+          this.triggerEvent(INITIALIZATION_SUCCESS, response.joinRoom);
+          this.onJoinRoomSuccess(response.joinRoom);
+          return response.joinRoom;
+        }
+        else {
+          this.triggerEvent(INITIALIZATION_ERROR, response);
+          throw response;
+        }
+      }).catch((response) => {
+        this.triggerEvent(INITIALIZATION_ERROR, response);
+        throw response;
+    });
+  }
+
+  private onJoinRoomSuccess(data){
+    const { apiUrl, socketUrl } = this.config;
+    logEvent(this.debug, 'Joined room', data);
+
+    this.isConnected = true;
+    this.elixirChatClientId = data.client.id;
+    this.elixirChatRoomId = data.room.id;
+    this.shouldPopUp = data.room.mustOpenWidget;
+
+    this.graphQLClient.initialize({ url: apiUrl, token: data.token });
+    this.graphQLClientSocket.initialize({ url: socketUrl, token: data.token });
+
+    this.messageSubscription.subscribe();
+    this.updateMessageSubscription.subscribe();
+    this.unreadMessagesCounter.subscribe();
+    this.typingStatusSubscription.subscribe();
+    this.operatorOnlineStatusSubscription.subscribe({
+      areAnyOperatorsOnline: Boolean(data?.company?.isWorking)
+    });
+  }
+
+  private checkIfConnected(): Promise<any> {
+    if (this.isConnected) {
+      return Promise.resolve();
     }
-    return JSON.stringify(serializedData);
+    else {
+      const message = 'ElixirChat is not currently connected. Use reconnect({ room, client }) method to connect to a room.';
+      logEvent(this.debug, message, null, 'error');
+      return Promise.reject({ message });
+    }
   };
 
-  public triggerEvent = (eventName, ...params) => {
-    logEvent(this.debug, eventName, { params }, 'event');
-    const callbacks = this.eventCallbacks[eventName];
-    if (callbacks && callbacks.length) {
-      callbacks.forEach(callback => callback(...params));
+  private markPrecedingMessagesRead(lastReadMessageId: string): Array<IMessage> {
+    const messageIds = this.messageHistory.map(message => message.id);
+    const lastReadMessageIndex = messageIds.indexOf(lastReadMessageId);
+    this.messageHistory.forEach((message, index) => {
+      if (lastReadMessageIndex >= index) {
+        message.isUnread = false;
+      }
+    });
+    this.triggerEvent(MESSAGES_HISTORY_CHANGE_MANY, this.messageHistory);
+  };
+
+  public triggerEvent = (eventName, data, options?) => {
+    options = options || {};
+    logEvent(this.debug, eventName, data, 'event');
+
+    if (!this.eventHandlers[eventName]?.callbacks) {
+      this.eventHandlers[eventName] = { callbacks: [] };
     }
+    const eventHandler = this.eventHandlers[eventName];
+    eventHandler.firedOnce = options.firedOnce;
+    eventHandler.firedOnceArguments = data;
+    eventHandler.callbacks.forEach(callback => callback(data));
   };
 
   public on = (eventName, callback) => {
@@ -279,93 +310,59 @@ export class ElixirChat {
       eventName.map(singleEventName => this.on(singleEventName, callback));
     }
     else {
-      if (!this.eventCallbacks[eventName]) {
-        this.eventCallbacks[eventName] = [];
+      if (!this.eventHandlers[eventName]?.callbacks) {
+        this.eventHandlers[eventName] = { callbacks: [] };
       }
-      this.eventCallbacks[eventName].push(callback);
+      const eventHandler = this.eventHandlers[eventName];
+      eventHandler.callbacks.push(callback);
+      if (eventHandler.firedOnce) {
+        callback(eventHandler.firedOnceArguments);
+      }
     }
   };
 
   public off = (eventName, callback) => {
-    let callbacks = this.eventCallbacks[eventName];
-    if (callbacks && callbacks.length) {
-      this.eventCallbacks[eventName] = callbacks.filter(currentCallback => currentCallback !== callback);
+    const eventHandler = this.eventHandlers[eventName];
+    if (eventHandler.callbacks?.length) {
+      eventHandler.callbacks = eventHandler.callbacks.filter(currentCallback => currentCallback !== callback);
     }
   };
 
-  protected joinRoom(): Promise<void> {
-    this.graphQLClient = new GraphQLClient({ url: this.apiUrl });
-
-    const query = this.joinRoomQuery;
-    const variables = {
-      companyId: this.companyId,
-      client: this.client,
-      room: {
-        id: this.room.id,
-        title: this.room.title,
-        data: this.serializeRoomData(this.room.data)
-      },
-    };
-
-    return this.graphQLClient.query(query, variables)
-      .then(({ joinRoom }: any) => {
-        if (joinRoom) {
-          this.isConnected = true;
-          this.authToken = joinRoom.token;
-          this.widgetMustInitiallyOpen = joinRoom.room.mustOpenWidget;
-          this.elixirChatClientId = joinRoom.client.id;
-          this.elixirChatRoomId = joinRoom.room.id;
-          this.triggerEvent(JOIN_ROOM_SUCCESS, joinRoom);
-        }
-        else {
-          this.triggerEvent(JOIN_ROOM_ERROR, joinRoom);
-        }
-      }).catch((response) => {
-        this.triggerEvent(JOIN_ROOM_ERROR, response);
-    });
-  }
-
   public sendMessage = (params: ISentMessageSerialized): Promise<IMessage> => {
-    if (!this.isConnected) {
-      return this.showDisconnectedError(true);
-    }
-    this.typingStatusSubscription.dispatchTypedText(false);
-    return this.messageSubscription.sendMessage(params);
+    return this.checkIfConnected().then(() => {
+      this.typingStatusSubscription.dispatchTypedText(false);
+      return this.messageSubscription.sendMessage(params);
+    });
   };
 
   public retrySendMessage = (message: IMessage): Promise<IMessage> => {
-    if (!this.isConnected) {
-      return this.showDisconnectedError(true);
-    }
-    return this.messageSubscription.retrySendMessage(message);
+    return this.checkIfConnected().then(() => {
+      return this.messageSubscription.retrySendMessage(message);
+    });
   };
 
   public fetchMessageHistory = (limit: number): Promise<[IMessage]> => {
-    if (!this.isConnected) {
-      return this.showDisconnectedError(true);
-    }
-    return this.messageSubscription.fetchMessageHistory(limit);
+    return this.checkIfConnected().then(() => {
+      return this.messageSubscription.fetchMessageHistory(limit);
+    });
   };
 
   public fetchPrecedingMessageHistory = (limit: number): Promise<[IMessage]> => {
-    if (!this.isConnected) {
-      return this.showDisconnectedError(true);
-    }
-    return this.messageSubscription.fetchPrecedingMessageHistory(limit);
+    return this.checkIfConnected().then(() => {
+      return this.messageSubscription.fetchPrecedingMessageHistory(limit);
+    });
   };
 
   public dispatchTypedText = (typedText: string): void => {
-    if (!this.isConnected) {
-      return this.showDisconnectedError();
-    }
-    this.typingStatusSubscription.dispatchTypedText(typedText);
+    return this.checkIfConnected().then(() => {
+      return this.typingStatusSubscription.dispatchTypedText(typedText);
+    });
   };
 
   public setLastReadMessage = (messageId: string): Promise<IUnreadMessagesCounterData> => {
-    if (!this.isConnected) {
-      return this.showDisconnectedError(true);
-    }
-    return this.unreadMessagesCounter.setLastReadMessage(messageId);
+    return this.checkIfConnected().then(() => {
+      return this.unreadMessagesCounter.setLastReadMessage(messageId);
+    });
   };
 
   public takeScreenshot = (): Promise<IScreenshot> => {
@@ -373,33 +370,22 @@ export class ElixirChat {
   };
 
   public disconnect = (): void => {
-    if (!this.isConnected) {
-      return this.showDisconnectedError();
-    }
-    logEvent(this.debug, 'Disconnecting from ElixirChat');
-    this.isConnected = false;
-    this.messageSubscription.unsubscribe();
-    this.updateMessageSubscription.unsubscribe();
-    this.unreadMessagesCounter.unsubscribe();
-    this.typingStatusSubscription.unsubscribe();
-    this.operatorOnlineStatusSubscription.unsubscribe();
+    return this.checkIfConnected().then(() => {
+      logEvent(this.debug, 'Disconnecting from ElixirChat');
+      this.isConnected = false;
+      this.messageSubscription.unsubscribe();
+      this.updateMessageSubscription.unsubscribe();
+      this.unreadMessagesCounter.unsubscribe();
+      this.typingStatusSubscription.unsubscribe();
+      this.operatorOnlineStatusSubscription.unsubscribe();
+    });
+    // TODO: remove firedOnce params? use .off()?
   };
 
-  public reconnect = ({ room, client }: { room?: IElixirChatRoom, client?: IElixirChatUser }): Promise<void> => {
-    logEvent(this.debug, 'Attempting to reconnect to another room', { room, client });
-    this.setRoomAndClient({ room, client });
+  public reconnect = (config: { room?: IElixirChatRoom, client?: IElixirChatUser }): Promise<void> => {
+    logEvent(this.debug, 'Attempting to reconnect to another room', config);
     this.disconnect();
-    return this.joinRoom();
-  };
-
-  protected showDisconnectedError(returnPromise): void | Promise<any> {
-    const message = 'ElixirChat is not currently connected. Use reconnect() method to connect to another room.';
-    logEvent(this.debug, message, null, 'error');
-    if (returnPromise) {
-      return new Promise((resolve, reject) => {
-        reject({ message });
-      });
-    }
+    return this.joinRoom(config.room, config.client);
   };
 }
 

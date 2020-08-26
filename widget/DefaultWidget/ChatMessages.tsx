@@ -37,14 +37,13 @@ import {
 } from '../ElixirChatWidgetEventTypes';
 import {
   JOIN_ROOM_ERROR,
-  MESSAGES_SUBSCRIBE_ERROR,
   MESSAGES_FETCH_HISTORY_INITIAL_ERROR,
   MESSAGES_HISTORY_SET,
   MESSAGES_HISTORY_APPEND_ONE,
   MESSAGES_HISTORY_PREPEND_MANY,
   MESSAGES_HISTORY_CHANGE_MANY,
-  JOIN_ROOM_SUCCESS,
-  TYPING_STATUS_CHANGE,
+  JOINED_ROOM,
+  TYPING_STATUS_CHANGE, INITIALIZATION_ERROR,
 } from '../../sdk/ElixirChatEventTypes';
 
 export interface IDefaultWidgetMessagesProps {
@@ -99,7 +98,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
       screenshotFallback: getScreenshotCompatibilityFallback(),
     });
 
-    elixirChatWidget.on(JOIN_ROOM_SUCCESS, () => {
+    elixirChatWidget.on(JOINED_ROOM, () => {
       elixirChatWidget.fetchMessageHistory(this.messageChunkSize);
     });
     elixirChatWidget.on(WIDGET_IFRAME_READY, () => {
@@ -131,7 +130,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     elixirChatWidget.on(MESSAGES_HISTORY_CHANGE_MANY, messages => {
       this.setProcessedMessages(messages);
     });
-    elixirChatWidget.on([JOIN_ROOM_ERROR, MESSAGES_SUBSCRIBE_ERROR, MESSAGES_FETCH_HISTORY_INITIAL_ERROR], (e) => {
+    elixirChatWidget.on([INITIALIZATION_ERROR, JOIN_ROOM_ERROR, MESSAGES_FETCH_HISTORY_INITIAL_ERROR], (e) => {
       const errorMessage = e && e.message ? e.message : 'Unknown error';
       const loadingErrorInfo = `Message: ${errorMessage}\nData: ${JSON.stringify(e)}`;
       this.setState({
@@ -397,7 +396,10 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
   onPreviewClick = (e, preview) => {
     const { elixirChatWidget } = this.props;
     const { fullScreenPreviews } = this.state;
-    elixirChatWidget.triggerEvent(IMAGE_PREVIEW_OPEN, preview, fullScreenPreviews);
+    elixirChatWidget.triggerEvent(IMAGE_PREVIEW_OPEN, {
+      preview,
+      gallery: fullScreenPreviews,
+    });
     e.preventDefault();
   };
 

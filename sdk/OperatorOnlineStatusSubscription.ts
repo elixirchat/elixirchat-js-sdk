@@ -27,7 +27,7 @@ export class OperatorOnlineStatusSubscription {
     this.elixirChat = elixirChat;
   }
 
-  public subscribe = (areAnyOperatorsOnline): void => {
+  public subscribe = ({ areAnyOperatorsOnline }): void => {
     const { triggerEvent } = this.elixirChat;
     this.areAnyOperatorsOnline = areAnyOperatorsOnline;
     triggerEvent(OPERATOR_ONLINE_STATUS_CHANGE, this.areAnyOperatorsOnline);
@@ -51,11 +51,11 @@ export class OperatorOnlineStatusSubscription {
       query: this.subscriptionQuery,
       onAbort: error => {
         logEvent(debug, 'Failed to subscribe to operator online status change', error, 'error');
-        triggerEvent(OPERATOR_ONLINE_STATUS_SUBSCRIBE_ERROR, error);
+        triggerEvent(OPERATOR_ONLINE_STATUS_SUBSCRIBE_ERROR, error, { firedOnce: true });
       },
       onStart: () => {
         logEvent(debug, 'Successfully subscribed to operator online status change');
-        triggerEvent(OPERATOR_ONLINE_STATUS_SUBSCRIBE_SUCCESS);
+        triggerEvent(OPERATOR_ONLINE_STATUS_SUBSCRIBE_SUCCESS, null, { firedOnce: true });
       },
       onResult: ({ data }) => {
         this.areAnyOperatorsOnline = data && data.updateCompanyWorking;
