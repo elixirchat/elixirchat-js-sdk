@@ -6,17 +6,13 @@ import {
 } from './ElixirChatEventTypes';
 
 import { gql, insertGraphQlFragments } from './GraphQLClient';
-import { GraphQLClientSocket } from './GraphQLClientSocket';
-import { logEvent } from '../utilsCommon';
 import { fragmentMessage, serializeMessage } from './serializers/serializeMessage';
 
 
 export class UpdateMessageSubscription {
 
-  protected elixirChat: ElixirChat;
-  protected graphQLClientSocket: GraphQLClientSocket;
-
-  protected subscriptionQuery: string = insertGraphQlFragments(gql`
+  public elixirChat: ElixirChat;
+  public subscriptionQuery: string = insertGraphQlFragments(gql`
     subscription {
       updateMessage {
         ...fragmentMessage
@@ -29,41 +25,29 @@ export class UpdateMessageSubscription {
   }
 
   public subscribe = (): void => {
-    this.initializeSocketClient();
-  };
+    const { graphQLClientSocket, triggerEvent } = this.elixirChat;
 
-  public unsubscribe = (): void => {
-    const { debug } = this.elixirChat;
-    logEvent(debug, 'Unsubscribing from update message...');
-
-    this.graphQLClientSocket.unsubscribe();
-    this.graphQLClientSocket = null;
-  };
-
-  protected initializeSocketClient(): void {
-    const { socketUrl, authToken, debug, triggerEvent } = this.elixirChat;
-
-    this.graphQLClientSocket = new GraphQLClientSocket({
-      socketUrl,
-      authToken,
+    graphQLClientSocket.subscribe({
       query: this.subscriptionQuery,
       onAbort: error => {
-        logEvent(debug, 'Failed to subscribe to update message', error, 'error');
-        triggerEvent(UPDATE_MESSAGES_SUBSCRIBE_ERROR, error, { firedOnce: true });
+        triggerEvent(UPDATE_MESSAGES_SUBSCRIBE_ERROR, error);
       },
       onStart: () => {
-        logEvent(debug, 'Successfully subscribed to update message');
-        triggerEvent(UPDATE_MESSAGES_SUBSCRIBE_SUCCESS, null, { firedOnce: true });
+        triggerEvent(UPDATE_MESSAGES_SUBSCRIBE_SUCCESS);
       },
       onResult: (response) => {
         const data = response?.data?.updateMessage;
-        if (!data) {
-          return;
+        if (data) {
+          const updatedMessage = serializeMessage(data, this.elixirChat);
+          triggerEvent(UPDATE_MESSAGES_CHANGE, updatedMessage);
         }
-        const updatedMessage = serializeMessage(data, this.elixirChat);
-        logEvent(debug, 'A message was updated', { updatedMessage });
-        triggerEvent(UPDATE_MESSAGES_CHANGE, updatedMessage);
       },
     });
+  };
+
+  public unsubscribe = (): void => {
+    const { graphQLClientSocket, logInfo } = this.elixirChat;
+    logInfo('Unsubscribing from update message...');
+    graphQLClientSocket.unsubscribe(this.subscriptionQuery);
   };
 }

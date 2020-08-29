@@ -10,12 +10,10 @@ import {
   IMAGE_PREVIEW_CLOSE,
   TEXTAREA_VERTICAL_RESIZE,
   WIDGET_IFRAME_READY,
-  WIDGET_POPUP_OPEN,
   WIDGET_RENDERED,
-  WIDGET_MUTE,
-  WIDGET_UNMUTE,
   SCREENSHOT_REQUEST_SUCCESS,
   SCREENSHOT_REQUEST_ERROR,
+  WIDGET_MUTE_TOGGLE, WIDGET_POPUP_TOGGLE,
 } from '../ElixirChatWidgetEventTypes';
 
 import { TYPING_STATUS_SUBSCRIBE_SUCCESS } from '../../sdk/ElixirChatEventTypes';
@@ -71,16 +69,18 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
       this.setState(savedTypedText);
     });
     elixirChatWidget.on(WIDGET_RENDERED, () => {
-      if (elixirChatWidget.isWidgetPopupOpen) {
+      if (elixirChatWidget.widgetIsPopupOpen) {
         this.focusTextarea();
       }
     });
-    elixirChatWidget.on(WIDGET_POPUP_OPEN, () => {
-      this.onVerticalResize();
-      this.focusTextarea();
+    elixirChatWidget.on(WIDGET_POPUP_TOGGLE, isOpen => {
+      if (isOpen) {
+        this.onVerticalResize();
+        this.focusTextarea();
+      }
     });
     elixirChatWidget.on(SCREENSHOT_REQUEST_SUCCESS, this.onScreenshotRequestSuccess);
-    elixirChatWidget.on(SCREENSHOT_REQUEST_ERROR, () => { elixirChatWidget.togglePopup(); });
+    elixirChatWidget.on(SCREENSHOT_REQUEST_ERROR, () => { elixirChatWidget.openPopup(); });
     elixirChatWidget.on(IMAGE_PREVIEW_CLOSE, () => this.focusTextarea);
 
     elixirChatWidget.on(REPLY_MESSAGE, messageId => {
@@ -89,7 +89,7 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
       this.onVerticalResize();
       this.focusTextarea();
     });
-    elixirChatWidget.on([WIDGET_MUTE, WIDGET_UNMUTE], () => {
+    elixirChatWidget.on(WIDGET_MUTE_TOGGLE, () => {
       this.focusTextarea();
     });
 
@@ -284,7 +284,7 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
 
   onScreenShotClick = () => {
     const { elixirChatWidget } = this.props;
-    elixirChatWidget.togglePopup();
+    elixirChatWidget.closePopup();
     elixirChatWidget.takeScreenshot();
   };
 
@@ -298,7 +298,7 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
       isScreenshot: true,
     }]);
 
-    elixirChatWidget.togglePopup();
+    elixirChatWidget.openPopup();
     const updatedText = textareaText.trim() ? textareaText : 'Вот скриншот моего экрана';
     this.setState({ textareaText: updatedText });
   };

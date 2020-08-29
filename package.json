@@ -26,6 +26,7 @@
   "homepage": "https://github.com/elixirchat/elixirchat-js-sdk#readme",
   "dependencies": {
     "@absinthe/socket": "^0.2.1",
+    "@sentry/browser": "^5.22.3",
     "classnames": "^2.2.6",
     "dayjs": "^1.8.28",
     "phoenix": "^1.5.3",

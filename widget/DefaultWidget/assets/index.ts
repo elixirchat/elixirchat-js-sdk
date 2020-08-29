@@ -1,6 +1,6 @@
 /**
  * Styles are imported as base64-strings via fs.readFileSync() in order to include
- * them into a single bundle JS file, not simply copy to /dist folder as separate files
+ * them into a single-bundle JS file, not simply copy to /dist folder as separate files
  *
  * Note that Parcel bundler utilizes a very limited custom implementation of fs.readFileSync()
  * @see https://en.parceljs.org/javascript.html#javascript
@@ -10,6 +10,8 @@ const fs = require('fs');
 const woffDataUrlPrefix = 'data:font/woff;base64,';
 const mp3DataUrlPrefix = 'data:audio/mpeg;base64,';
 const svgDataUrlPrefix = 'data:image/svg+xml;base64,';
+
+// TODO: read as buffer, not base64? https://parceljs.org/javascript.html
 
 export default {
   fontGraphikBold:          woffDataUrlPrefix + fs.readFileSync(__dirname + '/fonts/Graphik-Bold-Web.woff', { encoding: 'base64' }),

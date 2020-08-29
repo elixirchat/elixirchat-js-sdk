@@ -1,46 +1,46 @@
-export function logEvent(isDebug:boolean = false, message: string, data: any, type?: 'info' | 'event' | 'error' = 'info'): void {
-  if (isDebug && window.console) {
-    let color = '';
-    if (type === 'error') {
-      color = '#EB3223';
-    }
-    else if (type === 'event') {
-      color = /_ERROR$/i.test(message) ? '#eba4a7' : '#5ee9eb';
-    }
-    const messageConsoleStyles = `
-       font-weight: bold;
-       color: ${color};
-    `;
-    const infoButtonConsoleStyles = `
-      font-weight: normal;
-      text-decoration: underline;
-      color: ${color};
-    `;
-    const arrowConsoleStyles = `
-      font: 10px Arial;
-      padding-left: 3px;
-      color: ${color};
-    `;
-    const additionalDataConsoleStyles = `font-weight: bold;`;
-
-    console.groupCollapsed(`%cElixirChat: ${message} %cInfo%c▾`, messageConsoleStyles, infoButtonConsoleStyles, arrowConsoleStyles);
-
-    if (type === 'error') {
-      console.error(data);
-    }
-    else if (data && typeof data === 'object' && !(data instanceof Array)) {
-      Object.keys(data).forEach(key => {
-        console.log(`%c${key}:\n`, additionalDataConsoleStyles, data[key], '\n');
-      });
-    }
-    else {
-      console.log('%c\nData:\n', additionalDataConsoleStyles, data);
-    }
-    console.log('%c\nStacktrace:', additionalDataConsoleStyles);
-    console.trace();
-    console.groupEnd();
-  }
-}
+// export function logEvent(isDebug:boolean = false, message: string, data: any, type?: 'info' | 'event' | 'error' = 'info'): void {
+//   if (isDebug && window.console) {
+//     let color = '';
+//     if (type === 'error') {
+//       color = '#EB3223';
+//     }
+//     else if (type === 'event') {
+//       color = /_ERROR$/i.test(message) ? '#eba4a7' : '#5ee9eb';
+//     }
+//     const messageConsoleStyles = `
+//        font-weight: bold;
+//        color: ${color};
+//     `;
+//     const infoButtonConsoleStyles = `
+//       font-weight: normal;
+//       text-decoration: underline;
+//       color: ${color};
+//     `;
+//     const arrowConsoleStyles = `
+//       font: 10px Arial;
+//       padding-left: 3px;
+//       color: ${color};
+//     `;
+//     const additionalDataConsoleStyles = `font-weight: bold;`;
+//
+//     console.groupCollapsed(`%cElixirChat: ${message} %cInfo%c▾`, messageConsoleStyles, infoButtonConsoleStyles, arrowConsoleStyles);
+//
+//     if (type === 'error') {
+//       console.error(data);
+//     }
+//     else if (data && typeof data === 'object' && !(data instanceof Array)) {
+//       Object.keys(data).forEach(key => {
+//         console.log(`%c${key}:\n`, additionalDataConsoleStyles, data[key], '\n');
+//       });
+//     }
+//     else {
+//       console.log('%c\nData:\n', additionalDataConsoleStyles, data);
+//     }
+//     console.log('%c\nStacktrace:', additionalDataConsoleStyles);
+//     console.trace();
+//     console.groupEnd();
+//   }
+// }
 
 
 export function capitalize(str: string): string {

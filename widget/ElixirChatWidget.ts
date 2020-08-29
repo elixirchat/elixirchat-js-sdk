@@ -1,23 +1,20 @@
 import 'babel-polyfill';
 import { getJSONFromLocalStorage, logEvent } from '../utilsCommon';
 import { renderWidgetReactComponent } from './DefaultWidget/Widget';
-import { IFontExtractorExtractParams } from './FontExtractor';
+import { IFontRule } from './FontExtractor';
 import {
   WIDGET_IFRAME_READY,
-  WIDGET_MUTE, WIDGET_NAVIGATE_TO,
-  WIDGET_POPUP_BLUR,
-  WIDGET_POPUP_CLOSE,
-  WIDGET_POPUP_FOCUS,
-  WIDGET_POPUP_OPEN,
+  WIDGET_MUTE_TOGGLE,
   WIDGET_POPUP_TOGGLE,
+  WIDGET_NAVIGATE_TO,
   WIDGET_RENDERED,
-  WIDGET_UNMUTE,
 } from './ElixirChatWidgetEventTypes';
 
 import {
   MESSAGES_FETCH_HISTORY_INITIAL_SUCCESS,
-  JOINED_ROOM,
+  JOIN_ROOM_SUCCESS,
 } from '../sdk/ElixirChatEventTypes';
+
 
 let ElixirChat = window.ElixirChat;
 if (!ElixirChat) {
@@ -49,148 +46,142 @@ if (!ElixirChat) {
   );
 }
 
-export interface IElixirChatWidgetAppendWidgetConfig {
+export interface IElixirChatWidgetConfig {
   container: HTMLElement;
-  iframeStyles?: string;
+  email?: string;
+  title?: string;
+  fonts?: Array<IFontRule>;
+  extractFontsFromParentWindow?: Array<IFontRule>;
   hideDefaultButton?: boolean;
-  supportEmail?: string;
-  widgetTitle?: string;
-  extractFontsFromParentWindow?: Array<IFontExtractorExtractParams>;
+  iframeCSS?: string;
 }
 
 export class ElixirChatWidget extends ElixirChat {
 
-  public container: HTMLElement;
-  public iframeStyles: string;
-  public extractFontsFromParentWindow: Array<IFontExtractorExtractParams>;
-  public hideDefaultButton: boolean;
-  public supportEmail: string;
-  public widgetTitle: string = '';
-  public defaultWidgetTitle: string = 'Служба поддержки';
+  public widgetConfig: IElixirChatWidgetConfig = {};
 
-  public defaultSupportEmail: string = 'support@elixir.chat';
-  public isWidgetPopupOpen: boolean = false;
-  public isWidgetPopupFocused: boolean = false;
-  public isWidgetRendered: boolean = false;
-  public isWidgetMuted: boolean = false;
-  public isWidgetIFrameReady: boolean = false;
+  // TODO: remove
+  // public container: HTMLElement;
+  // public iframeStyles: string;
+  // public extractFontsFromParentWindow: Array<IFontExtractorExtractParams>;
+  // public widgetTitle: string = '';
+
+
+
+  public widgetIsMuted: boolean;
+  public widgetIsPopupOpen: boolean;
+  public widgetIsButtonHidden: boolean;
+  public widgetView: string;
+  public widgetTitle: string;
+  public widgetSupportEmail: string;
+
+  public widgetDefaultParams = {
+    isMuted: false,
+    isPopupOpen: false,
+    isButtonHidden: false,
+    view: 'welcome-screen',
+    title: 'Служба поддержки',
+    supportEmail: 'support@elixir.chat',
+  };
 
   public widgetReactComponent: any;
-  public widgetIFrameWindow: Window = {};
   public widgetIFrameDocument: Document = {};
-  public widgetDefaultView: string = 'welcome-screen';
 
-  protected initializeWidget(): void {
-    this.on(WIDGET_IFRAME_READY, (iframeWindow) => {
-      this.isWidgetIFrameReady = true;
-      this.widgetIFrameWindow = iframeWindow;
-      this.widgetIFrameDocument = iframeWindow.document;
 
-      this.widgetIFrameWindow.addEventListener('focus', () => {
-        this.onToggleChatFocus(true);
-      });
-      this.widgetIFrameWindow.addEventListener('blur', () => {
-        this.onToggleChatFocus(false);
-      });
-      const isWidgetMuted = getJSONFromLocalStorage('elixirchat-notifications-muted', false);
-      if (isWidgetMuted) {
-        this.toggleMute();
-      }
-      const isWidgetVisible = getJSONFromLocalStorage('elixirchat-widget-is-visible', false);
-      if (isWidgetVisible && !this.isWidgetPopupOpen) {
-        this.togglePopup();
-      }
-      this.setInitialWidgetView();
-    });
+  public appendWidget = async (widgetConfig: IElixirChatWidgetConfig): void => {
+    this.widgetConfig = widgetConfig || {};
+    const container = this.widgetConfig.container;
 
-    this.on(JOINED_ROOM, joinRoom => {
-      if (this.shouldPopUp && !this.isWidgetPopupOpen) {
-        this.togglePopup();
-      }
-      if (!this.widgetTitle) {
-        this.widgetTitle = joinRoom.company.widgetTitle || this.defaultWidgetTitle;
-      }
-    });
-
-    this.on(MESSAGES_FETCH_HISTORY_INITIAL_SUCCESS, () => {
-      this.isWidgetRendered = true;
-      this.triggerEvent(WIDGET_RENDERED);
-    });
-  }
-
-  public togglePopup = (): void => {
-    this.isWidgetPopupOpen = !this.isWidgetPopupOpen;
-    this.onToggleChatFocus(this.isWidgetPopupOpen);
-    localStorage.setItem('elixirchat-widget-is-visible', JSON.stringify(this.isWidgetPopupOpen));
-
-    logEvent(this.debug, (this.isWidgetPopupOpen ? 'Opened' : 'Closed') + ' widget popup');
-    this.triggerEvent(WIDGET_POPUP_TOGGLE, this.isWidgetPopupOpen);
-    this.triggerEvent(this.isWidgetPopupOpen ? WIDGET_POPUP_OPEN : WIDGET_POPUP_CLOSE);
-  };
-
-  public toggleMute = () => {
-    this.isWidgetMuted = !this.isWidgetMuted;
-    localStorage.setItem('elixirchat-notifications-muted', JSON.stringify(this.isWidgetMuted));
-    logEvent(this.debug, (this.isWidgetMuted ? 'Muted' : 'Unmuted') + ' widget');
-    this.triggerEvent(this.isWidgetMuted ? WIDGET_MUTE: WIDGET_UNMUTE);
-  };
-
-  protected onToggleChatFocus = (isFocused) => {
-    if (isFocused !== this.isWidgetPopupFocused) {
-      this.isWidgetPopupFocused = isFocused;
-      this.triggerEvent(this.isWidgetPopupFocused ? WIDGET_POPUP_FOCUS: WIDGET_POPUP_BLUR);
+    if (typeof window !== 'undefined') {
+      window.elixirChatWidget = this;
     }
-  };
-
-  public navigateTo = (params) => {
-    this.triggerEvent(WIDGET_NAVIGATE_TO, params);
-    localStorage.setItem('elixirchat-current-view', params.view);
-  };
-
-  protected setInitialWidgetView(){
-    const view = getJSONFromLocalStorage('elixirchat-current-view') || this.widgetDefaultView;
-    this.navigateTo({ view, animation: null });
-  };
-
-  public appendWidget = async (config: IElixirChatWidgetAppendWidgetConfig): void => {
-    const {
-      container,
-      iframeStyles,
-      extractFontsFromParentWindow,
-      hideDefaultButton,
-      supportEmail,
-      widgetTitle,
-    } = config;
-
     if (!this.isInitialized) {
-      const errorMessage = 'SDK has not been initialized yet';
-      logEvent(this.debug, errorMessage, config, 'error');
+      const errorMessage = 'ElixirChat SDK has not been initialized yet';
+      this.logError(errorMessage);
       throw errorMessage;
     }
     if (!(container instanceof HTMLElement)) {
       const errorMessage = 'You must provide an HTMLElement as a "container" option to appendWidget() method';
-      logEvent(this.debug, errorMessage, config, 'error');
+      this.logError(errorMessage, this.widgetConfig);
       throw errorMessage;
-    }
-    if (typeof window !== 'undefined') {
-      window.elixirChatWidget = this;
     }
 
     this.initializeWidget();
+    this.widgetReactComponent = renderWidgetReactComponent(container, this);
 
-    this.container = container;
-    this.iframeStyles = iframeStyles || '';
-    this.extractFontsFromParentWindow = extractFontsFromParentWindow || [];
-    this.hideDefaultButton = hideDefaultButton || false;
-    this.supportEmail = supportEmail || this.defaultSupportEmail;
-    if (widgetTitle) {
-      this.widgetTitle = widgetTitle;
-    }
-
-    this.widgetReactComponent = renderWidgetReactComponent(this.container, this);
-
-    logEvent(this.debug, 'Appended ElixirChat default widget', { container });
+    this.logInfo('Appended ElixirChat default widget', container);
     return this.widgetReactComponent;
+  };
+
+  private initializeWidget(): void {
+    this.on(WIDGET_IFRAME_READY, (iframeWindow) => {
+      this.widgetIFrameDocument = iframeWindow.document;
+    });
+    this.on(MESSAGES_FETCH_HISTORY_INITIAL_SUCCESS, () => {
+      this.triggerEvent(WIDGET_RENDERED);
+    });
+    this.on(JOIN_ROOM_SUCCESS, data => this.setWidgetParams(data));
+  }
+
+  private setWidgetParams(joinRoomData){
+    const {
+      view,
+      title,
+      isMuted,
+      isPopupOpen,
+      isButtonHidden,
+      supportEmail,
+    } = this.widgetDefaultParams;
+
+    this.widgetIsPopupOpen = joinRoomData.room?.mustOpenWidget || getJSONFromLocalStorage('elixirchat-widget-is-visible', isPopupOpen);
+    this.widgetTitle = joinRoomData.company.widgetTitle || this.widgetConfig.title || title;
+    this.widgetIsMuted = getJSONFromLocalStorage('elixirchat-notifications-muted', isMuted);
+    this.widgetIsButtonHidden = this.widgetConfig.hideDefaultButton || isButtonHidden;
+    this.widgetSupportEmail = this.widgetConfig.email || supportEmail;
+    this.widgetView = getJSONFromLocalStorage('elixirchat-current-view') || view;
+
+    this.navigateTo({ view: this.widgetView });
+    this.togglePopup(this.widgetIsPopupOpen);
+    this.toggleMute(this.widgetIsMuted);
+  }
+
+  public togglePopup(isOpen: boolean): void {
+    if (this.widgetIsPopupOpen !== isOpen) {
+      this.widgetIsPopupOpen = isOpen;
+      localStorage.setItem('elixirchat-widget-is-visible', JSON.stringify(isOpen));
+      this.logInfo((isOpen ? 'Opened' : 'Closed') + ' widget popup');
+      this.triggerEvent(WIDGET_POPUP_TOGGLE, isOpen);
+    }
+  };
+
+  private toggleMute(isMuted: boolean): void {
+    if (this.widgetIsMuted !== isMuted) {
+      this.widgetIsMuted = isMuted;
+      localStorage.setItem('elixirchat-notifications-muted', JSON.stringify(isMuted));
+      this.logInfo((isMuted ? 'Muted' : 'Unmuted') + ' widget popup');
+      this.triggerEvent(WIDGET_MUTE_TOGGLE, isMuted);
+    }
+  };
+
+  public openPopup = (): void => {
+    this.togglePopup(true);
+  };
+
+  public closePopup = (): void => {
+    this.togglePopup(false);
+  };
+
+  public mute = (): void => {
+    this.toggleMute(true);
+  };
+
+  public unmute = (): void => {
+    this.toggleMute(false);
+  };
+
+  public navigateTo = (params: { view: string, animation?: string }) => {
+    this.triggerEvent(WIDGET_NAVIGATE_TO, params);
+    localStorage.setItem('elixirchat-current-view', params?.view);
   };
 }
 

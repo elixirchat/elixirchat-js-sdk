@@ -1,6 +1,6 @@
 import { ElixirChatWidget } from './widget/ElixirChatWidget';
 
-const elixirChatWidget2 = new ElixirChatWidget({
+const elixirChatWidget = new ElixirChatWidget({
   apiUrl: 'http://localhost:4000',
   socketUrl: 'ws://localhost:4000/socket',
   companyId: 'd774c50a-42ff-46ba-8ed6-1904d4485ac4',
@@ -23,14 +23,15 @@ const elixirChatWidget2 = new ElixirChatWidget({
     lastName: 'Client'
   },
   debug: true,
+  sentryUrl: 'https://df75ac50adfd495fb3f66b9c0f846fcf@sentry.huntflow.ru/18',
 });
 
-elixirChatWidget2.appendWidget({
+elixirChatWidget.appendWidget({
   container: document.getElementById('elixirchat-widget'),
   widgetTitle: 'Demo Widget',
   supportEmail: 'test@test.com',
   companyLogoUrl: 'https://omnichannel-mock.surge.sh/huntflow-logo.png',
   iframeStyles: `
     /* Your iframe CSS */
-  `
+  `,
 });

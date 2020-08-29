@@ -1,6 +1,6 @@
 import { ElixirChat } from './ElixirChat';
-import { detectPlatform, logEvent } from '../utilsCommon';
-import {SCREENSHOT_REQUEST_ERROR, SCREENSHOT_REQUEST_SUCCESS} from '../widget/ElixirChatWidgetEventTypes';
+import { detectPlatform } from '../utilsCommon';
+import { SCREENSHOT_REQUEST_ERROR, SCREENSHOT_REQUEST_SUCCESS } from '../widget/ElixirChatWidgetEventTypes';
 
 export interface IScreenshot {
   dataUrl: string,
@@ -18,10 +18,10 @@ export class ScreenshotTaker {
   public width: number = 0;
   public height: number = 0;
 
-  protected elixirChat: ElixirChat;
-  protected stream: MediaStream;
-  protected canvas: HTMLCanvasElement;
-  protected video: HTMLVideoElement;
+  public elixirChat: ElixirChat;
+  public stream: MediaStream;
+  public canvas: HTMLCanvasElement;
+  public video: HTMLVideoElement;
 
   constructor({ elixirChat }: { elixirChat: ElixirChat }) {
     this.elixirChat = elixirChat;
@@ -34,7 +34,7 @@ export class ScreenshotTaker {
     this.video = document.createElement('video');
   }
 
-  protected setVideoCanvasSize(): void {
+  private setVideoCanvasSize(): void {
     const { video, canvas, width } = this;
     this.height = video.videoHeight / (video.videoWidth / width);
     video.width = width;
@@ -43,7 +43,7 @@ export class ScreenshotTaker {
     canvas.height = this.height;
   }
 
-  protected captureVideoFrame(): IScreenshot {
+  private captureVideoFrame(): IScreenshot {
     const { canvas, width, height, video } = this;
     const context = canvas.getContext('2d');
     context.drawImage(video, 0, 0, width, height);
@@ -53,11 +53,11 @@ export class ScreenshotTaker {
     return { dataUrl, file };
   };
 
-  protected stopMediaStream(): void {
+  private stopMediaStream(): void {
     this.stream.getTracks()[0].stop();
   }
 
-  protected getMediaStream(): Promise<MediaStream> {
+  private getMediaStream(): Promise<MediaStream> {
     return new Promise((resolve, reject) => {
       try {
         const mediaDevices: any = navigator.mediaDevices;
@@ -74,29 +74,30 @@ export class ScreenshotTaker {
   }
 
   public takeScreenshot = (): Promise<IScreenshot> => {
-    const { debug, triggerEvent } = this.elixirChat;
+    const { triggerEvent } = this.elixirChat;
 
     return new Promise((resolve, reject) => {
-      this.getMediaStream().then(stream => {
-        this.stream = stream;
-        this.video.srcObject = this.stream;
-        this.video.oncanplay = () => {
-          this.setVideoCanvasSize();
-          setTimeout(() => {
-            const screenshot: IScreenshot = this.captureVideoFrame();
-            this.stopMediaStream();
-            logEvent(debug, 'Captured screenshot', screenshot);
-            triggerEvent(SCREENSHOT_REQUEST_SUCCESS, screenshot);
-            resolve(screenshot);
-          }, 500);
-        };
-        this.video.play();
+      this.getMediaStream()
+        .then(stream => {
+          this.stream = stream;
+          this.video.srcObject = this.stream;
 
-      }).catch(error => {
-        logEvent(debug, 'Could not capture screenshot', error, 'error');
-        triggerEvent(SCREENSHOT_REQUEST_ERROR, error);
-        reject(error);
-      });
+          this.video.oncanplay = () => {
+            this.setVideoCanvasSize();
+
+            setTimeout(() => {
+              const screenshot: IScreenshot = this.captureVideoFrame();
+              this.stopMediaStream();
+              triggerEvent(SCREENSHOT_REQUEST_SUCCESS, screenshot);
+              resolve(screenshot);
+            }, 500);
+          };
+          this.video.play();
+        })
+        .catch(error => {
+          triggerEvent(SCREENSHOT_REQUEST_ERROR, error);
+          reject(error);
+        });
     });
   };
 
@@ -109,17 +110,13 @@ export class ScreenshotTaker {
     const blob = new Blob([ new Uint8Array(blobArray) ]);
     const fileName = `Screenshot ${new Date().toLocaleString()}.png`;
     return new File([blob], fileName, {
-      type: 'image/png'
+      type: 'image/png',
     });
   }
 }
 
 
-export interface IGetCompatibilityFallback {
-  (): null | { pressKey: null | string }
-}
-
-export const getScreenshotCompatibilityFallback: IGetCompatibilityFallback = () => {
+export function getScreenshotCompatibilityFallback(): null | { pressKey: null | string } {
   let getDisplayMedia;
   try {
     getDisplayMedia = navigator.mediaDevices.getDisplayMedia;
@@ -149,4 +146,4 @@ export const getScreenshotCompatibilityFallback: IGetCompatibilityFallback = () 
       };
     }
   }
-};
+}

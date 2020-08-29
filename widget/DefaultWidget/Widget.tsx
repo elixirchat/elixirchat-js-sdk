@@ -2,93 +2,113 @@ import React, { Component, Fragment } from 'react';
 import ReactDOM from 'react-dom';
 import cn from 'classnames';
 import { ElixirChatWidget } from '../ElixirChatWidget';
-import {WIDGET_NAVIGATE_TO, WIDGET_POPUP_TOGGLE} from '../ElixirChatWidgetEventTypes';
 import { UNREAD_MESSAGES_CHANGE } from '../../sdk/ElixirChatEventTypes';
-import { _flatten, detectBrowser } from '../../utilsCommon';
-import {generateFontFaceRule, generateSVGIcons, unlockNotificationSoundAutoplay} from '../../utilsWidget';
-import { FontExtractor } from '../FontExtractor';
+import { FONTS_EXTRACTED, WIDGET_NAVIGATE_TO, WIDGET_POPUP_TOGGLE } from '../ElixirChatWidgetEventTypes';
+import { detectBrowser } from '../../utilsCommon';
+import { generateSVGIconRules, unlockNotificationSoundAutoplay } from '../../utilsWidget';
+import { generateFontFaceCSS, FontExtractor } from '../FontExtractor';
 import { Chat } from './Chat';
 import { IFrameWrapper } from './IFrameWrapper';
+import { WelcomeScreen } from './WelcomeScreen';
 import { FullScreenPreview } from './FullScreenPreview';
 import styles from './styles';
 import assets from './assets';
-import {WelcomeScreen} from './WelcomeScreen';
 
 export interface IWidgetProps {
   elixirChatWidget: ElixirChatWidget;
 }
 
 export interface IWidgetState {
-  detectedBrowser: string | null,
-  isIFrameOpen: boolean;
-  isIFrameOpeningAnimation: boolean;
-  outsideIframeStyles: null | string;
-  insideIframeStyles: null | string;
-  extractedFontsStyles: null | string;
-  customIframeStyles: null | string;
+  isButtonHidden: boolean,
+  isPopupOpen: boolean,
+  isPopupOpeningAnimation: boolean,
   unreadMessagesCount: number,
-  currentView: { view?: string, animation?: null | string },
+  detectedBrowser: string,
+  outsideIframeCSS: string;
+  insideIframeCSS: string;
+  currentView: { view: string, animation?: null | string },
 }
 
 export class Widget extends Component<IWidgetProps, IWidgetState> {
 
   state = {
-    detectedBrowser: null,
-    isDefaultButtonHidden: false,
-    isIFrameOpen: false,
-    isIFrameOpeningAnimation: false,
-    outsideIframeStyles: null,
-    insideIframeStyles: null,
-    extractedFontsStyles: null,
-    customIframeStyles: null,
+    isButtonHidden: false,
+    isPopupOpen: false,
+    isPopupOpeningAnimation: false,
     unreadMessagesCount: 0,
+    detectedBrowser: null,
+    outsideIframeCSS: null,
+    insideIframeCSS: null,
     currentView: {},
   };
 
+  fontExtractor: FontExtractor;
+
   componentDidMount() {
     const { elixirChatWidget } = this.props;
-    const { outsideIframeStyles, insideIframeStyles } = this.generateStyles();
-    document.body.addEventListener('click', unlockNotificationSoundAutoplay);
-    window.addEventListener('load', this.onParentWindowLoad);
+    const { widgetIsButtonHidden, unreadMessagesCount } = elixirChatWidget;
+    const { outsideIframeCSS, insideIframeCSS } = this.generateCSS();
 
     this.setState({
-      outsideIframeStyles,
-      insideIframeStyles,
-      customIframeStyles: elixirChatWidget.iframeStyles,
-      isDefaultButtonHidden: elixirChatWidget.hideDefaultButton,
-      unreadMessagesCount: elixirChatWidget.unreadMessagesCount,
+      insideIframeCSS,
+      outsideIframeCSS,
+      unreadMessagesCount,
+      isButtonHidden: widgetIsButtonHidden,
       detectedBrowser: detectBrowser(),
     });
 
-    elixirChatWidget.on(WIDGET_POPUP_TOGGLE, this.onPopupToggle);
+    this.fontExtractor = new FontExtractor(elixirChatWidget, window);
+
+    elixirChatWidget.on(FONTS_EXTRACTED, extractedFontFaceCSS => {
+      this.setState({
+        insideIframeCSS: insideIframeCSS + '\n\n' + extractedFontFaceCSS,
+      });
+    });
+
+    document.body.addEventListener('click', unlockNotificationSoundAutoplay);
+
     elixirChatWidget.on(WIDGET_NAVIGATE_TO, currentView => {
       this.setState({ currentView });
     });
-
     elixirChatWidget.on(UNREAD_MESSAGES_CHANGE, unreadMessagesCount => {
       this.setState({ unreadMessagesCount });
     });
+    elixirChatWidget.on(WIDGET_POPUP_TOGGLE, this.onPopupToggle);
   }
 
-  onParentWindowLoad = () => {
-    const { elixirChatWidget: { extractFontsFromParentWindow } } = this.props;
-
-    if (extractFontsFromParentWindow && extractFontsFromParentWindow.length) {
-      const fontExtractor = new FontExtractor(document);
-      const extractedFonts = _flatten(extractFontsFromParentWindow.map(fontExtractor.extract));
-      const extractedFontsStyles = extractedFonts.map(font => font.cssText).join('\n\n');
-      this.setState({ extractedFontsStyles });
-    }
+  renderDefaultFontCSS = () => {
+    return generateFontFaceCSS([
+      {
+        fontFamily: 'elixirchat-icons',
+        src: assets.fontElixirchatIcons,
+      },
+      {
+        fontFamily: 'Graphik',
+        fontWeight: 'normal',
+        fontStyle: 'normal',
+        src: assets.fontGraphikRegular,
+      },
+      {
+        fontFamily: 'Graphik',
+        fontWeight: 'normal',
+        fontStyle: 'italic',
+        src: assets.fontGraphikRegularItalic,
+      },
+      {
+        fontFamily: 'Graphik',
+        fontWeight: '500',
+        src: assets.fontGraphikMedium,
+      },
+      {
+        fontFamily: 'Graphik',
+        fontWeight: 'bold',
+        src: assets.fontGraphikRegular,
+      },
+    ]);
   };
 
-  generateStyles = () => {
-    const fontFaceGraphikRegular = generateFontFaceRule('Graphik', 'normal', 'normal', assets.fontGraphikRegular);
-    const fontFaceGraphikRegularItalic = generateFontFaceRule('Graphik', 'normal', 'italic', assets.fontGraphikRegularItalic);
-    const fontFaceGraphikMedium = generateFontFaceRule('Graphik', '500', null, assets.fontGraphikMedium);
-    const fontFaceGraphikBold = generateFontFaceRule('Graphik', 'bold', null, assets.fontGraphikBold);
-    const fontFaceElixirIcons = generateFontFaceRule('elixirchat-icons', null, null, assets.fontElixirchatIcons);
-
-    const svgIconStyles = generateSVGIcons({
+  renderSvgIconsCSS = () => {
+    const svgIconsCSS = generateSVGIconRules('svg-icon-', {
       whatsapp: assets.iconWhatsapp,
       telegram: assets.iconTelegram,
       facebook: assets.iconFacebook,
@@ -96,71 +116,72 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
       viber: assets.iconViber,
       vk: assets.iconVK,
     });
+    this.setState({ svgIconsCSS });
+  };
 
-    const outsideIframeStyles = [
+  generateCSS = () => {
+    const { elixirChatWidget } = this.props;
+    const defaultFontFaceCSS = this.renderDefaultFontCSS();
+    const svgIconsCSS = this.renderSvgIconsCSS();
+
+    const outsideIframeCSS = [
+      defaultFontFaceCSS,
       styles.icons,
       styles.Widget,
       styles.FullScreenPreview,
-      fontFaceGraphikRegular,
-      fontFaceElixirIcons,
     ].join('\n');
 
-    const insideIframeStyles = [
-      svgIconStyles,
+    const insideIframeCSS = [
+      elixirChatWidget.widgetConfig.iframeCSS,
+      defaultFontFaceCSS,
+      svgIconsCSS,
       styles.icons,
       styles.WelcomeScreen,
       styles.Chat,
       styles.ChatMessages,
       styles.ChatTextarea,
-      fontFaceGraphikRegular,
-      fontFaceGraphikRegularItalic,
-      fontFaceGraphikMedium,
-      fontFaceGraphikBold,
-      fontFaceElixirIcons,
     ].join('\n');
 
     return {
-      outsideIframeStyles,
-      insideIframeStyles,
+      outsideIframeCSS,
+      insideIframeCSS,
     };
   };
 
-  onPopupToggle = async () => {
-    await this.setState({
-      isIFrameOpen: !this.state.isIFrameOpen,
-      isIFrameOpeningAnimation: true,
+  onPopupToggle = () => {
+    this.setState({
+      isPopupOpen: !this.state.isPopupOpen,
+      isPopupOpeningAnimation: true,
     });
     setTimeout(() => {
-      this.setState({ isIFrameOpeningAnimation: false });
+      this.setState({ isPopupOpeningAnimation: false });
     });
   };
 
   render() {
     const { elixirChatWidget } = this.props;
     const {
+      isButtonHidden,
+      isPopupOpen,
+      isPopupOpeningAnimation,
+      unreadMessagesCount,
+      outsideIframeCSS,
+      insideIframeCSS,
       detectedBrowser,
       currentView,
-      isIFrameOpen,
-      isIFrameOpeningAnimation,
-      isDefaultButtonHidden,
-      outsideIframeStyles,
-      insideIframeStyles,
-      extractedFontsStyles,
-      customIframeStyles,
-      unreadMessagesCount,
     } = this.state;
 
     const visibleUnreadMessagesCount = unreadMessagesCount > 99 ? '99+' : unreadMessagesCount;
 
     return (
       <Fragment>
-        <style dangerouslySetInnerHTML={{ __html: outsideIframeStyles }}/>
+        <style dangerouslySetInnerHTML={{ __html: outsideIframeCSS }}/>
 
-        {!isDefaultButtonHidden && (
+        {!isButtonHidden && (
           <button className={cn({
             'elixirchat-widget-button': true,
-            'elixirchat-widget-button--widget-open': isIFrameOpen,
-          })} onClick={elixirChatWidget.togglePopup}>
+            'elixirchat-widget-button--widget-open': isPopupOpen,
+          })} onClick={() => isPopupOpen ? elixirChatWidget.closePopup() : elixirChatWidget.openPopup()}>
             <i className="elixirchat-widget-icon icon-logo"/>
             <i className="elixirchat-widget-icon icon-close-thin"/>
             <span className={cn({
@@ -176,13 +197,11 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
 
         <IFrameWrapper elixirChatWidget={elixirChatWidget} className={cn({
           'elixirchat-widget-iframe': true,
-          'elixirchat-widget-iframe--visible': isIFrameOpen,
-          'elixirchat-widget-iframe--opening': isIFrameOpeningAnimation,
+          'elixirchat-widget-iframe--visible': isPopupOpen,
+          'elixirchat-widget-iframe--opening': isPopupOpeningAnimation,
         })}>
           <Fragment>
-            <style dangerouslySetInnerHTML={{ __html: extractedFontsStyles }}/>
-            <style dangerouslySetInnerHTML={{ __html: insideIframeStyles }}/>
-            <style dangerouslySetInnerHTML={{ __html: customIframeStyles }}/>
+            <style dangerouslySetInnerHTML={{ __html: insideIframeCSS }}/>
             {currentView.view === 'chat' && (
               <Chat className={`elixirchat-browser--${detectedBrowser}`} elixirChatWidget={elixirChatWidget}/>
             )}

@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import cn from 'classnames';
-import { WIDGET_MUTE, WIDGET_UNMUTE } from '../ElixirChatWidgetEventTypes';
-import { JOINED_ROOM, OPERATOR_ONLINE_STATUS_CHANGE } from '../../sdk/ElixirChatEventTypes';
+import { JOIN_ROOM_SUCCESS, OPERATOR_ONLINE_STATUS_CHANGE } from '../../sdk/ElixirChatEventTypes';
+import { WIDGET_MUTE_TOGGLE } from '../ElixirChatWidgetEventTypes';
 import { ChatMessages } from './ChatMessages';
 import { ChatTextarea } from './ChatTextarea';
 
@@ -26,15 +26,14 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
   componentDidMount() {
     const { elixirChatWidget } = this.props;
 
-    elixirChatWidget.on(JOINED_ROOM, () => {
+    elixirChatWidget.on(JOIN_ROOM_SUCCESS, () => {
       this.setState({ widgetTitle: elixirChatWidget.widgetTitle });
     });
-
-    elixirChatWidget.on(WIDGET_MUTE, () => this.setState({ isNotificationSoundMuted: true }));
-    elixirChatWidget.on(WIDGET_UNMUTE, () => this.setState({ isNotificationSoundMuted: false }));
-
     elixirChatWidget.on(OPERATOR_ONLINE_STATUS_CHANGE, areAnyOperatorsOnline => {
       this.setState({ areAnyOperatorsOnline });
+    });
+    elixirChatWidget.on(WIDGET_MUTE_TOGGLE, isNotificationSoundMuted => {
+      this.setState({ isNotificationSoundMuted });
     });
   }
 
@@ -62,14 +61,14 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
           )}
 
           <button className="elixirchat-chat-header__mute"
-            onClick={elixirChatWidget.toggleMute}
+            onClick={() => isNotificationSoundMuted ? elixirChatWidget.unmute() : elixirChatWidget.mute()}
             title={isNotificationSoundMuted ? 'Включить звук уведомлений' : 'Выключить звук уведомлений'}>
             <i className={isNotificationSoundMuted ? 'icon-speaker-mute' : 'icon-speaker'}/>
           </button>
 
           <button className="elixirchat-chat-header__close"
             title="Закрыть чат"
-            onClick={elixirChatWidget.togglePopup}>
+            onClick={elixirChatWidget.closePopup}>
             <i className="icon-close-thin"/>
           </button>
         </h2>

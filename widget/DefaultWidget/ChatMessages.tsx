@@ -33,7 +33,7 @@ import {
   REPLY_MESSAGE,
   TEXTAREA_VERTICAL_RESIZE,
   WIDGET_IFRAME_READY,
-  WIDGET_POPUP_OPEN,
+  WIDGET_POPUP_TOGGLE,
 } from '../ElixirChatWidgetEventTypes';
 import {
   JOIN_ROOM_ERROR,
@@ -42,7 +42,7 @@ import {
   MESSAGES_HISTORY_APPEND_ONE,
   MESSAGES_HISTORY_PREPEND_MANY,
   MESSAGES_HISTORY_CHANGE_MANY,
-  JOINED_ROOM,
+  JOIN_ROOM_SUCCESS,
   TYPING_STATUS_CHANGE, INITIALIZATION_ERROR,
 } from '../../sdk/ElixirChatEventTypes';
 
@@ -98,20 +98,22 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
       screenshotFallback: getScreenshotCompatibilityFallback(),
     });
 
-    elixirChatWidget.on(JOINED_ROOM, () => {
+    elixirChatWidget.on(JOIN_ROOM_SUCCESS, () => {
       elixirChatWidget.fetchMessageHistory(this.messageChunkSize);
     });
     elixirChatWidget.on(WIDGET_IFRAME_READY, () => {
       elixirChatWidget.widgetIFrameDocument.body.addEventListener('click', unlockNotificationSoundAutoplay);
     });
-    elixirChatWidget.on(WIDGET_POPUP_OPEN, () => {
-      const { hasMessageHistoryEverBeenVisible } = this.state;
-      this.onMultipleMessagesBeingViewedSimultaneously(this.markLatestViewedMessageRead);
-      if (!hasMessageHistoryEverBeenVisible && elixirChatWidget.hasMessageHistoryBeenEverFetched) {
-        this.onMessageHistoryInitiallyBecomeVisible();
-      }
-      if (detectBrowser() === 'safari') {
-        this.preventSafariFromLockingScroll();
+    elixirChatWidget.on(WIDGET_POPUP_TOGGLE, isOpen => {
+      if (isOpen) {
+        const { hasMessageHistoryEverBeenVisible } = this.state;
+        this.onMultipleMessagesBeingViewedSimultaneously(this.markLatestViewedMessageRead);
+        if (!hasMessageHistoryEverBeenVisible && elixirChatWidget.hasMessageHistoryBeenEverFetched) {
+          this.onMessageHistoryInitiallyBecomeVisible();
+        }
+        if (detectBrowser() === 'safari') {
+          this.preventSafariFromLockingScroll();
+        }
       }
     });
 
@@ -120,7 +122,8 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     elixirChatWidget.on(MESSAGES_HISTORY_SET, messages => {
       this.setProcessedMessages(messages);
       this.setState({ isLoading: false });
-      if (elixirChatWidget.isWidgetPopupOpen) {
+
+      if (elixirChatWidget.widgetIsPopupOpen) {
         this.onMessageHistoryInitiallyBecomeVisible();
       }
     });
@@ -261,10 +264,8 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     const { elixirChatWidget } = this.props;
 
     const hasUserScroll = this.hasUserScroll();
-    const shouldPlayNotificationSound = !message.sender.isCurrentClient && !elixirChatWidget.isWidgetMuted;
-    const shouldScrollMessagesToBottom = elixirChatWidget.isWidgetPopupOpen
-      && elixirChatWidget.isWidgetPopupFocused // TODO: replace /w document.hasFocus() or document.visibilityState
-      && !hasUserScroll;
+    const shouldPlayNotificationSound = !message.sender.isCurrentClient && !elixirChatWidget.widgetIsMuted;
+    const shouldScrollMessagesToBottom = elixirChatWidget.widgetIsPopupOpen && document.hasFocus() && !hasUserScroll;
 
     this.setProcessedMessages([message], { insertAfter: true });
 
@@ -274,8 +275,8 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     if (shouldPlayNotificationSound) {
       playNotificationSound();
     }
-    if (message.mustOpenWidget && !elixirChatWidget.isWidgetPopupOpen) {
-      elixirChatWidget.togglePopup();
+    if (message.mustOpenWidget) {
+      elixirChatWidget.openPopup();
     }
   };
 
@@ -303,8 +304,8 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
       updatedProcessedMessages = processedMessages;
       updatedFullScreenPreviews = fullScreenPreviews;
     }
-    if (mustOpenWidget && !elixirChatWidget.isWidgetPopupOpen) {
-      elixirChatWidget.togglePopup();
+    if (mustOpenWidget) {
+      elixirChatWidget.openPopup();
     }
     this.setState({
       processedMessages: updatedProcessedMessages,
@@ -405,7 +406,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
   onTakeScreenshotClick = () => {
     const { elixirChatWidget } = this.props;
-    elixirChatWidget.togglePopup();
+    elixirChatWidget.closePopup();
     elixirChatWidget.takeScreenshot();
   };
 
@@ -537,7 +538,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
       Мои данные:
       ${firstName} ${lastName} (ID: ${id})
     `);
-    return `mailto:${elixirChatWidget.supportEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    return `mailto:${elixirChatWidget.widgetSupportEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
 
   formatVideoDuration = (durationInSeconds) => {
@@ -658,7 +659,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
               Ошибка загрузки. <br/>
               Пожалуйста, перезагрузите
               страницу <span className="m-nw">или напишите</span> администратору
-              на <a href={this.generateSupportMailtoLink()} target="_blank">{elixirChatWidget.supportEmail}</a>
+              на <a href={this.generateSupportMailtoLink()} target="_blank">{elixirChatWidget.widgetSupportEmail}</a>
             </div>
           )}
 

@@ -1,6 +1,5 @@
 import { uniqueNamesGenerator } from 'unique-names-generator';
 import {
-  logEvent,
   capitalize,
   randomDigitStringId,
   getJSONFromLocalStorage,
@@ -8,21 +7,22 @@ import {
 
 import { IMessage } from './serializers/serializeMessage';
 import { fragmentUser } from './serializers/serializeUser';
-import { IScreenshot, ScreenshotTaker } from './ScreenshotTaker';
-import { IUnreadMessagesCounterData, UnreadMessagesCounter } from './UnreadMessagesCounter';
+import { Logger } from './Logger';
+import { ScreenshotTaker, IScreenshot } from './ScreenshotTaker';
 import { TypingStatusSubscription } from './TypingStatusSubscription';
-import { OperatorOnlineStatusSubscription } from './OperatorOnlineStatusSubscription';
 import { UpdateMessageSubscription } from './UpdateMessageSubscription';
-import { ISentMessageSerialized, MessageSubscription } from './MessageSubscription';
-import { gql, GraphQLClient, insertGraphQlFragments } from './GraphQLClient';
+import { OperatorOnlineStatusSubscription } from './OperatorOnlineStatusSubscription';
+import { UnreadMessagesCounter, IUnreadMessagesCounterData } from './UnreadMessagesCounter';
+import { MessageSubscription, ISentMessageSerialized } from './MessageSubscription';
+import {GraphQLClient, gql, insertGraphQlFragments, parseGraphQLMethodFromQuery} from './GraphQLClient';
+import { GraphQLClientSocket } from './GraphQLClientSocket';
 import {
-  INITIALIZATION_SUCCESS,
-  INITIALIZATION_ERROR,
+  JOIN_ROOM_SUCCESS,
+  JOIN_ROOM_ERROR,
   LAST_READ_MESSAGE_CHANGE,
   MESSAGES_HISTORY_CHANGE_MANY,   // TODO: refactor
   UPDATE_MESSAGES_CHANGE,         // TODO: refactor
 } from './ElixirChatEventTypes';
-import {GraphQLClientSocket} from './GraphQLClientSocket';
 
 
 export interface IElixirChatRoom {
@@ -45,6 +45,7 @@ export interface IElixirChatConfig {
   room?: IElixirChatRoom;
   client?: IElixirChatUser;
   debug?: boolean,
+  sentryUrl?: boolean,
 }
 
 export class ElixirChat {
@@ -53,13 +54,12 @@ export class ElixirChat {
   public config: IElixirChatConfig = {};
   public room?: IElixirChatRoom;
   public client?: IElixirChatUser;
-  public debug: boolean;
+  public isPrivateRoom: boolean;
 
   public isInitialized: boolean = false;
   public isConnected: boolean;
   public elixirChatRoomId: string;
   public elixirChatClientId: string;
-  public shouldPopUp: boolean = false;
 
   public get areAnyOperatorsOnline(): boolean {
     return this.operatorOnlineStatusSubscription.areAnyOperatorsOnline;
@@ -88,6 +88,7 @@ export class ElixirChat {
   public typingStatusSubscription: TypingStatusSubscription;
   public unreadMessagesCounter: UnreadMessagesCounter;
   public screenshotTaker: ScreenshotTaker;
+  public logger: Logger;
 
   private eventHandlers: object = {};
 
@@ -106,9 +107,7 @@ export class ElixirChat {
       return !config[paramKey];
     });
     if (missingRequiredParams.length) {
-      const message = `Required parameters: ${missingRequiredParams.join(', ')} not provided. \nSee more: https://github.com/elixirchat/elixirchat-js-sdk#config`;
-      logEvent(true, message, null, 'error');
-      return false;
+      throw `Required parameters: ${missingRequiredParams.join(', ')} not provided. \nSee more: https://github.com/elixirchat/elixirchat-js-sdk#config`;
     }
     else {
       return  true;
@@ -116,13 +115,12 @@ export class ElixirChat {
   };
 
   private initialize(config: IElixirChatConfig): void {
-    logEvent(this.debug, 'Initializing ElixirChat', config);
     this.config = config || {};
-    this.debug = Boolean(config?.debug) || false;
     this.isInitialized = true;
 
     this.graphQLClient = new GraphQLClient();
     this.graphQLClientSocket = new GraphQLClientSocket();
+    this.logger = new Logger({ elixirChat: this });
     this.screenshotTaker = new ScreenshotTaker({ elixirChat: this });
     this.messageSubscription = new MessageSubscription({ elixirChat: this });
     this.unreadMessagesCounter = new UnreadMessagesCounter({ elixirChat: this });
@@ -135,16 +133,15 @@ export class ElixirChat {
     });
     this.on(LAST_READ_MESSAGE_CHANGE, this.markPrecedingMessagesRead);
 
+    this.logInfo('Initializing ElixirChat', config);
     return this.joinRoom();
   }
 
-  private serializeRoom(rawRoom: any): IElixirChatRoom {
+  private serializeRoom(rawRoom: any, client: IElixirChatUser): IElixirChatRoom {
     rawRoom = rawRoom || {};
     const localStorageRoom: IElixirChatRoom = getJSONFromLocalStorage('elixirchat-room') || {};
-    const isPrivate = !(rawRoom.id || localStorageRoom.id);
-
-    const roomId = rawRoom.id || localStorageRoom.id || clientId;
-    const roomTitle = rawRoom.title || localStorageRoom.title || clientFirstName + ' ' + clientLastName;
+    const roomId = rawRoom.id || localStorageRoom.id || client.id;
+    const roomTitle = rawRoom.title || localStorageRoom.title || client.firstName + ' ' + client.lastName;
 
     const roomDataObj = {};
     if (typeof rawRoom.data === 'object') {
@@ -156,7 +153,6 @@ export class ElixirChat {
       id: roomId.toString(),
       title: roomTitle,
       data: JSON.stringify(roomDataObj),
-      isPrivate,
     };
   };
 
@@ -188,7 +184,7 @@ export class ElixirChat {
 
   private generateAnonymousClientData(): IElixirChatUser {
     const baseTitle = uniqueNamesGenerator({ length: 2, separator: ' ', dictionaries: null });
-    const [firstName, lastName] = baseTitle.split(' ').map(capitalize);
+    const [ firstName, lastName ] = baseTitle.split(' ').map(capitalize);
     const randomFourDigitPostfix = randomDigitStringId(4);
     const uniqueId = baseTitle.replace(' ', '-') + '-' + randomFourDigitPostfix;
     return {
@@ -199,8 +195,9 @@ export class ElixirChat {
   }
 
   private joinRoom(room: any, client: any): Promise<void> {
-    this.room = this.serializeRoom(room);
     this.client = this.serializeClient(client);
+    this.room = this.serializeRoom(room, this.client);
+    this.isPrivateRoom = this.room.id === this.client.id;
 
     localStorage.setItem('elixirchat-room', JSON.stringify(this.room));
     localStorage.setItem('elixirchat-client', JSON.stringify(this.client));
@@ -235,28 +232,27 @@ export class ElixirChat {
     return publicGraphQLClient.query(query, variables)
       .then((response: any) => {
         if (response?.joinRoom) {
-          this.triggerEvent(INITIALIZATION_SUCCESS, response.joinRoom);
           this.onJoinRoomSuccess(response.joinRoom);
+          this.triggerEvent(JOIN_ROOM_SUCCESS, response.joinRoom, { firedOnce: true });
           return response.joinRoom;
         }
         else {
-          this.triggerEvent(INITIALIZATION_ERROR, response);
+          this.triggerEvent(JOIN_ROOM_ERROR, response);
           throw response;
         }
       }).catch((response) => {
-        this.triggerEvent(INITIALIZATION_ERROR, response);
+        this.triggerEvent(JOIN_ROOM_ERROR, response);
         throw response;
     });
   }
 
-  private onJoinRoomSuccess(data){
+  private onJoinRoomSuccess(data: any): void {
     const { apiUrl, socketUrl } = this.config;
-    logEvent(this.debug, 'Joined room', data);
+    this.logInfo('Joined room', data);
 
     this.isConnected = true;
     this.elixirChatClientId = data.client.id;
     this.elixirChatRoomId = data.room.id;
-    this.shouldPopUp = data.room.mustOpenWidget;
 
     this.graphQLClient.initialize({ url: apiUrl, token: data.token });
     this.graphQLClientSocket.initialize({ url: socketUrl, token: data.token });
@@ -264,7 +260,7 @@ export class ElixirChat {
     this.messageSubscription.subscribe();
     this.updateMessageSubscription.subscribe();
     this.unreadMessagesCounter.subscribe();
-    this.typingStatusSubscription.subscribe();
+    // this.typingStatusSubscription.subscribe(); // TODO: fix
     this.operatorOnlineStatusSubscription.subscribe({
       areAnyOperatorsOnline: Boolean(data?.company?.isWorking)
     });
@@ -276,7 +272,7 @@ export class ElixirChat {
     }
     else {
       const message = 'ElixirChat is not currently connected. Use reconnect({ room, client }) method to connect to a room.';
-      logEvent(this.debug, message, null, 'error');
+      this.logError(message);
       return Promise.reject({ message });
     }
   };
@@ -292,9 +288,9 @@ export class ElixirChat {
     this.triggerEvent(MESSAGES_HISTORY_CHANGE_MANY, this.messageHistory);
   };
 
-  public triggerEvent = (eventName, data, options?) => {
+  public triggerEvent = (eventName: string, data?: any, options?: { firedOnce: boolean }): void => {
     options = options || {};
-    logEvent(this.debug, eventName, data, 'event');
+    this.logEvent(eventName, data);
 
     if (!this.eventHandlers[eventName]?.callbacks) {
       this.eventHandlers[eventName] = { callbacks: [] };
@@ -305,7 +301,7 @@ export class ElixirChat {
     eventHandler.callbacks.forEach(callback => callback(data));
   };
 
-  public on = (eventName, callback) => {
+  public on = (eventName: string, callback: (data: any) => void): void => {
     if (eventName instanceof Array) {
       eventName.map(singleEventName => this.on(singleEventName, callback));
     }
@@ -321,7 +317,7 @@ export class ElixirChat {
     }
   };
 
-  public off = (eventName, callback) => {
+  public off = (eventName: string, callback: (data: any) => void): void => {
     const eventHandler = this.eventHandlers[eventName];
     if (eventHandler.callbacks?.length) {
       eventHandler.callbacks = eventHandler.callbacks.filter(currentCallback => currentCallback !== callback);
@@ -369,9 +365,45 @@ export class ElixirChat {
     return this.screenshotTaker.takeScreenshot();
   };
 
+  public logEvent = (text: string, data: any): void => {
+    return this.logger.logEvent(text, data);
+  };
+
+  public logInfo = (text: string, data: any): void => {
+    return this.logger.logInfo(text, data);
+  };
+
+  public logError = (text: string, data: any): void => {
+    return this.logger.logError(text, data);
+  };
+
+  public sendAPIRequest = (query: string, variables?: any, binaries?: Array<any>): Promise<any> => {
+    const graphQLMethod = parseGraphQLMethodFromQuery(query);
+
+    return this.graphQLClient.query(query, variables, binaries)
+      .then(data => data[graphQLMethod])
+      .catch(rawError => {
+        const errorMessage = `${graphQLMethod}: ${getErrorMessageFromResponse(rawError)}`;
+        const errorType = rawError?.errors?.[0]?.reason || null;
+        const additionalErrorData = {
+          errorMessage,
+          errorType,
+          rawError,
+          query,
+          variables,
+          graphQLMethod,
+        };
+        this.logError(errorMessage, additionalErrorData);
+        throw {
+          errorMessage,
+          ...additionalErrorData,
+        };
+      });
+  };
+
   public disconnect = (): void => {
     return this.checkIfConnected().then(() => {
-      logEvent(this.debug, 'Disconnecting from ElixirChat');
+      this.logInfo('Disconnecting from ElixirChat');
       this.isConnected = false;
       this.messageSubscription.unsubscribe();
       this.updateMessageSubscription.unsubscribe();
@@ -380,10 +412,11 @@ export class ElixirChat {
       this.operatorOnlineStatusSubscription.unsubscribe();
     });
     // TODO: remove firedOnce params? use .off()?
+    // TODO: remove eventHandlers?
   };
 
   public reconnect = (config: { room?: IElixirChatRoom, client?: IElixirChatUser }): Promise<void> => {
-    logEvent(this.debug, 'Attempting to reconnect to another room', config);
+    this.logInfo('Attempting to reconnect to another room', config);
     this.disconnect();
     return this.joinRoom(config.room, config.client);
   };

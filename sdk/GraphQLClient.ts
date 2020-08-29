@@ -6,8 +6,7 @@ export interface IGraphQLClientConfig {
 export class GraphQLClient {
   public url: string;
   public token?: string;
-
-  protected headers: any = {
+  public headers: any = {
     'Accept': 'application/json',
   };
 
@@ -52,7 +51,7 @@ export class GraphQLClient {
       });
   }
 
-  protected makeFormData(query: string, variables: object, binaryFiles?: object): FormData {
+  private makeFormData(query: string, variables: object, binaryFiles?: object): FormData {
     const formData = new FormData();
     formData.append('query', query);
     formData.append('variables', JSON.stringify(variables));
@@ -109,4 +108,24 @@ export function parseGraphQLMethodFromQuery(query: string): string {
   catch (e) {
     return '';
   }
+}
+
+
+export function getErrorMessageFromResponse(response){
+  let errorMessage = 'Unknown error';
+  if (response) {
+    if (response.errors && response.errors.length) {
+      errorMessage = response.errors.map(error => {
+        let message = '\n  - ' + error.message;
+        if (error.path && error.path.length) {
+          message += ' in ' + error.path.join(', ')
+        }
+        return message;
+      }).join('');
+    }
+    else if (response.message) {
+      errorMessage = response.message;
+    }
+  }
+  return errorMessage;
 }

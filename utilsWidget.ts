@@ -40,11 +40,6 @@ export function inflectDayJSWeekDays(locale: 'en-US' | 'ru-RU', formattedDateStr
 }
 
 
-export function getTimezoneNameByDate(locale: 'en-US' | 'ru-RU', date){
-
-}
-
-
 /**
  * Prevents browser from muting audio autoplay
  * @see https://medium.com/@curtisrobinson/how-to-auto-play-audio-in-safari-with-javascript-21d50b0a2765
@@ -82,27 +77,15 @@ export interface IGenerateFontFaceRule {
   ): string
 }
 
-export function generateFontFaceRule(fontFamily, fontWeight, fontStyle, fontUrl): IGenerateFontFaceRule {
-  const { contentType, data } = parseBase64DataUrl(fontUrl);
-  const fontBlobUrl = base64toBlobUrl(data, contentType);
 
-  return `@font-face {
-    font-family: "${fontFamily}";
-    ${fontWeight ? `font-weight: ${fontWeight};` : ''}
-    ${fontStyle ? `font-style: ${fontStyle};` : ''}
-    src: url("${fontBlobUrl}") format("woff");
-  }`;
-}
-
-
-export function generateSVGIcons(iconsHashMap): string {
+export function generateSVGIconRules(iconClassNamePrefix: string, iconMap: object): string {
   const iconsCSSArr = [];
-  for (let iconName in iconsHashMap) {
-    const iconBase64Url = iconsHashMap[iconName];
+  for (let iconName in iconMap) {
+    const iconBase64Url = iconMap[iconName];
     const { contentType, data } = parseBase64DataUrl(iconBase64Url);
     const iconBlobUrl = base64toBlobUrl(data, contentType);
     iconsCSSArr.push(
-      `.svg-icon-${iconName} { background-image: url("${iconBlobUrl}"); }`
+      `.${iconClassNamePrefix}${iconName} { background-image: url("${iconBlobUrl}"); }`
     );
   }
   return iconsCSSArr.join('\n');

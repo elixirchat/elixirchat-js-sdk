@@ -18,7 +18,7 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
 
   componentDidMount() {
     const { elixirChatWidget } = this.props;
-    console.log('__ elixirChatWidget', elixirChatWidget);
+    // console.log('__ elixirChatWidget', elixirChatWidget);
   }
 
   componentWillUnmount() {
