@@ -78,6 +78,7 @@ export class UnreadMessagesCounter {
   private onUnreadCountsUpdate(data: IUnreadMessagesCounterData): void {
     const { triggerEvent, logInfo } = this.elixirChat;
     const { unreadMessagesCount, unreadRepliesCount, lastReadMessageId } = data;
+    const normalizedLastReadMessageId = (lastReadMessageId || '').toString().trim();
 
     if (unreadMessagesCount !== this.unreadMessagesCount) {
       this.unreadMessagesCount = unreadMessagesCount;
@@ -89,10 +90,10 @@ export class UnreadMessagesCounter {
       logInfo('Unread replies count changed to ' + unreadRepliesCount);
       triggerEvent(UNREAD_REPLIES_CHANGE, unreadRepliesCount);
     }
-    if (lastReadMessageId !== this.lastReadMessageId) {
-      this.lastReadMessageId = lastReadMessageId;
-      logInfo('Last message marked as read changed to ID: ' + lastReadMessageId);
-      triggerEvent(LAST_READ_MESSAGE_CHANGE, lastReadMessageId);
+    if (normalizedLastReadMessageId !== this.lastReadMessageId) {
+      this.lastReadMessageId = normalizedLastReadMessageId;
+      logInfo('Last message marked as read changed to ID: ' + normalizedLastReadMessageId);
+      triggerEvent(LAST_READ_MESSAGE_CHANGE, normalizedLastReadMessageId);
     }
   };
 

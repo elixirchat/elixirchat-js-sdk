@@ -61,8 +61,8 @@ export interface IFetchMessageHistoryParams {
 export class MessageSubscription {
 
   protected elixirChat: ElixirChat;
-  protected graphQLClient: GraphQLClient;
-  protected graphQLClientSocket: GraphQLClientSocket;
+  // protected graphQLClient: GraphQLClient;
+  // protected graphQLClientSocket: GraphQLClientSocket;
 
   public messageHistory: Array<IMessage> = [];
   public hasMessageHistoryBeenEverFetched: boolean = false;
@@ -127,7 +127,7 @@ export class MessageSubscription {
       const limit = 20;
       const afterCursor = _last(this.messageHistory)?.cursor || null;
       this.getMessageHistoryByCursor({ limit, afterCursor }).then(missedMessages => {
-        missedMessages.forEach(this.onMessageReceive);
+        missedMessages.forEach(message => this.onMessageReceive(message));
       });
     }, this.MESSAGE_HISTORY_REQUEST_INTERVAL);
   }
@@ -394,7 +394,9 @@ export class MessageSubscription {
   };
 
   public fetchMessageHistory = (limit: number): Promise<[IMessage | any]> => {
-    return this.getMessageHistoryByCursor({ limit }).then(this.onMessageHistoryChange);
+    return this.getMessageHistoryByCursor({ limit }).then(messageHistory => {
+      return this.onMessageHistoryChange(messageHistory);
+    });
   };
 
   public fetchPrecedingMessageHistory = (limit: number): Promise<[IMessage | any]> => {
@@ -407,9 +409,9 @@ export class MessageSubscription {
       return Promise.reject({ message: errorMessage });
     }
     return this.getMessageHistoryByCursor({ limit, beforeCursor: latestCursor })
-      .then(processedMessageHistory => {
-        const messageHistory = _uniqBy([ ...processedMessageHistory, ...this.messageHistory ]);
-        return this.onMessageHistoryChange(messageHistory);
+      .then(messageHistory => {
+        const updatedMessageHistory = _uniqBy([ ...messageHistory, ...this.messageHistory ]);
+        return this.onMessageHistoryChange(updatedMessageHistory);
       });
   };
 

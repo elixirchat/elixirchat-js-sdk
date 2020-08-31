@@ -7,23 +7,21 @@
  */
 
 const fs = require('fs');
-const woffDataUrlPrefix = 'data:font/woff;base64,';
-const mp3DataUrlPrefix = 'data:audio/mpeg;base64,';
-const svgDataUrlPrefix = 'data:image/svg+xml;base64,';
-
-// TODO: read as buffer, not base64? https://parceljs.org/javascript.html
+const woffDataPrefix = 'data:font/woff;base64,';
+const svgDataPrefix = 'data:image/svg+xml;base64,';
+const mp3DataPrefix = 'data:audio/mpeg;base64,';
 
 export default {
-  fontGraphikBold:          woffDataUrlPrefix + fs.readFileSync(__dirname + '/fonts/Graphik-Bold-Web.woff', { encoding: 'base64' }),
-  fontGraphikMedium:        woffDataUrlPrefix + fs.readFileSync(__dirname + '/fonts/Graphik-Medium-Web.woff', { encoding: 'base64' }),
-  fontGraphikRegular:       woffDataUrlPrefix + fs.readFileSync(__dirname + '/fonts/Graphik-Regular-Web.woff', { encoding: 'base64' }),
-  fontGraphikRegularItalic: woffDataUrlPrefix + fs.readFileSync(__dirname + '/fonts/Graphik-RegularItalic-Web.woff', { encoding: 'base64' }),
-  fontElixirchatIcons:      woffDataUrlPrefix + fs.readFileSync(__dirname + '/fonts/elixirchat-icons.woff', { encoding: 'base64' }),
-  notificationSound:        mp3DataUrlPrefix + fs.readFileSync(__dirname + '/audio/notification.mp3', { encoding: 'base64' }),
-  iconWhatsapp:             svgDataUrlPrefix + fs.readFileSync(__dirname + '/images/channel-whatsapp.svg', { encoding: 'base64' }),
-  iconTelegram:             svgDataUrlPrefix + fs.readFileSync(__dirname + '/images/channel-telegram.svg', { encoding: 'base64' }),
-  iconFacebook:             svgDataUrlPrefix + fs.readFileSync(__dirname + '/images/channel-facebook.svg', { encoding: 'base64' }),
-  iconSkype:                svgDataUrlPrefix + fs.readFileSync(__dirname + '/images/channel-skype.svg', { encoding: 'base64' }),
-  iconViber:                svgDataUrlPrefix + fs.readFileSync(__dirname + '/images/channel-viber.svg', { encoding: 'base64' }),
-  iconVK:                   svgDataUrlPrefix + fs.readFileSync(__dirname + '/images/channel-vk.svg', { encoding: 'base64' }),
+  fontGraphikBold:          woffDataPrefix + fs.readFileSync(__dirname + '/fonts/Graphik-Bold-Web.woff', { encoding: 'base64' }),
+  fontGraphikMedium:        woffDataPrefix + fs.readFileSync(__dirname + '/fonts/Graphik-Medium-Web.woff', { encoding: 'base64' }),
+  fontGraphikRegular:       woffDataPrefix + fs.readFileSync(__dirname + '/fonts/Graphik-Regular-Web.woff', { encoding: 'base64' }),
+  fontGraphikRegularItalic: woffDataPrefix + fs.readFileSync(__dirname + '/fonts/Graphik-RegularItalic-Web.woff', { encoding: 'base64' }),
+  fontElixirchatIcons:      woffDataPrefix + fs.readFileSync(__dirname + '/fonts/elixirchat-icons.woff', { encoding: 'base64' }),
+  iconWhatsapp:             svgDataPrefix + fs.readFileSync(__dirname + '/images/channel-whatsapp.svg', { encoding: 'base64' }),
+  iconTelegram:             svgDataPrefix + fs.readFileSync(__dirname + '/images/channel-telegram.svg', { encoding: 'base64' }),
+  iconFacebook:             svgDataPrefix + fs.readFileSync(__dirname + '/images/channel-facebook.svg', { encoding: 'base64' }),
+  iconSkype:                svgDataPrefix + fs.readFileSync(__dirname + '/images/channel-skype.svg', { encoding: 'base64' }),
+  iconViber:                svgDataPrefix + fs.readFileSync(__dirname + '/images/channel-viber.svg', { encoding: 'base64' }),
+  iconVK:                   svgDataPrefix + fs.readFileSync(__dirname + '/images/channel-vk.svg', { encoding: 'base64' }),
+  notificationSound:        mp3DataPrefix + fs.readFileSync(__dirname + '/audio/notification.mp3', { encoding: 'base64' }),
 };

@@ -1,6 +1,8 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import cn from 'classnames';
 import { ElixirChatWidget } from '../ElixirChatWidget';
+import { JOIN_ROOM_SUCCESS, UNREAD_MESSAGES_CHANGE } from '../../sdk/ElixirChatEventTypes';
+import {humanizeTimezoneName, humanizeUpcomingDate} from '../../utilsWidget';
 
 export interface IWelcomeScreenProps {
   elixirChatWidget: ElixirChatWidget;
@@ -14,22 +16,87 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
 
   state = {
     preview: {},
+    widgetTitle: '',
+    unreadMessagesCount: 0,
+    employeeAvatars: [],
+    employeeTotalCount: 0,
+    onlineStatus: {
+      isOnline: false,
+      workHoursStartAt: null,
+    },
   };
 
   componentDidMount() {
     const { elixirChatWidget } = this.props;
     // console.log('__ elixirChatWidget', elixirChatWidget);
+
+    elixirChatWidget.on(WIDGET_DATA_SET, () => {
+      const { employeeAvatars, employeeTotalCount } = this.generateEmployeeList();
+      this.setState({
+        employeeAvatars,
+        employeeTotalCount,
+        widgetTitle: elixirChatWidget.widgetTitle,
+        // onlineStatus: elixirChatWidget.onlineStatus,
+      });
+    });
+    elixirChatWidget.on(UNREAD_MESSAGES_CHANGE, unreadMessagesCount => {
+      this.setState({ unreadMessagesCount });
+    });
   }
 
   componentWillUnmount() {
     const { elixirChatWidget } = this.props;
   }
 
+  generateEmployeeList = () => {
+    const { elixirChatWidget } = this.props;
+    const displayLimit = Math.min(5, elixirChatWidget.companyEmployeesCount);
+
+    let employeeAvatars = elixirChatWidget.companyEmployees
+      .filter(employee => employee.avatar?.url)
+      .map(employee => {
+        return {
+          url: employee.avatar?.url,
+          initials: '',
+        };
+      })
+      .slice(0, displayLimit);
+
+    if (employeeAvatars.length < displayLimit) {
+      const textAvatars = elixirChatWidget.companyEmployees
+        .filter(employee => !employee.avatar?.url)
+        .map(employee => {
+          return {
+            url: '',
+            initials: this.generateEmployeeInitials(employee),
+          };
+        })
+        .slice(0, displayLimit - employeeAvatars.length);
+      employeeAvatars = [ ...employeeAvatars, textAvatars ];
+    }
+    return {
+      employeeAvatars,
+      employeeTotalCount: elixirChatWidget.companyEmployeesCount,
+    }
+  };
+
+  generateEmployeeInitials = (employee) => {
+    const { elixirChatWidget } = this.props;
+    const base = employee.firstName || employee.id || '';
+    const initial = base.replace(/[^a-zа-я]/ig, '')[0];
+    return (initial || elixirChatWidget.widgetTitle[0]).toUpperCase();
+  };
+
   render() {
     const { elixirChatWidget } = this.props;
 
     const {
       preview,
+      widgetTitle,
+      unreadMessagesCount,
+      employeeAvatars,
+      employeeTotalCount,
+      onlineStatus,
     } = this.state;
 
     let company_logo = 'https://omnichannel-mock.surge.sh/huntflow-logo.png';
@@ -51,6 +118,8 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
       { name: 'skype', url: 'skype://live:feedback6_2?chat' },
     ];
 
+    const visibleUnreadMessagesCount = unreadMessagesCount > 99 ? '99+' : unreadMessagesCount;
+
     return (
       <div className="elixirchat-welcome-screen-container">
 
@@ -58,25 +127,51 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
 
         <div className="elixirchat-welcome-screen-top">
           <div className="elixirchat-welcome-screen-top__logo" style={{ backgroundImage: `url(${company_logo})` }}/>
-          <h1 className="elixirchat-welcome-screen-top__title">Служба заботы Хантфлоу</h1>
+          <h1 className="elixirchat-welcome-screen-top__title">{widgetTitle}</h1>
           <div className="elixirchat-welcome-screen-top__status">
-            Онлайн <i className="elixirchat-welcome-screen-top__status-indicator"/>
+            {onlineStatus.isOnline && 'Онлайн'}
+            {!onlineStatus.isOnline && (
+              `Будем снова в сети ${humanizeUpcomingDate(workHoursStartAt)} ${humanizeTimezoneName(workHoursStartAt)}`
+            )}
+            <i className={cn({
+              'elixirchat-welcome-screen-top__status-indicator': true,
+              'elixirchat-welcome-screen-top__status-indicator--offline': !onlineStatus,
+            })}/>
           </div>
         </div>
 
         <div className="elixirchat-welcome-screen-operators">
           <div className="elixirchat-welcome-screen-operators__title">Отвечаем в течение пяти минут</div>
           <ul className="elixirchat-welcome-screen-operators__list">
-            {__mock_operator_avatars.map(url => (
-              <li className="elixirchat-welcome-screen-operators__item"
-                key={url}
-                style={{ backgroundImage: `url(${url})` }}/>
+            {employeeAvatars.map((avatar, i) => (
+              <li className={cn({
+                'elixirchat-welcome-screen-operators__item': true,
+                'elixirchat-welcome-screen-operators__item--avatar': avatar.url,
+              })}
+                key={i}
+                style={avatar.url ? { backgroundImage: `url(${avatar.url})` } : null}>
+                {avatar.initials}
+              </li>
             ))}
-            <li className="elixirchat-welcome-screen-operators__item">+8</li>
+            {employeeTotalCount > employeeAvatars.length && (
+              <li className="elixirchat-welcome-screen-operators__item">
+                +{employeeTotalCount - employeeAvatars.length}
+              </li>
+            )}
           </ul>
           <button className="elixirchat-welcome-screen-operators__button"
             onClick={() => elixirChatWidget.navigateTo({ view: 'chat', animation: 'slideLeft' })}>
-            Написать в поддержку
+            {Boolean(visibleUnreadMessagesCount) && (
+              <Fragment>
+                Прочитать пропущенные
+                <span className="elixirchat-welcome-screen-operators__button-counter">
+                  {visibleUnreadMessagesCount}
+                </span>
+              </Fragment>
+            )}
+            {!Boolean(visibleUnreadMessagesCount) && (
+              <Fragment>Написать в поддержку</Fragment>
+            )}
           </button>
         </div>
 

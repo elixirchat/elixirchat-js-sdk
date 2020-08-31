@@ -7,6 +7,7 @@ import {
   WIDGET_MUTE_TOGGLE,
   WIDGET_POPUP_TOGGLE,
   WIDGET_NAVIGATE_TO,
+  WIDGET_DATA_SET,
   // WIDGET_RENDERED,
 } from './ElixirChatWidgetEventTypes';
 
@@ -14,6 +15,7 @@ import {
   // MESSAGES_FETCH_HISTORY_INITIAL_SUCCESS,
   JOIN_ROOM_SUCCESS,
 } from '../sdk/ElixirChatEventTypes';
+import {IJoinRoomData} from '../sdk/ElixirChat';
 
 
 let ElixirChat = window.ElixirChat;
@@ -122,10 +124,15 @@ export class ElixirChatWidget extends ElixirChat {
     // this.on(MESSAGES_FETCH_HISTORY_INITIAL_SUCCESS, () => {
     //   this.triggerEvent(WIDGET_RENDERED);
     // });
-    this.on(JOIN_ROOM_SUCCESS, data => this.setWidgetParams(data));
+    this.on(JOIN_ROOM_SUCCESS, joinRoomData => {
+      this.setWidgetData(joinRoomData);
+      this.togglePopup(this.widgetIsPopupOpen);
+      this.toggleMute(this.widgetIsMuted);
+      this.navigateTo({ view: this.widgetView });
+    });
   }
 
-  private setWidgetParams(joinRoomData){
+  private setWidgetData(joinRoomData: IJoinRoomData){
     const {
       view,
       title,
@@ -135,16 +142,14 @@ export class ElixirChatWidget extends ElixirChat {
       supportEmail,
     } = this.widgetDefaultParams;
 
-    this.widgetIsPopupOpen = joinRoomData.room?.mustOpenWidget || getJSONFromLocalStorage('elixirchat-widget-is-visible', isPopupOpen);
-    this.widgetTitle = joinRoomData.company.widgetTitle || this.widgetConfig.title || title;
+    this.widgetIsPopupOpen = joinRoomData.isPopupOpen || getJSONFromLocalStorage('elixirchat-widget-is-visible', isPopupOpen);
+    this.widgetTitle = joinRoomData.title || this.widgetConfig.title || title;
     this.widgetIsMuted = getJSONFromLocalStorage('elixirchat-notifications-muted', isMuted);
     this.widgetIsButtonHidden = this.widgetConfig.hideDefaultButton || isButtonHidden;
     this.widgetSupportEmail = this.widgetConfig.email || supportEmail;
-    this.widgetView = getJSONFromLocalStorage('elixirchat-current-view') || view;
+    this.widgetView = getJSONFromLocalStorage('elixirchat-current-view', view);
 
-    this.navigateTo({ view: this.widgetView });
-    this.togglePopup(this.widgetIsPopupOpen);
-    this.toggleMute(this.widgetIsMuted);
+    this.triggerEvent(WIDGET_DATA_SET, this);
   }
 
   public togglePopup(isOpen: boolean): void {
@@ -182,8 +187,11 @@ export class ElixirChatWidget extends ElixirChat {
   };
 
   public navigateTo = (params: { view: string, animation?: string }) => {
-    this.triggerEvent(WIDGET_NAVIGATE_TO, params);
-    localStorage.setItem('elixirchat-current-view', params?.view);
+    if (params?.view !== this.widgetView) {
+      this.widgetView = params.view;
+      this.triggerEvent(WIDGET_NAVIGATE_TO, params);
+      localStorage.setItem('elixirchat-current-view', params?.view);
+    }
   };
 }
 

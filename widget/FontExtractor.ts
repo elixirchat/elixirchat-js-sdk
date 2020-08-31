@@ -109,10 +109,6 @@ export class FontExtractor {
 export function generateFontFaceCSS(rules: Array<IFontRule>){
   return (rules || [])
     .map(rule => {
-      // TODO: figure out base64/blob URLs etc
-      //   const { contentType, data } = parseBase64DataUrl(fontUrl);
-      //   const fontBlobUrl = base64toBlobUrl(data, contentType);
-
       return `@font-face {
         font-family: "${rule.fontFamily}";
         ${rule.fontWeight ? `font-weight: ${rule.fontWeight};` : ''}

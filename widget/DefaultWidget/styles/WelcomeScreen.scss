@@ -50,6 +50,10 @@
   width: 9px;
   height: 9px;
   border-radius: 100%;
+
+  &--offline {
+    background: $color-pink;
+  }
 }
 
 .elixirchat-welcome-screen-operators {
@@ -90,6 +94,10 @@
   };
 }
 
+.elixirchat-welcome-screen-operators__item--avatar {
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.04);
+}
+
 .elixirchat-welcome-screen-operators__button {
   height: 45px;
   line-height: 46px;
@@ -106,6 +114,18 @@
   &:hover {
     background: darken($color-blue, 10);
   }
+}
+
+.elixirchat-welcome-screen-operators__button-counter {
+  background: $color-pink;
+  border-radius: 21px;
+  line-height: 14px;
+  padding: 3px 5px 2px 5px;
+  margin-left: 6px;
+  display: inline-block;
+  min-width: 19px;
+  box-sizing: border-box;
+  font-size: 13px;
 }
 
 .elixirchat-welcome-screen-channels {

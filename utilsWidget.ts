@@ -1,5 +1,6 @@
 import assets from './widget/DefaultWidget/assets';
 import { _round } from './utilsCommon';
+import dayjs from 'dayjs';
 
 export function inflect(locale: 'en-US' | 'ru-RU', number: number, endings: [string], hideNumber?: boolean): string {
   const getEnding = {
@@ -78,21 +79,21 @@ export interface IGenerateFontFaceRule {
 }
 
 
-export function generateSVGIconRules(iconClassNamePrefix: string, iconMap: object): string {
+export function generateSvgIconsCSS(iconClassNamePrefix: string, iconMap: object): string {
   const iconsCSSArr = [];
   for (let iconName in iconMap) {
-    const iconBase64Url = iconMap[iconName];
-    const { contentType, data } = parseBase64DataUrl(iconBase64Url);
-    const iconBlobUrl = base64toBlobUrl(data, contentType);
+    const iconUrl = iconMap[iconName];
     iconsCSSArr.push(
-      `.${iconClassNamePrefix}${iconName} { background-image: url("${iconBlobUrl}"); }`
+      `.${iconClassNamePrefix}${iconName} { background-image: url("${iconUrl}"); }`
     );
   }
   return iconsCSSArr.join('\n');
 }
 
 
-export function base64toBlobUrl(base64Data, contentType = '', sliceSize = 512): string {
+export function base64toBlobUrl(base64Url: string, sliceSize: number = 512): string {
+  const [ dataUrlPrefix, base64Data ] = base64Url.trim().split(',');
+  const contentType = dataUrlPrefix.replace(/data:\s*/, '').replace(/s*;s*base64s*/, '');
   const byteCharacters = atob(base64Data);
   const byteArrays = [];
 
@@ -112,14 +113,7 @@ export function base64toBlobUrl(base64Data, contentType = '', sliceSize = 512): 
 }
 
 
-export function parseBase64DataUrl(base64Url) {
-  const [ prefix, data ] = base64Url.trim().split(',');
-  const contentType = prefix.replace(/data:\s*/, '').replace(/s*;s*base64s*/, '');
-  return { contentType, data };
-}
-
-
-export function getHumanReadableFileSize(locale: 'en-US' | 'ru-RU', sizeInBytes: number): string {
+export function humanizeFileSize(locale: 'en-US' | 'ru-RU', sizeInBytes: number): string {
   const unitsDict = {
     'ru-RU': {
       'kb': 'Кб',
@@ -148,6 +142,82 @@ export function getHumanReadableFileSize(locale: 'en-US' | 'ru-RU', sizeInBytes:
   }
   primarySize = primarySize < 0.1 ? 0.1 : +(primarySize.toFixed(1));
   return primarySize.toLocaleString(locale) + ' ' + unitsDict[locale || 'en-US'][primaryUnit];
+}
+
+
+export function humanizeTimezoneName(date: Date): string {
+
+  // TODO: Калининград
+  // TODO: Украина
+  // TODO: Белоруссия
+  // TODO: Прибалтика
+  // TODO: figure out when to add GMT+00 (e.g. for Eastern Europe)
+
+  const timezoneDict = {
+    Moscow: 'по Москве',
+    Samara: 'по Самаре',
+    Yekaterinburg: 'по Екатеринбургу',
+    Novosibirsk: 'по Новосибирску',
+    Omsk: 'по Омску',
+    Krasnoyarsk: 'по Красноярску',
+    Irkutsk: 'по Иркутску',
+    Yakutsk: 'по Якутску',
+    Vladivostok: 'по Владивостоку',
+    Sakhalin: 'по Южно-Сахалинску',
+    Magadan: 'по Магадану',
+    Kamchat: 'по Петропавловску-Камчатскому',
+    Anadyr: 'по Анадырю',
+    Tajikistan: 'по Душанбе',
+    Turkmenistan: 'по Ашхабаду',
+    Uzbekistan: 'по Ташкенту',
+    Kyrgyzstan: 'по Бишкеку',
+    Azerbaijan: 'по Баку',
+    Armenia: 'по Еревану',
+    'East Kazakhstan': 'по Алматы',
+    'West Kazakhstan': 'по западноказахстанскому времени',
+    'Eastern Europe': 'по восточноевропейскому времени'
+  };
+  const timezoneName = date.toTimeString().replace(/.*\((.+)\)$/, '$1');
+
+  for (let timezoneKeyword in timezoneDict) {
+    if (timezoneName.toLowerCase().includes(timezoneKeyword.toLowerCase())) {
+      return timezoneDict[timezoneKeyword];
+    }
+  }
+  const timezoneOffset = date.getTimezoneOffset() / -60;
+  const timezoneSign = timezoneOffset < 0 ? '-' : '+';
+  const timezoneOffsetHours = Math.abs(Math.floor(timezoneOffset));
+  const timezoneOffsetMinutes = Math.abs(timezoneOffset % 1 * 60);
+  return 'по GMT'
+    + timezoneSign
+    + timezoneOffsetHours
+    + (timezoneOffsetMinutes ? ':' + timezoneOffsetMinutes : '');
+}
+
+
+export function humanizeUpcomingDate(rawDate: Date | string): string {
+  const date = new Date(rawDate);
+  const inflectDayDict = {
+    'понедельник': 'в понедельник',
+    'вторник': 'во вторник',
+    'среда': 'в среду',
+    'четверг': 'в четверг',
+    'пятница': 'в пятницу',
+    'суббота': 'в субботу',
+    'воскресенье': 'в воскресенье',
+  };
+  let humanizedDate = dayjs(date).calendar(null, {
+    nextWeek: 'dddd [в] H:mm',
+    nextDay: '[завтра в] H:mm',
+    sameDay: '[сегодня в] H:mm',
+    lastDay: 'D MMMM [в] H:mm',
+    lastWeek: 'D MMMM [в] H:mm',
+    sameElse: 'D MMMM [в] H:mm',
+  });
+  for (let nominativeDay in inflectDayDict) {
+    humanizedDate = humanizedDate.replace(nominativeDay, inflectDayDict[inflectDayDict]);
+  }
+  return humanizedDate;
 }
 
 

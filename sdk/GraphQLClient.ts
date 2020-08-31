@@ -65,6 +65,9 @@ export class GraphQLClient {
 
 
 export function simplifyGraphQLJSON(graphQLJSON: { edges: Array<any> }): Array<any> {
+  if (!graphQLJSON?.edges?.length) {
+    return [];
+  }
   return graphQLJSON.edges.map(data => ({
     ...data.node,
     cursor: data.cursor,

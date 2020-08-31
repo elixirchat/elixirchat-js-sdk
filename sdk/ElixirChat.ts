@@ -6,12 +6,12 @@ import {
 } from '../utilsCommon';
 
 import { IMessage } from './serializers/serializeMessage';
-import { fragmentUser } from './serializers/serializeUser';
+import {fragmentUser, IUser, serializeUser} from './serializers/serializeUser';
 import { Logger } from './Logger';
 import { ScreenshotTaker, IScreenshot } from './ScreenshotTaker';
 import { TypingStatusSubscription } from './TypingStatusSubscription';
 import { UpdateMessageSubscription } from './UpdateMessageSubscription';
-import { OperatorOnlineStatusSubscription } from './OperatorOnlineStatusSubscription';
+import { OnlineStatusSubscription } from './OnlineStatusSubscription';
 import { UnreadMessagesCounter, IUnreadMessagesCounterData } from './UnreadMessagesCounter';
 import { MessageSubscription, ISentMessageSerialized } from './MessageSubscription';
 import {
@@ -19,7 +19,7 @@ import {
   gql,
   insertGraphQlFragments,
   parseGraphQLMethodFromQuery,
-  getErrorMessageFromResponse,
+  getErrorMessageFromResponse, simplifyGraphQLJSON,
 } from './GraphQLClient';
 import { GraphQLClientSocket } from './GraphQLClientSocket';
 
@@ -55,6 +55,20 @@ export interface IElixirChatConfig {
   sentryUrl?: boolean,
 }
 
+export interface IJoinRoomData {
+  token: string;
+  title: string;
+  employeesCount: number;
+  employees: Array<IUser>;
+  isOnline: boolean;
+  isPopupOpen: boolean;
+  workHoursStartAt: null | string;
+  elixirChatClientId: string;
+  elixirChatRoomId: string;
+  unreadMessagesCount: number;
+  unreadRepliesCount: number;
+}
+
 export class ElixirChat {
 
   public version: string = process.env.ELIXIRCHAT_VERSION;
@@ -62,15 +76,26 @@ export class ElixirChat {
   public room?: IElixirChatRoom;
   public client?: IElixirChatUser;
   public isPrivateRoom: boolean;
+  public joinRoomData: IJoinRoomData = {};
 
   public isInitialized: boolean = false;
   public isConnected: boolean;
+  public companyEmployeesCount: number;
+  public companyEmployees: Array<any>;
   public elixirChatRoomId: string;
   public elixirChatClientId: string;
 
   public get areAnyOperatorsOnline(): boolean {
-    return this.operatorOnlineStatusSubscription.areAnyOperatorsOnline;
+    return this.onlineStatusSubscription.areAnyOperatorsOnline;
   };
+
+  public get onlineStatus(): boolean {
+    return {
+      isOnline: true,
+      workHoursStartAt: 1,
+    };
+  };
+
   public get unreadMessagesCount(): number {
     return this.unreadMessagesCounter.unreadMessagesCount;
   }
@@ -91,7 +116,7 @@ export class ElixirChat {
   public graphQLClientSocket: GraphQLClientSocket;
   public messageSubscription: MessageSubscription;
   public updateMessageSubscription: UpdateMessageSubscription;
-  public operatorOnlineStatusSubscription: OperatorOnlineStatusSubscription;
+  public onlineStatusSubscription: OnlineStatusSubscription;
   public typingStatusSubscription: TypingStatusSubscription;
   public unreadMessagesCounter: UnreadMessagesCounter;
   public screenshotTaker: ScreenshotTaker;
@@ -133,7 +158,7 @@ export class ElixirChat {
     this.unreadMessagesCounter = new UnreadMessagesCounter({ elixirChat: this });
     this.updateMessageSubscription = new UpdateMessageSubscription({ elixirChat: this });
     this.typingStatusSubscription = new TypingStatusSubscription({ elixirChat: this });
-    this.operatorOnlineStatusSubscription = new OperatorOnlineStatusSubscription({ elixirChat: this });
+    this.onlineStatusSubscription = new OnlineStatusSubscription({ elixirChat: this });
 
     this.on(UPDATE_MESSAGES_CHANGE, updatedMessage => {
       this.messageSubscription.changeMessageBy({ id: updatedMessage.id }, updatedMessage);
@@ -222,7 +247,14 @@ export class ElixirChat {
           token
           company {
             isWorking
+            workHoursStartAt
             widgetTitle
+            employees(first: 20) {
+              count
+              edges {
+                node { ...fragmentUser }
+              }
+            }
           }
           client { ...fragmentUser }
           room {
@@ -230,6 +262,8 @@ export class ElixirChat {
             title
             foreignId
             mustOpenWidget
+            unreadMessagesCount
+            unreadRepliesCount
           }
         }
       }
@@ -241,9 +275,11 @@ export class ElixirChat {
     return publicGraphQLClient.query(query, variables)
       .then((response: any) => {
         if (response?.joinRoom) {
-          this.onJoinRoomSuccess(response.joinRoom);
-          this.triggerEvent(JOIN_ROOM_SUCCESS, response.joinRoom, { firedOnce: true });
-          return response.joinRoom;
+          const joinRoomData = this.serializeJoinRoomData(response.joinRoom);
+          this.joinRoomData = joinRoomData;
+          this.onJoinRoomSuccess(joinRoomData);
+          this.triggerEvent(JOIN_ROOM_SUCCESS, joinRoomData, { firedOnce: true });
+          return joinRoomData;
         }
         else {
           this.triggerEvent(JOIN_ROOM_ERROR, response);
@@ -255,24 +291,69 @@ export class ElixirChat {
     });
   }
 
-  private onJoinRoomSuccess(data: any): void {
+  private onJoinRoomSuccess(joinRoomData: IJoinRoomData): void {
     const { apiUrl, socketUrl } = this.config;
-    this.logInfo('Joined room', data);
+    const {
+      token,
+      isOnline,
+      workHoursStartAt,
+      unreadMessagesCount,
+      unreadRepliesCount,
+    } = joinRoomData;
 
     this.isConnected = true;
-    this.elixirChatClientId = data.client.id;
-    this.elixirChatRoomId = data.room.id;
+    this.logInfo('Joined room', joinRoomData);
 
-    this.graphQLClient.initialize({ url: apiUrl, token: data.token });
-    this.graphQLClientSocket.initialize({ url: socketUrl, token: data.token });
+
+
+
+    // const { company } = data;
+
+
+
+    // this.elixirChatClientId = data.client.id;
+    // this.elixirChatRoomId = data.room.id;
+
+    // this.companyEmployeesCount = data.company?.employees?.count || 0;
+    // this.companyEmployees = simplifyGraphQLJSON(data.company?.employees).map(employee => {
+    //   return serializeUser(employee, this);
+    // });
+
+    // console.warn('__ this.companyEmployees', this.companyEmployees);
+
+    this.graphQLClient.initialize({ url: apiUrl, token });
+    this.graphQLClientSocket.initialize({ url: socketUrl, token });
 
     this.messageSubscription.subscribe();
     this.updateMessageSubscription.subscribe();
-    this.unreadMessagesCounter.subscribe();
+    this.onlineStatusSubscription.subscribe({ isOnline, workHoursStartAt });
+    this.unreadMessagesCounter.subscribe({ unreadMessagesCount, unreadRepliesCount }); // TODO: fix params
     // this.typingStatusSubscription.subscribe(); // TODO: fix
-    this.operatorOnlineStatusSubscription.subscribe({
-      areAnyOperatorsOnline: Boolean(data?.company?.isWorking)
-    });
+  }
+
+  private serializeJoinRoomData(data: any): IJoinRoomData {
+    const {
+      token,
+      room = {},
+      client = {},
+      company = {},
+    } = data;
+
+    return {
+      employeesCount: company.employees?.count || 0,
+      employees: simplifyGraphQLJSON(company?.employees).map(employee => {
+        return serializeUser(employee, this);
+      }),
+      isOnline: company.isWorking,
+      isPopupOpen: room.mustOpenWidget,
+      elixirChatClientId: client.id,
+      elixirChatRoomId: room.id,
+      workHoursStartAt: company.workHoursStartAt,
+      unreadMessagesCount: room.unreadMessagesCount,
+      unreadRepliesCount: room.unreadRepliesCount,
+      title: company.widgetTitle,
+      token,
+    };
   }
 
   private checkIfConnected(): Promise<any> {
@@ -407,7 +488,7 @@ export class ElixirChat {
       this.updateMessageSubscription.unsubscribe();
       this.unreadMessagesCounter.unsubscribe();
       this.typingStatusSubscription.unsubscribe();
-      this.operatorOnlineStatusSubscription.unsubscribe();
+      this.onlineStatusSubscription.unsubscribe();
     });
     // TODO: remove firedOnce params? use .off()?
     // TODO: remove eventHandlers?

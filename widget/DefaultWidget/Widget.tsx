@@ -2,10 +2,10 @@ import React, { Component, Fragment } from 'react';
 import ReactDOM from 'react-dom';
 import cn from 'classnames';
 import { ElixirChatWidget } from '../ElixirChatWidget';
-import { UNREAD_MESSAGES_CHANGE } from '../../sdk/ElixirChatEventTypes';
+import { JOIN_ROOM_SUCCESS, UNREAD_MESSAGES_CHANGE } from '../../sdk/ElixirChatEventTypes';
 import { FONTS_EXTRACTED, WIDGET_NAVIGATE_TO, WIDGET_POPUP_TOGGLE } from '../ElixirChatWidgetEventTypes';
 import { detectBrowser } from '../../utilsCommon';
-import { generateSVGIconRules, unlockNotificationSoundAutoplay } from '../../utilsWidget';
+import {base64toBlobUrl, generateSvgIconsCSS, unlockNotificationSoundAutoplay} from '../../utilsWidget';
 import { generateFontFaceCSS, FontExtractor } from '../FontExtractor';
 import { Chat } from './Chat';
 import { IFrameWrapper } from './IFrameWrapper';
@@ -46,14 +46,11 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
 
   componentDidMount() {
     const { elixirChatWidget } = this.props;
-    const { widgetIsButtonHidden, unreadMessagesCount } = elixirChatWidget;
     const { outsideIframeCSS, insideIframeCSS } = this.generateCSS();
 
     this.setState({
       insideIframeCSS,
       outsideIframeCSS,
-      unreadMessagesCount,
-      isButtonHidden: widgetIsButtonHidden,
       detectedBrowser: detectBrowser(),
     });
 
@@ -62,6 +59,14 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
     elixirChatWidget.on(FONTS_EXTRACTED, extractedFontFaceCSS => {
       this.setState({
         insideIframeCSS: insideIframeCSS + '\n\n' + extractedFontFaceCSS,
+      });
+    });
+    elixirChatWidget.on(JOIN_ROOM_SUCCESS, () => {
+      const { widgetIsButtonHidden, widgetIsPopupOpen, unreadMessagesCount } = elixirChatWidget;
+      this.setState({
+        unreadMessagesCount,
+        isPopupOpen: widgetIsPopupOpen,
+        isButtonHidden: widgetIsButtonHidden,
       });
     });
 
@@ -80,43 +85,47 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
     return generateFontFaceCSS([
       {
         fontFamily: 'elixirchat-icons',
-        src: assets.fontElixirchatIcons,
+        format: 'woff',
+        src: base64toBlobUrl(assets.fontElixirchatIcons),
       },
       {
         fontFamily: 'Graphik',
         fontWeight: 'normal',
         fontStyle: 'normal',
-        src: assets.fontGraphikRegular,
+        format: 'woff',
+        src: base64toBlobUrl(assets.fontGraphikRegular),
       },
       {
         fontFamily: 'Graphik',
         fontWeight: 'normal',
         fontStyle: 'italic',
-        src: assets.fontGraphikRegularItalic,
+        format: 'woff',
+        src: base64toBlobUrl(assets.fontGraphikRegularItalic),
       },
       {
         fontFamily: 'Graphik',
         fontWeight: '500',
-        src: assets.fontGraphikMedium,
+        format: 'woff',
+        src: base64toBlobUrl(assets.fontGraphikMedium),
       },
       {
         fontFamily: 'Graphik',
         fontWeight: 'bold',
-        src: assets.fontGraphikRegular,
+        format: 'woff',
+        src: base64toBlobUrl(assets.fontGraphikBold),
       },
     ]);
   };
 
   renderSvgIconsCSS = () => {
-    const svgIconsCSS = generateSVGIconRules('svg-icon-', {
-      whatsapp: assets.iconWhatsapp,
-      telegram: assets.iconTelegram,
-      facebook: assets.iconFacebook,
-      skype: assets.iconSkype,
-      viber: assets.iconViber,
-      vk: assets.iconVK,
+    return generateSvgIconsCSS('svg-icon-', {
+      whatsapp: base64toBlobUrl(assets.iconWhatsapp),
+      telegram: base64toBlobUrl(assets.iconTelegram),
+      facebook: base64toBlobUrl(assets.iconFacebook),
+      skype: base64toBlobUrl(assets.iconSkype),
+      viber: base64toBlobUrl(assets.iconViber),
+      vk: base64toBlobUrl(assets.iconVK),
     });
-    this.setState({ svgIconsCSS });
   };
 
   generateCSS = () => {
@@ -148,9 +157,9 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
     };
   };
 
-  onPopupToggle = () => {
+  onPopupToggle = (isPopupOpen) => {
     this.setState({
-      isPopupOpen: !this.state.isPopupOpen,
+      isPopupOpen,
       isPopupOpeningAnimation: true,
     });
     setTimeout(() => {

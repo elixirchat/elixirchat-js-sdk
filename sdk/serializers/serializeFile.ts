@@ -38,7 +38,7 @@ export interface IFile {
 }
 
 export function serializeFileUrl(url: string, elixirChat: ElixirChat): string {
-  const uploadsUrlPrefix = elixirChat.apiUrl.replace(/\/$/, '') + '/';
+  const uploadsUrlPrefix = elixirChat.config.apiUrl.replace(/\/$/, '') + '/';
   if (url) {
     return /^uploads/i.test(url) ? uploadsUrlPrefix + url : url;
   }
@@ -49,10 +49,12 @@ export function serializeFileUrl(url: string, elixirChat: ElixirChat): string {
 
 export function serializeFile(data: any, elixirChat: ElixirChat): IFile {
   const { url, thumbnails } = data || {};
-  const firstThumbnailUrl = thumbnails?.[0]?.url;
+  const fileUrl = serializeFileUrl(url, elixirChat);
+  const thumbnailUrl = serializeFileUrl(thumbnails?.[0]?.url, elixirChat);
   const firstThumbnail = {
-    url: serializeFileUrl(firstThumbnailUrl || url, elixirChat),
+    url: serializeFileUrl(thumbnailUrl || fileUrl, elixirChat),
   };
+
   return {
     ...extractSerializedData(data, {
       id: null,
@@ -65,6 +67,6 @@ export function serializeFile(data: any, elixirChat: ElixirChat): IFile {
       isScreenshot: false,
     }),
     thumbnails: [ firstThumbnail ],
-    url: serializeFileUrl(url),
+    url: serializeFileUrl(fileUrl || thumbnailUrl, elixirChat),
   };
 }

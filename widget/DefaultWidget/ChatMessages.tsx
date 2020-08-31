@@ -13,7 +13,7 @@ import {
 
 import {
   inflectDayJSWeekDays,
-  getHumanReadableFileSize,
+  humanizeFileSize,
   generateReplyMessageQuote,
   generateCustomerSupportSenderName,
   unlockNotificationSoundAutoplay,
@@ -23,7 +23,7 @@ import {
   replaceMarkdownWithHTML,
   replaceLinksInText,
   sanitizeHTML,
-  isMobileSizeScreen,
+  isMobileSizeScreen, humanizeTimezoneName, humanizeUpcomingDate,
 } from '../../utilsWidget';
 
 import { getScreenshotCompatibilityFallback } from '../../sdk/ScreenshotTaker';
@@ -36,13 +36,13 @@ import {
   WIDGET_POPUP_TOGGLE,
 } from '../ElixirChatWidgetEventTypes';
 import {
+  JOIN_ROOM_SUCCESS,
   JOIN_ROOM_ERROR,
   // MESSAGES_FETCH_HISTORY_INITIAL_ERROR,
   // MESSAGES_HISTORY_SET,
   // MESSAGES_HISTORY_APPEND_ONE,
   // MESSAGES_HISTORY_PREPEND_MANY,
   // MESSAGES_HISTORY_CHANGE_MANY,
-  JOIN_ROOM_SUCCESS,
   TYPING_STATUS_CHANGE,
   // INITIALIZATION_ERROR,
   MESSAGES_CHANGE,
@@ -81,11 +81,11 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     currentlyTypingUsers: [],
   };
 
+  MAX_THUMBNAIL_SIZE: number = isMobileSizeScreen() ? 208 : 256;
+  MESSAGE_CHUNK_SIZE: number = 20;
+
   scrollBlock: { current: HTMLElement } = React.createRef();
   scrollBlockInner: { current: HTMLElement } = React.createRef();
-
-  maxThumbnailSize: number = isMobileSizeScreen() ? 208 : 256;
-  messageChunkSize: number = 20;
   messageRefs: object = {};
   messagesWithinCurrentViewport: object = {};
   messagesAlreadyMarkedRead: object = {};
@@ -97,12 +97,16 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     dayjs.locale('ru');
     dayjs.extend(dayjsCalendar);
 
+    window.__this = this;
+
     this.setState({
       screenshotFallback: getScreenshotCompatibilityFallback(),
     });
 
     elixirChatWidget.on(JOIN_ROOM_SUCCESS, () => {
-      elixirChatWidget.fetchMessageHistory(this.messageChunkSize);
+      elixirChatWidget.fetchMessageHistory(this.MESSAGE_CHUNK_SIZE).then(messageHistory => {
+        console.warn('__ CHAT JOIN_ROOM_SUCCESS', messageHistory  );
+      });
     });
     elixirChatWidget.on(WIDGET_IFRAME_READY, () => {
       elixirChatWidget.widgetIFrameDocument.body.addEventListener('click', unlockNotificationSoundAutoplay);
@@ -292,29 +296,33 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     const previousFullScreenPreviews = this.state.fullScreenPreviews;
     const { processedMessages, fullScreenPreviews, mustOpenWidget } = this.processMessages(
       messages,
-      insertAfter ? _last(previousProcessedMessages) : null
+      // insertAfter ? _last(previousProcessedMessages) : null
     );
-    let updatedProcessedMessages;
-    let updatedFullScreenPreviews;
-
-    if (insertBefore) {
-      updatedProcessedMessages = [...processedMessages, ...previousProcessedMessages];
-      updatedFullScreenPreviews = [...fullScreenPreviews, ...previousFullScreenPreviews];
-    }
-    else if (insertAfter) {
-      updatedProcessedMessages = [...previousProcessedMessages, ...processedMessages];
-      updatedFullScreenPreviews = [...previousFullScreenPreviews, ...fullScreenPreviews];
-    }
-    else {
-      updatedProcessedMessages = processedMessages;
-      updatedFullScreenPreviews = fullScreenPreviews;
-    }
+    // let updatedProcessedMessages;
+    // let updatedFullScreenPreviews;
+    //
+    // if (insertBefore) {
+    //   updatedProcessedMessages = [...processedMessages, ...previousProcessedMessages];
+    //   updatedFullScreenPreviews = [...fullScreenPreviews, ...previousFullScreenPreviews];
+    // }
+    // else if (insertAfter) {
+    //   updatedProcessedMessages = [...previousProcessedMessages, ...processedMessages];
+    //   updatedFullScreenPreviews = [...previousFullScreenPreviews, ...fullScreenPreviews];
+    // }
+    // else {
+    //   updatedProcessedMessages = processedMessages;
+    //   updatedFullScreenPreviews = fullScreenPreviews;
+    // }
     if (mustOpenWidget) {
       elixirChatWidget.openPopup();
     }
+
+    console.log('__ processedMessages', processedMessages);
+
     this.setState({
-      processedMessages: updatedProcessedMessages,
-      fullScreenPreviews: updatedFullScreenPreviews,
+      processedMessages: processedMessages,
+      // processedMessages: updatedProcessedMessages,
+      // fullScreenPreviews: updatedFullScreenPreviews,
     });
     this.onMultipleMessagesBeingViewedSimultaneously(this.markLatestViewedMessageRead);
   };
@@ -366,7 +374,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
     attachments.forEach(attachment => {
       const thumbnailUrl = attachment?.thumbnails?.[0]?.url || null;
-      const thumbnailRatio = this.maxThumbnailSize / Math.max(attachment.width, attachment.height);
+      const thumbnailRatio = this.MAX_THUMBNAIL_SIZE / Math.max(attachment.width, attachment.height);
 
       let thumbnailWidth = attachment.width;
       let thumbnailHeight = attachment.height;
@@ -455,7 +463,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
     if (!isLoadingPrecedingMessageHistory && !elixirChatWidget.reachedBeginningOfMessageHistory) {
       this.setState({ isLoadingPrecedingMessageHistory: true });
-      elixirChatWidget.fetchPrecedingMessageHistory(this.messageChunkSize).finally(() => {
+      elixirChatWidget.fetchPrecedingMessageHistory(this.MESSAGE_CHUNK_SIZE).finally(() => {
         this.setState({ isLoadingPrecedingMessageHistory: false });
         scrollBlock.scrollTop = scrollBlock.scrollHeight - initialScrollHeight;
       });
@@ -563,73 +571,14 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     return durationArr.join(':');
   };
 
-  generateNobodyWorkingMessage = (systemMessage) => {
-    let nobodyWorkingMessage = `К сожалению, все операторы поддержки сейчас оффлайн`;
-
-    if (systemMessage.systemWorkHoursStartAt) {
-      const date = new Date(systemMessage.systemWorkHoursStartAt);
-      const dateString = dayjs(date)
-        .calendar(null, {
-          nextWeek: '[в] dddd [в] H:mm',
-          nextDay: '[завтра в] H:mm',
-          sameDay: '[сегодня в] H:mm',
-          lastDay: 'D MMMM [в] H:mm',
-          lastWeek: 'D MMMM [в] H:mm',
-          sameElse: 'D MMMM [в] H:mm',
-        })
-        .replace('в вторник', 'во вторник')
-        .replace('в среда', 'в среду')
-        .replace('в пятница', 'в пятницу')
-        .replace('в суббота', 'в субботу')
-        .replace('в вторник', 'во вторник');
-
-      const timezoneDict = {
-        Moscow: 'по Москве',
-        Samara: 'по Самаре',
-        Yekaterinburg: 'по Екатеринбургу',
-        Novosibirsk: 'по Новосибирску',
-        Omsk: 'по Омску',
-        Krasnoyarsk: 'по Красноярску',
-        Irkutsk: 'по Иркутску',
-        Yakutsk: 'по Якутску',
-        Vladivostok: 'по Владивостоку',
-        Sakhalin: 'по Южно-Сахалинску',
-        Magadan: 'по Магадану',
-        Kamchat: 'по Петропавловску-Камчатскому',
-        Anadyr: 'по Анадырю',
-        Tajikistan: 'по Душанбе',
-        Turkmenistan: 'по Ашхабаду',
-        Uzbekistan: 'по Ташкенту',
-        Kyrgyzstan: 'по Бишкеку',
-        Azerbaijan: 'по Баку',
-        Armenia: 'по Еревану',
-        'East Kazakhstan': 'по Алматы',
-        'West Kazakhstan': 'по западноказахстанскому времени',
-        'Eastern Europe': 'по восточноевропейскому времени'
-      };
-      const timezoneName = date.toTimeString().replace(/.*\((.+)\)$/, '$1');
-      let timezoneNameHumanized = null;
-      for (let timezoneKeyword in timezoneDict) {
-        if (timezoneName.toLowerCase().includes(timezoneKeyword.toLowerCase())) {
-          timezoneNameHumanized = timezoneDict[timezoneKeyword];
-          break;
-        }
-      }
-      const timezoneOffset = date.getTimezoneOffset() / -60;
-      const timezoneSign = timezoneOffset < 0 ? '-' : '+';
-      const timezoneOffsetHours = Math.abs(Math.floor(timezoneOffset));
-      const timezoneOffsetMinutes = Math.abs(timezoneOffset % 1 * 60);
-      const timezoneOffsetHumanized = 'GMT'
-        + timezoneSign
-        + timezoneOffsetHours
-        + (timezoneOffsetMinutes ? ':' + timezoneOffsetMinutes : '');
-
-      nobodyWorkingMessage = nobodyWorkingMessage
-        + `, но будут снова в сети ${dateString}`
-        + ` (${timezoneNameHumanized ? timezoneNameHumanized + ', ' : ''}${timezoneOffsetHumanized})`
-        + `, и сразу ответят на ваш вопрос.`;
+  generateNobodyWorkingMessage = (workHoursStartAt) => {
+    const defaultMessage = `К сожалению, все операторы поддержки сейчас оффлайн`;
+    if (workHoursStartAt) {
+      return defaultMessage
+        + `, но будут снова в сети ${humanizeUpcomingDate(workHoursStartAt)} ${humanizeTimezoneName(workHoursStartAt)}`
+        + `и сразу ответят на ваш вопрос.`;
     }
-    return nobodyWorkingMessage;
+    return defaultMessage;
   };
 
   render() {
@@ -751,7 +700,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                                 <a className="elixirchat-chat-files__text-link" href={file.url} target="_blank">{file.name}</a>
                                 <br/>
                                 <span className="elixirchat-chat-files__text-secondary">
-                                    {message.isSubmitting ? 'Загрузка...' : getHumanReadableFileSize('ru-RU', file.bytesSize)}
+                                    {message.isSubmitting ? 'Загрузка...' : humanizeFileSize('ru-RU', file.bytesSize)}
                                   </span>
                               </div>
                             </li>
@@ -863,7 +812,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                     {message.systemType === 'NobodyWorkingMessage' && (
                       <Fragment>
                         <div className="elixirchat-chat-messages__text">
-                          {this.generateNobodyWorkingMessage(message)}
+                          {this.generateNobodyWorkingMessage(message.systemData?.workHoursStartAt)}
                         </div>
                       </Fragment>
                     )}

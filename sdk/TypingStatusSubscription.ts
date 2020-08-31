@@ -82,7 +82,7 @@ export class TypingStatusSubscription {
   };
 
   protected joinChannel(): void {
-    const { triggerEvent, debug, elixirChatRoomId } = this.elixirChat;
+    const { triggerEvent, debug, elixirChatRoomId } = this.elixirChat; // TODO: fix (joinRoomData)
 
     if (this.channel) {
       this.channel.leave();
@@ -107,7 +107,7 @@ export class TypingStatusSubscription {
   };
 
   protected onPresenceDiff = (diff: any): void => {
-    const { elixirChatClientId } = this.elixirChat;
+    const { elixirChatClientId } = this.elixirChat; // TODO: fix (joinRoomData)
     let userId;
     let userData;
     let userMeta;

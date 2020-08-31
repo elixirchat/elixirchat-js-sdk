@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import cn from 'classnames';
-import { JOIN_ROOM_SUCCESS, OPERATOR_ONLINE_STATUS_CHANGE } from '../../sdk/ElixirChatEventTypes';
+import { JOIN_ROOM_SUCCESS, ONLINE_STATUS_CHANGE } from '../../sdk/ElixirChatEventTypes';
 import { WIDGET_MUTE_TOGGLE } from '../ElixirChatWidgetEventTypes';
 import { ChatMessages } from './ChatMessages';
 import { ChatTextarea } from './ChatTextarea';
@@ -29,7 +29,7 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
     elixirChatWidget.on(JOIN_ROOM_SUCCESS, () => {
       this.setState({ widgetTitle: elixirChatWidget.widgetTitle });
     });
-    elixirChatWidget.on(OPERATOR_ONLINE_STATUS_CHANGE, areAnyOperatorsOnline => {
+    elixirChatWidget.on(ONLINE_STATUS_CHANGE, areAnyOperatorsOnline => {
       this.setState({ areAnyOperatorsOnline });
     });
     elixirChatWidget.on(WIDGET_MUTE_TOGGLE, isNotificationSoundMuted => {
