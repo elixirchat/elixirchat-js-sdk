@@ -1,5 +1,6 @@
 import { ElixirChat } from '../ElixirChat';
 import { gql } from '../GraphQLClient';
+import { extractSerializedData } from '../../utilsCommon';
 
 export const fragmentFile: string = gql`
   fragment fragmentFile on File {
@@ -26,41 +27,44 @@ export const fragmentFile: string = gql`
 
 export interface IFile {
   id: string | null;
-  url: string;
   name: string;
   bytesSize: number;
   height: number;
   width: number;
+  duration: number,
   contentType: string | null;
   thumbnails?: Array<IFile>;
+  url: string;
 }
 
-export function serializeFile(fileData: any, elixirChat: ElixirChat): IFile {
-  const file: any = fileData || {};
-  let thumbnails = null;
-
-  if (file.thumbnails && file.thumbnails.length) {
-    thumbnails = file.thumbnails.map(thumbnail => {
-      return serializeFile(thumbnail, elixirChat);
-    })
-  }
-
+export function serializeFileUrl(url: string, elixirChat: ElixirChat): string {
   const uploadsUrlPrefix = elixirChat.apiUrl.replace(/\/$/, '') + '/';
-  let fileUrl = '';
-  if (file.url) {
-    fileUrl = /^uploads/i.test(file.url) ? uploadsUrlPrefix + file.url : file.url;
+  if (url) {
+    return /^uploads/i.test(url) ? uploadsUrlPrefix + url : url;
   }
+  else {
+    return '';
+  }
+}
 
+export function serializeFile(data: any, elixirChat: ElixirChat): IFile {
+  const { url, thumbnails } = data || {};
+  const firstThumbnailUrl = thumbnails?.[0]?.url;
+  const firstThumbnail = {
+    url: serializeFileUrl(firstThumbnailUrl || url, elixirChat),
+  };
   return {
-    id: file.id || null,
-    url: fileUrl,
-    name: file.name || '',
-    bytesSize: file.bytesSize || 0,
-    height: file.height || 0,
-    width: file.width || 0,
-    duration: file.duration || 0,
-    contentType: file.contentType || '',
-    isScreenshot: file.isScreenshot || false,
-    thumbnails,
+    ...extractSerializedData(data, {
+      id: null,
+      name: '',
+      bytesSize: 0,
+      height: 0,
+      width: 0,
+      duration: 0,
+      contentType: '',
+      isScreenshot: false,
+    }),
+    thumbnails: [ firstThumbnail ],
+    url: serializeFileUrl(url),
   };
 }

@@ -1,10 +1,6 @@
 import { ElixirChat } from './ElixirChat';
 import { gql } from './GraphQLClient';
-import {
-  OPERATOR_ONLINE_STATUS_CHANGE,
-  OPERATOR_ONLINE_STATUS_SUBSCRIBE_SUCCESS,
-  OPERATOR_ONLINE_STATUS_SUBSCRIBE_ERROR,
-} from './ElixirChatEventTypes';
+import { OPERATOR_ONLINE_STATUS_CHANGE } from './ElixirChatEventTypes';
 
 
 export class OperatorOnlineStatusSubscription {
@@ -21,8 +17,9 @@ export class OperatorOnlineStatusSubscription {
     this.elixirChat = elixirChat;
   }
 
-  public subscribe = ({ areAnyOperatorsOnline }): void => {
-    const { graphQLClientSocket, triggerEvent } = this.elixirChat;
+  public subscribe = (params: { areAnyOperatorsOnline: boolean }): void => {
+    const { areAnyOperatorsOnline } = params || {};
+    const { graphQLClientSocket, triggerEvent, logInfo, logError } = this.elixirChat;
 
     this.areAnyOperatorsOnline = areAnyOperatorsOnline;
     triggerEvent(OPERATOR_ONLINE_STATUS_CHANGE, areAnyOperatorsOnline);
@@ -30,10 +27,10 @@ export class OperatorOnlineStatusSubscription {
     graphQLClientSocket.subscribe({
       query: this.subscriptionQuery,
       onAbort: error => {
-        triggerEvent(OPERATOR_ONLINE_STATUS_SUBSCRIBE_ERROR, error);
+        logError('OperatorOnlineStatusSubscription: Failed to subscribed', { error });
       },
       onStart: () => {
-        triggerEvent(OPERATOR_ONLINE_STATUS_SUBSCRIBE_SUCCESS);
+        logInfo('OperatorOnlineStatusSubscription: Subscribed');
       },
       onResult: ({ data }) => {
         this.areAnyOperatorsOnline = Boolean(data?.updateCompanyWorking);
@@ -44,7 +41,7 @@ export class OperatorOnlineStatusSubscription {
 
   public unsubscribe = (): void => {
     const { graphQLClientSocket, logInfo } = this.elixirChat;
-    logInfo('Unsubscribing from operator online status change...');
+    logInfo('OperatorOnlineStatusSubscription: Unsubscribing...');
     graphQLClientSocket.unsubscribe(this.subscriptionQuery);
   };
 }

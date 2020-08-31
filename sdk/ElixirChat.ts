@@ -14,13 +14,20 @@ import { UpdateMessageSubscription } from './UpdateMessageSubscription';
 import { OperatorOnlineStatusSubscription } from './OperatorOnlineStatusSubscription';
 import { UnreadMessagesCounter, IUnreadMessagesCounterData } from './UnreadMessagesCounter';
 import { MessageSubscription, ISentMessageSerialized } from './MessageSubscription';
-import {GraphQLClient, gql, insertGraphQlFragments, parseGraphQLMethodFromQuery} from './GraphQLClient';
+import {
+  GraphQLClient,
+  gql,
+  insertGraphQlFragments,
+  parseGraphQLMethodFromQuery,
+  getErrorMessageFromResponse,
+} from './GraphQLClient';
 import { GraphQLClientSocket } from './GraphQLClientSocket';
+
 import {
   JOIN_ROOM_SUCCESS,
   JOIN_ROOM_ERROR,
   LAST_READ_MESSAGE_CHANGE,
-  MESSAGES_HISTORY_CHANGE_MANY,   // TODO: refactor
+  // MESSAGES_HISTORY_CHANGE_MANY,   // TODO: refactor
   UPDATE_MESSAGES_CHANGE,         // TODO: refactor
 } from './ElixirChatEventTypes';
 
@@ -131,30 +138,13 @@ export class ElixirChat {
     this.on(UPDATE_MESSAGES_CHANGE, updatedMessage => {
       this.messageSubscription.changeMessageBy({ id: updatedMessage.id }, updatedMessage);
     });
-    this.on(LAST_READ_MESSAGE_CHANGE, this.markPrecedingMessagesRead);
+    this.on(LAST_READ_MESSAGE_CHANGE, lastReadMessageId => {
+      this.messageSubscription.markPrecedingMessagesRead(lastReadMessageId);
+    });
 
     this.logInfo('Initializing ElixirChat', config);
     return this.joinRoom();
   }
-
-  private serializeRoom(rawRoom: any, client: IElixirChatUser): IElixirChatRoom {
-    rawRoom = rawRoom || {};
-    const localStorageRoom: IElixirChatRoom = getJSONFromLocalStorage('elixirchat-room') || {};
-    const roomId = rawRoom.id || localStorageRoom.id || client.id;
-    const roomTitle = rawRoom.title || localStorageRoom.title || client.firstName + ' ' + client.lastName;
-
-    const roomDataObj = {};
-    if (typeof rawRoom.data === 'object') {
-      for (let key in rawRoom.data) {
-        roomDataObj[key] = rawRoom.data[key].toString();
-      }
-    }
-    return {
-      id: roomId.toString(),
-      title: roomTitle,
-      data: JSON.stringify(roomDataObj),
-    };
-  };
 
   private serializeClient(rawClient: any): IElixirChatUser {
     rawClient = rawClient || {};
@@ -181,6 +171,25 @@ export class ElixirChat {
       lastName: clientLastName,
     };
   }
+
+  private serializeRoom(rawRoom: any, client: IElixirChatUser): IElixirChatRoom {
+    rawRoom = rawRoom || {};
+    const localStorageRoom: IElixirChatRoom = getJSONFromLocalStorage('elixirchat-room') || {};
+    const roomId = rawRoom.id || localStorageRoom.id || client.id;
+    const roomTitle = rawRoom.title || localStorageRoom.title || client.firstName + ' ' + client.lastName;
+
+    const roomDataObj = {};
+    if (typeof rawRoom.data === 'object') {
+      for (let key in rawRoom.data) {
+        roomDataObj[key] = rawRoom.data[key].toString();
+      }
+    }
+    return {
+      id: roomId.toString(),
+      title: roomTitle,
+      data: JSON.stringify(roomDataObj),
+    };
+  };
 
   private generateAnonymousClientData(): IElixirChatUser {
     const baseTitle = uniqueNamesGenerator({ length: 2, separator: ' ', dictionaries: null });
@@ -277,17 +286,6 @@ export class ElixirChat {
     }
   };
 
-  private markPrecedingMessagesRead(lastReadMessageId: string): Array<IMessage> {
-    const messageIds = this.messageHistory.map(message => message.id);
-    const lastReadMessageIndex = messageIds.indexOf(lastReadMessageId);
-    this.messageHistory.forEach((message, index) => {
-      if (lastReadMessageIndex >= index) {
-        message.isUnread = false;
-      }
-    });
-    this.triggerEvent(MESSAGES_HISTORY_CHANGE_MANY, this.messageHistory);
-  };
-
   public triggerEvent = (eventName: string, data?: any, options?: { firedOnce: boolean }): void => {
     options = options || {};
     this.logEvent(eventName, data);
@@ -301,7 +299,7 @@ export class ElixirChat {
     eventHandler.callbacks.forEach(callback => callback(data));
   };
 
-  public on = (eventName: string, callback: (data: any) => void): void => {
+  public on = (eventName: string | [string], callback: (data: any) => void): void => {
     if (eventName instanceof Array) {
       eventName.map(singleEventName => this.on(singleEventName, callback));
     }

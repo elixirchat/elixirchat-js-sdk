@@ -1,12 +1,7 @@
 import { ElixirChat } from './ElixirChat';
-import {
-  UPDATE_MESSAGES_SUBSCRIBE_SUCCESS,
-  UPDATE_MESSAGES_SUBSCRIBE_ERROR,
-  UPDATE_MESSAGES_CHANGE,
-} from './ElixirChatEventTypes';
-
-import { gql, insertGraphQlFragments } from './GraphQLClient';
+import { UPDATE_MESSAGES_CHANGE } from './ElixirChatEventTypes';
 import { fragmentMessage, serializeMessage } from './serializers/serializeMessage';
+import { gql, insertGraphQlFragments } from './GraphQLClient';
 
 
 export class UpdateMessageSubscription {
@@ -25,15 +20,15 @@ export class UpdateMessageSubscription {
   }
 
   public subscribe = (): void => {
-    const { graphQLClientSocket, triggerEvent } = this.elixirChat;
+    const { graphQLClientSocket, triggerEvent, logInfo, logError } = this.elixirChat;
 
     graphQLClientSocket.subscribe({
       query: this.subscriptionQuery,
       onAbort: error => {
-        triggerEvent(UPDATE_MESSAGES_SUBSCRIBE_ERROR, error);
+        logError('UpdateMessageSubscription: Failed to subscribe', { error });
       },
       onStart: () => {
-        triggerEvent(UPDATE_MESSAGES_SUBSCRIBE_SUCCESS);
+        logInfo('UpdateMessageSubscription: Subscribed');
       },
       onResult: (response) => {
         const data = response?.data?.updateMessage;
@@ -47,7 +42,7 @@ export class UpdateMessageSubscription {
 
   public unsubscribe = (): void => {
     const { graphQLClientSocket, logInfo } = this.elixirChat;
-    logInfo('Unsubscribing from update message...');
+    logInfo('UpdateMessageSubscription: Unsubscribing...');
     graphQLClientSocket.unsubscribe(this.subscriptionQuery);
   };
 }

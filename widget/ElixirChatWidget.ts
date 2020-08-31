@@ -7,11 +7,11 @@ import {
   WIDGET_MUTE_TOGGLE,
   WIDGET_POPUP_TOGGLE,
   WIDGET_NAVIGATE_TO,
-  WIDGET_RENDERED,
+  // WIDGET_RENDERED,
 } from './ElixirChatWidgetEventTypes';
 
 import {
-  MESSAGES_FETCH_HISTORY_INITIAL_SUCCESS,
+  // MESSAGES_FETCH_HISTORY_INITIAL_SUCCESS,
   JOIN_ROOM_SUCCESS,
 } from '../sdk/ElixirChatEventTypes';
 
@@ -117,9 +117,11 @@ export class ElixirChatWidget extends ElixirChat {
     this.on(WIDGET_IFRAME_READY, (iframeWindow) => {
       this.widgetIFrameDocument = iframeWindow.document;
     });
-    this.on(MESSAGES_FETCH_HISTORY_INITIAL_SUCCESS, () => {
-      this.triggerEvent(WIDGET_RENDERED);
-    });
+
+    // TODO: fix
+    // this.on(MESSAGES_FETCH_HISTORY_INITIAL_SUCCESS, () => {
+    //   this.triggerEvent(WIDGET_RENDERED);
+    // });
     this.on(JOIN_ROOM_SUCCESS, data => this.setWidgetParams(data));
   }
 

@@ -1,48 +1,3 @@
-// export function logEvent(isDebug:boolean = false, message: string, data: any, type?: 'info' | 'event' | 'error' = 'info'): void {
-//   if (isDebug && window.console) {
-//     let color = '';
-//     if (type === 'error') {
-//       color = '#EB3223';
-//     }
-//     else if (type === 'event') {
-//       color = /_ERROR$/i.test(message) ? '#eba4a7' : '#5ee9eb';
-//     }
-//     const messageConsoleStyles = `
-//        font-weight: bold;
-//        color: ${color};
-//     `;
-//     const infoButtonConsoleStyles = `
-//       font-weight: normal;
-//       text-decoration: underline;
-//       color: ${color};
-//     `;
-//     const arrowConsoleStyles = `
-//       font: 10px Arial;
-//       padding-left: 3px;
-//       color: ${color};
-//     `;
-//     const additionalDataConsoleStyles = `font-weight: bold;`;
-//
-//     console.groupCollapsed(`%cElixirChat: ${message} %cInfo%c▾`, messageConsoleStyles, infoButtonConsoleStyles, arrowConsoleStyles);
-//
-//     if (type === 'error') {
-//       console.error(data);
-//     }
-//     else if (data && typeof data === 'object' && !(data instanceof Array)) {
-//       Object.keys(data).forEach(key => {
-//         console.log(`%c${key}:\n`, additionalDataConsoleStyles, data[key], '\n');
-//       });
-//     }
-//     else {
-//       console.log('%c\nData:\n', additionalDataConsoleStyles, data);
-//     }
-//     console.log('%c\nStacktrace:', additionalDataConsoleStyles);
-//     console.trace();
-//     console.groupEnd();
-//   }
-// }
-
-
 export function capitalize(str: string): string {
   return str.substr(0, 1).toUpperCase() + str.substr(1);
 }
@@ -78,6 +33,24 @@ export function _flatten(arr: Array): Array {
     }
   }
   return flattenedArray;
+}
+
+
+// Lodash-like _.uniqBy
+export function _uniqBy(arr: Array, propFunction: Function | string): Array {
+  const uniqueItemsTable = {};
+  const getPropValue = typeof propFunction === 'string'
+    ? (item) => item[propFunction]
+    : propFunction;
+
+  return arr.filter(item => {
+    const propValue = getPropValue(item);
+    if (!uniqueItemsTable[propValue]) {
+      uniqueItemsTable[propValue] = true;
+      return true;
+    }
+    return false;
+  });
 }
 
 
@@ -148,4 +121,12 @@ export function isVideoConvertibleIntoMp4(mimeType){
 
 export function trimEachRow(text: string): string {
   return text.split(/\n/).map(row => row.trim()).join('\n');
+}
+
+export function extractSerializedData(data: any, defaultValues: object): object {
+  const serializedData = {};
+  for (let key in defaultValues) {
+    serializedData[key] = data?.[key] || defaultValues[key];
+  }
+  return serializedData;
 }

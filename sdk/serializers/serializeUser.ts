@@ -1,5 +1,6 @@
 import { ElixirChat } from '../ElixirChat';
 import { gql } from '../GraphQLClient';
+import { extractSerializedData } from '../../utilsCommon';
 
 
 export const fragmentUser = gql`
@@ -18,24 +19,27 @@ export const fragmentUser = gql`
 
 export interface IUser {
   id: string | null;
-  elixirChatId: string;
-  firstName: string;
-  lastName: string;
+  clientId: string;
   isOperator: boolean;
   isCurrentClient: boolean;
+  firstName: string;
+  lastName: string;
 }
 
 
-export function serializeUser(user: any, elixirChat: ElixirChat): IUser {
-  const elixirChatId = user?.foreignId || null;
-  const isOperator = user?.__typename !== 'Client';
+export function serializeUser(data: any, elixirChat: ElixirChat): IUser {
+  const clientId = data?.foreignId || null;
+  const isOperator = data?.__typename !== 'Client';
+  const isCurrentClient = clientId === elixirChat.client.id;
 
   return {
-    id: user?.id || null,
-    firstName: user?.firstName || '',
-    lastName: user?.lastName || '',
-    isCurrentClient: elixirChatId === elixirChat.client.id,
+    ...extractSerializedData(data, {
+      id: null,
+      firstName: '',
+      lastName: '',
+    }),
+    clientId,
     isOperator,
-    elixirChatId,
+    isCurrentClient,
   };
 }

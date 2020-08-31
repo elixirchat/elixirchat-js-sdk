@@ -37,13 +37,16 @@ import {
 } from '../ElixirChatWidgetEventTypes';
 import {
   JOIN_ROOM_ERROR,
-  MESSAGES_FETCH_HISTORY_INITIAL_ERROR,
-  MESSAGES_HISTORY_SET,
-  MESSAGES_HISTORY_APPEND_ONE,
-  MESSAGES_HISTORY_PREPEND_MANY,
-  MESSAGES_HISTORY_CHANGE_MANY,
+  // MESSAGES_FETCH_HISTORY_INITIAL_ERROR,
+  // MESSAGES_HISTORY_SET,
+  // MESSAGES_HISTORY_APPEND_ONE,
+  // MESSAGES_HISTORY_PREPEND_MANY,
+  // MESSAGES_HISTORY_CHANGE_MANY,
   JOIN_ROOM_SUCCESS,
-  TYPING_STATUS_CHANGE, INITIALIZATION_ERROR,
+  TYPING_STATUS_CHANGE,
+  // INITIALIZATION_ERROR,
+  MESSAGES_CHANGE,
+  MESSAGES_RECEIVE,
 } from '../../sdk/ElixirChatEventTypes';
 
 export interface IDefaultWidgetMessagesProps {
@@ -117,23 +120,25 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
       }
     });
 
-    elixirChatWidget.on(MESSAGES_HISTORY_APPEND_ONE, this.onMessageReceive);
+    elixirChatWidget.on(MESSAGES_RECEIVE, this.onMessageReceive);
+    elixirChatWidget.on(MESSAGES_CHANGE, this.setProcessedMessages);
 
-    elixirChatWidget.on(MESSAGES_HISTORY_SET, messages => {
-      this.setProcessedMessages(messages);
-      this.setState({ isLoading: false });
+    // elixirChatWidget.on(MESSAGES_HISTORY_SET, messages => {
+    //   this.setProcessedMessages(messages);
+    //   this.setState({ isLoading: false });
+    //
+    //   if (elixirChatWidget.widgetIsPopupOpen) {
+    //     this.onMessageHistoryInitiallyBecomeVisible();
+    //   }
+    // });
 
-      if (elixirChatWidget.widgetIsPopupOpen) {
-        this.onMessageHistoryInitiallyBecomeVisible();
-      }
-    });
-    elixirChatWidget.on(MESSAGES_HISTORY_PREPEND_MANY, messages => {
-      this.setProcessedMessages(messages, { insertBefore: true });
-    });
-    elixirChatWidget.on(MESSAGES_HISTORY_CHANGE_MANY, messages => {
-      this.setProcessedMessages(messages);
-    });
-    elixirChatWidget.on([INITIALIZATION_ERROR, JOIN_ROOM_ERROR, MESSAGES_FETCH_HISTORY_INITIAL_ERROR], (e) => {
+    // elixirChatWidget.on(MESSAGES_HISTORY_PREPEND_MANY, messages => {
+    //   this.setProcessedMessages(messages, { insertBefore: true });
+    // });
+
+
+    // TODO: fix [INITIALIZATION_ERROR, JOIN_ROOM_ERROR, MESSAGES_FETCH_HISTORY_INITIAL_ERROR]
+    elixirChatWidget.on(JOIN_ROOM_ERROR, (e) => {
       const errorMessage = e && e.message ? e.message : 'Unknown error';
       const loadingErrorInfo = `Message: ${errorMessage}\nData: ${JSON.stringify(e)}`;
       this.setState({
@@ -281,7 +286,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
   };
 
   setProcessedMessages = (messages, params = {}) => {
-    const { insertBefore, insertAfter } = params;
+    const { insertBefore, insertAfter } = params; // TODO: refactor
     const { elixirChatWidget } = this.props;
     const previousProcessedMessages = this.state.processedMessages;
     const previousFullScreenPreviews = this.state.fullScreenPreviews;
@@ -476,7 +481,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     );
   };
 
-  getSubmissionErrorMessage = (message) => {
+  renderSubmissionErrorMessage = (message) => {
     const { elixirChatWidget } = this.props;
     const defaultMessage = (
       <Fragment>
@@ -621,7 +626,8 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
       nobodyWorkingMessage = nobodyWorkingMessage
         + `, но будут снова в сети ${dateString}`
-        + ` (${timezoneNameHumanized ? timezoneNameHumanized + ', ' : ''}${timezoneOffsetHumanized})`;
+        + ` (${timezoneNameHumanized ? timezoneNameHumanized + ', ' : ''}${timezoneOffsetHumanized})`
+        + `, и сразу ответят на ваш вопрос.`;
     }
     return nobodyWorkingMessage;
   };
@@ -796,7 +802,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                   <div className="elixirchat-chat-messages__bottom">
                     {message.submissionErrorCode && (
                       <span className="elixirchat-chat-messages__submission-error">
-                        {this.getSubmissionErrorMessage(message)}
+                        {this.renderSubmissionErrorMessage(message)}
                       </span>
                     )}
                     {!message.submissionErrorCode && (

@@ -10,7 +10,7 @@ import {
   IMAGE_PREVIEW_CLOSE,
   TEXTAREA_VERTICAL_RESIZE,
   WIDGET_IFRAME_READY,
-  WIDGET_RENDERED,
+  // WIDGET_RENDERED,
   SCREENSHOT_REQUEST_SUCCESS,
   SCREENSHOT_REQUEST_ERROR,
   WIDGET_MUTE_TOGGLE, WIDGET_POPUP_TOGGLE,
@@ -68,11 +68,13 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
       elixirChatWidget.dispatchTypedText(savedTypedText.textareaText);
       this.setState(savedTypedText);
     });
-    elixirChatWidget.on(WIDGET_RENDERED, () => {
-      if (elixirChatWidget.widgetIsPopupOpen) {
-        this.focusTextarea();
-      }
-    });
+
+    // TODO: fix
+    // elixirChatWidget.on(WIDGET_RENDERED, () => {
+    //   if (elixirChatWidget.widgetIsPopupOpen) {
+    //     this.focusTextarea();
+    //   }
+    // });
     elixirChatWidget.on(WIDGET_POPUP_TOGGLE, isOpen => {
       if (isOpen) {
         this.onVerticalResize();

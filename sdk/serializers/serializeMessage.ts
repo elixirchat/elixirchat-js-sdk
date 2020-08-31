@@ -2,6 +2,8 @@ import { ElixirChat } from '../ElixirChat';
 import { gql, insertGraphQlFragments } from '../GraphQLClient';
 import { IUser, serializeUser, fragmentUser } from './serializeUser';
 import { IFile, serializeFile, fragmentFile } from './serializeFile';
+import { extractSerializedData } from '../../utilsCommon';
+
 
 export const fragmentMessage = insertGraphQlFragments(gql`
   fragment fragmentMessage on Message {
@@ -64,42 +66,42 @@ export interface IMessage {
   submissionErrorCode: number | null,
 }
 
-export function serializeMessage(message: any, elixirChat: ElixirChat): IMessage {
-  let { sender, responseToMessage, attachments, mentions } = message;
 
-  const serializedSender = serializeUser(sender, elixirChat);
-  const serializedAttachments = (attachments || []).map(attachment => serializeFile(attachment, elixirChat));
-
-  const serializedResponseToMessage = {
-    id: responseToMessage?.id || null,
-    text: responseToMessage?.text || '',
-    sender: serializeUser(responseToMessage?.sender, elixirChat),
-    isDeleted: responseToMessage?.isDeleted,
-  };
-  const serializedMentions = (mentions || []).map(mention => {
-    return {
-      client: serializeUser(mention.client, elixirChat),
-      value: mention.value,
-    };
-  });
-
+export function serializeMessage(data: any, elixirChat: ElixirChat): IMessage {
+  let { sender, responseToMessage, attachments, mentions } = data || {};
   return {
-    id: message?.id || null,
-    tempId: message?.tempId || null,
-    text: message?.text || '',
-    timestamp: message?.timestamp || '',
-    cursor: message?.cursor || null,
-    sender: serializedSender,
-    responseToMessage: serializedResponseToMessage,
-    attachments: serializedAttachments,
-    mentions: serializedMentions,
-    isSubmitting: message?.isSubmitting || false,
-    submissionErrorCode: message?.submissionErrorCode || null,
-    mustOpenWidget: message?.mustOpenWidget || false,
-    isUnread: message?.isUnread || false,
-    isSystem: message?.isSystem || false,
-    isDeleted: message?.isDeleted || false,
-    systemType: message?.__typename || null,
-    systemWorkHoursStartAt: message?.workHoursStartAt || null,
+    ...extractSerializedData(data, {
+      id: null,
+      tempId: null,
+      cursor: null,
+      text: '',
+      timestamp: '',
+      mustOpenWidget: false,
+      submissionErrorCode: null,
+      isSubmitting: false,
+      isUnread: false,
+      isSystem: false,
+      isDeleted: false,
+    }),
+    sender: serializeUser(sender, elixirChat),
+    attachments: (attachments || []).map(attachment => serializeFile(attachment, elixirChat)),
+    responseToMessage: {
+      ...extractSerializedData(responseToMessage, {
+        id: null,
+        text: '',
+        isDeleted: false,
+      }),
+      sender: serializeUser(responseToMessage?.sender, elixirChat),
+    },
+    mentions: (mentions || []).map(mention => {
+      return {
+        client: serializeUser(mention.client, elixirChat),
+        value: mention.value,
+      };
+    }),
+    systemData: {
+      type: data?.__typename || null,
+      workHoursStartAt: data?.workHoursStartAt || null,
+    },
   };
 }
