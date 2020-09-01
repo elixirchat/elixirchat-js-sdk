@@ -2,7 +2,7 @@ import { uniqueNamesGenerator } from 'unique-names-generator';
 import {
   capitalize,
   randomDigitStringId,
-  getJSONFromLocalStorage,
+  getJSONFromLocalStorage, template,
 } from '../utilsCommon';
 
 import { IMessage } from './serializers/serializeMessage';
@@ -30,6 +30,7 @@ import {
   // MESSAGES_HISTORY_CHANGE_MANY,   // TODO: refactor
   UPDATE_MESSAGES_CHANGE,         // TODO: refactor
 } from './ElixirChatEventTypes';
+import {isMobileSizeScreen} from '../utilsWidget';
 
 
 export interface IElixirChatRoom {
@@ -57,7 +58,10 @@ export interface IElixirChatConfig {
 
 export interface IJoinRoomData {
   token: string;
-  title: string;
+  logoUrl: string;
+  mainTitle: string;
+  chatSubtitle: string;
+  channels: Array<IJoinRoomChannel>;
   employeesCount: number;
   employees: Array<IUser>;
   isOnline: boolean;
@@ -67,6 +71,14 @@ export interface IJoinRoomData {
   elixirChatRoomId: string;
   unreadMessagesCount: number;
   unreadRepliesCount: number;
+  omnichannelCode: string;
+}
+
+export interface IJoinRoomChannel {
+  type: string;
+  username: string;
+  url?: string;
+  omnichannelCode?: string;
 }
 
 export class ElixirChat {
@@ -235,6 +247,12 @@ export class ElixirChat {
       client: this.client,
       room: this.room,
     };
+
+
+    // TODO: support company.logoUrl on backend
+    // TODO: support company.widgetChatSubtitle on backend
+    // TODO: support company.channels on backend
+
     const query = insertGraphQlFragments(gql`
       mutation($companyId: Uuid!, $room: ForeignRoom, $client: ForeignClient!) {
         joinRoom (companyId: $companyId, room: $room, client: $client) {
@@ -250,7 +268,10 @@ export class ElixirChat {
               }
             }
           }
-          client { ...fragmentUser }
+          client {
+            ...fragmentUser
+            omnichannelCode
+          }
           room {
             id
             title
@@ -335,21 +356,86 @@ export class ElixirChat {
     } = data;
 
     return {
+      token,
+      logoUrl: company.logoUrl,
+      mainTitle: company.widgetTitle,
+      chatSubtitle: company.widgetChatSubtitle,
+      channels: this.serializeChannels(company.channels, client.omnichannelCode),
       employeesCount: company.employees?.count || 0,
       employees: simplifyGraphQLJSON(company?.employees).map(employee => {
         return serializeUser(employee, this);
       }),
       isOnline: company.isWorking,
       isPopupOpen: room.mustOpenWidget,
+      workHoursStartAt: company.workHoursStartAt,
       elixirChatClientId: client.id,
       elixirChatRoomId: room.id,
-      workHoursStartAt: company.workHoursStartAt,
       unreadMessagesCount: room.unreadMessagesCount,
       unreadRepliesCount: room.unreadRepliesCount,
-      title: company.widgetTitle,
-      token,
+      omnichannelCode: client.omnichannelCode,
     };
   }
+
+  private serializeChannels(channels: Array<IJoinRoomChannel>, omnichannelCode: string): Array<IJoinRoomChannel> {
+
+    // TODO: remove mock when backend is finished
+    channels = [
+      {
+        type: 'whatsapp',
+        username: '917290961818',
+      },
+      {
+        type: 'telegram',
+        username: 'elixirchat_test_bot',
+      },
+      {
+        type: 'vkontakte',
+        username: 'club198196792',
+      },
+      {
+        type: 'skype',
+        username: '3997ce68-a731-4a63-a884-136268979b3d',
+      },
+      {
+        type: 'viber',
+        username: 'chathelpdesk',
+      },
+      {
+        type: 'facebook',
+        username: 'huntflow',
+      },
+    ];
+
+    const isMobile = isMobileSizeScreen();
+    const manualMessageMask = `Чтобы продолжить, просто отправьте целиком это сообщение. Ваш код: ${omnichannelCode}`;
+    const desktopUrlMasks = {
+      whatsapp: 'https://web.whatsapp.com/send?phone={{ username }}&text={{ manualMessage }}',
+      telegram: 'http://t.me/{{ username }}?start={{ omnichannelCode }}',
+      skype: 'https://join.skype.com/bot/{{ username }}', // TODO: check if requires login
+      viber: 'viber://pa?chatURI={{ username }}&context={{ omnichannelCode }}',
+      facebook: 'https://m.me/{{ username }}?ref={{ omnichannelCode }}',
+      vkontakte: 'https://vk.me/{{ username }}?ref={{ omnichannelCode }}',
+    };
+    const mobileUrlMasks = {
+      whatsapp: 'whatsapp://send?phone={{ username }}&text={{ manualMessage }}',
+      telegram: 'tg://resolve?domain={{ username }}&start={{ omnichannelCode }}',
+      skype: 'skype:28:{{ username }}?chat',
+      viber: 'viber://pa?chatURI={{ username }}&context={{ omnichannelCode }}',
+      // TODO: check facebook
+      // TODO: check vk
+    };
+    return (channels || []).map(channel => {
+      const { username } = channel;
+      const type = channel.type.toLowerCase();
+      const urlMask = isMobile ? mobileUrlMasks[type] : desktopUrlMasks[type];
+      const url = template(urlMask, {
+        username,
+        omnichannelCode,
+        manualMessage: manualMessageMask,
+      });
+      return { type, username, omnichannelCode, url };
+    });
+  };
 
   private checkIfConnected(): Promise<any> {
     if (this.isConnected) {

@@ -54,6 +54,14 @@ export function _uniqBy(arr: Array, propFunction: Function | string): Array {
 }
 
 
+// Simple template engine. Example: template('Hello {{a}} {{b}}', { a: 'foo', bar: 'b' })
+export function template(str: string, dict: object) {
+  return (str || '').toString().replace(/{{\s*([a-z0-9]+)\s*}}/ig, (match, key) => {
+    return dict[key] || '';
+  });
+}
+
+
 export function detectBrowser(): 'opera' | 'chrome' | 'safari' | 'firefox' | 'ie' | null {
   const userAgentKeywords = { // do not change order of keywords
     'Opera': 'opera',

@@ -15,10 +15,12 @@ export class OnlineStatusSubscription {
     workHoursStartAt: null,
   };
 
-  // TODO: add workHoursStartAt
   public subscriptionQuery: string = gql`
     subscription {
-      updateCompanyWorking
+      updateCompanyWorking {
+        isWorking
+        workHoursStartAt
+      }
     }
   `;
 
@@ -30,11 +32,12 @@ export class OnlineStatusSubscription {
     const { graphQLClientSocket, logInfo, logError } = this.elixirChat;
     const { isOnline, workHoursStartAt } = params || {};
 
-    // this.onStatusChange({ isOnline, workHoursStartAt });
+    // TODO: remove mock
     this.onStatusChange({
       isOnline: false,
-      workHoursStartAt: '2020-09-03T13:30:00Z',
+      workHoursStartAt: '2020-09-02T13:30:00Z',
     });
+    // this.onStatusChange({ isOnline, workHoursStartAt });
 
     graphQLClientSocket.subscribe({
       query: this.subscriptionQuery,
@@ -45,10 +48,10 @@ export class OnlineStatusSubscription {
         logInfo('OnlineStatusSubscription: Subscribed');
       },
       onResult: ({ data }) => {
-        // TODO: change when workHoursStartAt is added on backend
+        const { updateCompanyWorking } = data;
         this.onStatusChange({
-          isOnline: data?.updateCompanyWorking,
-          workHoursStartAt: null,
+          isOnline: updateCompanyWorking?.isWorking,
+          workHoursStartAt: updateCompanyWorking?.workHoursStartAt,
         });
       },
     });

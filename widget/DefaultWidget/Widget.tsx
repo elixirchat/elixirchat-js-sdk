@@ -136,7 +136,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
       facebook: base64toBlobUrl(assets.iconFacebook),
       skype: base64toBlobUrl(assets.iconSkype),
       viber: base64toBlobUrl(assets.iconViber),
-      vk: base64toBlobUrl(assets.iconVK),
+      vkontakte: base64toBlobUrl(assets.iconVK),
     });
   };
 

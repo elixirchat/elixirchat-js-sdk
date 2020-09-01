@@ -37,23 +37,20 @@ export class UnreadMessagesCounter {
     }
   `;
 
-  public fetchUnreadCountsQuery = gql`
-    query {
-      room {
-        unreadMessagesCount
-        unreadRepliesCount
-      }
-    }
-  `;
-
   public elixirChat: ElixirChat;
 
   constructor({ elixirChat }: { elixirChat: ElixirChat }){
     this.elixirChat = elixirChat;
   }
 
-  public subscribe = () => {
-    this.fetchUnreadCounts();
+  public subscribe = (params: IUnreadMessagesCounterData) => {
+    // TODO: remove mock
+    this.onUnreadCountsUpdate({
+      unreadMessagesCount: 2,
+      unreadRepliesCount: 0,
+    });
+    // this.onUnreadCountsUpdate(params);
+
     this.initializeSocketClient();
   };
 
@@ -95,13 +92,6 @@ export class UnreadMessagesCounter {
       logInfo('Last message marked as read changed to ID: ' + normalizedLastReadMessageId);
       triggerEvent(LAST_READ_MESSAGE_CHANGE, normalizedLastReadMessageId);
     }
-  };
-
-  private fetchUnreadCounts(): Promise<IUnreadMessagesCounterData> {
-    const { sendAPIRequest } = this.elixirChat;
-    return sendAPIRequest(this.fetchUnreadCountsQuery).then(data => {
-      this.onUnreadCountsUpdate(data);
-    });
   };
 
   public setLastReadMessage = (messageId: string): Promise<IUnreadMessagesCounterData> => {

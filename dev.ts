@@ -28,10 +28,30 @@ const elixirChatWidget = new ElixirChatWidget({
 
 elixirChatWidget.appendWidget({
   container: document.getElementById('elixirchat-widget'),
-  widgetTitle: 'Demo Widget',
+  title: 'Demo Widget',
+  chatSubtitle: 'Отвечаем в течение пяти минут',
   supportEmail: 'test@test.com',
-  companyLogoUrl: 'https://omnichannel-mock.surge.sh/huntflow-logo.png',
-  iframeStyles: `
+  companyLogoUrl: 'https://huntflow.ru/static/b64228c9963307df7ebebf3e77564329/favicons/android-chrome-192x192.png',
+  hideDefaultButton: false,
+  enabledChannels: [
+    'whatsapp',
+    'telegram',
+    'facebook',
+    'skype',
+    'viber',
+    'vkontakte',
+  ],
+  fonts: [
+    {
+      fontFamily: 'Raleway',
+      fontWeight: 'normal',
+    },
+    {
+      fontFamily: 'Raleway',
+      fontWeight: 'bold',
+    },
+  ],
+  iframeCSS: `
     /* Your iframe CSS */
   `,
 });

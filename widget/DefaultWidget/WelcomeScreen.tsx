@@ -17,7 +17,10 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
 
   state = {
     preview: {},
-    widgetTitle: '',
+    widgetMainTitle: '',
+    widgetChatSubtitle: '',
+    widgetChannels: [],
+    widgetCompanyLogoUrl: '',
     unreadMessagesCount: 0,
     employeeAvatars: [],
     employeesCount: 0,
@@ -32,16 +35,27 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
     exposeComponentToGlobalScope('WelcomeScreen', this, elixirChatWidget);
 
     elixirChatWidget.on(WIDGET_DATA_SET, () => {
-      const { joinRoomData, widgetTitle, onlineStatus } = elixirChatWidget;
-      const { employeeAvatars, employeesCount } = this.generateEmployeeList(joinRoomData);
+      const {
+        joinRoomData,
+        widgetMainTitle,
+        widgetChatSubtitle,
+        widgetChannels,
+        widgetCompanyLogoUrl,
+        onlineStatus,
+        unreadMessagesCount,
+      } = elixirChatWidget;
 
-      console.log('__ joinRoomData', joinRoomData);
+      const { employeeAvatars, employeesCount } = this.generateEmployeeList(joinRoomData);
 
       this.setState({
         employeeAvatars,
         employeesCount,
-        widgetTitle,
+        widgetMainTitle,
+        widgetChatSubtitle,
+        widgetCompanyLogoUrl,
+        widgetChannels,
         onlineStatus,
+        unreadMessagesCount,
       });
     });
     elixirChatWidget.on(UNREAD_MESSAGES_CHANGE, unreadMessagesCount => {
@@ -89,7 +103,7 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
     const { elixirChatWidget } = this.props;
     const base = employee.firstName || employee.id || '';
     const initial = base.replace(/[^a-zа-я]/ig, '')[0];
-    return (initial || elixirChatWidget.widgetTitle[0]).toUpperCase();
+    return (initial || elixirChatWidget.widgetMainTitle[0]).toUpperCase();
   };
 
   generateOnlineStatusMessage = (onlineStatus) => {
@@ -106,10 +120,9 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
         <Fragment>
           Оффлайн <i className="elixirchat-welcome-screen-top__status-offline"/>
           {Boolean(workHoursStartAt) && (
-            <Fragment>
-              <br/>
-              Будем снова в сети {humanizeUpcomingDate(workHoursStartAt)} {humanizeTimezoneName(workHoursStartAt)}
-            </Fragment>
+            <div className="elixirchat-welcome-screen-top__status-details">
+              Ответим {humanizeUpcomingDate(workHoursStartAt)} {humanizeTimezoneName(workHoursStartAt)}
+            </div>
           )}
         </Fragment>
       );
@@ -120,8 +133,10 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
     const { elixirChatWidget } = this.props;
 
     const {
-      preview,
-      widgetTitle,
+      widgetMainTitle,
+      widgetChatSubtitle,
+      widgetCompanyLogoUrl,
+      widgetChannels,
       unreadMessagesCount,
       employeeAvatars,
       employeesCount,
@@ -155,15 +170,15 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
         <i className="icon-close-thin elixirchat-welcome-screen-close"/>
 
         <div className="elixirchat-welcome-screen-top">
-          <div className="elixirchat-welcome-screen-top__logo" style={{ backgroundImage: `url(${company_logo})` }}/>
-          <h1 className="elixirchat-welcome-screen-top__title">{widgetTitle}</h1>
+          <div className="elixirchat-welcome-screen-top__logo" style={{ backgroundImage: `url(${widgetCompanyLogoUrl})` }}/>
+          <h1 className="elixirchat-welcome-screen-top__title">{widgetMainTitle}</h1>
           <div className="elixirchat-welcome-screen-top__status">
             {this.generateOnlineStatusMessage(onlineStatus)}
           </div>
         </div>
 
         <div className="elixirchat-welcome-screen-operators">
-          <div className="elixirchat-welcome-screen-operators__title">Отвечаем в течение пяти минут</div>
+          <div className="elixirchat-welcome-screen-operators__title">{widgetChatSubtitle}</div>
           <ul className="elixirchat-welcome-screen-operators__list">
             {employeeAvatars.map((avatar, i) => (
               <li className={cn({
@@ -197,19 +212,21 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
           </button>
         </div>
 
-        <div className="elixirchat-welcome-screen-channels">
-          <div className="elixirchat-welcome-screen-channels__title">Поддержка в других каналах</div>
-          <ul className="elixirchat-welcome-screen-channels__list">
-            {__mock_messengers.map(messenger => (
-              <li key={messenger.name} className="elixirchat-welcome-screen-channels__item">
-                <a className={`elixirchat-welcome-screen-channels__link svg-icon-${messenger.name}`}
-                  href={messenger.url}
-                  target="_blank">
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
+        {Boolean(widgetChannels.length) && (
+          <div className="elixirchat-welcome-screen-channels">
+            <div className="elixirchat-welcome-screen-channels__title">Поддержка в других каналах</div>
+            <ul className="elixirchat-welcome-screen-channels__list">
+              {widgetChannels.map(channel => (
+                <li key={channel.type} className="elixirchat-welcome-screen-channels__item">
+                  <a className={`elixirchat-welcome-screen-channels__link svg-icon-${channel.type}`}
+                    href={channel.url}
+                    target="_blank">
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
       </div>
     );

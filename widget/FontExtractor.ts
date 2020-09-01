@@ -28,7 +28,7 @@ export class FontExtractor {
       triggerEvent(FONTS_EXTRACTED, fontsWithSrcCSS);
     }
     else {
-      this.waitUntilWindowLoaded(() => {
+      this.waitUntilWindowLoaded(parentWindow, () => {
         this.parentFontFaceRules = this.getParentFontFaceRules(parentWindow);
         const matchingParentFontFaceRules = _flatten(
           fontsWithoutSrc.map(rule => {
@@ -67,11 +67,11 @@ export class FontExtractor {
     }
   };
 
-  private getParentFontFaceRules(parentDocument: Document): Array<IFontRule> {
+  private getParentFontFaceRules(parentWindow: Window): Array<IFontRule> {
     const fontFaceRules = [];
 
-    for (let i = 0; i < parentDocument.styleSheets.length; i++) {
-      const sheet = parentDocument.styleSheets[i];
+    for (let i = 0; i < parentWindow.document.styleSheets.length; i++) {
+      const sheet = parentWindow.document.styleSheets[i];
       let rules;
       try {
         rules = sheet.rules;

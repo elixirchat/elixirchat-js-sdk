@@ -45,17 +45,20 @@
 .elixirchat-welcome-screen-top__status-online {
   background: $color-green;
   display: inline-block;
-  vertical-align: middle;
+  vertical-align: baseline;
   margin-left: 3px;
   width: 9px;
   height: 9px;
   border-radius: 100%;
-
 }
 
 .elixirchat-welcome-screen-top__status-offline {
   @extend .elixirchat-welcome-screen-top__status-online;
   background: $color-pink;
+}
+
+.elixirchat-welcome-screen-top__status-details {
+  padding-top: 2px;
 }
 
 .elixirchat-welcome-screen-operators {

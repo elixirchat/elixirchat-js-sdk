@@ -15,7 +15,7 @@ import {
   // MESSAGES_FETCH_HISTORY_INITIAL_SUCCESS,
   JOIN_ROOM_SUCCESS,
 } from '../sdk/ElixirChatEventTypes';
-import {IJoinRoomData} from '../sdk/ElixirChat';
+import {IJoinRoomChannel, IJoinRoomData} from '../sdk/ElixirChat';
 
 
 let ElixirChat = window.ElixirChat;
@@ -51,9 +51,11 @@ if (!ElixirChat) {
 export interface IElixirChatWidgetConfig {
   container: HTMLElement;
   email?: string;
-  title?: string;
+  mainTitle?: string;
+  chatSubtitle?: string;
   fonts?: Array<IFontRule>;
-  extractFontsFromParentWindow?: Array<IFontRule>;
+  enabledChannels?: Array<string>;
+  companyLogoUrl?: string;
   hideDefaultButton?: boolean;
   iframeCSS?: string;
 }
@@ -61,28 +63,23 @@ export interface IElixirChatWidgetConfig {
 export class ElixirChatWidget extends ElixirChat {
 
   public widgetConfig: IElixirChatWidgetConfig = {};
-
-  // TODO: remove
-  // public container: HTMLElement;
-  // public iframeStyles: string;
-  // public extractFontsFromParentWindow: Array<IFontExtractorExtractParams>;
-  // public widgetTitle: string = '';
-
-
-
   public widgetIsMuted: boolean;
   public widgetIsPopupOpen: boolean;
   public widgetIsButtonHidden: boolean;
   public widgetView: string;
-  public widgetTitle: string;
+  public widgetMainTitle: string;
+  public widgetChatSubtitle: string;
+  public widgetCompanyLogoUrl: string | null;
   public widgetSupportEmail: string;
+  public widgetChannels: Array<IJoinRoomChannel>;
 
   public widgetDefaultParams = {
     isMuted: false,
     isPopupOpen: false,
     isButtonHidden: false,
     view: 'welcome-screen',
-    title: 'Служба поддержки',
+    mainTitle: 'Служба поддержки',
+    chatSubtitle: 'Как мы можем вам помочь?',
     supportEmail: 'support@elixir.chat',
   };
 
@@ -135,7 +132,8 @@ export class ElixirChatWidget extends ElixirChat {
   private setWidgetData(joinRoomData: IJoinRoomData){
     const {
       view,
-      title,
+      mainTitle,
+      chatSubtitle,
       isMuted,
       isPopupOpen,
       isButtonHidden,
@@ -143,11 +141,18 @@ export class ElixirChatWidget extends ElixirChat {
     } = this.widgetDefaultParams;
 
     this.widgetIsPopupOpen = joinRoomData.isPopupOpen || getJSONFromLocalStorage('elixirchat-widget-is-visible', isPopupOpen);
-    this.widgetTitle = joinRoomData.title || this.widgetConfig.title || title;
+    this.widgetMainTitle = this.widgetConfig.mainTitle || joinRoomData.mainTitle || mainTitle;
+    this.widgetChatSubtitle = this.widgetConfig.chatSubtitle || joinRoomData.chatSubtitle || chatSubtitle;
+    this.widgetCompanyLogoUrl = this.widgetConfig.companyLogoUrl || joinRoomData.logoUrl || null;
+
     this.widgetIsMuted = getJSONFromLocalStorage('elixirchat-notifications-muted', isMuted);
     this.widgetIsButtonHidden = this.widgetConfig.hideDefaultButton || isButtonHidden;
     this.widgetSupportEmail = this.widgetConfig.email || supportEmail;
     this.widgetView = getJSONFromLocalStorage('elixirchat-current-view', view);
+
+    this.widgetChannels = joinRoomData.channels.filter(channel => {
+      return (this.widgetConfig.enabledChannels || []).includes(channel.type);
+    });
 
     this.triggerEvent(WIDGET_DATA_SET, this, { firedOnce: true });
   }

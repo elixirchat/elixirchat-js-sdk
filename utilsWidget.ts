@@ -1,8 +1,16 @@
-import assets from './widget/DefaultWidget/assets';
+import { Component } from 'react';
+import { ElixirChatWidget } from './widget/ElixirChatWidget';
 import { _round } from './utilsCommon';
+import assets from './widget/DefaultWidget/assets';
+
 import dayjs from 'dayjs';
-import {Component} from 'react';
-import {ElixirChatWidget} from './widget/ElixirChatWidget';
+import dayjsCalendar from 'dayjs/plugin/calendar';
+import 'dayjs/locale/ru';
+
+dayjs.locale('ru');
+dayjs.extend(dayjsCalendar);
+
+
 
 export function inflect(locale: 'en-US' | 'ru-RU', number: number, endings: [string], hideNumber?: boolean): string {
   const getEnding = {
@@ -19,35 +27,11 @@ export function inflect(locale: 'en-US' | 'ru-RU', number: number, endings: [str
   return hideNumber ? ending : number + ' ' + ending;
 }
 
-
-export function inflectDayJSWeekDays(locale: 'en-US' | 'ru-RU', formattedDateString: string): string {
-  if (locale === 'en-US') {
-    return formattedDateString;
-  }
-  // TODO: check out the proper way to customize date string in dayjs
-  let updatedFormattedDateString = formattedDateString;
-  const reDictRu = {
-    'в понедельник': 'в понедельник',
-    'в вторник': 'во вторник',
-    'в среда': 'в среду',
-    'в четверг': 'в четверг',
-    'в пятница': 'в пятницу',
-    'в суббота': 'в субботу',
-    'в воскресенье': 'в воскресенье',
-  };
-  for (let key in reDictRu) {
-    const regex = new RegExp(key, 'ig');
-    updatedFormattedDateString = updatedFormattedDateString.replace(regex, reDictRu[key]);
-  }
-  return updatedFormattedDateString;
-}
-
-
 /**
  * Prevents browser from muting audio autoplay
  * @see https://medium.com/@curtisrobinson/how-to-auto-play-audio-in-safari-with-javascript-21d50b0a2765
  */
-export function unlockNotificationSoundAutoplay(e): void {
+export function unlockNotificationSoundAutoplay(e: Event): void {
   const notification = new Audio(assets.notificationSound);
   notification.play().then(() => {
     notification.pause();
@@ -148,6 +132,7 @@ export function humanizeFileSize(locale: 'en-US' | 'ru-RU', sizeInBytes: number)
 
 
 export function humanizeTimezoneName(date: Date): string {
+  date = new Date(date);
 
   // TODO: Калининград
   // TODO: Украина
@@ -177,28 +162,36 @@ export function humanizeTimezoneName(date: Date): string {
     Armenia: 'по Еревану',
     'East Kazakhstan': 'по Алматы',
     'West Kazakhstan': 'по западноказахстанскому времени',
-    'Eastern Europe': 'по восточноевропейскому времени'
+    'Eastern Europe': `по восточноевропейскому времени (${humanizeTimezoneOffset(date)})`
   };
-  const timezoneName = date.toTimeString().replace(/.*\((.+)\)$/, '$1');
+  const timezoneName = date
+    .toTimeString()
+    .replace(/.*\((.+)\)$/, '$1');
 
   for (let timezoneKeyword in timezoneDict) {
     if (timezoneName.toLowerCase().includes(timezoneKeyword.toLowerCase())) {
       return timezoneDict[timezoneKeyword];
     }
   }
+  return `по вашему времени (${humanizeTimezoneOffset(date)})`;
+}
+
+
+export function humanizeTimezoneOffset(date: Date) {
+  date = new Date(date);
   const timezoneOffset = date.getTimezoneOffset() / -60;
   const timezoneSign = timezoneOffset < 0 ? '-' : '+';
   const timezoneOffsetHours = Math.abs(Math.floor(timezoneOffset));
   const timezoneOffsetMinutes = Math.abs(timezoneOffset % 1 * 60);
-  return 'по GMT'
+  return 'GMT'
     + timezoneSign
     + timezoneOffsetHours
     + (timezoneOffsetMinutes ? ':' + timezoneOffsetMinutes : '');
 }
 
 
-export function humanizeUpcomingDate(rawDate: Date | string): string {
-  const date = new Date(rawDate);
+export function humanizeUpcomingDate(date: Date | string): string {
+  date = new Date(date);
   const inflectDayDict = {
     'понедельник': 'в понедельник',
     'вторник': 'во вторник',
@@ -217,7 +210,7 @@ export function humanizeUpcomingDate(rawDate: Date | string): string {
     sameElse: 'D MMMM [в] H:mm',
   });
   for (let nominativeDay in inflectDayDict) {
-    humanizedDate = humanizedDate.replace(nominativeDay, inflectDayDict[inflectDayDict]);
+    humanizedDate = humanizedDate.replace(nominativeDay, inflectDayDict[nominativeDay]);
   }
   return humanizedDate;
 }
@@ -448,6 +441,7 @@ export function isWithinElement(target, container){
 }
 
 
+// TODO: detect mobile platforms/OS rather than screen size
 export function isMobileSizeScreen(){
   return window.innerWidth < 480; // equals to $mobile-max-size from Widget.scss
 }
