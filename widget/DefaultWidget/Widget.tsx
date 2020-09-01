@@ -3,9 +3,14 @@ import ReactDOM from 'react-dom';
 import cn from 'classnames';
 import { ElixirChatWidget } from '../ElixirChatWidget';
 import { JOIN_ROOM_SUCCESS, UNREAD_MESSAGES_CHANGE } from '../../sdk/ElixirChatEventTypes';
-import { FONTS_EXTRACTED, WIDGET_NAVIGATE_TO, WIDGET_POPUP_TOGGLE } from '../ElixirChatWidgetEventTypes';
+import {FONTS_EXTRACTED, WIDGET_DATA_SET, WIDGET_NAVIGATE_TO, WIDGET_POPUP_TOGGLE} from '../ElixirChatWidgetEventTypes';
 import { detectBrowser } from '../../utilsCommon';
-import {base64toBlobUrl, generateSvgIconsCSS, unlockNotificationSoundAutoplay} from '../../utilsWidget';
+import {
+  base64toBlobUrl,
+  exposeComponentToGlobalScope,
+  generateSvgIconsCSS,
+  unlockNotificationSoundAutoplay
+} from '../../utilsWidget';
 import { generateFontFaceCSS, FontExtractor } from '../FontExtractor';
 import { Chat } from './Chat';
 import { IFrameWrapper } from './IFrameWrapper';
@@ -26,7 +31,7 @@ export interface IWidgetState {
   detectedBrowser: string,
   outsideIframeCSS: string;
   insideIframeCSS: string;
-  currentView: { view: string, animation?: null | string },
+  currentView: string,
 }
 
 export class Widget extends Component<IWidgetProps, IWidgetState> {
@@ -39,7 +44,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
     detectedBrowser: null,
     outsideIframeCSS: null,
     insideIframeCSS: null,
-    currentView: {},
+    currentView: '',
   };
 
   fontExtractor: FontExtractor;
@@ -47,6 +52,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
   componentDidMount() {
     const { elixirChatWidget } = this.props;
     const { outsideIframeCSS, insideIframeCSS } = this.generateCSS();
+    exposeComponentToGlobalScope('Widget', this, elixirChatWidget);
 
     this.setState({
       insideIframeCSS,
@@ -61,10 +67,16 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
         insideIframeCSS: insideIframeCSS + '\n\n' + extractedFontFaceCSS,
       });
     });
-    elixirChatWidget.on(JOIN_ROOM_SUCCESS, () => {
-      const { widgetIsButtonHidden, widgetIsPopupOpen, unreadMessagesCount } = elixirChatWidget;
+    elixirChatWidget.on(WIDGET_DATA_SET, () => {
+      const {
+        widgetIsButtonHidden,
+        widgetIsPopupOpen,
+        widgetView,
+        unreadMessagesCount,
+      } = elixirChatWidget;
       this.setState({
         unreadMessagesCount,
+        currentView: widgetView,
         isPopupOpen: widgetIsPopupOpen,
         isButtonHidden: widgetIsButtonHidden,
       });
@@ -72,8 +84,8 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
 
     document.body.addEventListener('click', unlockNotificationSoundAutoplay);
 
-    elixirChatWidget.on(WIDGET_NAVIGATE_TO, currentView => {
-      this.setState({ currentView });
+    elixirChatWidget.on(WIDGET_NAVIGATE_TO, ({ view }) => {
+      this.setState({ currentView: view });
     });
     elixirChatWidget.on(UNREAD_MESSAGES_CHANGE, unreadMessagesCount => {
       this.setState({ unreadMessagesCount });
@@ -211,10 +223,13 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
         })}>
           <Fragment>
             <style dangerouslySetInnerHTML={{ __html: insideIframeCSS }}/>
-            {currentView.view === 'chat' && (
+
+            {/*TODO: animation*/}
+
+            {currentView === 'chat' && (
               <Chat className={`elixirchat-browser--${detectedBrowser}`} elixirChatWidget={elixirChatWidget}/>
             )}
-            {currentView.view === 'welcome-screen' && (
+            {currentView === 'welcome-screen' && (
               <WelcomeScreen elixirChatWidget={elixirChatWidget}/>
             )}
           </Fragment>

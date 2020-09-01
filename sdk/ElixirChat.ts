@@ -85,17 +85,9 @@ export class ElixirChat {
   public elixirChatRoomId: string;
   public elixirChatClientId: string;
 
-  public get areAnyOperatorsOnline(): boolean {
-    return this.onlineStatusSubscription.areAnyOperatorsOnline;
-  };
-
   public get onlineStatus(): boolean {
-    return {
-      isOnline: true,
-      workHoursStartAt: 1,
-    };
+    return this.onlineStatusSubscription.onlineStatus;
   };
-
   public get unreadMessagesCount(): number {
     return this.unreadMessagesCounter.unreadMessagesCount;
   }
@@ -105,12 +97,14 @@ export class ElixirChat {
   public get messageHistory(): boolean {
     return this.messageSubscription.messageHistory;
   }
-  public get hasMessageHistoryBeenEverFetched(): boolean {
-    return this.messageSubscription.hasMessageHistoryBeenEverFetched;
-  }
-  public get reachedBeginningOfMessageHistory(): boolean {
-    return this.messageSubscription.reachedBeginningOfMessageHistory;
-  }
+
+  // TODO: fix
+  // public get hasMessageHistoryBeenEverFetched(): boolean {
+  //   return this.messageSubscription.hasMessageHistoryBeenEverFetched;
+  // }
+  // public get reachedBeginningOfMessageHistory(): boolean {
+  //   return this.messageSubscription.reachedBeginningOfMessageHistory;
+  // }
 
   public graphQLClient: GraphQLClient;
   public graphQLClientSocket: GraphQLClientSocket;
@@ -276,7 +270,6 @@ export class ElixirChat {
       .then((response: any) => {
         if (response?.joinRoom) {
           const joinRoomData = this.serializeJoinRoomData(response.joinRoom);
-          this.joinRoomData = joinRoomData;
           this.onJoinRoomSuccess(joinRoomData);
           this.triggerEvent(JOIN_ROOM_SUCCESS, joinRoomData, { firedOnce: true });
           return joinRoomData;
@@ -302,6 +295,8 @@ export class ElixirChat {
     } = joinRoomData;
 
     this.isConnected = true;
+    this.joinRoomData = joinRoomData;
+
     this.logInfo('Joined room', joinRoomData);
 
 

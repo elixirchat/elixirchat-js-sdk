@@ -4,6 +4,8 @@ import { JOIN_ROOM_SUCCESS, ONLINE_STATUS_CHANGE } from '../../sdk/ElixirChatEve
 import { WIDGET_MUTE_TOGGLE } from '../ElixirChatWidgetEventTypes';
 import { ChatMessages } from './ChatMessages';
 import { ChatTextarea } from './ChatTextarea';
+import {IOnlineStatusParams} from '../../sdk/OnlineStatusSubscription';
+import {exposeComponentToGlobalScope} from '../../utilsWidget';
 
 export interface IDefaultWidgetProps {
   elixirChatWidget: any;
@@ -11,8 +13,8 @@ export interface IDefaultWidgetProps {
 
 export interface IDefaultWidgetState {
   widgetTitle: string;
-  areAnyOperatorsOnline: boolean;
   isNotificationSoundMuted: boolean;
+  onlineStatus: IOnlineStatusParams;
 }
 
 export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
@@ -20,17 +22,21 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
   state = {
     widgetTitle: '',
     isNotificationSoundMuted: false,
-    areAnyOperatorsOnline: false,
+    onlineStatus: {
+      isOnline: false,
+      workHoursStartAt: null,
+    },
   };
 
   componentDidMount() {
     const { elixirChatWidget } = this.props;
+    exposeComponentToGlobalScope('Chat', this, elixirChatWidget);
 
     elixirChatWidget.on(JOIN_ROOM_SUCCESS, () => {
       this.setState({ widgetTitle: elixirChatWidget.widgetTitle });
     });
-    elixirChatWidget.on(ONLINE_STATUS_CHANGE, areAnyOperatorsOnline => {
-      this.setState({ areAnyOperatorsOnline });
+    elixirChatWidget.on(ONLINE_STATUS_CHANGE, onlineStatus => {
+      this.setState({ onlineStatus });
     });
     elixirChatWidget.on(WIDGET_MUTE_TOGGLE, isNotificationSoundMuted => {
       this.setState({ isNotificationSoundMuted });
@@ -41,7 +47,7 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
     const { elixirChatWidget, className } = this.props;
     const {
       widgetTitle,
-      areAnyOperatorsOnline,
+      onlineStatus,
       isNotificationSoundMuted,
     } = this.state;
 
@@ -51,7 +57,7 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
         <h2 className="elixirchat-chat-header">
           {widgetTitle && (
             <Fragment>
-              {areAnyOperatorsOnline && (
+              {onlineStatus.isOnline && (
                 <i className="elixirchat-chat-header__indicator"/>
               )}
               <span title={'Версия ' + process.env.ELIXIRCHAT_VERSION}>

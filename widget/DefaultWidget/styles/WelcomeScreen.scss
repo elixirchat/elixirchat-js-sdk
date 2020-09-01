@@ -42,7 +42,7 @@
   margin: 0 0 9px 0;
 }
 
-.elixirchat-welcome-screen-top__status-indicator {
+.elixirchat-welcome-screen-top__status-online {
   background: $color-green;
   display: inline-block;
   vertical-align: middle;
@@ -51,9 +51,11 @@
   height: 9px;
   border-radius: 100%;
 
-  &--offline {
-    background: $color-pink;
-  }
+}
+
+.elixirchat-welcome-screen-top__status-offline {
+  @extend .elixirchat-welcome-screen-top__status-online;
+  background: $color-pink;
 }
 
 .elixirchat-welcome-screen-operators {

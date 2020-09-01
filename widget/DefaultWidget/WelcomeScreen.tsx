@@ -2,14 +2,15 @@ import React, { Component, Fragment } from 'react';
 import cn from 'classnames';
 import { ElixirChatWidget } from '../ElixirChatWidget';
 import { JOIN_ROOM_SUCCESS, UNREAD_MESSAGES_CHANGE } from '../../sdk/ElixirChatEventTypes';
-import {humanizeTimezoneName, humanizeUpcomingDate} from '../../utilsWidget';
+import { WIDGET_DATA_SET } from '../ElixirChatWidgetEventTypes';
+import {exposeComponentToGlobalScope, humanizeTimezoneName, humanizeUpcomingDate} from '../../utilsWidget';
 
 export interface IWelcomeScreenProps {
   elixirChatWidget: ElixirChatWidget;
 }
 
 export interface IWelcomeScreenState {
-
+  employeeAvatars: Array<{ url: string, initials: string }>,
 }
 
 export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreenState> {
@@ -19,7 +20,7 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
     widgetTitle: '',
     unreadMessagesCount: 0,
     employeeAvatars: [],
-    employeeTotalCount: 0,
+    employeesCount: 0,
     onlineStatus: {
       isOnline: false,
       workHoursStartAt: null,
@@ -28,15 +29,19 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
 
   componentDidMount() {
     const { elixirChatWidget } = this.props;
-    // console.log('__ elixirChatWidget', elixirChatWidget);
+    exposeComponentToGlobalScope('WelcomeScreen', this, elixirChatWidget);
 
     elixirChatWidget.on(WIDGET_DATA_SET, () => {
-      const { employeeAvatars, employeeTotalCount } = this.generateEmployeeList();
+      const { joinRoomData, widgetTitle, onlineStatus } = elixirChatWidget;
+      const { employeeAvatars, employeesCount } = this.generateEmployeeList(joinRoomData);
+
+      console.log('__ joinRoomData', joinRoomData);
+
       this.setState({
         employeeAvatars,
-        employeeTotalCount,
-        widgetTitle: elixirChatWidget.widgetTitle,
-        // onlineStatus: elixirChatWidget.onlineStatus,
+        employeesCount,
+        widgetTitle,
+        onlineStatus,
       });
     });
     elixirChatWidget.on(UNREAD_MESSAGES_CHANGE, unreadMessagesCount => {
@@ -48,13 +53,12 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
     const { elixirChatWidget } = this.props;
   }
 
-  generateEmployeeList = () => {
-    const { elixirChatWidget } = this.props;
-    const displayLimit = Math.min(5, elixirChatWidget.companyEmployeesCount);
+  generateEmployeeList = ({ employeesCount, employees }) => {
+    const displayLimit = Math.min(5, employeesCount);
 
-    let employeeAvatars = elixirChatWidget.companyEmployees
+    let employeeAvatars = employees
       .filter(employee => employee.avatar?.url)
-      .map(employee => {
+      .map((employee): any => {
         return {
           url: employee.avatar?.url,
           initials: '',
@@ -63,20 +67,21 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
       .slice(0, displayLimit);
 
     if (employeeAvatars.length < displayLimit) {
-      const textAvatars = elixirChatWidget.companyEmployees
+      const textAvatars = employees
         .filter(employee => !employee.avatar?.url)
-        .map(employee => {
+        .map((employee): any => {
           return {
             url: '',
             initials: this.generateEmployeeInitials(employee),
           };
         })
         .slice(0, displayLimit - employeeAvatars.length);
-      employeeAvatars = [ ...employeeAvatars, textAvatars ];
+
+      employeeAvatars = [ ...employeeAvatars, ...textAvatars ];
     }
     return {
       employeeAvatars,
-      employeeTotalCount: elixirChatWidget.companyEmployeesCount,
+      employeesCount,
     }
   };
 
@@ -87,6 +92,30 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
     return (initial || elixirChatWidget.widgetTitle[0]).toUpperCase();
   };
 
+  generateOnlineStatusMessage = (onlineStatus) => {
+    const { isOnline, workHoursStartAt } = onlineStatus;
+    if (isOnline) {
+      return (
+        <Fragment>
+          Онлайн <i className="elixirchat-welcome-screen-top__status-online"/>
+        </Fragment>
+      );
+    }
+    else {
+      return (
+        <Fragment>
+          Оффлайн <i className="elixirchat-welcome-screen-top__status-offline"/>
+          {Boolean(workHoursStartAt) && (
+            <Fragment>
+              <br/>
+              Будем снова в сети {humanizeUpcomingDate(workHoursStartAt)} {humanizeTimezoneName(workHoursStartAt)}
+            </Fragment>
+          )}
+        </Fragment>
+      );
+    }
+  };
+
   render() {
     const { elixirChatWidget } = this.props;
 
@@ -95,7 +124,7 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
       widgetTitle,
       unreadMessagesCount,
       employeeAvatars,
-      employeeTotalCount,
+      employeesCount,
       onlineStatus,
     } = this.state;
 
@@ -129,14 +158,7 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
           <div className="elixirchat-welcome-screen-top__logo" style={{ backgroundImage: `url(${company_logo})` }}/>
           <h1 className="elixirchat-welcome-screen-top__title">{widgetTitle}</h1>
           <div className="elixirchat-welcome-screen-top__status">
-            {onlineStatus.isOnline && 'Онлайн'}
-            {!onlineStatus.isOnline && (
-              `Будем снова в сети ${humanizeUpcomingDate(workHoursStartAt)} ${humanizeTimezoneName(workHoursStartAt)}`
-            )}
-            <i className={cn({
-              'elixirchat-welcome-screen-top__status-indicator': true,
-              'elixirchat-welcome-screen-top__status-indicator--offline': !onlineStatus,
-            })}/>
+            {this.generateOnlineStatusMessage(onlineStatus)}
           </div>
         </div>
 
@@ -153,9 +175,9 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
                 {avatar.initials}
               </li>
             ))}
-            {employeeTotalCount > employeeAvatars.length && (
+            {employeesCount > employeeAvatars.length && (
               <li className="elixirchat-welcome-screen-operators__item">
-                +{employeeTotalCount - employeeAvatars.length}
+                +{employeesCount - employeeAvatars.length}
               </li>
             )}
           </ul>

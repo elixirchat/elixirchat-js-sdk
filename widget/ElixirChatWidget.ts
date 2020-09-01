@@ -86,7 +86,7 @@ export class ElixirChatWidget extends ElixirChat {
     supportEmail: 'support@elixir.chat',
   };
 
-  public widgetReactComponent: any;
+  public widgetComponents: any = {};
   public widgetIFrameDocument: Document = {};
 
 
@@ -109,10 +109,10 @@ export class ElixirChatWidget extends ElixirChat {
     }
 
     this.initializeWidget();
-    this.widgetReactComponent = renderWidgetReactComponent(container, this);
+    const reactComponent = renderWidgetReactComponent(container, this);
 
     this.logInfo('Appended ElixirChat default widget', container);
-    return this.widgetReactComponent;
+    return reactComponent;
   };
 
   private initializeWidget(): void {
@@ -149,7 +149,7 @@ export class ElixirChatWidget extends ElixirChat {
     this.widgetSupportEmail = this.widgetConfig.email || supportEmail;
     this.widgetView = getJSONFromLocalStorage('elixirchat-current-view', view);
 
-    this.triggerEvent(WIDGET_DATA_SET, this);
+    this.triggerEvent(WIDGET_DATA_SET, this, { firedOnce: true });
   }
 
   public togglePopup(isOpen: boolean): void {

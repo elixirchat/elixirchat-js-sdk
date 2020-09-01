@@ -1,6 +1,8 @@
 import assets from './widget/DefaultWidget/assets';
 import { _round } from './utilsCommon';
 import dayjs from 'dayjs';
+import {Component} from 'react';
+import {ElixirChatWidget} from './widget/ElixirChatWidget';
 
 export function inflect(locale: 'en-US' | 'ru-RU', number: number, endings: [string], hideNumber?: boolean): string {
   const getEnding = {
@@ -448,4 +450,10 @@ export function isWithinElement(target, container){
 
 export function isMobileSizeScreen(){
   return window.innerWidth < 480; // equals to $mobile-max-size from Widget.scss
+}
+
+
+export function exposeComponentToGlobalScope(name: string, instance: Component, elixirChatWidget: ElixirChatWidget) {
+  // Can't simply use instance.constructor.name for the name due to bundler obfuscation; must pass name explicitly
+  elixirChatWidget.widgetComponents[name] = instance;
 }

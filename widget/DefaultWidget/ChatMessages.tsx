@@ -23,7 +23,7 @@ import {
   replaceMarkdownWithHTML,
   replaceLinksInText,
   sanitizeHTML,
-  isMobileSizeScreen, humanizeTimezoneName, humanizeUpcomingDate,
+  isMobileSizeScreen, humanizeTimezoneName, humanizeUpcomingDate, exposeComponentToGlobalScope,
 } from '../../utilsWidget';
 
 import { getScreenshotCompatibilityFallback } from '../../sdk/ScreenshotTaker';
@@ -94,10 +94,11 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
   componentDidMount() {
     const { elixirChatWidget } = this.props;
+    exposeComponentToGlobalScope('ChatMessages', this, elixirChatWidget);
+
     dayjs.locale('ru');
     dayjs.extend(dayjsCalendar);
 
-    window.__this = this;
 
     this.setState({
       screenshotFallback: getScreenshotCompatibilityFallback(),
