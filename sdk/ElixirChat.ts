@@ -389,7 +389,10 @@ export class ElixirChat {
     const desktopUrlMasks = {
       whatsapp: 'https://web.whatsapp.com/send?phone={{ username }}&text={{ manualMessage }}',
       telegram: 'http://t.me/{{ username }}?start={{ omnichannelCode }}',
-      skype: 'https://join.skype.com/bot/{{ username }}', // TODO: check if requires login
+
+      // TODO: check if skype link requires login
+      skype: 'https://join.skype.com/bot/{{ username }}',
+
       viber: 'viber://pa?chatURI={{ username }}&context={{ omnichannelCode }}',
       facebook: 'https://m.me/{{ username }}?ref={{ omnichannelCode }}',
       vkontakte: 'https://vk.me/{{ username }}?ref={{ omnichannelCode }}',
@@ -399,8 +402,11 @@ export class ElixirChat {
       telegram: 'tg://resolve?domain={{ username }}&start={{ omnichannelCode }}',
       skype: 'skype:28:{{ username }}?chat',
       viber: 'viber://pa?chatURI={{ username }}&context={{ omnichannelCode }}',
-      // TODO: check facebook
-      // TODO: check vk
+
+      // TODO: optimize facebook
+      // TODO: optimize vk
+      facebook: 'https://m.me/{{ username }}?ref={{ omnichannelCode }}',
+      vkontakte: 'https://vk.me/{{ username }}?ref={{ omnichannelCode }}',
     };
     return (channels || []).map(channel => {
       const { username } = channel;
