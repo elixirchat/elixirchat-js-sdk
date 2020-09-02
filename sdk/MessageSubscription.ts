@@ -127,12 +127,12 @@ export class MessageSubscription {
       const limit = 20;
       const afterCursor = _last(this.messageHistory)?.cursor || null;
       this.getMessageHistoryByCursor({ limit, afterCursor }).then(missedMessages => {
-        missedMessages.forEach(message => this.onMessageReceive(message));
+        missedMessages.forEach(this.onMessageReceive);
       });
     }, this.MESSAGE_HISTORY_REQUEST_INTERVAL);
   }
 
-  private onMessageReceive(response: any): void {
+  private onMessageReceive = (response: any): void => {
     const { triggerEvent, logInfo } = this.elixirChat;
     const data = response?.data?.newMessage;
     if (!data) {
@@ -410,7 +410,7 @@ export class MessageSubscription {
     }
     return this.getMessageHistoryByCursor({ limit, beforeCursor: latestCursor })
       .then(messageHistory => {
-        const updatedMessageHistory = _uniqBy([ ...messageHistory, ...this.messageHistory ]);
+        const updatedMessageHistory = _uniqBy([ ...messageHistory, ...this.messageHistory ], 'id');
         return this.onMessageHistoryChange(updatedMessageHistory);
       });
   };

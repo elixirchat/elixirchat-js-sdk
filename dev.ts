@@ -39,7 +39,7 @@ elixirChatWidget.appendWidget({
     'facebook',
     'vkontakte',
     'viber',
-    'skype',
+    // 'skype',
   ],
   fonts: [
     {

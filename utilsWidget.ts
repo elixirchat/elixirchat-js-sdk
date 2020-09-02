@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import { ElixirChatWidget } from './widget/ElixirChatWidget';
-import { _round } from './utilsCommon';
+import {_round, getUserFullName} from './utilsCommon';
 import assets from './widget/DefaultWidget/assets';
 
 import dayjs from 'dayjs';
@@ -12,18 +12,10 @@ dayjs.extend(dayjsCalendar);
 
 
 
-export function inflect(locale: 'en-US' | 'ru-RU', number: number, endings: [string], hideNumber?: boolean): string {
-  const getEnding = {
-    'en-US': (number, endings) => {
-      return number === 1 ? endings[0] : endings[1];
-    },
-    'ru-RU': (number, endings) => {
-      const cases = [2, 0, 1, 1, 1, 2];
-      const endingIndex = (number % 100 > 4 && number % 100 < 20) ? 2 : cases[ Math.min(number % 10, 5) ];
-      return endings[endingIndex];
-    }
-  };
-  const ending = getEnding[locale](number, endings) || endings[0];
+export function inflect(number: number, endings: [string], hideNumber?: boolean): string {
+  const cases = [2, 0, 1, 1, 1, 2];
+  const endingIndex = (number % 100 > 4 && number % 100 < 20) ? 2 : cases[ Math.min(number % 10, 5) ];
+  const ending = endings[endingIndex] || endings[0];
   return hideNumber ? ending : number + ' ' + ending;
 }
 
@@ -99,18 +91,11 @@ export function base64toBlobUrl(base64Url: string, sliceSize: number = 512): str
 }
 
 
-export function humanizeFileSize(locale: 'en-US' | 'ru-RU', sizeInBytes: number): string {
+export function humanizeFileSize(sizeInBytes: number): string {
   const unitsDict = {
-    'ru-RU': {
-      'kb': 'Кб',
-      'mb': 'Мб',
-      'gb': 'Гб',
-    },
-    'en-US': {
-      'kb': 'Kb',
-      'mb': 'Mb',
-      'gb': 'Gb',
-    },
+    'kb': 'Кб',
+    'mb': 'Мб',
+    'gb': 'Гб',
   };
   const sizeInKb = sizeInBytes / 1024;
   const sizeInMb = sizeInKb / 1024;
@@ -127,7 +112,7 @@ export function humanizeFileSize(locale: 'en-US' | 'ru-RU', sizeInBytes: number)
     primaryUnit = 'mb';
   }
   primarySize = primarySize < 0.1 ? 0.1 : +(primarySize.toFixed(1));
-  return primarySize.toLocaleString(locale) + ' ' + unitsDict[locale || 'en-US'][primaryUnit];
+  return primarySize.toLocaleString('ru-RU') + ' ' + unitsDict[primaryUnit];
 }
 
 
@@ -285,18 +270,16 @@ export function generateCustomerSupportSenderName(message, widgetTitle) {
 }
 
 
-export function generateReplyMessageQuote(messageToReplyTo, widgetTitle) {
-  const { sender = {}, text = '' } = messageToReplyTo || {};
-  const { firstName, lastName } = sender;
-
+export function generateReplyMessageQuote(messageToReplyTo, elixirChatWidget: ElixirChatWidget) {
+  const { sender, text } = messageToReplyTo || {};
   if (text) {
     return text.substr(0, 100);
   }
-  else if (!sender.isOperator) {
-    return [firstName, lastName].join(' ');
+  else if (!sender?.isOperator) {
+    return getUserFullName(sender);
   }
   else {
-    return generateCustomerSupportSenderName(messageToReplyTo, widgetTitle);
+    return getUserFullName(sender) || elixirChatWidget.widgetMainTitle;
   }
 }
 

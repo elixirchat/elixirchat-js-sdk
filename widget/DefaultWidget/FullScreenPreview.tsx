@@ -40,8 +40,8 @@ export class FullScreenPreview extends Component<IFullScreenPreviewProps, IFullS
   componentDidMount() {
     const { elixirChatWidget } = this.props;
 
-    elixirChatWidget.on(IMAGE_PREVIEW_OPEN, ({ preview, gallery }) => {
-      this.setState({ preview, gallery, isVisible: true });
+    elixirChatWidget.on(IMAGE_PREVIEW_OPEN, ({ preview, sender, gallery }) => {
+      this.setState({ preview, sender, gallery, isVisible: true });
       this.updatePreviewDimensions(preview);
       this.animateSlide();
     });

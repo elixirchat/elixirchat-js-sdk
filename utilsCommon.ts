@@ -131,6 +131,19 @@ export function isWebImage(mimeType: string): boolean {
   return ['image/jpg', 'image/jpeg', 'image/png', 'image/gif'].includes(mimeType.toLowerCase());
 }
 
+
+export function isWebVideo(mimeType){
+  return mimeType.toLowerCase().trim() === 'video/mp4';
+}
+
+
+export function getUserFullName(user, separator = ' '){
+  const firstName = (user?.firstName || '').trim();
+  const lastName = (user?.lastName || '').trim();
+  return [firstName, lastName].filter(word => word).join(separator);
+}
+
+
 export function isVideoConvertibleIntoMp4(mimeType){
   const supportedTypes = [
     'video/mp4',

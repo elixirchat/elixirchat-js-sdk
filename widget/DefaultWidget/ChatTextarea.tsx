@@ -364,7 +364,7 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
               <span className="elixirchat-chat-textarea__reply-to-text">
                 <i className="elixirchat-chat-textarea__reply-to-icon icon-reply-right"/>
                 <span title={responseToMessage.text}>
-                  {generateReplyMessageQuote(responseToMessage, elixirChatWidget.widgetTitle)}
+                  {generateReplyMessageQuote(responseToMessage, elixirChatWidget)}
                 </span>
               </span>
               <span className="elixirchat-chat-textarea__reply-to-remove icon-close-thick"

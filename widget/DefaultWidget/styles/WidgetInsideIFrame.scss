@@ -2,7 +2,7 @@
 @import "./mixins";
 
 .elixirchat-widget-view {
-  transition: all 100ms;
+  transition: all 50ms;
 
   &--animating {
     transform: scale(1.05);

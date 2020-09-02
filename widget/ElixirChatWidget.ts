@@ -86,7 +86,6 @@ export class ElixirChatWidget extends ElixirChat {
   public widgetComponents: any = {};
   public widgetIFrameDocument: Document = {};
 
-
   public appendWidget = async (widgetConfig: IElixirChatWidgetConfig): void => {
     this.widgetConfig = widgetConfig || {};
     const container = this.widgetConfig.container;
@@ -113,9 +112,10 @@ export class ElixirChatWidget extends ElixirChat {
   };
 
   private initializeWidget(): void {
-    this.on(WIDGET_IFRAME_READY, (iframeWindow) => {
-      this.widgetIFrameDocument = iframeWindow.document;
+    this.on(WIDGET_IFRAME_READY, iframeDocument => {
+      this.widgetIFrameDocument = iframeDocument;
     });
+
 
     // TODO: fix
     // this.on(MESSAGES_FETCH_HISTORY_INITIAL_SUCCESS, () => {
@@ -151,8 +151,6 @@ export class ElixirChatWidget extends ElixirChat {
     this.widgetIsButtonHidden = this.widgetConfig.hideDefaultButton || isButtonHidden;
     this.widgetSupportEmail = this.widgetConfig.email || supportEmail;
     this.widgetView = getJSONFromLocalStorage('elixirchat-current-view', view);
-
-    console.log('__ yyy', getJSONFromLocalStorage('elixirchat-current-view'), '///', view);
 
     this.widgetChannels = (this.widgetConfig.enabledChannels || []).map(channelType => {
       const normalizedChannelType = channelType?.toLowerCase?.();

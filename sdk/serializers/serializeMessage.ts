@@ -44,6 +44,7 @@ export const fragmentMessage = insertGraphQlFragments(gql`
 `, { fragmentUser, fragmentFile });
 
 
+// TODO: update
 export interface IMessage {
   id: string;
   tempId: string | null;
@@ -58,6 +59,7 @@ export interface IMessage {
   };
   isSystem: boolean;
   isUnread: boolean;
+  isDeleted: boolean;
   mentions: Array<{value: string, client: IUser}>,
   systemType: string | null;
   systemWorkHoursStartAt: string | null;

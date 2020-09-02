@@ -23,27 +23,29 @@ export class IFrameWrapper extends Component<IIFrameWrapperProps, IIFrameWrapper
   componentDidMount(){
     const { elixirChatWidget } = this.props;
 
-    this.onIframeReady().then(async (iframeWindow) => {
-      this.iframeContentContainer = iframeWindow.document.createElement('main');
-      iframeWindow.document.body.appendChild(this.iframeContentContainer);
-      await this.setState({ isIframeReady: true });
-      elixirChatWidget.triggerEvent(WIDGET_IFRAME_READY, iframeWindow, { firedOnce: true });
+    this.onIframeReady().then(iframeDocument => {
+      this.iframeContentContainer = iframeDocument.createElement('main');
+      iframeDocument.body.appendChild(this.iframeContentContainer);
+
+      this.setState({ isIframeReady: true }, () => {
+        elixirChatWidget.triggerEvent(WIDGET_IFRAME_READY, iframeDocument, { firedOnce: true });
+      });
     });
   }
 
   onIframeReady = () => {
     return new Promise((resolve) => {
       let iframeElement: HTMLIFrameElement = this.iframe.current;
-      let iframeWindow = iframeElement.contentWindow;
+      let iframeDocument = iframeElement.contentWindow.document;
 
-      if (iframeWindow.document.readyState === 'complete') {
-        resolve(iframeWindow);
+      if (iframeDocument.readyState === 'complete') {
+        resolve(iframeDocument);
       }
       else {
         iframeElement.addEventListener('load', (e) => {
           iframeElement = e.target;
-          iframeWindow = iframeElement.contentWindow;
-          resolve(iframeWindow);
+          iframeDocument = iframeElement.contentWindow.document;
+          resolve(iframeDocument);
         });
       }
     });
