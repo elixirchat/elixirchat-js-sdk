@@ -83,65 +83,32 @@
   });
 
   elixirChatWidget.appendWidget({
-    container: document.getElementById('elixirchat-widget'),
-
-    /**
-     * Custom styles that will be applied inside the iframe
-     */
-    iframeStyles: `
-
-      /* Custom styles inside the iframe */
-
-      body,
-      input,
-      button,
-      textarea {
-        font: 14px/18px "Rubik", sans-serif;
-      }
-      .elixirchat-chat-header__indicator {
-        display: none;
-      }
-      .elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__balloon {
-        background: #FDEC4F;
-        color: black;
-      }
-      .elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__reply-message {
-        color: rgba(0,0,0,.4);
-        border-color: rgba(0,0,0,.25);
-      }
-      .elixirchat-chat-messages__item--by-me a,
-      .elixirchat-chat-messages__item--by-me .elixirchat-chat-files__text-link {
-        color: black !important;
-      }
-      .elixirchat-chat-messages__item--by-me .elixirchat-chat-files__text-secondary {
-        color: rgba(0,0,0,.4);
-      }
-      .elixirchat-chat-messages__sender,
-      .elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__sender,
-      .elixirchat-chat-messages__item--by-operator .elixirchat-chat-messages__sender {
-        color: black;
-      }
-    `,
-
-    /**
-     * Find and pass a font from parent window into inside the iframe
-     * The font must be loaded from CORS-friendly sources i.e. the domain of the parent window
-     *
-     * TODO: elaborate & move to API docs
-     */
-    extractFontsFromParentWindow: [
+    mainTitle: 'Demo Widget',
+    chatSubtitle: 'Отвечаем в течение пяти минут',
+    supportEmail: 'test@test.com',
+    companyLogoUrl: 'https://huntflow.ru/static/b64228c9963307df7ebebf3e77564329/favicons/android-chrome-192x192.png',
+    hideDefaultButton: false,
+    enabledChannels: [
+      'whatsapp',
+      'telegram',
+      'facebook',
+      'vkontakte',
+      'viber',
+      'skype',
+    ],
+    fonts: [
       {
-        fontFamily: 'Rubik',
-        fontWeight: 400,
+        fontFamily: 'Raleway',
+        fontWeight: 'normal',
       },
       {
-        fontFamily: 'Rubik',
-        fontWeight: 700,
+        fontFamily: 'Raleway',
+        fontWeight: 'bold',
       },
     ],
-    widgetTitle: 'Customized public widget',
-    supportEmail: 'test@test.com',
-    debug: true,
+    iframeCSS: `
+    /* Your iframe CSS */
+  `,
   });
 </script>
 </body>
