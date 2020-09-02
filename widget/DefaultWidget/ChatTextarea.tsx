@@ -2,7 +2,7 @@ import React, {Component, Fragment} from 'react';
 import cn from 'classnames';
 import TextareaAutosize from 'react-textarea-autosize';
 import { ElixirChatWidget } from '../ElixirChatWidget';
-import { randomDigitStringId } from '../../utilsCommon';
+import {randomDigitStringId, setToLocalStorage} from '../../utilsCommon';
 import { getImageDimensions, generateReplyMessageQuote } from '../../utilsWidget';
 import { getScreenshotCompatibilityFallback } from '../../sdk/ScreenshotTaker';
 import {
@@ -202,7 +202,7 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
       ...this.getLocallySavedTypedText(),
       ...diff
     };
-    localStorage.setItem('elixirchat-typed-text', JSON.stringify(updatedState));
+    setToLocalStorage('elixirchat-typed-text', updatedState);
   };
 
   onTextareaKeyDown = (e) => {

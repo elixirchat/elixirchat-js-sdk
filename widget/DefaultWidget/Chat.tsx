@@ -1,7 +1,7 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import cn from 'classnames';
-import { JOIN_ROOM_SUCCESS, ONLINE_STATUS_CHANGE } from '../../sdk/ElixirChatEventTypes';
-import { WIDGET_MUTE_TOGGLE } from '../ElixirChatWidgetEventTypes';
+import { ONLINE_STATUS_CHANGE } from '../../sdk/ElixirChatEventTypes';
+import { WIDGET_DATA_SET, WIDGET_MUTE_TOGGLE } from '../ElixirChatWidgetEventTypes';
 import { ChatMessages } from './ChatMessages';
 import { ChatTextarea } from './ChatTextarea';
 import {IOnlineStatusParams} from '../../sdk/OnlineStatusSubscription';
@@ -12,16 +12,16 @@ export interface IDefaultWidgetProps {
 }
 
 export interface IDefaultWidgetState {
-  widgetTitle: string;
-  isNotificationSoundMuted: boolean;
+  widgetMainTitle: string;
+  widgetIsMuted: boolean;
   onlineStatus: IOnlineStatusParams;
 }
 
 export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
 
   state = {
-    widgetTitle: '',
-    isNotificationSoundMuted: false,
+    widgetMainTitle: '',
+    widgetIsMuted: false,
     onlineStatus: {
       isOnline: false,
       workHoursStartAt: null,
@@ -32,44 +32,48 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
     const { elixirChatWidget } = this.props;
     exposeComponentToGlobalScope('Chat', this, elixirChatWidget);
 
-    elixirChatWidget.on(JOIN_ROOM_SUCCESS, () => {
-      this.setState({ widgetTitle: elixirChatWidget.widgetTitle });
+    elixirChatWidget.on(WIDGET_DATA_SET, () => {
+      const { widgetMainTitle, widgetIsMuted } = elixirChatWidget;
+      this.setState({
+        widgetMainTitle,
+        widgetIsMuted,
+      });
     });
     elixirChatWidget.on(ONLINE_STATUS_CHANGE, onlineStatus => {
       this.setState({ onlineStatus });
     });
-    elixirChatWidget.on(WIDGET_MUTE_TOGGLE, isNotificationSoundMuted => {
-      this.setState({ isNotificationSoundMuted });
+    elixirChatWidget.on(WIDGET_MUTE_TOGGLE, widgetIsMuted => {
+      this.setState({ widgetIsMuted });
     });
   }
 
   render() {
     const { elixirChatWidget, className } = this.props;
     const {
-      widgetTitle,
+      widgetMainTitle,
+      widgetIsMuted,
       onlineStatus,
-      isNotificationSoundMuted,
     } = this.state;
 
     return (
       <div className={cn('elixirchat-chat-container', className)}>
+        <div className="elixirchat-chat-header">
+          <i className="elixirchat-chat-header__back icon-arrow-left"
+            onClick={() => elixirChatWidget.navigateTo({ view: 'welcome-screen', animation: 'slideRight' })}/>
 
-        <h2 className="elixirchat-chat-header">
-          {widgetTitle && (
-            <Fragment>
-              {onlineStatus.isOnline && (
-                <i className="elixirchat-chat-header__indicator"/>
-              )}
-              <span title={'Версия ' + process.env.ELIXIRCHAT_VERSION}>
-                {widgetTitle}
-              </span>
-            </Fragment>
-          )}
+          <span className="elixirchat-chat-header__title" title={'Версия ' + process.env.ELIXIRCHAT_VERSION}>
+            {widgetMainTitle}
+          </span>
+
+          {/*<i className={cn({*/}
+          {/*  'elixirchat-chat-header__indicator': true,*/}
+          {/*  'elixirchat-chat-header__indicator--offline': !onlineStatus.isOnline,*/}
+          {/*})}/>*/}
 
           <button className="elixirchat-chat-header__mute"
-            onClick={() => isNotificationSoundMuted ? elixirChatWidget.unmute() : elixirChatWidget.mute()}
-            title={isNotificationSoundMuted ? 'Включить звук уведомлений' : 'Выключить звук уведомлений'}>
-            <i className={isNotificationSoundMuted ? 'icon-speaker-mute' : 'icon-speaker'}/>
+            onClick={() => widgetIsMuted ? elixirChatWidget.unmute() : elixirChatWidget.mute()}
+            title={widgetIsMuted ? 'Включить звук уведомлений' : 'Выключить звук уведомлений'}>
+            <i className={widgetIsMuted ? 'icon-speaker-mute' : 'icon-speaker'}/>
           </button>
 
           <button className="elixirchat-chat-header__close"
@@ -77,7 +81,7 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
             onClick={elixirChatWidget.closePopup}>
             <i className="icon-close-thin"/>
           </button>
-        </h2>
+        </div>
 
         <ChatMessages elixirChatWidget={elixirChatWidget}/>
         <ChatTextarea elixirChatWidget={elixirChatWidget}/>

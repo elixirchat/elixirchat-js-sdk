@@ -45,11 +45,11 @@ export class UnreadMessagesCounter {
 
   public subscribe = (params: IUnreadMessagesCounterData) => {
     // TODO: remove mock
-    this.onUnreadCountsUpdate({
-      unreadMessagesCount: 2,
-      unreadRepliesCount: 0,
-    });
-    // this.onUnreadCountsUpdate(params);
+    // this.onUnreadCountsUpdate({
+    //   unreadMessagesCount: 2,
+    //   unreadRepliesCount: 0,
+    // });
+    this.onUnreadCountsUpdate(params);
 
     this.initializeSocketClient();
   };

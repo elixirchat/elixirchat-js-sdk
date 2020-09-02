@@ -36,6 +36,28 @@ export function _flatten(arr: Array): Array {
 }
 
 
+// Lodash-like _.find
+export function _find(arr: Array, validation: Function | object): any {
+  const isValidItem = typeof validation === 'function'
+    ? validation
+    : (item) => {
+      for (let key in validation) {
+        if (validation[key] !== item[key]) {
+          return false;
+        }
+      }
+      return true;
+    };
+
+  for (let i = 0; i < arr.length; i++) {
+    const item = arr[i];
+    if (isValidItem(item)) {
+      return item;
+    }
+  }
+}
+
+
 // Lodash-like _.uniqBy
 export function _uniqBy(arr: Array, propFunction: Function | string): Array {
   const uniqueItemsTable = {};
@@ -97,6 +119,11 @@ export function getJSONFromLocalStorage(key: string, defaultValue: any = ''): an
   }
   catch (e) {}
   return value;
+}
+
+
+export function setToLocalStorage(key: string, data: any){
+  localStorage.setItem(key, JSON.stringify(data));
 }
 
 

@@ -1,22 +1,35 @@
 import React, { Component, Fragment } from 'react';
 import cn from 'classnames';
+import { IJoinRoomChannel } from '../../sdk/ElixirChat';
+import { IOnlineStatusParams } from '../../sdk/OnlineStatusSubscription';
 import { ElixirChatWidget } from '../ElixirChatWidget';
-import { JOIN_ROOM_SUCCESS, UNREAD_MESSAGES_CHANGE } from '../../sdk/ElixirChatEventTypes';
 import { WIDGET_DATA_SET } from '../ElixirChatWidgetEventTypes';
-import {exposeComponentToGlobalScope, humanizeTimezoneName, humanizeUpcomingDate} from '../../utilsWidget';
+import { UNREAD_MESSAGES_CHANGE } from '../../sdk/ElixirChatEventTypes';
+import {
+  exposeComponentToGlobalScope,
+  humanizeTimezoneName,
+  humanizeUpcomingDate,
+} from '../../utilsWidget';
+
 
 export interface IWelcomeScreenProps {
   elixirChatWidget: ElixirChatWidget;
 }
 
 export interface IWelcomeScreenState {
-  employeeAvatars: Array<{ url: string, initials: string }>,
+  widgetMainTitle: string;
+  widgetChatSubtitle: string;
+  widgetChannels: Array<IJoinRoomChannel>;
+  widgetCompanyLogoUrl: string;
+  unreadMessagesCount: number;
+  employeesCount: number;
+  employeeAvatars: Array<{ url: string, initials: string }>;
+  onlineStatus: IOnlineStatusParams;
 }
 
 export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreenState> {
 
   state = {
-    preview: {},
     widgetMainTitle: '',
     widgetChatSubtitle: '',
     widgetChannels: [],
@@ -36,35 +49,31 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
 
     elixirChatWidget.on(WIDGET_DATA_SET, () => {
       const {
-        joinRoomData,
         widgetMainTitle,
         widgetChatSubtitle,
-        widgetChannels,
         widgetCompanyLogoUrl,
+        widgetChannels,
         onlineStatus,
         unreadMessagesCount,
+        joinRoomData,
       } = elixirChatWidget;
 
       const { employeeAvatars, employeesCount } = this.generateEmployeeList(joinRoomData);
 
       this.setState({
-        employeeAvatars,
-        employeesCount,
         widgetMainTitle,
         widgetChatSubtitle,
         widgetCompanyLogoUrl,
         widgetChannels,
         onlineStatus,
         unreadMessagesCount,
+        employeeAvatars,
+        employeesCount,
       });
     });
     elixirChatWidget.on(UNREAD_MESSAGES_CHANGE, unreadMessagesCount => {
       this.setState({ unreadMessagesCount });
     });
-  }
-
-  componentWillUnmount() {
-    const { elixirChatWidget } = this.props;
   }
 
   generateEmployeeList = ({ employeesCount, employees }) => {
@@ -100,10 +109,10 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
   };
 
   generateEmployeeInitials = (employee) => {
-    const { elixirChatWidget } = this.props;
-    const base = employee.firstName || employee.id || '';
-    const initial = base.replace(/[^a-zа-я]/ig, '')[0];
-    return (initial || elixirChatWidget.widgetMainTitle[0]).toUpperCase();
+    const nameInitial = (employee.firstName || '').replace(/[^a-zа-я]/ig, '')[0];
+    const randomLetterDict = 'АВЕКМНОРС';
+    const randomLetter = randomLetterDict[ Math.round( Math.random() * (randomLetterDict.length - 1) ) ];
+    return (nameInitial || randomLetter).toUpperCase();
   };
 
   generateOnlineStatusMessage = (onlineStatus) => {
@@ -143,25 +152,6 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
       onlineStatus,
     } = this.state;
 
-    let company_logo = 'https://omnichannel-mock.surge.sh/huntflow-logo.png';
-
-    let __mock_operator_avatars = [
-      'https://omnichannel-mock.surge.sh/operator-1.png',
-      'https://omnichannel-mock.surge.sh/operator-2.png',
-      'https://omnichannel-mock.surge.sh/operator-3.png',
-      'https://omnichannel-mock.surge.sh/operator-4.png',
-      'https://omnichannel-mock.surge.sh/operator-5.png',
-    ];
-
-    let __mock_messengers = [
-      { name: 'whatsapp', url: 'https://web.whatsapp.com/send?phone=74950884514&text=%D0%9E%D1%82%D0%BF%D1%80%D0%B0%D0%B2%D1%8C%D1%82%D0%B5%20%D0%BD%D0%B5%20%D0%B8%D0%B7%D0%BC%D0%B5%D0%BD%D1%8F%D1%8F%20%D1%8D%D1%82%D0%BE%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B5%20start_chat_9987ef6c-5b10-1d23-ec14-017426db6e0b' },
-      { name: 'telegram', url: 'http://t-do.ru/TextBackSupportBot?start=start_chat_9987ef6c-5b10-1d23-ec14-017426db6e0b' },
-      { name: 'facebook', url: 'https://www.facebook.com/messages/textback.io' },
-      { name: 'vk', url: 'https://vk.me/textback?ref=start_chat_9987ef6c-5b10-1d23-ec14-017426db6e0b' },
-      { name: 'viber', url: 'viber://pa?chatURI=TextBack&context=start_chat_9987ef6c-5b10-1d23-ec14-017426db6e0b' },
-      { name: 'skype', url: 'skype://live:feedback6_2?chat' },
-    ];
-
     const visibleUnreadMessagesCount = unreadMessagesCount > 99 ? '99+' : unreadMessagesCount;
 
     return (
@@ -198,16 +188,11 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
           </ul>
           <button className="elixirchat-welcome-screen-operators__button"
             onClick={() => elixirChatWidget.navigateTo({ view: 'chat', animation: 'slideLeft' })}>
+            Написать в поддержку
             {Boolean(visibleUnreadMessagesCount) && (
-              <Fragment>
-                Прочитать пропущенные
-                <span className="elixirchat-welcome-screen-operators__button-counter">
-                  {visibleUnreadMessagesCount}
-                </span>
-              </Fragment>
-            )}
-            {!Boolean(visibleUnreadMessagesCount) && (
-              <Fragment>Написать в поддержку</Fragment>
+              <span className="elixirchat-welcome-screen-operators__button-counter">
+                {visibleUnreadMessagesCount}
+              </span>
             )}
           </button>
         </div>

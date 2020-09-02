@@ -16,7 +16,7 @@
 
 @font-face {
     font-family: "elixirchat-icons";
-    src: url("../assets/fonts/elixirchat-icons.woff?2092a6c4c5ca9b315694ea8debd7e0f7") format("woff");
+    src: url("../assets/fonts/elixirchat-icons.woff?91c38ef8571b15b0f636aaeba52dd2e0") format("woff");
 }
 
 *[class^="icon-"]:before, *[class*=" icon-"]:before {
@@ -30,36 +30,39 @@
     -moz-osx-font-smoothing: grayscale;
 }
 
-.icon-chevron-down:before {
+.icon-arrow-left:before {
     content: "\f101";
 }
-.icon-close-thick:before {
+.icon-chevron-down:before {
     content: "\f102";
 }
-.icon-close-thin:before {
+.icon-close-thick:before {
     content: "\f103";
 }
-.icon-file:before {
+.icon-close-thin:before {
     content: "\f104";
 }
-.icon-logo:before {
+.icon-file:before {
     content: "\f105";
 }
-.icon-reply-right:before {
+.icon-logo:before {
     content: "\f106";
 }
-.icon-screenshot:before {
+.icon-reply-right:before {
     content: "\f107";
 }
-.icon-speaker-mute:before {
+.icon-screenshot:before {
     content: "\f108";
 }
-.icon-speaker:before {
+.icon-speaker-mute:before {
     content: "\f109";
 }
-.icon-spinner-xs:before {
+.icon-speaker:before {
     content: "\f10a";
 }
-.icon-typing:before {
+.icon-spinner-xs:before {
     content: "\f10b";
+}
+.icon-typing:before {
+    content: "\f10c";
 }

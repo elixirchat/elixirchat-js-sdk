@@ -28,7 +28,7 @@ const elixirChatWidget = new ElixirChatWidget({
 
 elixirChatWidget.appendWidget({
   container: document.getElementById('elixirchat-widget'),
-  title: 'Demo Widget',
+  mainTitle: 'Demo Widget',
   chatSubtitle: 'Отвечаем в течение пяти минут',
   supportEmail: 'test@test.com',
   companyLogoUrl: 'https://huntflow.ru/static/b64228c9963307df7ebebf3e77564329/favicons/android-chrome-192x192.png',
@@ -37,9 +37,9 @@ elixirChatWidget.appendWidget({
     'whatsapp',
     'telegram',
     'facebook',
-    'skype',
-    'viber',
     'vkontakte',
+    'viber',
+    'skype',
   ],
   fonts: [
     {

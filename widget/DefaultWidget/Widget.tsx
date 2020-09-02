@@ -24,27 +24,27 @@ export interface IWidgetProps {
 }
 
 export interface IWidgetState {
-  isButtonHidden: boolean,
-  isPopupOpen: boolean,
-  isPopupOpeningAnimation: boolean,
-  unreadMessagesCount: number,
-  detectedBrowser: string,
+  unreadMessagesCount: number;
+  detectedBrowser: string;
   outsideIframeCSS: string;
   insideIframeCSS: string;
-  currentView: string,
+  widgetView: string;
+  widgetIsPopupOpen: boolean;
+  widgetIsPopupOpeningAnimation: boolean;
+  widgetIsButtonHidden: boolean;
 }
 
 export class Widget extends Component<IWidgetProps, IWidgetState> {
 
   state = {
-    isButtonHidden: false,
-    isPopupOpen: false,
-    isPopupOpeningAnimation: false,
     unreadMessagesCount: 0,
     detectedBrowser: null,
     outsideIframeCSS: null,
     insideIframeCSS: null,
-    currentView: '',
+    widgetView: '',
+    widgetIsPopupOpen: false,
+    widgetIsPopupOpeningAnimation: false,
+    widgetIsButtonHidden: false,
   };
 
   fontExtractor: FontExtractor;
@@ -54,19 +54,20 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
     const { outsideIframeCSS, insideIframeCSS } = this.generateCSS();
     exposeComponentToGlobalScope('Widget', this, elixirChatWidget);
 
+    this.fontExtractor = new FontExtractor(elixirChatWidget, window);
+
     this.setState({
       insideIframeCSS,
       outsideIframeCSS,
       detectedBrowser: detectBrowser(),
     });
 
-    this.fontExtractor = new FontExtractor(elixirChatWidget, window);
-
     elixirChatWidget.on(FONTS_EXTRACTED, extractedFontFaceCSS => {
       this.setState({
         insideIframeCSS: insideIframeCSS + '\n\n' + extractedFontFaceCSS,
       });
     });
+
     elixirChatWidget.on(WIDGET_DATA_SET, () => {
       const {
         widgetIsButtonHidden,
@@ -74,18 +75,20 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
         widgetView,
         unreadMessagesCount,
       } = elixirChatWidget;
+
       this.setState({
         unreadMessagesCount,
-        currentView: widgetView,
-        isPopupOpen: widgetIsPopupOpen,
-        isButtonHidden: widgetIsButtonHidden,
+        widgetView,
+        widgetIsPopupOpen,
+        widgetIsButtonHidden,
       });
     });
 
     document.body.addEventListener('click', unlockNotificationSoundAutoplay);
 
-    elixirChatWidget.on(WIDGET_NAVIGATE_TO, ({ view }) => {
-      this.setState({ currentView: view });
+    elixirChatWidget.on(WIDGET_NAVIGATE_TO, ({ view, animation }) => {
+      // TODO: show animation
+      this.setState({ widgetView: view });
     });
     elixirChatWidget.on(UNREAD_MESSAGES_CHANGE, unreadMessagesCount => {
       this.setState({ unreadMessagesCount });
@@ -169,27 +172,27 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
     };
   };
 
-  onPopupToggle = (isPopupOpen) => {
+  onPopupToggle = (widgetIsPopupOpen) => {
     this.setState({
-      isPopupOpen,
-      isPopupOpeningAnimation: true,
+      widgetIsPopupOpen,
+      widgetIsPopupOpeningAnimation: true,
     });
     setTimeout(() => {
-      this.setState({ isPopupOpeningAnimation: false });
+      this.setState({ widgetIsPopupOpeningAnimation: false });
     });
   };
 
   render() {
     const { elixirChatWidget } = this.props;
     const {
-      isButtonHidden,
-      isPopupOpen,
-      isPopupOpeningAnimation,
+      widgetIsButtonHidden,
+      widgetIsPopupOpen,
+      widgetIsPopupOpeningAnimation,
+      widgetView,
       unreadMessagesCount,
       outsideIframeCSS,
       insideIframeCSS,
       detectedBrowser,
-      currentView,
     } = this.state;
 
     const visibleUnreadMessagesCount = unreadMessagesCount > 99 ? '99+' : unreadMessagesCount;
@@ -198,11 +201,11 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
       <Fragment>
         <style dangerouslySetInnerHTML={{ __html: outsideIframeCSS }}/>
 
-        {!isButtonHidden && (
+        {!widgetIsButtonHidden && (
           <button className={cn({
             'elixirchat-widget-button': true,
-            'elixirchat-widget-button--widget-open': isPopupOpen,
-          })} onClick={() => isPopupOpen ? elixirChatWidget.closePopup() : elixirChatWidget.openPopup()}>
+            'elixirchat-widget-button--widget-open': widgetIsPopupOpen,
+          })} onClick={() => widgetIsPopupOpen ? elixirChatWidget.closePopup() : elixirChatWidget.openPopup()}>
             <i className="elixirchat-widget-icon icon-logo"/>
             <i className="elixirchat-widget-icon icon-close-thin"/>
             <span className={cn({
@@ -218,18 +221,18 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
 
         <IFrameWrapper elixirChatWidget={elixirChatWidget} className={cn({
           'elixirchat-widget-iframe': true,
-          'elixirchat-widget-iframe--visible': isPopupOpen,
-          'elixirchat-widget-iframe--opening': isPopupOpeningAnimation,
+          'elixirchat-widget-iframe--visible': widgetIsPopupOpen,
+          'elixirchat-widget-iframe--opening': widgetIsPopupOpeningAnimation,
         })}>
           <Fragment>
             <style dangerouslySetInnerHTML={{ __html: insideIframeCSS }}/>
 
             {/*TODO: animation*/}
 
-            {currentView === 'chat' && (
+            {widgetView === 'chat' && (
               <Chat className={`elixirchat-browser--${detectedBrowser}`} elixirChatWidget={elixirChatWidget}/>
             )}
-            {currentView === 'welcome-screen' && (
+            {widgetView === 'welcome-screen' && (
               <WelcomeScreen elixirChatWidget={elixirChatWidget}/>
             )}
           </Fragment>

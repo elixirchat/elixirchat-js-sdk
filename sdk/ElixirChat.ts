@@ -2,7 +2,7 @@ import { uniqueNamesGenerator } from 'unique-names-generator';
 import {
   capitalize,
   randomDigitStringId,
-  getJSONFromLocalStorage, template,
+  getJSONFromLocalStorage, template, setToLocalStorage,
 } from '../utilsCommon';
 
 import { IMessage } from './serializers/serializeMessage';
@@ -92,10 +92,6 @@ export class ElixirChat {
 
   public isInitialized: boolean = false;
   public isConnected: boolean;
-  public companyEmployeesCount: number;
-  public companyEmployees: Array<any>;
-  public elixirChatRoomId: string;
-  public elixirChatClientId: string;
 
   public get onlineStatus(): boolean {
     return this.onlineStatusSubscription.onlineStatus;
@@ -239,8 +235,8 @@ export class ElixirChat {
     this.room = this.serializeRoom(room, this.client);
     this.isPrivateRoom = this.room.id === this.client.id;
 
-    localStorage.setItem('elixirchat-room', JSON.stringify(this.room));
-    localStorage.setItem('elixirchat-client', JSON.stringify(this.client));
+    setToLocalStorage('elixirchat-room', this.room);
+    setToLocalStorage('elixirchat-client', this.client);
 
     const variables = {
       companyId: this.config.companyId,
@@ -291,6 +287,7 @@ export class ElixirChat {
       .then((response: any) => {
         if (response?.joinRoom) {
           const joinRoomData = this.serializeJoinRoomData(response.joinRoom);
+          this.joinRoomData = joinRoomData;
           this.onJoinRoomSuccess(joinRoomData);
           this.triggerEvent(JOIN_ROOM_SUCCESS, joinRoomData, { firedOnce: true });
           return joinRoomData;
@@ -315,27 +312,8 @@ export class ElixirChat {
       unreadRepliesCount,
     } = joinRoomData;
 
-    this.isConnected = true;
-    this.joinRoomData = joinRoomData;
-
     this.logInfo('Joined room', joinRoomData);
-
-
-
-
-    // const { company } = data;
-
-
-
-    // this.elixirChatClientId = data.client.id;
-    // this.elixirChatRoomId = data.room.id;
-
-    // this.companyEmployeesCount = data.company?.employees?.count || 0;
-    // this.companyEmployees = simplifyGraphQLJSON(data.company?.employees).map(employee => {
-    //   return serializeUser(employee, this);
-    // });
-
-    // console.warn('__ this.companyEmployees', this.companyEmployees);
+    this.isConnected = true;
 
     this.graphQLClient.initialize({ url: apiUrl, token });
     this.graphQLClientSocket.initialize({ url: socketUrl, token });

@@ -1,5 +1,5 @@
 import 'babel-polyfill';
-import { getJSONFromLocalStorage, logEvent } from '../utilsCommon';
+import {_find, getJSONFromLocalStorage, logEvent, setToLocalStorage} from '../utilsCommon';
 import { renderWidgetReactComponent } from './DefaultWidget/Widget';
 import { IFontRule } from './FontExtractor';
 import {
@@ -121,6 +121,8 @@ export class ElixirChatWidget extends ElixirChat {
     // this.on(MESSAGES_FETCH_HISTORY_INITIAL_SUCCESS, () => {
     //   this.triggerEvent(WIDGET_RENDERED);
     // });
+
+    // TODO: set some widget data on join_room_error
     this.on(JOIN_ROOM_SUCCESS, joinRoomData => {
       this.setWidgetData(joinRoomData);
       this.togglePopup(this.widgetIsPopupOpen);
@@ -150,8 +152,11 @@ export class ElixirChatWidget extends ElixirChat {
     this.widgetSupportEmail = this.widgetConfig.email || supportEmail;
     this.widgetView = getJSONFromLocalStorage('elixirchat-current-view', view);
 
-    this.widgetChannels = joinRoomData.channels.filter(channel => {
-      return (this.widgetConfig.enabledChannels || []).includes(channel.type);
+    console.log('__ yyy', getJSONFromLocalStorage('elixirchat-current-view'), '///', view);
+
+    this.widgetChannels = (this.widgetConfig.enabledChannels || []).map(channelType => {
+      const normalizedChannelType = channelType?.toLowerCase?.();
+      return _find(joinRoomData.channels, { type: normalizedChannelType });
     });
 
     this.triggerEvent(WIDGET_DATA_SET, this, { firedOnce: true });
@@ -160,7 +165,7 @@ export class ElixirChatWidget extends ElixirChat {
   public togglePopup(isOpen: boolean): void {
     if (this.widgetIsPopupOpen !== isOpen) {
       this.widgetIsPopupOpen = isOpen;
-      localStorage.setItem('elixirchat-widget-is-visible', JSON.stringify(isOpen));
+      setToLocalStorage('elixirchat-widget-is-visible', isOpen);
       this.logInfo((isOpen ? 'Opened' : 'Closed') + ' widget popup');
       this.triggerEvent(WIDGET_POPUP_TOGGLE, isOpen);
     }
@@ -169,7 +174,7 @@ export class ElixirChatWidget extends ElixirChat {
   private toggleMute(isMuted: boolean): void {
     if (this.widgetIsMuted !== isMuted) {
       this.widgetIsMuted = isMuted;
-      localStorage.setItem('elixirchat-notifications-muted', JSON.stringify(isMuted));
+      setToLocalStorage('elixirchat-notifications-muted', isMuted);
       this.logInfo((isMuted ? 'Muted' : 'Unmuted') + ' widget popup');
       this.triggerEvent(WIDGET_MUTE_TOGGLE, isMuted);
     }
@@ -194,8 +199,8 @@ export class ElixirChatWidget extends ElixirChat {
   public navigateTo = (params: { view: string, animation?: string }) => {
     if (params?.view !== this.widgetView) {
       this.widgetView = params.view;
+      setToLocalStorage('elixirchat-current-view', params.view);
       this.triggerEvent(WIDGET_NAVIGATE_TO, params);
-      localStorage.setItem('elixirchat-current-view', params?.view);
     }
   };
 }
