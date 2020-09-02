@@ -83,7 +83,7 @@ textarea {
   transition: opacity 200ms;
   display: flex;
   align-items: center;
-  font-size: 15px;
+  font-size: 13px;
 
   &:hover {
     opacity: .6;
@@ -99,12 +99,12 @@ textarea {
 
 .elixirchat-chat-header__close {
   @extend .elixirchat-chat-header__button;
-  right: 0;
+  right: 3px;
   padding-left: 8px;
 }
 
 .elixirchat-chat-header__mute {
   @extend .elixirchat-chat-header__button;
-  right: 40px;
+  right: 43px;
   padding-right: 8px;
 }

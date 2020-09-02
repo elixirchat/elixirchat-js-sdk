@@ -140,7 +140,6 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
 
   render() {
     const { elixirChatWidget } = this.props;
-
     const {
       widgetMainTitle,
       widgetChatSubtitle,
@@ -157,7 +156,9 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
     return (
       <div className="elixirchat-welcome-screen-container">
 
-        <i className="icon-close-thin elixirchat-welcome-screen-close"/>
+        <i className="icon-close-thin elixirchat-welcome-screen-close"
+          title="Закрыть чат"
+          onClick={elixirChatWidget.closePopup}/>
 
         <div className="elixirchat-welcome-screen-top">
           <div className="elixirchat-welcome-screen-top__logo" style={{ backgroundImage: `url(${widgetCompanyLogoUrl})` }}/>
@@ -187,7 +188,7 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
             )}
           </ul>
           <button className="elixirchat-welcome-screen-operators__button"
-            onClick={() => elixirChatWidget.navigateTo({ view: 'chat', animation: 'slideLeft' })}>
+            onClick={() => elixirChatWidget.navigateTo('chat')}>
             Написать в поддержку
             {Boolean(visibleUnreadMessagesCount) && (
               <span className="elixirchat-welcome-screen-operators__button-counter">

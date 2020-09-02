@@ -29,6 +29,7 @@ export interface IWidgetState {
   outsideIframeCSS: string;
   insideIframeCSS: string;
   widgetView: string;
+  widgetViewIsAnimating: null | string;
   widgetIsPopupOpen: boolean;
   widgetIsPopupOpeningAnimation: boolean;
   widgetIsButtonHidden: boolean;
@@ -42,6 +43,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
     outsideIframeCSS: null,
     insideIframeCSS: null,
     widgetView: '',
+    widgetViewIsAnimating: null,
     widgetIsPopupOpen: false,
     widgetIsPopupOpeningAnimation: false,
     widgetIsButtonHidden: false,
@@ -86,9 +88,14 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
 
     document.body.addEventListener('click', unlockNotificationSoundAutoplay);
 
-    elixirChatWidget.on(WIDGET_NAVIGATE_TO, ({ view, animation }) => {
-      // TODO: show animation
-      this.setState({ widgetView: view });
+    elixirChatWidget.on(WIDGET_NAVIGATE_TO, widgetView => {
+      this.setState({ widgetViewIsAnimating: true });
+      setTimeout(() => {
+        this.setState({
+          widgetView,
+          widgetViewIsAnimating: false
+        });
+      }, 400);
     });
     elixirChatWidget.on(UNREAD_MESSAGES_CHANGE, unreadMessagesCount => {
       this.setState({ unreadMessagesCount });
@@ -151,7 +158,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
     const outsideIframeCSS = [
       defaultFontFaceCSS,
       styles.icons,
-      styles.Widget,
+      styles.WidgetOutsideIFrame,
       styles.FullScreenPreview,
     ].join('\n');
 
@@ -160,6 +167,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
       defaultFontFaceCSS,
       svgIconsCSS,
       styles.icons,
+      styles.WidgetInsideIFrame,
       styles.WelcomeScreen,
       styles.Chat,
       styles.ChatMessages,
@@ -189,6 +197,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
       widgetIsPopupOpen,
       widgetIsPopupOpeningAnimation,
       widgetView,
+      widgetViewIsAnimating,
       unreadMessagesCount,
       outsideIframeCSS,
       insideIframeCSS,
@@ -226,15 +235,18 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
         })}>
           <Fragment>
             <style dangerouslySetInnerHTML={{ __html: insideIframeCSS }}/>
+            <div className={cn({
+              'elixirchat-widget-view': true,
+              'elixirchat-widget-view--animating': widgetViewIsAnimating,
+            })}>
+              {widgetView === 'chat' && (
+                <Chat className={`elixirchat-browser--${detectedBrowser}`} elixirChatWidget={elixirChatWidget}/>
+              )}
+              {widgetView === 'welcome-screen' && (
+                <WelcomeScreen elixirChatWidget={elixirChatWidget}/>
+              )}
+            </div>
 
-            {/*TODO: animation*/}
-
-            {widgetView === 'chat' && (
-              <Chat className={`elixirchat-browser--${detectedBrowser}`} elixirChatWidget={elixirChatWidget}/>
-            )}
-            {widgetView === 'welcome-screen' && (
-              <WelcomeScreen elixirChatWidget={elixirChatWidget}/>
-            )}
           </Fragment>
         </IFrameWrapper>
       </Fragment>

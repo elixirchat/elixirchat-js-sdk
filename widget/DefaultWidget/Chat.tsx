@@ -59,16 +59,16 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
       <div className={cn('elixirchat-chat-container', className)}>
         <div className="elixirchat-chat-header">
           <i className="elixirchat-chat-header__back icon-arrow-left"
-            onClick={() => elixirChatWidget.navigateTo({ view: 'welcome-screen', animation: 'slideRight' })}/>
+            onClick={() => elixirChatWidget.navigateTo('welcome-screen')}/>
 
           <span className="elixirchat-chat-header__title" title={'Версия ' + process.env.ELIXIRCHAT_VERSION}>
             {widgetMainTitle}
           </span>
 
-          {/*<i className={cn({*/}
-          {/*  'elixirchat-chat-header__indicator': true,*/}
-          {/*  'elixirchat-chat-header__indicator--offline': !onlineStatus.isOnline,*/}
-          {/*})}/>*/}
+          <i className={cn({
+            'elixirchat-chat-header__indicator': true,
+            'elixirchat-chat-header__indicator--offline': !onlineStatus.isOnline,
+          })}/>
 
           <button className="elixirchat-chat-header__mute"
             onClick={() => widgetIsMuted ? elixirChatWidget.unmute() : elixirChatWidget.mute()}

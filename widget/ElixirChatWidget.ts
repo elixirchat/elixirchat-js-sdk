@@ -127,7 +127,7 @@ export class ElixirChatWidget extends ElixirChat {
       this.setWidgetData(joinRoomData);
       this.togglePopup(this.widgetIsPopupOpen);
       this.toggleMute(this.widgetIsMuted);
-      this.navigateTo({ view: this.widgetView });
+      this.navigateTo(this.widgetView);
     });
   }
 
@@ -196,11 +196,11 @@ export class ElixirChatWidget extends ElixirChat {
     this.toggleMute(false);
   };
 
-  public navigateTo = (params: { view: string, animation?: string }) => {
-    if (params?.view !== this.widgetView) {
-      this.widgetView = params.view;
-      setToLocalStorage('elixirchat-current-view', params.view);
-      this.triggerEvent(WIDGET_NAVIGATE_TO, params);
+  public navigateTo = (widgetView: string): void => {
+    if (widgetView !== this.widgetView) {
+      this.widgetView = widgetView;
+      setToLocalStorage('elixirchat-current-view', widgetView);
+      this.triggerEvent(WIDGET_NAVIGATE_TO, widgetView);
     }
   };
 }
