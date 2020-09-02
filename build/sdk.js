@@ -18053,7 +18053,7 @@ function () {
 
     _classCallCheck(this, ElixirChat);
 
-    this.version = "4.0.2.omnichannel@3";
+    this.version = "4.0.2.omnichannel@4";
     this.config = {};
     this.joinRoomData = {};
     this.isInitialized = false;
@@ -18494,6 +18494,7 @@ function () {
       var desktopUrlMasks = {
         whatsapp: 'https://web.whatsapp.com/send?phone={{ username }}&text={{ manualMessage }}',
         telegram: 'http://t.me/{{ username }}?start={{ omnichannelCode }}',
+        // TODO: check if skype link requires login
         skype: 'https://join.skype.com/bot/{{ username }}',
         viber: 'viber://pa?chatURI={{ username }}&context={{ omnichannelCode }}',
         facebook: 'https://m.me/{{ username }}?ref={{ omnichannelCode }}',
@@ -18503,7 +18504,11 @@ function () {
         whatsapp: 'whatsapp://send?phone={{ username }}&text={{ manualMessage }}',
         telegram: 'tg://resolve?domain={{ username }}&start={{ omnichannelCode }}',
         skype: 'skype:28:{{ username }}?chat',
-        viber: 'viber://pa?chatURI={{ username }}&context={{ omnichannelCode }}'
+        viber: 'viber://pa?chatURI={{ username }}&context={{ omnichannelCode }}',
+        // TODO: optimize facebook
+        // TODO: optimize vk
+        facebook: 'https://m.me/{{ username }}?ref={{ omnichannelCode }}',
+        vkontakte: 'https://vk.me/{{ username }}?ref={{ omnichannelCode }}'
       };
       return (channels || []).map(function (channel) {
         var username = channel.username;
