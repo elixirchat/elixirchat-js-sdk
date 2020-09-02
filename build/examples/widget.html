@@ -8,18 +8,19 @@
 
     /* Custom styles outside the iframe */
 
-    body {
-      font: 13px -apple-system, BlinkMacSystemFont, sans-serif;
-      padding: 15px 30px;
-    }
-    body .elixirchat-widget-button {
-      background: #FDEC4F;
-      color: black;
-      box-shadow: 0 8px 14px rgba(21, 19, 25, 0.1);
-    }
-    body .elixirchat-widget-button:hover {
-      background: #f3e24c;
-    }
+    /* TODO: fix demo CSS */
+    /*body {*/
+    /*  font: 13px -apple-system, BlinkMacSystemFont, sans-serif;*/
+    /*  padding: 15px 30px;*/
+    /*}*/
+    /*body .elixirchat-widget-button {*/
+    /*  background: #FDEC4F;*/
+    /*  color: black;*/
+    /*  box-shadow: 0 8px 14px rgba(21, 19, 25, 0.1);*/
+    /*}*/
+    /*body .elixirchat-widget-button:hover {*/
+    /*  background: #f3e24c;*/
+    /*}*/
   </style>
   <link crossorigin="anonymous" href="https://fonts.googleapis.com/css?family=Rubik:400,700&display=swap&subset=cyrillic" rel="stylesheet">
 </head>
@@ -83,6 +84,7 @@
   });
 
   elixirChatWidget.appendWidget({
+    container: document.getElementById('elixirchat-widget'),
     mainTitle: 'Demo Widget',
     chatSubtitle: 'Отвечаем в течение пяти минут',
     supportEmail: 'test@test.com',
