@@ -37,7 +37,7 @@ export function _flatten(arr: Array): Array {
 
 
 // Lodash-like _.find
-export function _find(arr: Array, validation: Function | object): any {
+export function _find(arr: Array, validation: Function | object, returnIndex: boolean): any {
   const isValidItem = typeof validation === 'function'
     ? validation
     : (item) => {
@@ -52,9 +52,14 @@ export function _find(arr: Array, validation: Function | object): any {
   for (let i = 0; i < arr.length; i++) {
     const item = arr[i];
     if (isValidItem(item)) {
-      return item;
+      return returnIndex ? i : item;
     }
   }
+}
+
+
+export function _findIndex(arr: Array, validation: Function | object) {
+  return _find(arr, validation, true);
 }
 
 

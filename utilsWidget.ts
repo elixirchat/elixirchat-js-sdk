@@ -241,20 +241,20 @@ export function scrollToElement(element, options = {}, callback = () => {}): ISc
       block: position || 'center',
     });
 
-    if (typeof IntersectionObserver !== 'undefined') {
-      const intersectionObserver = new IntersectionObserver(entries => {
-        if (entries[0].isIntersecting) {
-          intersectionObserver.unobserve(element);
-          callback();
-        }
-      });
-      intersectionObserver.observe(element);
-    }
-    else {
-      setTimeout(() => {
-        callback && callback();
-      }, 300); // default callback timeout for browsers not supporting IntersectionObserver
-    }
+    // if (typeof IntersectionObserver !== 'undefined') {
+    //   const intersectionObserver = new IntersectionObserver(entries => {
+    //     if (entries[0].isIntersecting) {
+    //       intersectionObserver.unobserve(element);
+    //       callback();
+    //     }
+    //   });
+    //   intersectionObserver.observe(element);
+    // }
+    // else {
+    //   setTimeout(() => {
+    //     callback && callback();
+    //   }, 300); // default callback timeout for browsers not supporting IntersectionObserver
+    // }
   }
 }
 

@@ -49,7 +49,13 @@ export class UnreadMessagesCounter {
     //   unreadMessagesCount: 2,
     //   unreadRepliesCount: 0,
     // });
-    this.onUnreadCountsUpdate(params);
+    // this.onUnreadCountsUpdate(params);
+    this.onUnreadCountsUpdate({
+      ...params,
+      // lastReadMessageId: 'TWFudWFsTWVzc2FnZTo4MDc5MThhNS04ZDdiLTRkMDYtOTdiZS1jZWQwYmJjZTdjMDY=', // TODO: remove mock
+      // lastReadMessageId: 'TWFudWFsTWVzc2FnZTo2NWMwMDRhZS00ZGJlLTQ3NjQtYTM0OC0zZjBhYmMwZTQ4MmM=', // TODO: remove mock
+      lastReadMessageId: 'zzz', // TODO: remove mock
+    });
 
     this.initializeSocketClient();
   };

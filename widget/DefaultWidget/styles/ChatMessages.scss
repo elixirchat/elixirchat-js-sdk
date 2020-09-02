@@ -89,7 +89,8 @@
 .elixirchat-chat-messages__item {
   max-width: 80%;
   min-width: 50%;
-  margin-bottom: 15px;
+  //margin-bottom: 15px;
+  padding-bottom: 15px;
   transition: background-color 500ms;
 
   &--by-me {
@@ -109,10 +110,14 @@
   &--by-operator,
   &--by-another-client {
     &.elixirchat-chat-messages__item--unread {
-      background: rgba($color-pink, .05);
+      .elixirchat-chat-messages__inner {
+        background: rgba($color-pink, .05);
+      }
     }
     &.elixirchat-chat-messages__item--flashed {
-      background: rgba($color-pink, .1);
+      .elixirchat-chat-messages__inner {
+        background: rgba($color-pink, .1);
+      }
     }
   }
 }

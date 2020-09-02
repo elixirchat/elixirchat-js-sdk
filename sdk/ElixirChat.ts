@@ -102,17 +102,22 @@ export class ElixirChat {
   public get unreadRepliesCount(): number {
     return this.unreadMessagesCounter.unreadRepliesCount;
   }
+  public get lastReadMessageId(): number {
+    return this.unreadMessagesCounter.lastReadMessageId;
+  }
   public get messageHistory(): boolean {
     return this.messageSubscription.messageHistory;
   }
+
+  //
 
   // TODO: fix
   // public get hasMessageHistoryBeenEverFetched(): boolean {
   //   return this.messageSubscription.hasMessageHistoryBeenEverFetched;
   // }
-  // public get reachedBeginningOfMessageHistory(): boolean {
-  //   return this.messageSubscription.reachedBeginningOfMessageHistory;
-  // }
+  public get reachedBeginningOfMessageHistory(): boolean {
+    return this.messageSubscription.reachedBeginningOfMessageHistory;
+  }
 
   public graphQLClient: GraphQLClient;
   public graphQLClientSocket: GraphQLClientSocket;
