@@ -12287,7 +12287,7 @@ function (_react_1$Component) {
         }
       }), react_1.default.createElement("span", {
         className: "elixirchat-chat-header__title",
-        title: 'Версия ' + "4.0.2.omnichannel@2"
+        title: 'Версия ' + "4.0.2.omnichannel@3"
       }, widgetMainTitle), react_1.default.createElement("button", {
         className: "elixirchat-chat-header__mute",
         onClick: function onClick() {
