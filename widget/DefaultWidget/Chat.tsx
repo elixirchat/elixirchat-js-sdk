@@ -67,7 +67,7 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
 
           <i className={cn({
             'elixirchat-chat-header__indicator': true,
-            'elixirchat-chat-header__indicator--offline': !onlineStatus.isOnline,
+            // 'elixirchat-chat-header__indicator--offline': !onlineStatus.isOnline,
           })}/>
 
           <button className="elixirchat-chat-header__mute"
