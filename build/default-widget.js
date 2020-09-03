@@ -12283,11 +12283,10 @@ function (_react_1$Component) {
         }
       }), react_1.default.createElement("span", {
         className: "elixirchat-chat-header__title",
-        title: 'Версия ' + "4.0.2.omnichannel@5"
+        title: 'Версия ' + "4.0.2.omnichannel@6"
       }, widgetMainTitle), react_1.default.createElement("i", {
         className: classnames_1.default({
-          'elixirchat-chat-header__indicator': true,
-          'elixirchat-chat-header__indicator--offline': !onlineStatus.isOnline
+          'elixirchat-chat-header__indicator': true
         })
       }), react_1.default.createElement("button", {
         className: "elixirchat-chat-header__mute",

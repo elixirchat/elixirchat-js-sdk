@@ -18054,7 +18054,7 @@ function () {
 
     _classCallCheck(this, ElixirChat);
 
-    this.version = "4.0.2.omnichannel@5";
+    this.version = "4.0.2.omnichannel@6";
     this.config = {};
     this.joinRoomData = {};
     this.isInitialized = false;
