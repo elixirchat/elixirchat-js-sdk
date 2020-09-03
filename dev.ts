@@ -22,8 +22,8 @@ const elixirChatWidget = new ElixirChatWidget({
     firstName: 'Development',
     lastName: 'Client'
   },
-  debug: true,
   sentryUrl: 'https://df75ac50adfd495fb3f66b9c0f846fcf@sentry.huntflow.ru/18',
+  debug: true,
 });
 
 elixirChatWidget.appendWidget({
@@ -42,14 +42,18 @@ elixirChatWidget.appendWidget({
     // 'skype',
   ],
   fonts: [
-    {
-      fontFamily: 'Raleway',
-      fontWeight: 'normal',
-    },
-    {
-      fontFamily: 'Raleway',
-      fontWeight: 'bold',
-    },
+    // {
+    //   fontFamily: 'Raleway',
+    //   fontWeight: 'normal',
+    //   // src: [
+    //   //   { url: 'https://site.com/test.woff', format: 'woff' },
+    //   //   { url: 'https://site.com/test.ttf', format: 'truetype' },
+    //   // ]
+    // },
+    // {
+    //   fontFamily: 'Raleway',
+    //   fontWeight: 'bold',
+    // },
   ],
   iframeCSS: `
     /* Your iframe CSS */

@@ -64,9 +64,9 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
       detectedBrowser: detectBrowser(),
     });
 
-    elixirChatWidget.on(FONTS_EXTRACTED, extractedFontFaceCSS => {
+    elixirChatWidget.on(FONTS_EXTRACTED, fontRules => {
       this.setState({
-        insideIframeCSS: insideIframeCSS + '\n\n' + extractedFontFaceCSS,
+        insideIframeCSS: insideIframeCSS + '\n\n' + generateFontFaceCSS(fontRules),
       });
     });
 
@@ -107,34 +107,44 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
     return generateFontFaceCSS([
       {
         fontFamily: 'elixirchat-icons',
-        format: 'woff',
-        src: base64toBlobUrl(assets.fontElixirchatIcons),
+        src: [{
+          url: base64toBlobUrl(assets.fontElixirchatIcons),
+          format: 'woff',
+        }],
       },
       {
         fontFamily: 'Graphik',
         fontWeight: 'normal',
         fontStyle: 'normal',
-        format: 'woff',
-        src: base64toBlobUrl(assets.fontGraphikRegular),
+        src: [{
+          url: base64toBlobUrl(assets.fontGraphikRegular),
+          format: 'woff',
+        }],
       },
       {
         fontFamily: 'Graphik',
         fontWeight: 'normal',
         fontStyle: 'italic',
-        format: 'woff',
-        src: base64toBlobUrl(assets.fontGraphikRegularItalic),
+        src: [{
+          url: base64toBlobUrl(assets.fontGraphikRegularItalic),
+          format: 'woff',
+        }],
       },
       {
         fontFamily: 'Graphik',
         fontWeight: '500',
-        format: 'woff',
-        src: base64toBlobUrl(assets.fontGraphikMedium),
+        src: [{
+          url: base64toBlobUrl(assets.fontGraphikMedium),
+          format: 'woff',
+        }],
       },
       {
         fontFamily: 'Graphik',
         fontWeight: 'bold',
-        format: 'woff',
-        src: base64toBlobUrl(assets.fontGraphikBold),
+        src: [{
+          url: base64toBlobUrl(assets.fontGraphikBold),
+          format: 'woff',
+        }],
       },
     ]);
   };

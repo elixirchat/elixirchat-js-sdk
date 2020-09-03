@@ -1,14 +1,17 @@
 import { ElixirChatWidget } from './ElixirChatWidget';
 import { FONTS_EXTRACTED } from './ElixirChatWidgetEventTypes';
-import {_flatten} from '../utilsCommon';
+import { _flatten } from '../utilsCommon';
 
 export interface IFontRule {
   fontFamily: string;
   fontWeight?: string;
   fontStyle?: string;
-  src?: string;
-  format?: string;
-  cssText?: string;
+  src?: Array<IFontSrc>
+}
+
+export interface IFontSrc {
+  format: string | null;
+  url: string;
 }
 
 export class FontExtractor {
@@ -20,23 +23,21 @@ export class FontExtractor {
     const { widgetConfig, triggerEvent } = elixirChatWidget;
     this.serializedConfig = (widgetConfig.fonts || []).map(this.serializeFontRule);
 
-    const fontsWithSrc = this.serializedConfig.filter(rule => rule.src);
-    const fontsWithoutSrc = this.serializedConfig.filter(rule => !rule.src);
-    const fontsWithSrcCSS = generateFontFaceCSS(fontsWithSrc);
+    const fontsWithSrc = this.serializedConfig.filter(rule => rule.src?.length);
+    const fontsWithoutSrc = this.serializedConfig.filter(rule => !rule.src?.length);
 
     if (!fontsWithoutSrc.length) {
-      triggerEvent(FONTS_EXTRACTED, fontsWithSrcCSS);
+      triggerEvent(FONTS_EXTRACTED, fontsWithSrc);
     }
     else {
       this.waitUntilWindowLoaded(parentWindow, () => {
         this.parentFontFaceRules = this.getParentFontFaceRules(parentWindow);
-        const matchingParentFontFaceRules = _flatten(
+        const matchingParentFontRules = _flatten(
           fontsWithoutSrc.map(rule => {
             return this.findMatchingFontFaceRules(this.parentFontFaceRules, rule);
           })
         );
-        const matchingParentFontFaceCSS = matchingParentFontFaceRules.map(rule => rule.cssText).join('\n');
-        triggerEvent(FONTS_EXTRACTED, fontsWithSrcCSS + '\n' + matchingParentFontFaceCSS);
+        triggerEvent(FONTS_EXTRACTED, [ ...fontsWithSrc, ...matchingParentFontRules ]);
       });
     }
   }
@@ -73,20 +74,27 @@ export class FontExtractor {
     for (let i = 0; i < parentWindow.document.styleSheets.length; i++) {
       const sheet = parentWindow.document.styleSheets[i];
       let rules;
+      let linkHref;
       try {
+        // Invoking properties on sheet sometimes causes an error
         rules = sheet.rules;
+        linkHref = sheet.ownerNode.tagName === 'LINK' ? sheet.ownerNode.href : null;
       }
       catch (e) {}
 
-      if (rules) {
+      if (rules && linkHref) {
         for (let j = 0; j < rules.length; j++) {
           const rule = rules[j];
           if (rule instanceof CSSFontFaceRule) {
+            const srcRelativePaths = this.parseFontSrc(rule.style.getPropertyValue('src'));
+            const srcAbsolutePaths = this.convertSrcToAbsoluteUrls(srcRelativePaths, linkHref);
+
             fontFaceRules.push({
               fontFamily: rule.style.getPropertyValue('font-family').replace(/["']/ig, ''),
               fontWeight: rule.style.getPropertyValue('font-weight').toString(),
               fontStyle: rule.style.getPropertyValue('font-style'),
-              cssText: rule.cssText,
+              src: srcAbsolutePaths,
+              sheet,
             });
           }
         }
@@ -94,6 +102,38 @@ export class FontExtractor {
     }
     return fontFaceRules;
   };
+
+  private convertSrcToAbsoluteUrls(src: Array<IFontSrc>, baseUrl: string): Array<IFontSrc> {
+    return src.map(srcItem => {
+      let url = srcItem.url;
+      if (!url.startsWith('data:')) {
+        url = new URL(srcItem.url, baseUrl).href;
+      }
+      return { ...srcItem, url };
+    });
+  };
+
+  private parseFontSrc(srcStr: string): Array<IFontSrc> {
+    const stripQuotes = str => {
+      return str.replace(/^"?'?/i, '').replace(/"?'?$/i, '');
+    };
+    return srcStr
+      .replace(/\)\s*,/igm, ')◆◆◆')
+      .split('◆◆◆')
+      .map(srcItem => srcItem.trim())
+      .filter(srcItem => !srcItem.includes('local('))
+      .map(srcItem => {
+        let format = null;
+        let url = '';
+        if (srcItem.includes('format(')) {
+          format = stripQuotes(srcItem.replace(/.*format\(([^)]+)\).*/i, '$1'));
+        }
+        if (srcItem.includes('url(')) {
+          url = stripQuotes(srcItem.replace(/.*url\(([^)]+)\).*/i, '$1'));
+        }
+        return { format, url };
+      });
+  }
 
   private findMatchingFontFaceRules(fontList: Array<IFontRule>, params: IFontRule) :Array<IFontRule> {
     return fontList.filter(font => {
@@ -109,11 +149,18 @@ export class FontExtractor {
 export function generateFontFaceCSS(rules: Array<IFontRule>){
   return (rules || [])
     .map(rule => {
+      const srcString = (rule.src || '').map(srcItem => {
+        return [
+          `url("${srcItem.url}")`,
+          srcItem.format ? `format("${rule.format}")` : '',
+        ].join(' ');
+      }).join(',\n');
+
       return `@font-face {
         font-family: "${rule.fontFamily}";
         ${rule.fontWeight ? `font-weight: ${rule.fontWeight};` : ''}
         ${rule.fontStyle ? `font-style: ${rule.fontStyle};` : ''}
-        src: url("${rule.src}") format("${rule.format}");
+        src: ${srcString};
       }`;
     }).join('\n');
 }
