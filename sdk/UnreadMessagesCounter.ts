@@ -54,7 +54,7 @@ export class UnreadMessagesCounter {
       ...params,
       // lastReadMessageId: 'TWFudWFsTWVzc2FnZTo4MDc5MThhNS04ZDdiLTRkMDYtOTdiZS1jZWQwYmJjZTdjMDY=', // TODO: remove mock
       // lastReadMessageId: 'TWFudWFsTWVzc2FnZTo2NWMwMDRhZS00ZGJlLTQ3NjQtYTM0OC0zZjBhYmMwZTQ4MmM=', // TODO: remove mock
-      lastReadMessageId: 'zzz', // TODO: remove mock
+      // lastReadMessageId: 'zzz', // TODO: remove mock
     });
 
     this.initializeSocketClient();
