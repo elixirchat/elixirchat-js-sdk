@@ -311,7 +311,7 @@ __export(require("./lib/dictionaries/index"));
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.extractSerializedData = exports.trimEachRow = exports.isVideoConvertibleIntoMp4 = exports.isWebImage = exports.setToLocalStorage = exports.getJSONFromLocalStorage = exports.detectPlatform = exports.detectBrowser = exports.template = exports._uniqBy = exports._find = exports._flatten = exports._round = exports._last = exports.randomDigitStringId = exports.capitalize = void 0;
+exports.extractSerializedData = exports.trimEachRow = exports.isVideoConvertibleIntoMp4 = exports.getUserFullName = exports.isWebVideo = exports.isWebImage = exports.setToLocalStorage = exports.getJSONFromLocalStorage = exports.detectPlatform = exports.detectBrowser = exports.template = exports._uniqBy = exports._findIndex = exports._find = exports._flatten = exports._round = exports._last = exports.randomDigitStringId = exports.capitalize = void 0;
 
 function capitalize(str) {
   return str.substr(0, 1).toUpperCase() + str.substr(1);
@@ -355,7 +355,7 @@ function _flatten(arr) {
 
 exports._flatten = _flatten; // Lodash-like _.find
 
-function _find(arr, validation) {
+function _find(arr, validation, returnIndex) {
   var isValidItem = typeof validation === 'function' ? validation : function (item) {
     for (var key in validation) {
       if (validation[key] !== item[key]) {
@@ -370,12 +370,18 @@ function _find(arr, validation) {
     var item = arr[i];
 
     if (isValidItem(item)) {
-      return item;
+      return returnIndex ? i : item;
     }
   }
 }
 
-exports._find = _find; // Lodash-like _.uniqBy
+exports._find = _find;
+
+function _findIndex(arr, validation) {
+  return _find(arr, validation, true);
+}
+
+exports._findIndex = _findIndex; // Lodash-like _.uniqBy
 
 function _uniqBy(arr, propFunction) {
   var uniqueItemsTable = {};
@@ -461,6 +467,23 @@ function isWebImage(mimeType) {
 }
 
 exports.isWebImage = isWebImage;
+
+function isWebVideo(mimeType) {
+  return mimeType.toLowerCase().trim() === 'video/mp4';
+}
+
+exports.isWebVideo = isWebVideo;
+
+function getUserFullName(user) {
+  var separator = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : ' ';
+  var firstName = ((user === null || user === void 0 ? void 0 : user.firstName) || '').trim();
+  var lastName = ((user === null || user === void 0 ? void 0 : user.lastName) || '').trim();
+  return [firstName, lastName].filter(function (word) {
+    return word;
+  }).join(separator);
+}
+
+exports.getUserFullName = getUserFullName;
 
 function isVideoConvertibleIntoMp4(mimeType) {
   var supportedTypes = ['video/mp4', 'video/x-msvideo', 'video/vnd.avi', 'video/avi', 'video/msvideo', 'video/quicktime', 'video/x-ms-wmv', 'video/x-ms-asf', 'video/webm', 'video/x-matroska', 'video/x-flv', 'video/dvd', 'video/mpeg', 'video/x-ms-vo', 'video/ogg', 'video/mp2t', 'video/x-m4v'];
@@ -11391,7 +11414,8 @@ function () {
       //   unreadMessagesCount: 2,
       //   unreadRepliesCount: 0,
       // });
-      _this.onUnreadCountsUpdate(params);
+      // this.onUnreadCountsUpdate(params);
+      _this.onUnreadCountsUpdate(Object.assign({}, params));
 
       _this.initializeSocketClient();
     };
@@ -11599,6 +11623,32 @@ function () {
       });
     };
 
+    this.onMessageReceive = function (response) {
+      var _a;
+
+      var _this$elixirChat2 = _this.elixirChat,
+          triggerEvent = _this$elixirChat2.triggerEvent,
+          logInfo = _this$elixirChat2.logInfo;
+      var data = (_a = response === null || response === void 0 ? void 0 : response.data) === null || _a === void 0 ? void 0 : _a.newMessage;
+
+      if (!data) {
+        return;
+      }
+
+      var message = serializeMessage_1.serializeMessage(data, _this.elixirChat);
+
+      if (_this.temporaryMessageTempIds.includes(message.tempId)) {
+        _this.forgetTemporaryMessage(message.tempId);
+      } else {
+        _this.messageHistory.push(message);
+
+        logInfo('Received new message', {
+          message: message
+        });
+        triggerEvent(ElixirChatEventTypes_1.MESSAGES_RECEIVE, message);
+      }
+    };
+
     this.changeMessageBy = function (query, diff) {
       var triggerEvent = _this.elixirChat.triggerEvent;
       _this.messageHistory = _this.messageHistory.map(function (message) {
@@ -11620,10 +11670,10 @@ function () {
     };
 
     this.sendMessage = function (textareaParams) {
-      var _this$elixirChat2 = _this.elixirChat,
-          logInfo = _this$elixirChat2.logInfo,
-          logError = _this$elixirChat2.logError,
-          sendAPIRequest = _this$elixirChat2.sendAPIRequest;
+      var _this$elixirChat3 = _this.elixirChat,
+          logInfo = _this$elixirChat3.logInfo,
+          logError = _this$elixirChat3.logError,
+          sendAPIRequest = _this$elixirChat3.sendAPIRequest;
 
       var _this$serializeSendMe = _this.serializeSendMessageParams(textareaParams),
           variables = _this$serializeSendMe.variables,
@@ -11730,7 +11780,7 @@ function () {
         limit: limit,
         beforeCursor: latestCursor
       }).then(function (messageHistory) {
-        var updatedMessageHistory = utilsCommon_1._uniqBy([].concat(_toConsumableArray(messageHistory), _toConsumableArray(_this.messageHistory)));
+        var updatedMessageHistory = utilsCommon_1._uniqBy([].concat(_toConsumableArray(messageHistory), _toConsumableArray(_this.messageHistory)), 'id');
 
         return _this.onMessageHistoryChange(updatedMessageHistory);
       });
@@ -11753,9 +11803,9 @@ function () {
     };
 
     this.unsubscribe = function () {
-      var _this$elixirChat3 = _this.elixirChat,
-          graphQLClientSocket = _this$elixirChat3.graphQLClientSocket,
-          logInfo = _this$elixirChat3.logInfo;
+      var _this$elixirChat4 = _this.elixirChat,
+          graphQLClientSocket = _this$elixirChat4.graphQLClientSocket,
+          logInfo = _this$elixirChat4.logInfo;
       _this.messageHistory = [];
       _this.temporaryMessageTempIds = [];
       _this.reachedBeginningOfMessageHistory = false;
@@ -11782,37 +11832,9 @@ function () {
           limit: limit,
           afterCursor: afterCursor
         }).then(function (missedMessages) {
-          missedMessages.forEach(function (message) {
-            return _this2.onMessageReceive(message);
-          });
+          missedMessages.forEach(_this2.onMessageReceive);
         });
       }, this.MESSAGE_HISTORY_REQUEST_INTERVAL);
-    }
-  }, {
-    key: "onMessageReceive",
-    value: function onMessageReceive(response) {
-      var _a;
-
-      var _this$elixirChat4 = this.elixirChat,
-          triggerEvent = _this$elixirChat4.triggerEvent,
-          logInfo = _this$elixirChat4.logInfo;
-      var data = (_a = response === null || response === void 0 ? void 0 : response.data) === null || _a === void 0 ? void 0 : _a.newMessage;
-
-      if (!data) {
-        return;
-      }
-
-      var message = serializeMessage_1.serializeMessage(data, this.elixirChat);
-
-      if (this.temporaryMessageTempIds.includes(message.tempId)) {
-        this.forgetTemporaryMessage(message.tempId);
-      } else {
-        this.messageHistory.push(message);
-        logInfo('Received new message', {
-          message: message
-        });
-        triggerEvent(ElixirChatEventTypes_1.MESSAGES_RECEIVE, message);
-      }
     }
   }, {
     key: "forgetTemporaryMessage",
@@ -17527,18 +17549,10 @@ require("dayjs/locale/ru");
 dayjs_1.default.locale('ru');
 dayjs_1.default.extend(calendar_1.default);
 
-function inflect(locale, number, endings, hideNumber) {
-  var getEnding = {
-    'en-US': function enUS(number, endings) {
-      return number === 1 ? endings[0] : endings[1];
-    },
-    'ru-RU': function ruRU(number, endings) {
-      var cases = [2, 0, 1, 1, 1, 2];
-      var endingIndex = number % 100 > 4 && number % 100 < 20 ? 2 : cases[Math.min(number % 10, 5)];
-      return endings[endingIndex];
-    }
-  };
-  var ending = getEnding[locale](number, endings) || endings[0];
+function inflect(number, endings, hideNumber) {
+  var cases = [2, 0, 1, 1, 1, 2];
+  var endingIndex = number % 100 > 4 && number % 100 < 20 ? 2 : cases[Math.min(number % 10, 5)];
+  var ending = endings[endingIndex] || endings[0];
   return hideNumber ? ending : number + ' ' + ending;
 }
 
@@ -17620,18 +17634,11 @@ function base64toBlobUrl(base64Url) {
 
 exports.base64toBlobUrl = base64toBlobUrl;
 
-function humanizeFileSize(locale, sizeInBytes) {
+function humanizeFileSize(sizeInBytes) {
   var unitsDict = {
-    'ru-RU': {
-      'kb': 'Кб',
-      'mb': 'Мб',
-      'gb': 'Гб'
-    },
-    'en-US': {
-      'kb': 'Kb',
-      'mb': 'Mb',
-      'gb': 'Gb'
-    }
+    'kb': 'Кб',
+    'mb': 'Мб',
+    'gb': 'Гб'
   };
   var sizeInKb = sizeInBytes / 1024;
   var sizeInMb = sizeInKb / 1024;
@@ -17648,7 +17655,7 @@ function humanizeFileSize(locale, sizeInBytes) {
   }
 
   primarySize = primarySize < 0.1 ? 0.1 : +primarySize.toFixed(1);
-  return primarySize.toLocaleString(locale) + ' ' + unitsDict[locale || 'en-US'][primaryUnit];
+  return primarySize.toLocaleString('ru-RU') + ' ' + unitsDict[primaryUnit];
 }
 
 exports.humanizeFileSize = humanizeFileSize;
@@ -17791,21 +17798,20 @@ function scrollToElement(element) {
     element.scrollIntoView({
       behavior: isSmooth ? 'smooth' : 'auto',
       block: position || 'center'
-    });
-
-    if (typeof IntersectionObserver !== 'undefined') {
-      var intersectionObserver = new IntersectionObserver(function (entries) {
-        if (entries[0].isIntersecting) {
-          intersectionObserver.unobserve(element);
-          callback();
-        }
-      });
-      intersectionObserver.observe(element);
-    } else {
-      setTimeout(function () {
-        callback && callback();
-      }, 300); // default callback timeout for browsers not supporting IntersectionObserver
-    }
+    }); // if (typeof IntersectionObserver !== 'undefined') {
+    //   const intersectionObserver = new IntersectionObserver(entries => {
+    //     if (entries[0].isIntersecting) {
+    //       intersectionObserver.unobserve(element);
+    //       callback();
+    //     }
+    //   });
+    //   intersectionObserver.observe(element);
+    // }
+    // else {
+    //   setTimeout(() => {
+    //     callback && callback();
+    //   }, 300); // default callback timeout for browsers not supporting IntersectionObserver
+    // }
   }
 }
 
@@ -17825,22 +17831,17 @@ function generateCustomerSupportSenderName(message, widgetTitle) {
 
 exports.generateCustomerSupportSenderName = generateCustomerSupportSenderName;
 
-function generateReplyMessageQuote(messageToReplyTo, widgetTitle) {
+function generateReplyMessageQuote(messageToReplyTo, elixirChatWidget) {
   var _ref2 = messageToReplyTo || {},
-      _ref2$sender = _ref2.sender,
-      sender = _ref2$sender === void 0 ? {} : _ref2$sender,
-      _ref2$text = _ref2.text,
-      text = _ref2$text === void 0 ? '' : _ref2$text;
-
-  var firstName = sender.firstName,
-      lastName = sender.lastName;
+      sender = _ref2.sender,
+      text = _ref2.text;
 
   if (text) {
     return text.substr(0, 100);
-  } else if (!sender.isOperator) {
-    return [firstName, lastName].join(' ');
+  } else if (!(sender === null || sender === void 0 ? void 0 : sender.isOperator)) {
+    return utilsCommon_1.getUserFullName(sender);
   } else {
-    return generateCustomerSupportSenderName(messageToReplyTo, widgetTitle);
+    return utilsCommon_1.getUserFullName(sender) || elixirChatWidget.widgetMainTitle;
   }
 }
 
@@ -18053,7 +18054,7 @@ function () {
 
     _classCallCheck(this, ElixirChat);
 
-    this.version = "4.0.2.omnichannel@4";
+    this.version = "4.0.2.omnichannel@5";
     this.config = {};
     this.joinRoomData = {};
     this.isInitialized = false;
@@ -18556,9 +18557,24 @@ function () {
       return this.unreadMessagesCounter.unreadRepliesCount;
     }
   }, {
+    key: "lastReadMessageId",
+    get: function get() {
+      return this.unreadMessagesCounter.lastReadMessageId;
+    }
+  }, {
     key: "messageHistory",
     get: function get() {
       return this.messageSubscription.messageHistory;
+    } //
+    // TODO: fix
+    // public get hasMessageHistoryBeenEverFetched(): boolean {
+    //   return this.messageSubscription.hasMessageHistoryBeenEverFetched;
+    // }
+
+  }, {
+    key: "reachedBeginningOfMessageHistory",
+    get: function get() {
+      return this.messageSubscription.reachedBeginningOfMessageHistory;
     }
   }]);
 
