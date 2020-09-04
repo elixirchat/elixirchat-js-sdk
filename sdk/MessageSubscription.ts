@@ -372,18 +372,9 @@ export class MessageSubscription {
       }
     }
     return sendAPIRequest(this.messageHistoryQuery, variables).then(messages => {
-
-      const processedMessageHistory = <[IMessage]>simplifyGraphQLJSON(messages).map(message => {
+      return <[IMessage]>simplifyGraphQLJSON(messages).map(message => {
         return serializeMessage(message, this.elixirChat);
       });
-
-      console.error('__ getMessageHistoryByCursor 2', {
-        messages,
-        processedMessageHistory,
-      });
-
-      // this.reachedBeginningOfMessageHistory = processedMessageHistory.length < limit;
-      return processedMessageHistory;
     });
   };
 

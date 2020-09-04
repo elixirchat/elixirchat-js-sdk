@@ -115,9 +115,6 @@ export class ElixirChat {
   // public get hasMessageHistoryBeenEverFetched(): boolean {
   //   return this.messageSubscription.hasMessageHistoryBeenEverFetched;
   // }
-  public get reachedBeginningOfMessageHistory(): boolean {
-    return this.messageSubscription.reachedBeginningOfMessageHistory;
-  }
 
   public graphQLClient: GraphQLClient;
   public graphQLClientSocket: GraphQLClientSocket;

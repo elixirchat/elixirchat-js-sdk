@@ -8,7 +8,7 @@ import {
   _round,
   isWebImage,
   detectBrowser,
-  trimEachRow, isWebVideo, getUserFullName, _find, _findIndex,
+  trimEachRow, isWebVideo, getUserFullName, _find, _findIndex, randomDigitStringId,
 } from '../../utilsCommon';
 
 import {
@@ -47,6 +47,7 @@ import {
   MESSAGES_CHANGE,
   MESSAGES_RECEIVE,
 } from '../../sdk/ElixirChatEventTypes';
+import {serializeMessage} from '../../sdk/serializers/serializeMessage';
 
 export interface IDefaultWidgetMessagesProps {
   elixirChatWidget: ElixirChatWidget;
@@ -77,6 +78,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     isLoading: false,
     isLoadingPrecedingMessageHistory: false,
 
+    hasScrolledToFirstUnreadMessage: false,
     hasReachedBeginningOfMessageHistory: false,
 
     hasMessageHistoryEverBeenVisible: false,
@@ -124,43 +126,21 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
       this.setState({ isLoading: true });
       elixirChatWidget.fetchMessageHistory(this.MESSAGE_CHUNK_SIZE).then(() => {
         this.setState({ isLoading: false });
-        this.scrollToFirstUnreadMessage();
+        this.onMessageHistoryFetch();
       });
     });
+    elixirChatWidget.on([MESSAGES_CHANGE, MESSAGES_RECEIVE], () => {
+      this.updateMessages(elixirChatWidget.messageHistory);
+    });
+    elixirChatWidget.on(WIDGET_POPUP_TOGGLE, isOpen => {
+      if (isOpen && detectBrowser() === 'safari') {
+        this.preventSafariFromLockingScroll();
+      }
+    });
     elixirChatWidget.on(MESSAGES_RECEIVE, this.onMessageReceive);
-    elixirChatWidget.on(MESSAGES_CHANGE, this.updateMessages);
 
     requestAnimationFrame(this.onPostRender);
 
-    elixirChatWidget.on(WIDGET_POPUP_TOGGLE, isOpen => {
-      if (detectBrowser() === 'safari') {
-        this.preventSafariFromLockingScroll();
-      }
-      // if (isOpen) {
-      //   const { hasMessageHistoryEverBeenVisible } = this.state;
-      //   this.onMultipleMessagesBeingViewedSimultaneously(this.markLatestViewedMessageRead);
-      //   if (!hasMessageHistoryEverBeenVisible && elixirChatWidget.hasMessageHistoryBeenEverFetched) {
-      //     this.onMessageHistoryInitiallyBecomeVisible();
-      //   }
-      //
-      // }
-
-    });
-
-
-
-    // elixirChatWidget.on(MESSAGES_HISTORY_SET, messages => {
-    //   this.setProcessedMessages(messages);
-    //   this.setState({ isLoading: false });
-    //
-    //   if (elixirChatWidget.widgetIsPopupOpen) {
-    //     this.onMessageHistoryInitiallyBecomeVisible();
-    //   }
-    // });
-
-    // elixirChatWidget.on(MESSAGES_HISTORY_PREPEND_MANY, messages => {
-    //   this.setProcessedMessages(messages, { insertBefore: true });
-    // });
 
 
     // TODO: fix [INITIALIZATION_ERROR, JOIN_ROOM_ERROR, MESSAGES_FETCH_HISTORY_INITIAL_ERROR]
@@ -189,6 +169,21 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     console.warn('__ UN mount');
     this.messageVisibilityObserver?.disconnect?.();
   }
+
+  onMessageHistoryFetch = () => {
+    const { elixirChatWidget } = this.props;
+    if (elixirChatWidget.widgetIsPopupOpen) {
+      this.scrollToFirstUnreadMessage();
+    }
+    else {
+      elixirChatWidget.on(WIDGET_POPUP_TOGGLE, isOpen => {
+        const { hasScrolledToFirstUnreadMessage } = this.state;
+        if (isOpen && !hasScrolledToFirstUnreadMessage) {
+          this.scrollToFirstUnreadMessage();
+        }
+      });
+    }
+  };
 
   onPostRender = () => {
     this.messageVisibilityObserver = new IntersectionObserver(this.onIntersectionObserverTrigger, {
@@ -239,103 +234,6 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     }
   };
 
-
-  // onMessageHistoryInitiallyBecomeVisible = () => {
-  //   const { processedMessages } = this.state;
-  //   this.setState({ hasMessageHistoryEverBeenVisible: true });
-  //   this.scrollToBottom();
-  //
-  //   const readMessages = processedMessages.filter(message => !message.isUnread);
-  //   const messageToScrollTo = _last(readMessages) || processedMessages[0];
-  //   const messageToScrollToRef = this.messageRefs[messageToScrollTo.id] || {};
-  //
-  //   setTimeout(() => {
-  //     scrollToElement(messageToScrollToRef.current, { isSmooth: true, position: 'start' });
-  //   }, 300);
-  // };
-
-  // onMultipleMessagesBeingViewedSimultaneously = (callback) => {
-  //   let messagesViewedSimultaneously = [];
-  //   setTimeout(() => {
-  //     this.onMessageBeingViewed(messageId => {
-  //       messagesViewedSimultaneously.push(messageId);
-  //
-  //       if (this.multipleMessagesBeingViewedSimultaneouslyIsThrottling) {
-  //         clearTimeout(this.multipleMessagesBeingViewedSimultaneouslyTimeout);
-  //       }
-  //
-  //       this.multipleMessagesBeingViewedSimultaneouslyTimeout = setTimeout(() => {
-  //         this.multipleMessagesBeingViewedSimultaneouslyIsThrottling = false;
-  //         callback(messagesViewedSimultaneously);
-  //         messagesViewedSimultaneously = [];
-  //       }, 500);
-  //
-  //       this.multipleMessagesBeingViewedSimultaneouslyIsThrottling = true;
-  //     });
-  //   });
-  // };
-
-  // onMessageBeingViewed = (callback) => {
-  //   const scrollBlockHeight = this.scrollBlock.current.offsetHeight;
-  //   if (scrollBlockHeight) {  // Zero scroll block height means popup is closed - therefore aborting watching
-  //     const maxConsiderableMessageHeight = scrollBlockHeight / 2;
-  //     Object.values(this.messageRefs)
-  //       .filter(ref => ref.isUnread && !ref.intersectionObserver)
-  //       .forEach(ref => {
-  //         ref.intersectionObserver = this.createMessageScrollObserver(
-  //           ref.current,
-  //           maxConsiderableMessageHeight,
-  //           callback
-  //         );
-  //     });
-  //   }
-  // };
-
-  // createMessageScrollObserver = (messageElement, maxConsiderableMessageHeight, callback) => {
-  //   if (!messageElement) {
-  //     return null;
-  //   }
-  //   const delayToMarkMessageRead = 1200; // milliseconds
-  //   const observerOptions = {
-  //     root: this.scrollBlock.current,
-  //     threshold: Math.min(maxConsiderableMessageHeight / messageElement.offsetHeight, 0.8),
-  //   };
-  //   const intersectionObserver = new IntersectionObserver(([ entry ]) => {
-  //     const messageElement: HTMLElement = entry.target;
-  //     const messageId = messageElement.dataset.id;
-  //     const messageRef = this.messageRefs[messageId];
-  //
-  //     if (this.messagesAlreadyMarkedRead[messageId] || !messageRef.isUnread) {
-  //       return;
-  //     }
-  //     if (entry.isIntersecting) {
-  //       this.messagesWithinCurrentViewport[messageId] = setTimeout(() => {
-  //         this.messagesAlreadyMarkedRead[messageId] = true;
-  //         callback(messageId);
-  //       }, delayToMarkMessageRead);
-  //     }
-  //     else {
-  //       clearTimeout(this.messagesWithinCurrentViewport[messageId]);
-  //       delete this.messagesWithinCurrentViewport[messageId];
-  //     }
-  //   }, observerOptions);
-  //   intersectionObserver.observe(messageElement);
-  //   return intersectionObserver;
-  // };
-
-  // markLatestViewedMessageRead = (messageIds) => {
-  //   const { elixirChatWidget } = this.props;
-  //   const messagesSortedByTime = messageIds
-  //     .map(messageId => this.messageRefs[messageId])
-  //     .sort((a,b) => {
-  //       const aTime = +new Date(a.timestamp);
-  //       const bTime = +new Date(b.timestamp);
-  //       return aTime < bTime ? -1 : 1;
-  //     });
-  //   const latestMessage = _last(messagesSortedByTime);
-  //   elixirChatWidget.setLastReadMessage(latestMessage.id);
-  // };
-
   // Hack to fix weird Safari bug when it disables scrolling of this.scrollBlock
   // when new messages were received when popup was closed
   preventSafariFromLockingScroll = () => {
@@ -348,12 +246,9 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
   onMessageReceive = message => {
     const { elixirChatWidget } = this.props;
-
     const hasUserScroll = this.hasUserScroll();
-    const shouldPlayNotificationSound = !message.sender.isCurrentClient && !elixirChatWidget.widgetIsMuted;
+    const shouldPlayNotificationSound = !message.sender.isCurrentClient && !elixirChatWidget.widgetIsMuted; // TODO: fix
     const shouldScrollMessagesToBottom = elixirChatWidget.widgetIsPopupOpen && document.hasFocus() && !hasUserScroll;
-
-    // this.setProcessedMessages([message], { insertAfter: true });
 
     if (shouldScrollMessagesToBottom) {
       this.scrollToBottom();
@@ -367,18 +262,16 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
   };
 
   updateMessages = (messageHistory) => {
-    console.warn('__ try to update messages', messageHistory.length);
+    const hasReachedBeginningOfMessageHistory = messageHistory.length < this.MESSAGE_CHUNK_SIZE;
+    const { processedMessages, fullScreenPreviews } = this.processMessages(messageHistory, hasReachedBeginningOfMessageHistory);
 
-    if (messageHistory.length < this.MESSAGE_CHUNK_SIZE) {
-      console.warn('__ reached END', messageHistory.length);
-      this.setState({ hasReachedBeginningOfMessageHistory: true });
-    }
-
-    const { processedMessages, fullScreenPreviews } = this.processMessages(messageHistory);
-    this.setState({ processedMessages, fullScreenPreviews });
+    this.setState({
+      processedMessages,
+      fullScreenPreviews,
+      hasReachedBeginningOfMessageHistory,
+    });
 
     requestAnimationFrame(() => {
-      console.warn('__ post update messages', Object.values(this.messageRefs)[0]);
       for (let messageId in this.messageRefs) {
         this.messageVisibilityObserver.observe( this.messageRefs[messageId] );
       }
@@ -389,49 +282,34 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     const { elixirChatWidget } = this.props;
     const { messageHistory, lastReadMessageId } = elixirChatWidget;
     const lastReadMessageIndex = _findIndex(messageHistory, { id: lastReadMessageId });
+    this.setState({ hasScrolledToFirstUnreadMessage: true });
 
     // If lastReadMessageId isn't within the latest loaded chunk, it means it's preceding
     // currently loaded messages, therefore the scroll must be set all the way up
     const lastReadMessagePrecedesLoadedMessageHistory = lastReadMessageId && !lastReadMessageIndex;
 
     if (!lastReadMessagePrecedesLoadedMessageHistory) {
-      const lastReadMessageIndex = _findIndex(messageHistory, { id: lastReadMessageId });
-      const firstUnreadMessage = messageHistory[lastReadMessageIndex + 1];
-      // const messageIdToScrollTo = firstUnreadMessage?.id || _last(messageHistory).id;
-      // const messageElementToScrollTo = this.messageRefs[messageIdToScrollTo];
-      // scrollToElement(messageElementToScrollTo, { isSmooth: true, position: 'end' });
-
-      const messageElementToScrollTo = this.messageRefs[firstUnreadMessage?.id];
-      if (messageElementToScrollTo) {
-        scrollToElement(messageElementToScrollTo, { position: 'end' });
-      }
-      else {
-        this.scrollToBottom();
-      }
+      requestAnimationFrame(() => {
+        const lastReadMessageIndex = _findIndex(messageHistory, { id: lastReadMessageId });
+        const firstUnreadMessage = messageHistory[lastReadMessageIndex + 1];
+        const messageElementToScrollTo = this.messageRefs[firstUnreadMessage?.id];
+        if (messageElementToScrollTo) {
+          scrollToElement(messageElementToScrollTo, { position: 'end' });
+        }
+        else {
+          this.scrollToBottom();
+        }
+      });
     }
   };
 
-  // setProcessedMessages = (messages, params = {}) => {
-  //   const { insertBefore, insertAfter } = params; // TODO: refactor
-  //   const { elixirChatWidget } = this.props;
-  //   const previousProcessedMessages = this.state.processedMessages;
-  //   const previousFullScreenPreviews = this.state.fullScreenPreviews;
-  //   const { processedMessages, fullScreenPreviews, mustOpenWidget } = this.processMessages(
-  //     messages,
-  //     // insertAfter ? _last(previousProcessedMessages) : null
-  //   );
-  //
-  //   this.setState({
-  //     processedMessages: processedMessages,
-  //     // processedMessages: updatedProcessedMessages,
-  //     // fullScreenPreviews: updatedFullScreenPreviews,
-  //   });
-  //   // this.onMultipleMessagesBeingViewedSimultaneously(this.markLatestViewedMessageRead);
-  // };
-
-  processMessages = (messages) => {
-    const { elixirChatWidget } = this.props;
-    const { hasReachedBeginningOfMessageHistory } = this.state;
+  processMessages = (messages, hasReachedBeginningOfMessageHistory) => {
+    if (!messages.length) {
+      return {
+        processedMessages: [ this.generateNewClientPlaceholderMessage() ],
+        fullScreenPreviews: [],
+      };
+    }
 
     let fullScreenPreviews = [];
     let processedMessages = messages.map((message, i) => {
@@ -460,27 +338,23 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
         ...message,
         files,
         previews,
-        hasPreviewsOnly,
         showDateLabel,
+        hasPreviewsOnly,
+        isFirstEverMessageInChat,
       };
     });
     return { processedMessages, fullScreenPreviews };
   };
 
-  // extractPreviewsFromMessage = (message) => {
-  //   const previews = [];
-  //   message.attachments.forEach(attachment => {
-  //     const { contentType } = attachment;
-  //     const thumbnailUrl = attachment.thumbnails?.[0]?.url || '';
-  //     if (thumbnailUrl && (isWebImage(contentType) || isWebVideo(contentType))) {
-  //       previews.push({
-  //         ...attachment,
-  //         sender: message.sender,
-  //       });
-  //     }
-  //   });
-  //   return previews;
-  // };
+  generateNewClientPlaceholderMessage = () => {
+    const { elixirChatWidget } = this.props;
+    return serializeMessage({
+      id: randomDigitStringId(6),
+      isSystem: true,
+      timestamp: new Date().toISOString(),
+      __typename: 'NewClientPlaceholderMessage',
+    }, elixirChatWidget);
+  };
 
   processAttachments = (attachments) => {
     const previews = [];
@@ -596,17 +470,10 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
   };
 
   createMessageRef = (messageElement, message) => {
-    // this.messageRefs[message.id] = {
-    //   current: messageElement,
-    //   intersectionObserver: null,
-    //   id: message.id,
-    //   isUnread: message.isUnread,
-    //   timestamp: message.timestamp,
-    // };
     if (messageElement) {
-      const { id, text, isUnread } = message;
+      const { id, isUnread } = message;
       this.setDatasetValues(messageElement, {
-        messageData: { id, text, isUnread }
+        messageData: { id, isUnread }
       });
       this.messageRefs[message.id] = messageElement;
     }
@@ -696,8 +563,6 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
       currentlyTypingUsers,
     } = this.state;
 
-    console.log('%c__ render base', 'color: green');
-
     return (
       <div className={cn('elixirchat-chat-scroll', className)}
         onScroll={this.onMessagesScroll}
@@ -713,9 +578,6 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
           'elixirchat-chat-messages': true,
           'elixirchat-chat-messages--loading': isLoading,
         })} ref={this.scrollBlockInner}>
-          {/*{isLoading && (*/}
-          {/*  <i className="elixirchat-chat-spinner"/>*/}
-          {/*)}*/}
 
           {/*{isLoadingError && (*/}
           {/*  <div className="elixirchat-chat-fatal-error">*/}
@@ -748,10 +610,8 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                   'elixirchat-chat-messages__item--by-another-client': !message.sender.isOperator && !message.sender.isCurrentClient,
                   'elixirchat-chat-messages__item--unread': message.isUnread,
                 })}
-                  ref={element => this.createMessageRef(element, message)}
-                  // ref={element => this.createMessageRef(element)}
-                  // data-id={message.id}
-                >
+                  ref={element => this.createMessageRef(element, message)}>
+
                   <div className="elixirchat-chat-messages__inner">
                     {!message.hasPreviewsOnly && (
                       <div className="elixirchat-chat-messages__balloon"
@@ -889,10 +749,8 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                   'elixirchat-chat-messages__item--system': true,
                   'elixirchat-chat-messages__item--unread': message.isUnread,
                 })}
-                  ref={element => this.createMessageRef(element, message)}
-                  // ref={element => this.createMessageRef(element)}
-                  // data-id={message.id}
-                >
+                  ref={element => this.createMessageRef(element, message)}>
+
                   <div className="elixirchat-chat-messages__inner">
                     <div className="elixirchat-chat-messages__balloon">
                       <div className="elixirchat-chat-messages__sender">
