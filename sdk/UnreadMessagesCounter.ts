@@ -52,7 +52,7 @@ export class UnreadMessagesCounter {
     // this.onUnreadCountsUpdate(params);
     this.onUnreadCountsUpdate({
       ...params,
-      // lastReadMessageId: 'TWFudWFsTWVzc2FnZTo4MDc5MThhNS04ZDdiLTRkMDYtOTdiZS1jZWQwYmJjZTdjMDY=', // TODO: remove mock
+      lastReadMessageId: 'TWFudWFsTWVzc2FnZTo4MDc5MThhNS04ZDdiLTRkMDYtOTdiZS1jZWQwYmJjZTdjMDY=', // TODO: remove mock
       // lastReadMessageId: 'TWFudWFsTWVzc2FnZTo2NWMwMDRhZS00ZGJlLTQ3NjQtYTM0OC0zZjBhYmMwZTQ4MmM=', // TODO: remove mock
       // lastReadMessageId: 'zzz', // TODO: remove mock
     });
@@ -102,7 +102,9 @@ export class UnreadMessagesCounter {
 
   public setLastReadMessage = (messageId: string): Promise<IUnreadMessagesCounterData> => {
     const { sendAPIRequest } = this.elixirChat;
-    return sendAPIRequest(this.setLastReadMessageQuery, { messageId });
+    if (messageId !== this.lastReadMessageId) {
+      return sendAPIRequest(this.setLastReadMessageQuery, { messageId });
+    }
   };
 
   public unsubscribe = () => {

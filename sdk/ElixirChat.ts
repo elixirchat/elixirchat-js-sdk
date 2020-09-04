@@ -376,10 +376,6 @@ export class ElixirChat {
         username: 'club198196792',
       },
       {
-        type: 'skype',
-        username: '3997ce68-a731-4a63-a884-136268979b3d',
-      },
-      {
         type: 'viber',
         username: 'chathelpdesk',
       },
@@ -394,10 +390,6 @@ export class ElixirChat {
     const desktopUrlMasks = {
       whatsapp: 'https://web.whatsapp.com/send?phone={{ username }}&text={{ manualMessage }}',
       telegram: 'http://t.me/{{ username }}?start={{ omnichannelCode }}',
-
-      // TODO: check if skype link requires login
-      skype: 'https://join.skype.com/bot/{{ username }}',
-
       viber: 'viber://pa?chatURI={{ username }}&context={{ omnichannelCode }}',
       facebook: 'https://m.me/{{ username }}?ref={{ omnichannelCode }}',
       vkontakte: 'https://vk.me/{{ username }}?ref={{ omnichannelCode }}',
@@ -405,7 +397,6 @@ export class ElixirChat {
     const mobileUrlMasks = {
       whatsapp: 'whatsapp://send?phone={{ username }}&text={{ manualMessage }}',
       telegram: 'tg://resolve?domain={{ username }}&start={{ omnichannelCode }}',
-      skype: 'skype:28:{{ username }}?chat',
       viber: 'viber://pa?chatURI={{ username }}&context={{ omnichannelCode }}',
 
       // TODO: optimize facebook

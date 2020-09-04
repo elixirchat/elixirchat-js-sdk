@@ -106,7 +106,7 @@ export class FontExtractor {
   private convertSrcToAbsoluteUrls(src: Array<IFontSrc>, baseUrl: string): Array<IFontSrc> {
     return src.map(srcItem => {
       let url = srcItem.url;
-      if (!url.startsWith('data:')) {
+      if (!url.startsWith('data:') && !url.startsWith('blob:')) {
         url = new URL(srcItem.url, baseUrl).href;
       }
       return { ...srcItem, url };
@@ -152,7 +152,7 @@ export function generateFontFaceCSS(rules: Array<IFontRule>){
       const srcString = (rule.src || '').map(srcItem => {
         return [
           `url("${srcItem.url}")`,
-          srcItem.format ? `format("${rule.format}")` : '',
+          srcItem.format ? `format("${srcItem.format}")` : '',
         ].join(' ');
       }).join(',\n');
 

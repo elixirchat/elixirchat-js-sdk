@@ -95,6 +95,9 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
   multipleMessagesBeingViewedSimultaneouslyTimeout: object = null;
 
   messageVisibilityObserver: IntersectionObserver = null;
+  // debouncedOnScrollOverUnreadMessage = debounce(this.onScrollOverUnreadMessage.bind(this), 3000);
+
+
 
   componentDidMount() {
     const { elixirChatWidget } = this.props;
@@ -116,16 +119,13 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     elixirChatWidget.on(MESSAGES_RECEIVE, this.onMessageReceive);
     elixirChatWidget.on(MESSAGES_CHANGE, this.updateMessages);
 
+    elixirChatWidget.setLastReadMessage();
+
     requestAnimationFrame(() => {
 
       console.error('__ POST RENDER', this.scrollBlock.current);
 
-      this.messageVisibilityObserver = new IntersectionObserver(entries => {
-        const entry = entries[0];
-        if (entry.isIntersecting) {
-          console.log('--->', entry.target, '//', entry.target.dataset);
-        }
-      }, {
+      this.messageVisibilityObserver = new IntersectionObserver(this.onIntersectionObserverTrigger, {
         root: this.scrollBlock.current,
         rootMargin: '0px',
         threshold: 1.0,
@@ -182,6 +182,34 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     //   this.setState({ currentlyTypingUsers });
     // });
   }
+
+  componentWillUnmount(){
+    this.messageVisibilityObserver?.disconnect?.();
+  }
+
+  onIntersectionObserverTrigger = (entries) => {
+    const entry = entries[0];
+    if (entry.isIntersecting) {
+      let messageData = {};
+      try {
+        messageData = JSON.parse(entry.target.dataset.messageData);
+      }
+      catch (e) {}
+      if (messageData.isUnread) {
+        console.warn('__ scroll over unread', entry.target);
+        // this.onScrollOverUnreadMessage(messageData.id, messageData);
+        // this.debouncedOnScrollOverUnreadMessage(messageData.id, messageData);
+      }
+    }
+  };
+
+  onScrollOverUnreadMessage(unreadMessageId, __DATA){
+    const { elixirChatWidget } = this.props;
+
+    // elixirChatWidget.setLastReadMessage(unreadMessageId);
+  };
+
+
 
   // onMessageHistoryInitiallyBecomeVisible = () => {
   //   const { processedMessages } = this.state;
@@ -333,16 +361,11 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     const { messageHistory, lastReadMessageId } = elixirChatWidget;
     const lastReadMessageIndex = _findIndex(messageHistory, { id: lastReadMessageId });
 
-    if (lastReadMessageId && !lastReadMessageIndex) {
-      // If lastReadMessageId isn't within the latest loaded chunk, it means it's preceding
-      // currently loaded messages, therefore the scroll must be set all the way up
-      const firstMessageElement = this.messageRefs[ messageHistory[0].id ];
+    // If lastReadMessageId isn't within the latest loaded chunk, it means it's preceding
+    // currently loaded messages, therefore the scroll must be set all the way up
+    const lastReadMessagePrecedesLoadedMessageHistory = lastReadMessageId && !lastReadMessageIndex;
 
-      console.warn('__ firstMessageElement', firstMessageElement);
-
-      // scrollToElement(firstMessageElement, { isSmooth: true, position: 'start' });
-    }
-    else {
+    if (!lastReadMessagePrecedesLoadedMessageHistory) {
       const lastReadMessageIndex = _findIndex(messageHistory, { id: lastReadMessageId });
       const firstUnreadMessage = messageHistory[lastReadMessageIndex + 1];
       const messageIdToScrollTo = firstUnreadMessage?.id || _last(messageHistory).id;
@@ -544,9 +567,9 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     //   timestamp: message.timestamp,
     // };
     if (messageElement) {
+      const { id, text, isUnread } = message;
+      messageElement.dataset.messageData = JSON.stringify({ id, text, isUnread });
       this.messageRefs[message.id] = messageElement;
-      messageElement.dataset.messageId = message.id;
-      // console.log('__ create ref', messageElement, { message });
     }
   };
 

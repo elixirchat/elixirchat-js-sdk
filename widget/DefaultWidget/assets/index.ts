@@ -20,7 +20,6 @@ export default {
   iconWhatsapp:             svgDataPrefix + fs.readFileSync(__dirname + '/images/channel-whatsapp.svg', { encoding: 'base64' }),
   iconTelegram:             svgDataPrefix + fs.readFileSync(__dirname + '/images/channel-telegram.svg', { encoding: 'base64' }),
   iconFacebook:             svgDataPrefix + fs.readFileSync(__dirname + '/images/channel-facebook.svg', { encoding: 'base64' }),
-  iconSkype:                svgDataPrefix + fs.readFileSync(__dirname + '/images/channel-skype.svg', { encoding: 'base64' }),
   iconViber:                svgDataPrefix + fs.readFileSync(__dirname + '/images/channel-viber.svg', { encoding: 'base64' }),
   iconVK:                   svgDataPrefix + fs.readFileSync(__dirname + '/images/channel-vk.svg', { encoding: 'base64' }),
   notificationSound:        mp3DataPrefix + fs.readFileSync(__dirname + '/audio/notification.mp3', { encoding: 'base64' }),

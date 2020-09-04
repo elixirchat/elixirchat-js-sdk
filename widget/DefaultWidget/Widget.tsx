@@ -2,15 +2,22 @@ import React, { Component, Fragment } from 'react';
 import ReactDOM from 'react-dom';
 import cn from 'classnames';
 import { ElixirChatWidget } from '../ElixirChatWidget';
-import { JOIN_ROOM_SUCCESS, UNREAD_MESSAGES_CHANGE } from '../../sdk/ElixirChatEventTypes';
-import {FONTS_EXTRACTED, WIDGET_DATA_SET, WIDGET_NAVIGATE_TO, WIDGET_POPUP_TOGGLE} from '../ElixirChatWidgetEventTypes';
+import { UNREAD_MESSAGES_CHANGE } from '../../sdk/ElixirChatEventTypes';
+import {
+  FONTS_EXTRACTED,
+  WIDGET_DATA_SET,
+  WIDGET_NAVIGATE_TO,
+  WIDGET_POPUP_TOGGLE,
+} from '../ElixirChatWidgetEventTypes';
+
 import { detectBrowser } from '../../utilsCommon';
 import {
   base64toBlobUrl,
-  exposeComponentToGlobalScope,
   generateSvgIconsCSS,
+  exposeComponentToGlobalScope,
   unlockNotificationSoundAutoplay
 } from '../../utilsWidget';
+
 import { generateFontFaceCSS, FontExtractor } from '../FontExtractor';
 import { Chat } from './Chat';
 import { IFrameWrapper } from './IFrameWrapper';
@@ -154,7 +161,6 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
       whatsapp: base64toBlobUrl(assets.iconWhatsapp),
       telegram: base64toBlobUrl(assets.iconTelegram),
       facebook: base64toBlobUrl(assets.iconFacebook),
-      skype: base64toBlobUrl(assets.iconSkype),
       viber: base64toBlobUrl(assets.iconViber),
       vkontakte: base64toBlobUrl(assets.iconVK),
     });
