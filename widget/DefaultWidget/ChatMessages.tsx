@@ -53,9 +53,9 @@ export interface IDefaultWidgetMessagesProps {
 }
 
 export interface IDefaultWidgetMessagesState {
-  isLoading: boolean;
   isLoadingError: boolean;
   loadingErrorInfo: string | null;
+  isLoading: boolean;
   isLoadingPrecedingMessageHistory: boolean;
   hasMessageHistoryEverBeenVisible: boolean;
   processedMessages: Array<object>,
@@ -69,12 +69,16 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
   state = {
     // isLoading: true,
-    isLoading: false,
     isLoadingError: false,
     hasEverLoadedMessageHistory: false,
 
     loadingErrorInfo: null,
+
+    isLoading: false,
     isLoadingPrecedingMessageHistory: false,
+
+    hasReachedBeginningOfMessageHistory: false,
+
     hasMessageHistoryEverBeenVisible: false,
     processedMessages: [],
     fullScreenPreviews: [],
@@ -104,41 +108,44 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     const { elixirChatWidget } = this.props;
     exposeComponentToGlobalScope('ChatMessages', this, elixirChatWidget);
 
+    console.warn('__ mount');
+
     dayjs.locale('ru');
     dayjs.extend(dayjsCalendar);
 
     this.setState({
-      screenshotFallback: getScreenshotCompatibilityFallback(),
+      screenshotFallback: getScreenshotCompatibilityFallback()
     });
 
     elixirChatWidget.on(WIDGET_IFRAME_READY, iframeDocument => {
       iframeDocument.body.addEventListener('click', unlockNotificationSoundAutoplay);
     });
     elixirChatWidget.on(JOIN_ROOM_SUCCESS, () => {
-      elixirChatWidget.fetchMessageHistory(this.MESSAGE_CHUNK_SIZE);
+      this.setState({ isLoading: true });
+      elixirChatWidget.fetchMessageHistory(this.MESSAGE_CHUNK_SIZE).then(() => {
+        this.setState({ isLoading: false });
+        this.scrollToFirstUnreadMessage();
+      });
     });
     elixirChatWidget.on(MESSAGES_RECEIVE, this.onMessageReceive);
     elixirChatWidget.on(MESSAGES_CHANGE, this.updateMessages);
 
-    requestAnimationFrame(() => {
-      this.messageVisibilityObserver = new IntersectionObserver(this.onIntersectionObserverTrigger, {
-        root: this.scrollBlock.current,
-        threshold: 0.9,
-      });
-    });
+    requestAnimationFrame(this.onPostRender);
 
-    // elixirChatWidget.on(WIDGET_POPUP_TOGGLE, isOpen => {
-    //   if (isOpen) {
-    //     const { hasMessageHistoryEverBeenVisible } = this.state;
-    //     this.onMultipleMessagesBeingViewedSimultaneously(this.markLatestViewedMessageRead);
-    //     if (!hasMessageHistoryEverBeenVisible && elixirChatWidget.hasMessageHistoryBeenEverFetched) {
-    //       this.onMessageHistoryInitiallyBecomeVisible();
-    //     }
-    //     if (detectBrowser() === 'safari') {
-    //       this.preventSafariFromLockingScroll();
-    //     }
-    //   }
-    // });
+    elixirChatWidget.on(WIDGET_POPUP_TOGGLE, isOpen => {
+      if (detectBrowser() === 'safari') {
+        this.preventSafariFromLockingScroll();
+      }
+      // if (isOpen) {
+      //   const { hasMessageHistoryEverBeenVisible } = this.state;
+      //   this.onMultipleMessagesBeingViewedSimultaneously(this.markLatestViewedMessageRead);
+      //   if (!hasMessageHistoryEverBeenVisible && elixirChatWidget.hasMessageHistoryBeenEverFetched) {
+      //     this.onMessageHistoryInitiallyBecomeVisible();
+      //   }
+      //
+      // }
+
+    });
 
 
 
@@ -179,8 +186,16 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
   }
 
   componentWillUnmount(){
+    console.warn('__ UN mount');
     this.messageVisibilityObserver?.disconnect?.();
   }
+
+  onPostRender = () => {
+    this.messageVisibilityObserver = new IntersectionObserver(this.onIntersectionObserverTrigger, {
+      root: this.scrollBlock.current,
+      threshold: 0.9,
+    });
+  };
 
   onIntersectionObserverTrigger = (entries) => {
     const entry = entries[0];
@@ -323,13 +338,13 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
   // Hack to fix weird Safari bug when it disables scrolling of this.scrollBlock
   // when new messages were received when popup was closed
-  // preventSafariFromLockingScroll = () => {
-  //   const { backgroundColor = '' } = this.scrollBlock.current.style.backgroundColor;
-  //   this.scrollBlock.current.style.backgroundColor = 'inherit';
-  //   setTimeout(() => {
-  //     this.scrollBlock.current.style.backgroundColor = backgroundColor;
-  //   });
-  // };
+  preventSafariFromLockingScroll = () => {
+    const { backgroundColor = '' } = this.scrollBlock.current.style.backgroundColor;
+    this.scrollBlock.current.style.backgroundColor = 'inherit';
+    setTimeout(() => {
+      this.scrollBlock.current.style.backgroundColor = backgroundColor;
+    });
+  };
 
   onMessageReceive = message => {
     const { elixirChatWidget } = this.props;
@@ -351,19 +366,19 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     }
   };
 
-  updateMessages = () => {
-    const { elixirChatWidget } = this.props;
-    const { hasEverLoadedMessageHistory } = this.state;
-    const { processedMessages, fullScreenPreviews } = this.processMessages(elixirChatWidget.messageHistory);
+  updateMessages = (messageHistory) => {
+    console.warn('__ try to update messages', messageHistory.length);
+
+    if (messageHistory.length < this.MESSAGE_CHUNK_SIZE) {
+      console.warn('__ reached END', messageHistory.length);
+      this.setState({ hasReachedBeginningOfMessageHistory: true });
+    }
+
+    const { processedMessages, fullScreenPreviews } = this.processMessages(messageHistory);
     this.setState({ processedMessages, fullScreenPreviews });
 
     requestAnimationFrame(() => {
       console.warn('__ post update messages', Object.values(this.messageRefs)[0]);
-
-      if (!hasEverLoadedMessageHistory) {
-        this.scrollToFirstUnreadMessage();
-        this.setState({ hasEverLoadedMessageHistory: true });
-      }
       for (let messageId in this.messageRefs) {
         this.messageVisibilityObserver.observe( this.messageRefs[messageId] );
       }
@@ -382,9 +397,17 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     if (!lastReadMessagePrecedesLoadedMessageHistory) {
       const lastReadMessageIndex = _findIndex(messageHistory, { id: lastReadMessageId });
       const firstUnreadMessage = messageHistory[lastReadMessageIndex + 1];
-      const messageIdToScrollTo = firstUnreadMessage?.id || _last(messageHistory).id;
-      const messageElementToScrollTo = this.messageRefs[messageIdToScrollTo];
-      scrollToElement(messageElementToScrollTo, { isSmooth: true, position: 'end' });
+      // const messageIdToScrollTo = firstUnreadMessage?.id || _last(messageHistory).id;
+      // const messageElementToScrollTo = this.messageRefs[messageIdToScrollTo];
+      // scrollToElement(messageElementToScrollTo, { isSmooth: true, position: 'end' });
+
+      const messageElementToScrollTo = this.messageRefs[firstUnreadMessage?.id];
+      if (messageElementToScrollTo) {
+        scrollToElement(messageElementToScrollTo, { position: 'end' });
+      }
+      else {
+        this.scrollToBottom();
+      }
     }
   };
 
@@ -408,6 +431,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
   processMessages = (messages) => {
     const { elixirChatWidget } = this.props;
+    const { hasReachedBeginningOfMessageHistory } = this.state;
 
     let fullScreenPreviews = [];
     let processedMessages = messages.map((message, i) => {
@@ -416,11 +440,11 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
       let showDateLabel = false;
 
       const previousMessage = messages[i - 1] || {};
-      const isFirstMessageInChat = !previousMessage && elixirChatWidget.reachedBeginningOfMessageHistory;
+      const isFirstEverMessageInChat = !previousMessage && hasReachedBeginningOfMessageHistory;
       const isDifferentDateFromPreviousMessage = previousMessage.id
         && dayjs(previousMessage.timestamp).isBefore(dayjs(message.timestamp).startOf('day'));
 
-      if (isDifferentDateFromPreviousMessage || isFirstMessageInChat) {
+      if (isDifferentDateFromPreviousMessage || isFirstEverMessageInChat) {
         showDateLabel = true;
       }
       if (!message.isDeleted) {
@@ -539,14 +563,13 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
   loadPrecedingMessageHistory = (): void => {
     const { elixirChatWidget } = this.props;
-    const { isLoadingPrecedingMessageHistory } = this.state;
+    const { isLoadingPrecedingMessageHistory, hasReachedBeginningOfMessageHistory } = this.state;
     const scrollBlock = this.scrollBlock.current;
     const initialScrollHeight = scrollBlock.scrollHeight;
 
-    if (!isLoadingPrecedingMessageHistory && !elixirChatWidget.reachedBeginningOfMessageHistory) {
+    if (!isLoadingPrecedingMessageHistory && !hasReachedBeginningOfMessageHistory) {
       this.setState({ isLoadingPrecedingMessageHistory: true });
       elixirChatWidget.fetchPrecedingMessageHistory(this.MESSAGE_CHUNK_SIZE).finally(() => {
-
         this.setState({ isLoadingPrecedingMessageHistory: false });
         scrollBlock.scrollTop = scrollBlock.scrollHeight - initialScrollHeight;
       });
@@ -673,6 +696,8 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
       currentlyTypingUsers,
     } = this.state;
 
+    console.log('%c__ render base', 'color: green');
+
     return (
       <div className={cn('elixirchat-chat-scroll', className)}
         onScroll={this.onMessagesScroll}
@@ -684,7 +709,10 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
           'elixirchat-chat-scroll-progress-bar--animating': isLoadingPrecedingMessageHistory,
         })}/>
 
-        <div className="elixirchat-chat-messages" ref={this.scrollBlockInner}>
+        <div className={cn({
+          'elixirchat-chat-messages': true,
+          'elixirchat-chat-messages--loading': isLoading,
+        })} ref={this.scrollBlockInner}>
           {/*{isLoading && (*/}
           {/*  <i className="elixirchat-chat-spinner"/>*/}
           {/*)}*/}

@@ -67,9 +67,6 @@ export class MessageSubscription {
   public messageHistory: Array<IMessage> = [];
   public hasMessageHistoryBeenEverFetched: boolean = false;
   protected temporaryMessageTempIds: Array<string> = [];
-  protected latestMessageHistoryCursorsCache: Array<IMessage> = [];
-  protected reachedBeginningOfMessageHistory: boolean = false;
-
   protected messageHistoryRequestInterval: number = null;
   protected MESSAGE_HISTORY_REQUEST_INTERVAL: number = 30 * 1000;
 
@@ -357,9 +354,6 @@ export class MessageSubscription {
     const { limit, beforeCursor, afterCursor } = params;
     let variables;
 
-    if (this.reachedBeginningOfMessageHistory && !afterCursor) {
-      return Promise.resolve([]);
-    }
     if (beforeCursor) {
       variables = {
         last: limit,
@@ -378,10 +372,17 @@ export class MessageSubscription {
       }
     }
     return sendAPIRequest(this.messageHistoryQuery, variables).then(messages => {
+
       const processedMessageHistory = <[IMessage]>simplifyGraphQLJSON(messages).map(message => {
         return serializeMessage(message, this.elixirChat);
       });
-      this.reachedBeginningOfMessageHistory = processedMessageHistory.length < limit;
+
+      console.error('__ getMessageHistoryByCursor 2', {
+        messages,
+        processedMessageHistory,
+      });
+
+      // this.reachedBeginningOfMessageHistory = processedMessageHistory.length < limit;
       return processedMessageHistory;
     });
   };
@@ -393,13 +394,19 @@ export class MessageSubscription {
     return messageHistory;
   };
 
-  public fetchMessageHistory = (limit: number): Promise<[IMessage | any]> => {
-    return this.getMessageHistoryByCursor({ limit }).then(messageHistory => {
+  public fetchMessageHistory = (limit: number): Promise<[IMessage] | any> => {
+
+    console.warn('__ messageHistory 1', limit);
+
+    return this.getMessageHistoryByCursor({ limit, zz: 222 }).then(messageHistory => {
+
+      console.warn('__ messageHistory 2', messageHistory, limit);
+
       return this.onMessageHistoryChange(messageHistory);
     });
   };
 
-  public fetchPrecedingMessageHistory = (limit: number): Promise<[IMessage | any]> => {
+  public fetchPrecedingMessageHistory = (limit: number): Promise<[IMessage] | any> => {
     const { logError } = this.elixirChat;
     const latestCursor = this.messageHistory[0]?.cursor;
 
@@ -431,7 +438,6 @@ export class MessageSubscription {
 
     this.messageHistory = [];
     this.temporaryMessageTempIds = [];
-    this.reachedBeginningOfMessageHistory = false;
     clearInterval(this.messageHistoryRequestInterval);
 
     logInfo('MessageSubscription: Unsubscribing...');

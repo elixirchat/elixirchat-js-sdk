@@ -69,6 +69,11 @@
   align-items: flex-start;
   padding: 20px 30px 6px 30px;
   overflow: hidden;
+  transition: opacity 200ms;
+
+  &--loading {
+    opacity: 0;
+  }
 
   a {
     text-decoration: none;
