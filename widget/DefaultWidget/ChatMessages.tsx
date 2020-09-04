@@ -8,7 +8,7 @@ import {
   _round,
   isWebImage,
   detectBrowser,
-  trimEachRow, isVideoConvertibleIntoMp4, isWebVideo, getUserFullName, _find, _findIndex,
+  trimEachRow, isWebVideo, getUserFullName, _find, _findIndex,
 } from '../../utilsCommon';
 
 import {
@@ -85,6 +85,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
   MAX_THUMBNAIL_SIZE: number = isMobileSizeScreen() ? 208 : 256;
   MESSAGE_CHUNK_SIZE: number = 20;
+  MARK_AS_READ_TIMEOUT: number = 2000; // ms
 
   scrollBlock: { current: HTMLElement } = React.createRef();
   scrollBlockInner: { current: HTMLElement } = React.createRef();
@@ -119,16 +120,10 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     elixirChatWidget.on(MESSAGES_RECEIVE, this.onMessageReceive);
     elixirChatWidget.on(MESSAGES_CHANGE, this.updateMessages);
 
-    elixirChatWidget.setLastReadMessage();
-
     requestAnimationFrame(() => {
-
-      console.error('__ POST RENDER', this.scrollBlock.current);
-
       this.messageVisibilityObserver = new IntersectionObserver(this.onIntersectionObserverTrigger, {
         root: this.scrollBlock.current,
-        rootMargin: '0px',
-        threshold: 1.0,
+        threshold: 0.9,
       });
     });
 
@@ -189,26 +184,45 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
   onIntersectionObserverTrigger = (entries) => {
     const entry = entries[0];
+    const messageElement = entry.target;
+
     if (entry.isIntersecting) {
-      let messageData = {};
-      try {
-        messageData = JSON.parse(entry.target.dataset.messageData);
-      }
-      catch (e) {}
+      this.setDatasetValues(messageElement, { isIntersecting: true });
+      const messageData = this.getDatasetValue(messageElement, 'messageData');
       if (messageData.isUnread) {
-        console.warn('__ scroll over unread', entry.target);
-        // this.onScrollOverUnreadMessage(messageData.id, messageData);
-        // this.debouncedOnScrollOverUnreadMessage(messageData.id, messageData);
+        this.onScrollOverUnreadMessage(messageData.id);
       }
+    }
+    else {
+      this.setDatasetValues(messageElement, { isIntersecting: false });
     }
   };
 
-  onScrollOverUnreadMessage(unreadMessageId, __DATA){
+  onScrollOverUnreadMessage = (messageId) => {
     const { elixirChatWidget } = this.props;
-
-    // elixirChatWidget.setLastReadMessage(unreadMessageId);
+    setTimeout(() => {
+      const messageElement = this.messageRefs[messageId];
+      const isMessageWithinViewport = this.getDatasetValue(messageElement, 'isIntersecting');
+      if (isMessageWithinViewport) {
+        elixirChatWidget.setLastReadMessage(messageId);
+      }
+    }, this.MARK_AS_READ_TIMEOUT);
   };
 
+  getDatasetValue = (element, key) => {
+    let value;
+    try {
+      value = JSON.parse(element.dataset[key]);
+    }
+    catch (e) {}
+    return value;
+  };
+
+  setDatasetValues = (element, values) => {
+    for (let key in values) {
+      element.dataset[key] = JSON.stringify( values[key] );
+    }
+  };
 
 
   // onMessageHistoryInitiallyBecomeVisible = () => {
@@ -568,7 +582,9 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     // };
     if (messageElement) {
       const { id, text, isUnread } = message;
-      messageElement.dataset.messageData = JSON.stringify({ id, text, isUnread });
+      this.setDatasetValues(messageElement, {
+        messageData: { id, text, isUnread }
+      });
       this.messageRefs[message.id] = messageElement;
     }
   };

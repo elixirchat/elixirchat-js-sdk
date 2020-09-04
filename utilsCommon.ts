@@ -58,6 +58,7 @@ export function _find(arr: Array, validation: Function | object, returnIndex: bo
 }
 
 
+// Lodash-like _.findIndex
 export function _findIndex(arr: Array, validation: Function | object) {
   return _find(arr, validation, true);
 }
@@ -79,27 +80,6 @@ export function _uniqBy(arr: Array, propFunction: Function | string): Array {
     return false;
   });
 }
-
-
-export function _debounce(func, waitTime) {
-  let lastCallAttemptTimestamp = 0;
-
-  return () => {
-    const currentTimestamp = +new Date();
-    const canInvoke = currentTimestamp - lastCallAttemptTimestamp >= waitTime;
-    lastCallAttemptTimestamp = currentTimestamp;
-    if (canInvoke) {
-      return func.apply(this, arguments);
-    }
-  };
-}
-
-// let b = (a,b,c) => { console.warn('-- fire', { a,b,c }); };
-// let a = _debounce(b, 3000);
-//
-// a(1, 2, 3);
-// a(2);
-// a(3);
 
 
 // Simple template engine. Example: template('Hello {{a}} {{b}}', { a: 'foo', bar: 'b' })
@@ -169,29 +149,6 @@ export function getUserFullName(user, separator = ' '){
   return [firstName, lastName].filter(word => word).join(separator);
 }
 
-
-export function isVideoConvertibleIntoMp4(mimeType){
-  const supportedTypes = [
-    'video/mp4',
-    'video/x-msvideo',
-    'video/vnd.avi',
-    'video/avi',
-    'video/msvideo',
-    'video/quicktime',
-    'video/x-ms-wmv',
-    'video/x-ms-asf',
-    'video/webm',
-    'video/x-matroska',
-    'video/x-flv',
-    'video/dvd',
-    'video/mpeg',
-    'video/x-ms-vo',
-    'video/ogg',
-    'video/mp2t',
-    'video/x-m4v',
-  ];
-  return supportedTypes.includes(mimeType.toLowerCase().trim());
-}
 
 export function trimEachRow(text: string): string {
   return text.split(/\n/).map(row => row.trim()).join('\n');
