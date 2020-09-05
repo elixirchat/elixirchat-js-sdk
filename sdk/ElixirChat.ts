@@ -27,8 +27,7 @@ import {
   JOIN_ROOM_SUCCESS,
   JOIN_ROOM_ERROR,
   LAST_READ_MESSAGE_CHANGE,
-  // MESSAGES_HISTORY_CHANGE_MANY,   // TODO: refactor
-  UPDATE_MESSAGES_CHANGE,         // TODO: refactor
+  UPDATE_MESSAGES_CHANGE, MESSAGES_RECEIVE,         // TODO: refactor
 } from './ElixirChatEventTypes';
 import {isMobileSizeScreen} from '../utilsWidget';
 
@@ -81,6 +80,8 @@ export interface IJoinRoomChannel {
   omnichannelCode?: string;
 }
 
+window.eventHandlers = [];
+
 export class ElixirChat {
 
   public version: string = process.env.ELIXIRCHAT_VERSION;
@@ -108,14 +109,6 @@ export class ElixirChat {
   public get messageHistory(): boolean {
     return this.messageSubscription.messageHistory;
   }
-
-  //
-
-  // TODO: fix
-  // public get hasMessageHistoryBeenEverFetched(): boolean {
-  //   return this.messageSubscription.hasMessageHistoryBeenEverFetched;
-  // }
-
   public graphQLClient: GraphQLClient;
   public graphQLClientSocket: GraphQLClientSocket;
   public messageSubscription: MessageSubscription;
@@ -429,25 +422,40 @@ export class ElixirChat {
     options = options || {};
     this.logEvent(eventName, data);
 
-    if (!this.eventHandlers[eventName]?.callbacks) {
-      this.eventHandlers[eventName] = { callbacks: [] };
+    if (!window.eventHandlers[eventName]?.callbacks) {
+      window.eventHandlers[eventName] = { callbacks: [] };
     }
-    const eventHandler = this.eventHandlers[eventName];
+    const eventHandler = window.eventHandlers[eventName];
     eventHandler.firedOnce = options.firedOnce;
     eventHandler.firedOnceArguments = data;
     eventHandler.callbacks.forEach(callback => callback(data));
   };
 
-  public on = (eventName: string | [string], callback: (data: any) => void): void => {
+  public on(eventName: string | [string], callback: (data: any) => void) {
     if (eventName instanceof Array) {
       eventName.map(singleEventName => this.on(singleEventName, callback));
     }
     else {
-      if (!this.eventHandlers[eventName]?.callbacks) {
-        this.eventHandlers[eventName] = { callbacks: [] };
+      if (!window.eventHandlers[eventName]?.callbacks) {
+        window.eventHandlers[eventName] = { callbacks: [] };
       }
-      const eventHandler = this.eventHandlers[eventName];
+
+      const eventHandler = window.eventHandlers[eventName];
       eventHandler.callbacks.push(callback);
+
+      if (eventName === MESSAGES_RECEIVE) {
+        console.warn('%c__ MESSAGES_RECEIVE', 'color: green',
+          eventHandler.callbacks.length,
+          { callback, arguments, this2: this },
+          // { callback, arguments, callee: arguments.callee, caller: null },
+          arguments,
+        );
+
+        window.__arguments2 = arguments;
+
+        //arguments.callee.caller
+        window.__this6 = this;
+      }
       if (eventHandler.firedOnce) {
         callback(eventHandler.firedOnceArguments);
       }
@@ -455,7 +463,7 @@ export class ElixirChat {
   };
 
   public off = (eventName: string, callback: (data: any) => void): void => {
-    const eventHandler = this.eventHandlers[eventName];
+    const eventHandler = window.eventHandlers[eventName];
     if (eventHandler.callbacks?.length) {
       eventHandler.callbacks = eventHandler.callbacks.filter(currentCallback => currentCallback !== callback);
     }

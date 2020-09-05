@@ -96,7 +96,7 @@ export class UnreadMessagesCounter {
     }
     if (normalizedLastReadMessageId !== this.lastReadMessageId) {
       this.lastReadMessageId = normalizedLastReadMessageId;
-      logInfo('Last message marked as read changed to ID: ' + normalizedLastReadMessageId);
+      logInfo('Last message marked as read changed to: ' + normalizedLastReadMessageId);
       triggerEvent(LAST_READ_MESSAGE_CHANGE, normalizedLastReadMessageId);
     }
   };

@@ -8,11 +8,9 @@ import {
   WIDGET_POPUP_TOGGLE,
   WIDGET_NAVIGATE_TO,
   WIDGET_DATA_SET,
-  // WIDGET_RENDERED,
 } from './ElixirChatWidgetEventTypes';
 
 import {
-  // MESSAGES_FETCH_HISTORY_INITIAL_SUCCESS,
   JOIN_ROOM_SUCCESS,
 } from '../sdk/ElixirChatEventTypes';
 import {IJoinRoomChannel, IJoinRoomData} from '../sdk/ElixirChat';
@@ -115,13 +113,6 @@ export class ElixirChatWidget extends ElixirChat {
     this.on(WIDGET_IFRAME_READY, iframeDocument => {
       this.widgetIFrameDocument = iframeDocument;
     });
-
-
-    // TODO: fix
-    // this.on(MESSAGES_FETCH_HISTORY_INITIAL_SUCCESS, () => {
-    //   this.triggerEvent(WIDGET_RENDERED);
-    // });
-
     // TODO: set some widget data on join_room_error
     this.on(JOIN_ROOM_SUCCESS, joinRoomData => {
       this.setWidgetData(joinRoomData);

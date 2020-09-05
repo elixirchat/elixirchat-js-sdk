@@ -33,10 +33,11 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
     exposeComponentToGlobalScope('Chat', this, elixirChatWidget);
 
     elixirChatWidget.on(WIDGET_DATA_SET, () => {
-      const { widgetMainTitle, widgetIsMuted } = elixirChatWidget;
+      const { widgetMainTitle, widgetIsMuted, onlineStatus } = elixirChatWidget;
       this.setState({
         widgetMainTitle,
         widgetIsMuted,
+        onlineStatus,
       });
     });
     elixirChatWidget.on(ONLINE_STATUS_CHANGE, onlineStatus => {
@@ -67,7 +68,7 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
 
           <i className={cn({
             'elixirchat-chat-header__indicator': true,
-            // 'elixirchat-chat-header__indicator--offline': !onlineStatus.isOnline,
+            'elixirchat-chat-header__indicator--offline': !onlineStatus.isOnline,
           })}/>
 
           <button className="elixirchat-chat-header__mute"

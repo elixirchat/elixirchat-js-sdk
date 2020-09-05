@@ -37,13 +37,7 @@ import {
 import {
   JOIN_ROOM_SUCCESS,
   JOIN_ROOM_ERROR,
-  // MESSAGES_FETCH_HISTORY_INITIAL_ERROR,
-  // MESSAGES_HISTORY_SET,
-  // MESSAGES_HISTORY_APPEND_ONE,
-  // MESSAGES_HISTORY_PREPEND_MANY,
-  // MESSAGES_HISTORY_CHANGE_MANY,
   TYPING_STATUS_CHANGE,
-  // INITIALIZATION_ERROR,
   MESSAGES_CHANGE,
   MESSAGES_RECEIVE,
 } from '../../sdk/ElixirChatEventTypes';
@@ -54,11 +48,10 @@ export interface IDefaultWidgetMessagesProps {
 }
 
 export interface IDefaultWidgetMessagesState {
-  isLoadingError: boolean;
-  loadingErrorInfo: string | null;
   isLoading: boolean;
   isLoadingPrecedingMessageHistory: boolean;
-  hasMessageHistoryEverBeenVisible: boolean;
+  hasReachedBeginningOfMessageHistory: boolean;
+  hasScrolledToFirstUnreadMessage: boolean;
   processedMessages: Array<object>,
   fullScreenPreviews: Array<object>,
   screenshotFallback: object | null,
@@ -69,24 +62,19 @@ export interface IDefaultWidgetMessagesState {
 export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaultWidgetMessagesState> {
 
   state = {
-    // isLoading: true,
-    isLoadingError: false,
-    hasEverLoadedMessageHistory: false,
-
-    loadingErrorInfo: null,
+    isLoadingError: false, // TODO: fix
+    loadingErrorInfo: null, // TODO: fix
 
     isLoading: false,
     isLoadingPrecedingMessageHistory: false,
-
-    hasScrolledToFirstUnreadMessage: false,
     hasReachedBeginningOfMessageHistory: false,
+    hasScrolledToFirstUnreadMessage: false,
 
-    hasMessageHistoryEverBeenVisible: false,
     processedMessages: [],
     fullScreenPreviews: [],
     screenshotFallback: null,
-    scrollBlockBottomOffset: null,
-    currentlyTypingUsers: [],
+    scrollBlockBottomOffset: null, // TODO: fix
+    currentlyTypingUsers: [], // TODO: fix
   };
 
   MAX_THUMBNAIL_SIZE: number = isMobileSizeScreen() ? 208 : 256;
@@ -95,22 +83,20 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
   scrollBlock: { current: HTMLElement } = React.createRef();
   scrollBlockInner: { current: HTMLElement } = React.createRef();
-  messageRefs: object = {};
-  messagesWithinCurrentViewport: object = {};
-  messagesAlreadyMarkedRead: object = {};
-  multipleMessagesBeingViewedSimultaneouslyIsThrottling: boolean = false;
-  multipleMessagesBeingViewedSimultaneouslyTimeout: object = null;
-
   messageVisibilityObserver: IntersectionObserver = null;
-  // debouncedOnScrollOverUnreadMessage = debounce(this.onScrollOverUnreadMessage.bind(this), 3000);
+  messageRefs: object = {};
 
-
+  _isMounted: boolean = false;
 
   componentDidMount() {
     const { elixirChatWidget } = this.props;
     exposeComponentToGlobalScope('ChatMessages', this, elixirChatWidget);
 
-    console.warn('__ mount');
+    this._isMounted = true;
+
+    window.__this = this;
+
+    console.warn('__ mount', this._isMounted);
 
     dayjs.locale('ru');
     dayjs.extend(dayjsCalendar);
@@ -166,7 +152,11 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
   }
 
   componentWillUnmount(){
-    console.warn('__ UN mount');
+    this._isMounted = false;
+    console.warn('__ UN mount 2', this._isMounted);
+
+    elixirChatWidget.off(MESSAGES_RECEIVE, this.onMessageReceive);
+
     this.messageVisibilityObserver?.disconnect?.();
   }
 
@@ -188,7 +178,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
   onPostRender = () => {
     this.messageVisibilityObserver = new IntersectionObserver(this.onIntersectionObserverTrigger, {
       root: this.scrollBlock.current,
-      threshold: 0.9,
+      threshold: 1,
     });
   };
 
@@ -235,7 +225,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
   };
 
   // Hack to fix weird Safari bug when it disables scrolling of this.scrollBlock
-  // when new messages were received when popup was closed
+  // when new messages were received while the popup was closed
   preventSafariFromLockingScroll = () => {
     const { backgroundColor = '' } = this.scrollBlock.current.style.backgroundColor;
     this.scrollBlock.current.style.backgroundColor = 'inherit';
@@ -245,20 +235,32 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
   };
 
   onMessageReceive = message => {
-    const { elixirChatWidget } = this.props;
-    const hasUserScroll = this.hasUserScroll();
-    const shouldPlayNotificationSound = !message.sender.isCurrentClient && !elixirChatWidget.widgetIsMuted; // TODO: fix
-    const shouldScrollMessagesToBottom = elixirChatWidget.widgetIsPopupOpen && document.hasFocus() && !hasUserScroll;
 
-    if (shouldScrollMessagesToBottom) {
-      this.scrollToBottom();
+    window.__arguments = arguments;
+
+    const { elixirChatWidget } = this.props;
+    const {
+      sender: { isCurrentClient },
+      mustOpenWidget: shouldOpenPopup,
+    } = message;
+
+    const shouldPlayNotificationSound = !isCurrentClient && !elixirChatWidget.widgetIsMuted; // TODO: fix
+
+    if (shouldOpenPopup) {
+      elixirChatWidget.openPopup();
     }
     if (shouldPlayNotificationSound) {
       playNotificationSound();
     }
-    if (message.mustOpenWidget) {
-      elixirChatWidget.openPopup();
-    }
+    requestAnimationFrame(() => {
+      const shouldScrollMessagesToBottom = document.hasFocus()
+        && elixirChatWidget.widgetIsPopupOpen
+        && (isCurrentClient || !this.hasUserScroll());
+
+      if (shouldScrollMessagesToBottom) {
+        this.scrollToBottom();
+      }
+    });
   };
 
   updateMessages = (messageHistory) => {
@@ -412,12 +414,27 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
   };
 
   hasUserScroll = () => {
+
+    console.warn('__ hasUserScroll', {
+      a1: this,
+      a2: this.scrollBlock,
+      a3: this.scrollBlock.current,
+      a4: this._isMounted,
+    });
+
+    window.__this2 = this;
+    window.__this2 = this.scrollBlock;
+
     const scrollBlock = this.scrollBlock.current;
     return scrollBlock.scrollTop <= scrollBlock.scrollHeight - scrollBlock.offsetHeight - 30;
   };
 
-  scrollToBottom = (): void => {
+  scrollToBottom = () => {
+
+    console.warn('__ this.scrollBlock.current 1', this.scrollBlock);
+
     setTimeout(() => {
+      console.warn('__ this.scrollBlock.current 2', this.scrollBlock);
       this.scrollBlock.current.scrollTop = this.scrollBlock.current.scrollHeight;
     });
   };
@@ -563,11 +580,15 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
       currentlyTypingUsers,
     } = this.state;
 
+    console.log('__ render');
+
     return (
       <div className={cn('elixirchat-chat-scroll', className)}
         onScroll={this.onMessagesScroll}
         style={{ bottom: scrollBlockBottomOffset }}
         ref={this.scrollBlock}>
+
+        <h1>scroll block</h1>
 
         <i className={cn({
           'elixirchat-chat-scroll-progress-bar': true,

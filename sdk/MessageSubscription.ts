@@ -1,30 +1,13 @@
 import { ElixirChat } from './ElixirChat';
-import {
-  // MESSAGES_FETCH_HISTORY_SUCCESS,
-  // MESSAGES_FETCH_HISTORY_ERROR,
-  // MESSAGES_FETCH_HISTORY_INITIAL_SUCCESS,
-  // MESSAGES_FETCH_HISTORY_INITIAL_ERROR,
-  // MESSAGES_HISTORY_SET,
-  // MESSAGES_HISTORY_APPEND_ONE,
-  // MESSAGES_HISTORY_PREPEND_MANY,
-  // MESSAGES_HISTORY_CHANGE_MANY,
-  // INITIALIZATION_ERROR,
-  // MESSAGES_SUBSCRIBE_ERROR,
-  // MESSAGES_SUBSCRIBE_SUCCESS,
-  MESSAGES_RECEIVE, MESSAGES_CHANGE,
-} from './ElixirChatEventTypes';
-
+import { MESSAGES_RECEIVE, MESSAGES_CHANGE } from './ElixirChatEventTypes';
 import { IFile } from './serializers/serializeFile';
 import { IMessage, serializeMessage, fragmentMessage } from './serializers/serializeMessage';
-import {logEvent, randomDigitStringId, isWebImage, _findLast, _last, _uniqBy} from '../utilsCommon';
-import { GraphQLClientSocket } from './GraphQLClientSocket';
+import { randomDigitStringId, isWebImage, _last, _uniqBy } from '../utilsCommon';
 import {
   gql,
-  GraphQLClient,
   simplifyGraphQLJSON,
   insertGraphQlFragments,
 } from './GraphQLClient';
-
 
 export interface ISentMessage {
   text?: string,
@@ -60,15 +43,12 @@ export interface IFetchMessageHistoryParams {
 
 export class MessageSubscription {
 
-  protected elixirChat: ElixirChat;
-  // protected graphQLClient: GraphQLClient;
-  // protected graphQLClientSocket: GraphQLClientSocket;
-
+  public elixirChat: ElixirChat;
   public messageHistory: Array<IMessage> = [];
-  public hasMessageHistoryBeenEverFetched: boolean = false;
-  protected temporaryMessageTempIds: Array<string> = [];
-  protected messageHistoryRequestInterval: number = null;
-  protected MESSAGE_HISTORY_REQUEST_INTERVAL: number = 30 * 1000;
+  public MESSAGE_HISTORY_REQUEST_INTERVAL: number = 30 * 1000;
+
+  private temporaryMessageTempIds: Array<string> = [];
+  private messageHistoryRequestInterval: number = null;
 
   protected subscriptionQuery: string = insertGraphQlFragments(gql`
     subscription {
@@ -386,13 +366,7 @@ export class MessageSubscription {
   };
 
   public fetchMessageHistory = (limit: number): Promise<[IMessage] | any> => {
-
-    console.warn('__ messageHistory 1', limit);
-
-    return this.getMessageHistoryByCursor({ limit, zz: 222 }).then(messageHistory => {
-
-      console.warn('__ messageHistory 2', messageHistory, limit);
-
+    return this.getMessageHistoryByCursor({ limit }).then(messageHistory => {
       return this.onMessageHistoryChange(messageHistory);
     });
   };
