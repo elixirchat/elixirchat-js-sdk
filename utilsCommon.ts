@@ -161,3 +161,23 @@ export function extractSerializedData(data: any, defaultValues: object): object 
   }
   return serializedData;
 }
+
+
+export function testFunc(callback) {
+
+  window.__arguments8 = arguments;
+  window.__this8 = this;
+  window.__callback8 = callback;
+
+  let e = new Error();
+  let frame = e.stack.split("\n")[2];
+  let lineNumber = frame.split(":")[1];
+  let functionName = frame.split(" ")[5];
+  let functionNameFull = functionName + ":" + lineNumber;
+
+  console.warn('TEST F', arguments, '///', functionNameFull, e.stack);
+
+  window.__stack = e.stack;
+
+  callback && callback('yyy');
+}

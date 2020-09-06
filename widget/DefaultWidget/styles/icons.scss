@@ -14,10 +14,6 @@
 
 */
 
-@font-face {
-    font-family: "elixirchat-icons";
-    src: url("../assets/fonts/elixirchat-icons.woff?91c38ef8571b15b0f636aaeba52dd2e0") format("woff");
-}
 
 *[class^="icon-"]:before, *[class*=" icon-"]:before {
     font-family: elixirchat-icons !important;

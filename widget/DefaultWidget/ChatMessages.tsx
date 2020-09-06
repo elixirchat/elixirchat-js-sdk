@@ -8,7 +8,7 @@ import {
   _round,
   isWebImage,
   detectBrowser,
-  trimEachRow, isWebVideo, getUserFullName, _find, _findIndex, randomDigitStringId,
+  trimEachRow, isWebVideo, getUserFullName, _find, _findIndex, randomDigitStringId, testFunc,
 } from '../../utilsCommon';
 
 import {
@@ -95,6 +95,10 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     this._isMounted = true;
 
     window.__this = this;
+
+    testFunc(function(a){
+      console.warn('>>>>>>>>>', a, this);
+    }, this);
 
     console.warn('__ mount', this._isMounted);
 
