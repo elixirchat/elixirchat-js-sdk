@@ -2,7 +2,7 @@ import { uniqueNamesGenerator } from 'unique-names-generator';
 import {
   capitalize,
   randomDigitStringId,
-  getJSONFromLocalStorage, template, setToLocalStorage, hashCode, _find,
+  getFromLocalStorage, template, setToLocalStorage, hashCode, _find,
 } from '../utilsCommon';
 
 import { IMessage } from './serializers/serializeMessage';
@@ -168,7 +168,7 @@ export class ElixirChat {
 
   private serializeClient(rawClient: any): IElixirChatUser {
     rawClient = rawClient || {};
-    const localStorageClient: IElixirChatUser = getJSONFromLocalStorage('elixirchat-client') || {};
+    const localStorageClient: IElixirChatUser = getFromLocalStorage('elixirchat-client') || {};
     const anonymousClientData = this.generateAnonymousClientData();
 
     const clientId = rawClient.id || localStorageClient.id || anonymousClientData.id;
@@ -194,7 +194,7 @@ export class ElixirChat {
 
   private serializeRoom(rawRoom: any, client: IElixirChatUser): IElixirChatRoom {
     rawRoom = rawRoom || {};
-    const localStorageRoom: IElixirChatRoom = getJSONFromLocalStorage('elixirchat-room') || {};
+    const localStorageRoom: IElixirChatRoom = getFromLocalStorage('elixirchat-room') || {};
     const roomId = rawRoom.id || localStorageRoom.id || client.id;
     const roomTitle = rawRoom.title || localStorageRoom.title || client.firstName + ' ' + client.lastName;
 
@@ -425,31 +425,18 @@ export class ElixirChat {
         this.eventHandlers[eventName] = { callbacks: {} };
       }
       const eventHandler = this.eventHandlers[eventName];
-      // const eventHandler = this.getEventHandler(eventName);
-      const hash = this.getCallbackUniqueHash(callback);
 
       // Prevents executing the same event handler multiple times when the same component
       // mounts/unmounts periodically (e.g. when user switches back and forth from WelcomeScreen to ChatMessages)
-      // const hasDuplicatingCallback = eventHandler[hash];
-      // const hasDuplicatingCallback = _find(eventHandler.callbacks, { hash });
-
-      // console.log('__ hasDuplicatingCallback', hasDuplicatingCallback, eventName);
-
+      const hash = this.getCallbackUniqueHash(callback);
       eventHandler.callbacks[hash] = callback;
       if (eventHandler.firedOnce) {
         callback(eventHandler.firedOnceArguments);
       }
-
-      // if (hasDuplicatingCallback) {
-      //   eventHandler.callbacks = eventHandler.callbacks.filter(item => item.hash !== hash);
-      // }
-      // eventHandler.callbacks.push({ callback, hash });
-
     }
   };
 
   public off = (eventName: string, callback: (data: any) => void): void => {
-    // const eventHandler = this.getEventHandler(eventName);
     const eventHandler = this.eventHandlers[eventName];
     if (callback) {
       for (let hash in eventHandler.callbacks) {
@@ -473,8 +460,6 @@ export class ElixirChat {
       this.eventHandlers[eventName] = { callbacks: {} };
     }
     const eventHandler = this.eventHandlers[eventName];
-
-    // const eventHandler = this.getEventHandler(eventName);
     eventHandler.firedOnce = options.firedOnce;
     if (options.firedOnce) {
       eventHandler.firedOnceArguments = data;

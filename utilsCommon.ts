@@ -1,3 +1,6 @@
+import { IUser } from './sdk/serializers/serializeUser';
+
+
 export function capitalize(str: string): string {
   return str.substr(0, 1).toUpperCase() + str.substr(1);
 }
@@ -115,7 +118,7 @@ export function detectPlatform(): { isWindows: boolean, isMac: boolean } {
 }
 
 
-export function getJSONFromLocalStorage(key: string, defaultValue: any = ''): any {
+export function getFromLocalStorage(key: string, defaultValue: any = ''): any {
   let value = defaultValue;
   try {
     value = JSON.parse(localStorage.getItem(key));
@@ -138,12 +141,12 @@ export function isWebImage(mimeType: string): boolean {
 }
 
 
-export function isWebVideo(mimeType){
+export function isWebVideo(mimeType: string): boolean {
   return mimeType.toLowerCase().trim() === 'video/mp4';
 }
 
 
-export function getUserFullName(user, separator = ' '){
+export function getUserFullName(user: IUser, separator: string = ' ') :string {
   const firstName = (user?.firstName || '').trim();
   const lastName = (user?.lastName || '').trim();
   return [firstName, lastName].filter(word => word).join(separator);
@@ -151,8 +154,12 @@ export function getUserFullName(user, separator = ' '){
 
 
 export function trimEachRow(text: string): string {
-  return text.split(/\n/).map(row => row.trim()).join('\n');
+  return text
+    .split(/\n/)
+    .map(row => row.trim())
+    .join('\n');
 }
+
 
 export function extractSerializedData(data: any, defaultValues: object): object {
   const serializedData = {};
@@ -168,28 +175,8 @@ export function hashCode(str: string): string {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
     let char = str.charCodeAt(i);
-    hash = ((hash<<5) - hash) + char;
+    hash = ((hash << 5) - hash) + char;
     hash = hash & hash;
   }
   return hash;
 }
-
-
-// export function testFunc(callback) {
-//
-//   window.__arguments8 = arguments;
-//   window.__this8 = this;
-//   window.__callback8 = callback;
-//
-//   let e = new Error();
-//   let frame = e.stack.split("\n")[2];
-//   let lineNumber = frame.split(":")[1];
-//   let functionName = frame.split(" ")[5];
-//   let functionNameFull = functionName + ":" + lineNumber;
-//
-//   console.warn('TEST F', arguments, '///', functionNameFull, e.stack);
-//
-//   window.__stack = e.stack;
-//
-//   callback && callback('yyy');
-// }

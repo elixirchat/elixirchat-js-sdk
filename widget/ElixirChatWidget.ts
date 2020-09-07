@@ -1,5 +1,5 @@
 import 'babel-polyfill';
-import {_find, getJSONFromLocalStorage, logEvent, setToLocalStorage} from '../utilsCommon';
+import {_find, getFromLocalStorage, logEvent, setToLocalStorage} from '../utilsCommon';
 import { renderWidgetReactComponent } from './DefaultWidget/Widget';
 import { IFontRule } from './FontExtractor';
 import {
@@ -133,15 +133,15 @@ export class ElixirChatWidget extends ElixirChat {
       supportEmail,
     } = this.widgetDefaultParams;
 
-    this.widgetIsPopupOpen = joinRoomData.isPopupOpen || getJSONFromLocalStorage('elixirchat-widget-is-visible', isPopupOpen);
+    this.widgetIsPopupOpen = joinRoomData.isPopupOpen || getFromLocalStorage('elixirchat-widget-is-visible', isPopupOpen);
     this.widgetMainTitle = this.widgetConfig.mainTitle || joinRoomData.mainTitle || mainTitle;
     this.widgetChatSubtitle = this.widgetConfig.chatSubtitle || joinRoomData.chatSubtitle || chatSubtitle;
     this.widgetCompanyLogoUrl = this.widgetConfig.companyLogoUrl || joinRoomData.logoUrl || null;
 
-    this.widgetIsMuted = getJSONFromLocalStorage('elixirchat-notifications-muted', isMuted);
+    this.widgetIsMuted = getFromLocalStorage('elixirchat-notifications-muted', isMuted);
     this.widgetIsButtonHidden = this.widgetConfig.hideDefaultButton || isButtonHidden;
     this.widgetSupportEmail = this.widgetConfig.email || supportEmail;
-    this.widgetView = getJSONFromLocalStorage('elixirchat-current-view', view);
+    this.widgetView = getFromLocalStorage('elixirchat-current-view', view);
 
     this.widgetChannels = (this.widgetConfig.enabledChannels || []).map(channelType => {
       const normalizedChannelType = channelType?.toLowerCase?.();

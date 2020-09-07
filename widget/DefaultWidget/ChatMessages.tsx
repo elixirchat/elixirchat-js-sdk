@@ -4,37 +4,35 @@ import dayjs from 'dayjs';
 import dayjsCalendar from 'dayjs/plugin/calendar';
 import 'dayjs/locale/ru';
 import {
-  _last,
   _round,
+  _findIndex,
   isWebImage,
+  isWebVideo,
+  trimEachRow,
   detectBrowser,
-  trimEachRow, isWebVideo, getUserFullName, _find, _findIndex, randomDigitStringId,
-  // testFunc,
+  getUserFullName,
+  randomDigitStringId,
 } from '../../utilsCommon';
 
 import {
-  inflectDayJSWeekDays,
-  humanizeFileSize,
-  generateReplyMessageQuote,
-  unlockNotificationSoundAutoplay,
-  playNotificationSound,
-  scrollToElement,
   inflect,
+  humanizeFileSize,
+  humanizeTimezoneName,
+  humanizeUpcomingDate,
+  generateReplyMessageQuote,
+  playNotificationSound,
+  unlockNotificationSoundAutoplay,
   replaceMarkdownWithHTML,
   replaceLinksInText,
   sanitizeHTML,
-  isMobileSizeScreen, humanizeTimezoneName, humanizeUpcomingDate, exposeComponentToGlobalScope,
+  scrollToElement,
+  isMobileSizeScreen,
+  exposeComponentToGlobalScope,
 } from '../../utilsWidget';
 
-import { getScreenshotCompatibilityFallback } from '../../sdk/ScreenshotTaker';
 import { ElixirChatWidget } from '../ElixirChatWidget';
-import {
-  IMAGE_PREVIEW_OPEN,
-  REPLY_MESSAGE,
-  TEXTAREA_VERTICAL_RESIZE,
-  WIDGET_IFRAME_READY,
-  WIDGET_POPUP_TOGGLE,
-} from '../ElixirChatWidgetEventTypes';
+import { getScreenshotCompatibilityFallback } from '../../sdk/ScreenshotTaker';
+import { serializeMessage } from '../../sdk/serializers/serializeMessage';
 import {
   JOIN_ROOM_SUCCESS,
   JOIN_ROOM_ERROR,
@@ -42,7 +40,15 @@ import {
   MESSAGES_CHANGE,
   MESSAGES_RECEIVE,
 } from '../../sdk/ElixirChatEventTypes';
-import {serializeMessage} from '../../sdk/serializers/serializeMessage';
+
+import {
+  IMAGE_PREVIEW_OPEN,
+  REPLY_MESSAGE,
+  TEXTAREA_VERTICAL_RESIZE,
+  WIDGET_IFRAME_READY,
+  WIDGET_POPUP_TOGGLE,
+} from '../ElixirChatWidgetEventTypes';
+
 
 export interface IDefaultWidgetMessagesProps {
   elixirChatWidget: ElixirChatWidget;
@@ -87,20 +93,9 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
   messageVisibilityObserver: IntersectionObserver = null;
   messageRefs: object = {};
 
-  // _isMounted: boolean = false;
-
   componentDidMount() {
     const { elixirChatWidget } = this.props;
     exposeComponentToGlobalScope('ChatMessages', this, elixirChatWidget);
-
-    // this._isMounted = true;
-    window.__this = this;
-
-    // testFunc(function(a){
-    //   console.warn('>>>>>>>>>', a, this);
-    // }, this);
-
-    // console.warn('__ mount', this._isMounted);
 
     dayjs.locale('ru');
     dayjs.extend(dayjsCalendar);
@@ -120,7 +115,6 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
       });
     });
     elixirChatWidget.on([MESSAGES_CHANGE, MESSAGES_RECEIVE], () => {
-      console.warn('__ on MGS change lolo', this.scrollBlock.current);
       this.updateMessages(elixirChatWidget.messageHistory);
     });
     elixirChatWidget.on(WIDGET_POPUP_TOGGLE, isOpen => {
@@ -157,9 +151,6 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
   }
 
   componentWillUnmount(){
-    // this._isMounted = false;
-    // console.warn('__ UN mount 2', this._isMounted);
-
     const { elixirChatWidget } = this.props;
     elixirChatWidget.off(MESSAGES_RECEIVE, this.onMessageReceive);
     this.messageVisibilityObserver?.disconnect?.();
@@ -419,27 +410,12 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
   };
 
   hasUserScroll = () => {
-
-    // console.warn('__ hasUserScroll', {
-    //   a1: this,
-    //   a2: this.scrollBlock,
-    //   a3: this.scrollBlock.current,
-    //   a4: this._isMounted,
-    // });
-    //
-    // window.__this2 = this;
-    // window.__this2 = this.scrollBlock;
-
     const scrollBlock = this.scrollBlock.current;
     return scrollBlock.scrollTop <= scrollBlock.scrollHeight - scrollBlock.offsetHeight - 30;
   };
 
   scrollToBottom = () => {
-
-    // console.warn('__ this.scrollBlock.current 1', this.scrollBlock);
-
     setTimeout(() => {
-      // console.warn('__ this.scrollBlock.current 2', this.scrollBlock);
       this.scrollBlock.current.scrollTop = this.scrollBlock.current.scrollHeight;
     });
   };
@@ -465,6 +441,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
     if (!isLoadingPrecedingMessageHistory && !hasReachedBeginningOfMessageHistory) {
       this.setState({ isLoadingPrecedingMessageHistory: true });
+
       elixirChatWidget.fetchPrecedingMessageHistory(this.MESSAGE_CHUNK_SIZE).finally(() => {
         this.setState({ isLoadingPrecedingMessageHistory: false });
         scrollBlock.scrollTop = scrollBlock.scrollHeight - initialScrollHeight;
