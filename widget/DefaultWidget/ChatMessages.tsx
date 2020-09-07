@@ -8,7 +8,8 @@ import {
   _round,
   isWebImage,
   detectBrowser,
-  trimEachRow, isWebVideo, getUserFullName, _find, _findIndex, randomDigitStringId, testFunc,
+  trimEachRow, isWebVideo, getUserFullName, _find, _findIndex, randomDigitStringId,
+  // testFunc,
 } from '../../utilsCommon';
 
 import {
@@ -86,21 +87,20 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
   messageVisibilityObserver: IntersectionObserver = null;
   messageRefs: object = {};
 
-  _isMounted: boolean = false;
+  // _isMounted: boolean = false;
 
   componentDidMount() {
     const { elixirChatWidget } = this.props;
     exposeComponentToGlobalScope('ChatMessages', this, elixirChatWidget);
 
-    this._isMounted = true;
-
+    // this._isMounted = true;
     window.__this = this;
 
-    testFunc(function(a){
-      console.warn('>>>>>>>>>', a, this);
-    }, this);
+    // testFunc(function(a){
+    //   console.warn('>>>>>>>>>', a, this);
+    // }, this);
 
-    console.warn('__ mount', this._isMounted);
+    // console.warn('__ mount', this._isMounted);
 
     dayjs.locale('ru');
     dayjs.extend(dayjsCalendar);
@@ -120,6 +120,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
       });
     });
     elixirChatWidget.on([MESSAGES_CHANGE, MESSAGES_RECEIVE], () => {
+      console.warn('__ on MGS change lolo', this.scrollBlock.current);
       this.updateMessages(elixirChatWidget.messageHistory);
     });
     elixirChatWidget.on(WIDGET_POPUP_TOGGLE, isOpen => {
@@ -129,7 +130,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     });
     elixirChatWidget.on(MESSAGES_RECEIVE, this.onMessageReceive);
 
-    requestAnimationFrame(this.onPostRender);
+    requestAnimationFrame(this.onPostMount);
 
 
 
@@ -156,11 +157,11 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
   }
 
   componentWillUnmount(){
-    this._isMounted = false;
-    console.warn('__ UN mount 2', this._isMounted);
+    // this._isMounted = false;
+    // console.warn('__ UN mount 2', this._isMounted);
 
+    const { elixirChatWidget } = this.props;
     elixirChatWidget.off(MESSAGES_RECEIVE, this.onMessageReceive);
-
     this.messageVisibilityObserver?.disconnect?.();
   }
 
@@ -179,7 +180,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     }
   };
 
-  onPostRender = () => {
+  onPostMount = () => {
     this.messageVisibilityObserver = new IntersectionObserver(this.onIntersectionObserverTrigger, {
       root: this.scrollBlock.current,
       threshold: 1,
@@ -240,7 +241,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
   onMessageReceive = message => {
 
-    window.__arguments = arguments;
+    // window.__arguments = arguments;
 
     const { elixirChatWidget } = this.props;
     const {
@@ -419,15 +420,15 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
   hasUserScroll = () => {
 
-    console.warn('__ hasUserScroll', {
-      a1: this,
-      a2: this.scrollBlock,
-      a3: this.scrollBlock.current,
-      a4: this._isMounted,
-    });
-
-    window.__this2 = this;
-    window.__this2 = this.scrollBlock;
+    // console.warn('__ hasUserScroll', {
+    //   a1: this,
+    //   a2: this.scrollBlock,
+    //   a3: this.scrollBlock.current,
+    //   a4: this._isMounted,
+    // });
+    //
+    // window.__this2 = this;
+    // window.__this2 = this.scrollBlock;
 
     const scrollBlock = this.scrollBlock.current;
     return scrollBlock.scrollTop <= scrollBlock.scrollHeight - scrollBlock.offsetHeight - 30;
@@ -435,10 +436,10 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
   scrollToBottom = () => {
 
-    console.warn('__ this.scrollBlock.current 1', this.scrollBlock);
+    // console.warn('__ this.scrollBlock.current 1', this.scrollBlock);
 
     setTimeout(() => {
-      console.warn('__ this.scrollBlock.current 2', this.scrollBlock);
+      // console.warn('__ this.scrollBlock.current 2', this.scrollBlock);
       this.scrollBlock.current.scrollTop = this.scrollBlock.current.scrollHeight;
     });
   };
@@ -583,8 +584,6 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
       scrollBlockBottomOffset,
       currentlyTypingUsers,
     } = this.state;
-
-    console.log('__ render');
 
     return (
       <div className={cn('elixirchat-chat-scroll', className)}

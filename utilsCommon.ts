@@ -163,21 +163,33 @@ export function extractSerializedData(data: any, defaultValues: object): object 
 }
 
 
-export function testFunc(callback) {
-
-  window.__arguments8 = arguments;
-  window.__this8 = this;
-  window.__callback8 = callback;
-
-  let e = new Error();
-  let frame = e.stack.split("\n")[2];
-  let lineNumber = frame.split(":")[1];
-  let functionName = frame.split(" ")[5];
-  let functionNameFull = functionName + ":" + lineNumber;
-
-  console.warn('TEST F', arguments, '///', functionNameFull, e.stack);
-
-  window.__stack = e.stack;
-
-  callback && callback('yyy');
+// Simple non-secure hash function (implementation of Java's String.hashCode() method)
+export function hashCode(str: string): string {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    let char = str.charCodeAt(i);
+    hash = ((hash<<5) - hash) + char;
+    hash = hash & hash;
+  }
+  return hash;
 }
+
+
+// export function testFunc(callback) {
+//
+//   window.__arguments8 = arguments;
+//   window.__this8 = this;
+//   window.__callback8 = callback;
+//
+//   let e = new Error();
+//   let frame = e.stack.split("\n")[2];
+//   let lineNumber = frame.split(":")[1];
+//   let functionName = frame.split(" ")[5];
+//   let functionNameFull = functionName + ":" + lineNumber;
+//
+//   console.warn('TEST F', arguments, '///', functionNameFull, e.stack);
+//
+//   window.__stack = e.stack;
+//
+//   callback && callback('yyy');
+// }

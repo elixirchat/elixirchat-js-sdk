@@ -2,7 +2,7 @@ import { uniqueNamesGenerator } from 'unique-names-generator';
 import {
   capitalize,
   randomDigitStringId,
-  getJSONFromLocalStorage, template, setToLocalStorage,
+  getJSONFromLocalStorage, template, setToLocalStorage, hashCode, _find,
 } from '../utilsCommon';
 
 import { IMessage } from './serializers/serializeMessage';
@@ -27,7 +27,7 @@ import {
   JOIN_ROOM_SUCCESS,
   JOIN_ROOM_ERROR,
   LAST_READ_MESSAGE_CHANGE,
-  UPDATE_MESSAGES_CHANGE, MESSAGES_RECEIVE,         // TODO: refactor
+  UPDATE_MESSAGES_CHANGE, MESSAGES_RECEIVE, MESSAGES_CHANGE,         // TODO: refactor
 } from './ElixirChatEventTypes';
 import {isMobileSizeScreen} from '../utilsWidget';
 
@@ -79,8 +79,6 @@ export interface IJoinRoomChannel {
   url?: string;
   omnichannelCode?: string;
 }
-
-window.eventHandlers = [];
 
 export class ElixirChat {
 
@@ -418,55 +416,86 @@ export class ElixirChat {
     }
   };
 
-  public triggerEvent = (eventName: string, data?: any, options?: { firedOnce: boolean }): void => {
-    options = options || {};
-    this.logEvent(eventName, data);
-
-    if (!window.eventHandlers[eventName]?.callbacks) {
-      window.eventHandlers[eventName] = { callbacks: [] };
-    }
-    const eventHandler = window.eventHandlers[eventName];
-    eventHandler.firedOnce = options.firedOnce;
-    eventHandler.firedOnceArguments = data;
-    eventHandler.callbacks.forEach(callback => callback(data));
-  };
-
-  public on(eventName: string | [string], callback: (data: any) => void) {
+  public on = (eventName: string | [string], callback: (data: any) => void): void => {
     if (eventName instanceof Array) {
       eventName.map(singleEventName => this.on(singleEventName, callback));
     }
     else {
-      if (!window.eventHandlers[eventName]?.callbacks) {
-        window.eventHandlers[eventName] = { callbacks: [] };
+      if (!this.eventHandlers[eventName]?.callbacks) {
+        this.eventHandlers[eventName] = { callbacks: {} };
       }
+      const eventHandler = this.eventHandlers[eventName];
+      // const eventHandler = this.getEventHandler(eventName);
+      const hash = this.getCallbackUniqueHash(callback);
 
-      const eventHandler = window.eventHandlers[eventName];
-      eventHandler.callbacks.push(callback);
+      // Prevents executing the same event handler multiple times when the same component
+      // mounts/unmounts periodically (e.g. when user switches back and forth from WelcomeScreen to ChatMessages)
+      // const hasDuplicatingCallback = eventHandler[hash];
+      // const hasDuplicatingCallback = _find(eventHandler.callbacks, { hash });
 
-      if (eventName === MESSAGES_RECEIVE) {
-        console.warn('%c__ MESSAGES_RECEIVE', 'color: green',
-          eventHandler.callbacks.length,
-          { callback, arguments, this2: this },
-          // { callback, arguments, callee: arguments.callee, caller: null },
-          arguments,
-        );
+      // console.log('__ hasDuplicatingCallback', hasDuplicatingCallback, eventName);
 
-        window.__arguments2 = arguments;
-
-        //arguments.callee.caller
-        window.__this6 = this;
-      }
+      eventHandler.callbacks[hash] = callback;
       if (eventHandler.firedOnce) {
         callback(eventHandler.firedOnceArguments);
       }
+
+      // if (hasDuplicatingCallback) {
+      //   eventHandler.callbacks = eventHandler.callbacks.filter(item => item.hash !== hash);
+      // }
+      // eventHandler.callbacks.push({ callback, hash });
+
     }
   };
 
   public off = (eventName: string, callback: (data: any) => void): void => {
-    const eventHandler = window.eventHandlers[eventName];
-    if (eventHandler.callbacks?.length) {
-      eventHandler.callbacks = eventHandler.callbacks.filter(currentCallback => currentCallback !== callback);
+    // const eventHandler = this.getEventHandler(eventName);
+    const eventHandler = this.eventHandlers[eventName];
+    if (callback) {
+      for (let hash in eventHandler.callbacks) {
+        const currentCallback = eventHandler.callbacks[hash];
+        if (currentCallback === callback) {
+          delete eventHandler.callbacks[hash];
+          return;
+        }
+      }
     }
+    else {
+      eventHandler.callbacks = {};
+    }
+  };
+
+  public triggerEvent = (eventName: string, data?: any, options?: { firedOnce: boolean }): void => {
+    options = options || {};
+    this.logEvent(eventName, data);
+
+    if (!this.eventHandlers[eventName]?.callbacks) {
+      this.eventHandlers[eventName] = { callbacks: {} };
+    }
+    const eventHandler = this.eventHandlers[eventName];
+
+    // const eventHandler = this.getEventHandler(eventName);
+    eventHandler.firedOnce = options.firedOnce;
+    if (options.firedOnce) {
+      eventHandler.firedOnceArguments = data;
+    }
+    Object.values(eventHandler.callbacks).forEach(callback => callback(data));
+  };
+
+  private getCallbackUniqueHash(callback: () => any): string {
+    const e = new Error();
+    const callStackHash = hashCode(
+      (e.stack || '')
+        .trim()
+        .replace(/^Error\n\s*/, '')
+        .split(/\n/)
+        .map(row => row.trim())
+        .filter(row => row)
+        .slice(0,3)
+        .join('\n')
+    );
+    const functionCodeHash = hashCode(callback.toString());
+    return Math.abs(functionCodeHash + callStackHash);
   };
 
   public sendMessage = (params: ISentMessageSerialized): Promise<IMessage> => {
