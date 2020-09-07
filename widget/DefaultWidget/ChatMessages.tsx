@@ -592,8 +592,6 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
         style={{ bottom: scrollBlockBottomOffset }}
         ref={this.scrollBlock}>
 
-        <h1>scroll block</h1>
-
         <i className={cn({
           'elixirchat-chat-scroll-progress-bar': true,
           'elixirchat-chat-scroll-progress-bar--animating': isLoadingPrecedingMessageHistory,
