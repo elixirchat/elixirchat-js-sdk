@@ -1,5 +1,5 @@
 import { ElixirChat } from './ElixirChat';
-import { UPDATE_MESSAGES_CHANGE } from './ElixirChatEventTypes';
+import {ERROR_ALERT_SHOW, UPDATE_MESSAGES_CHANGE} from './ElixirChatEventTypes';
 import { fragmentMessage, serializeMessage } from './serializers/serializeMessage';
 import { gql, insertGraphQlFragments } from './GraphQLClient';
 
@@ -25,7 +25,9 @@ export class UpdateMessageSubscription {
     graphQLClientSocket.subscribe({
       query: this.subscriptionQuery,
       onAbort: error => {
-        logError('UpdateMessageSubscription: Failed to subscribe', { error });
+        const customMessage = 'UpdateMessageSubscription: Failed to subscribe';
+        logError(customMessage, { error });
+        triggerEvent(ERROR_ALERT_SHOW, { customMessage, error, retryCallback: this.subscribe });
       },
       onStart: () => {
         logInfo('UpdateMessageSubscription: Subscribed');

@@ -1,5 +1,5 @@
 import { ElixirChat } from './ElixirChat';
-import { MESSAGES_RECEIVE, MESSAGES_CHANGE } from './ElixirChatEventTypes';
+import {MESSAGES_RECEIVE, MESSAGES_CHANGE, ERROR_ALERT_SHOW} from './ElixirChatEventTypes';
 import { IFile } from './serializers/serializeFile';
 import { IMessage, serializeMessage, fragmentMessage } from './serializers/serializeMessage';
 import { randomDigitStringId, isWebImage, _last, _uniqBy } from '../utilsCommon';
@@ -8,6 +8,7 @@ import {
   simplifyGraphQLJSON,
   insertGraphQlFragments,
 } from './GraphQLClient';
+
 
 export interface ISentMessage {
   text?: string,
@@ -84,13 +85,15 @@ export class MessageSubscription {
   }
 
   public subscribe = (): void => {
-    const { graphQLClientSocket, logInfo, logError } = this.elixirChat;
+    const { graphQLClientSocket, logInfo, logError, triggerEvent } = this.elixirChat;
     this.updateMessageHistoryOnInterval();
 
     graphQLClientSocket.subscribe({
       query: this.subscriptionQuery,
       onAbort: error => {
+        const customMessage = 'MessageSubscription: Failed to subscribe';
         logError('MessageSubscription: Failed to subscribe', { error });
+        triggerEvent(ERROR_ALERT_SHOW, { customMessage, error, retryCallback: this.subscribe });
       },
       onStart: () => {
         logInfo('MessageSubscription: Subscribed');
@@ -100,6 +103,7 @@ export class MessageSubscription {
   };
 
   private updateMessageHistoryOnInterval(): void {
+    clearInterval(this.messageHistoryRequestInterval);
     this.messageHistoryRequestInterval = setInterval(() => {
       const limit = 20;
       const afterCursor = _last(this.messageHistory)?.cursor || null;

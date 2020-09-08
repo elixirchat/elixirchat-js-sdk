@@ -2,7 +2,7 @@ import { uniqueNamesGenerator } from 'unique-names-generator';
 import {
   capitalize,
   randomDigitStringId,
-  getFromLocalStorage, template, setToLocalStorage, hashCode, _find,
+  getFromLocalStorage, template, setToLocalStorage, hashCode, _find, normalizeErrorStack,
 } from '../utilsCommon';
 
 import { IMessage } from './serializers/serializeMessage';
@@ -27,9 +27,10 @@ import {
   JOIN_ROOM_SUCCESS,
   JOIN_ROOM_ERROR,
   LAST_READ_MESSAGE_CHANGE,
-  UPDATE_MESSAGES_CHANGE, MESSAGES_RECEIVE, MESSAGES_CHANGE,         // TODO: refactor
+  UPDATE_MESSAGES_CHANGE, MESSAGES_RECEIVE, MESSAGES_CHANGE, ERROR_ALERT_SHOW,         // TODO: refactor
 } from './ElixirChatEventTypes';
 import {isMobileSizeScreen} from '../utilsWidget';
+
 
 
 export interface IElixirChatRoom {
@@ -163,7 +164,7 @@ export class ElixirChat {
     });
 
     this.logInfo('Initializing ElixirChat', config);
-    return this.joinRoom();
+    return this.joinRoom(this.config.room, this.config.client);
   }
 
   private serializeClient(rawClient: any): IElixirChatUser {
@@ -286,13 +287,11 @@ export class ElixirChat {
           return joinRoomData;
         }
         else {
-          this.triggerEvent(JOIN_ROOM_ERROR, response);
-          throw response;
+          this.onJoinRoomError(response, room, client);
         }
-      }).catch((response) => {
-        this.triggerEvent(JOIN_ROOM_ERROR, response);
-        throw response;
-    });
+      }).catch(error => {
+        this.onJoinRoomError(error, room, client);
+      });
   }
 
   private onJoinRoomSuccess(joinRoomData: IJoinRoomData): void {
@@ -317,6 +316,17 @@ export class ElixirChat {
     this.unreadMessagesCounter.subscribe({ unreadMessagesCount, unreadRepliesCount }); // TODO: fix params
     // this.typingStatusSubscription.subscribe(); // TODO: fix
   }
+
+  private onJoinRoomError = (error: any, room: any, client: any): void => {
+    const customMessage = `joinRoom: ${getErrorMessageFromResponse(error)}`;
+    this.triggerEvent(ERROR_ALERT_SHOW, {
+      customMessage,
+      error,
+      retryCallback: () => this.joinRoom(room, client),
+    });
+    // this.triggerEvent(JOIN_ROOM_ERROR, error);
+    throw error;
+  };
 
   private serializeJoinRoomData(data: any): IJoinRoomData {
     const {
@@ -468,16 +478,8 @@ export class ElixirChat {
   };
 
   private getCallbackUniqueHash(callback: () => any): string {
-    const e = new Error();
     const callStackHash = hashCode(
-      (e.stack || '')
-        .trim()
-        .replace(/^Error\n\s*/, '')
-        .split(/\n/)
-        .map(row => row.trim())
-        .filter(row => row)
-        .slice(0,3)
-        .join('\n')
+      normalizeErrorStack(new Error().stack, 3)
     );
     const functionCodeHash = hashCode(callback.toString());
     return Math.abs(functionCodeHash + callStackHash);
@@ -553,6 +555,11 @@ export class ElixirChat {
           graphQLMethod,
         };
         this.logError(errorMessage, additionalErrorData);
+        this.triggerEvent(ERROR_ALERT_SHOW, {
+          customMessage: errorMessage,
+          error: rawError,
+          retryCallback: () => this.sendAPIRequest(query, variables, binaries),
+        });
         throw {
           errorMessage,
           ...additionalErrorData,

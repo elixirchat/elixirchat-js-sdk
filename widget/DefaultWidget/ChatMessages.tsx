@@ -478,27 +478,6 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     }
   };
 
-  generateSupportMailtoLink = () => {
-    const { elixirChatWidget } = this.props;
-    const { client: { firstName, lastName, id } } = elixirChatWidget;
-    const { loadingErrorInfo } = this.state;
-    const subject = 'Ошибка загрузки чата поддержки';
-
-    const body = trimEachRow(`Чат поддержки не загружается. Появляется сообщение:
-      «Ошибка загрузки. Пожалуйста, перезагрузите страницу или напишите администратору»
-      
-      Вот технические данные:
-      ${loadingErrorInfo}
-      User-agent: ${navigator.userAgent}
-      Screen: ${screen.availWidth}x${screen.availHeight}
-      Device pixel ratio: ${devicePixelRatio}
-      
-      Мои данные:
-      ${firstName} ${lastName} (ID: ${id})
-    `);
-    return `mailto:${elixirChatWidget.widgetSupportEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  };
-
   formatVideoDuration = (durationInSeconds) => {
     const totalHours = Math.floor(durationInSeconds / 60 / 60);
     const totalMinutes = Math.floor(durationInSeconds / 60);

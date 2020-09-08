@@ -25,6 +25,7 @@ import { WelcomeScreen } from './WelcomeScreen';
 import { FullScreenPreview } from './FullScreenPreview';
 import styles from './styles';
 import assets from './assets';
+import {Alert} from './Alert';
 
 export interface IWidgetProps {
   elixirChatWidget: ElixirChatWidget;
@@ -262,7 +263,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
                 <WelcomeScreen elixirChatWidget={elixirChatWidget}/>
               )}
             </div>
-
+            <Alert elixirChatWidget={elixirChatWidget}/>
           </Fragment>
         </IFrameWrapper>
       </Fragment>

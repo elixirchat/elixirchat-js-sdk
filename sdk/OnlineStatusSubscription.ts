@@ -1,6 +1,6 @@
 import { ElixirChat } from './ElixirChat';
 import { gql } from './GraphQLClient';
-import { ONLINE_STATUS_CHANGE } from './ElixirChatEventTypes';
+import {ERROR_ALERT_SHOW, ONLINE_STATUS_CHANGE} from './ElixirChatEventTypes';
 
 export interface IOnlineStatusParams {
   isOnline: boolean;
@@ -29,7 +29,7 @@ export class OnlineStatusSubscription {
   }
 
   public subscribe = (params: IOnlineStatusParams): void => {
-    const { graphQLClientSocket, logInfo, logError } = this.elixirChat;
+    const { graphQLClientSocket, logInfo, logError, triggerEvent } = this.elixirChat;
     const { isOnline, workHoursStartAt } = params || {};
 
     // TODO: remove mock
@@ -42,7 +42,13 @@ export class OnlineStatusSubscription {
     graphQLClientSocket.subscribe({
       query: this.subscriptionQuery,
       onAbort: error => {
-        logError('OnlineStatusSubscription: Failed to subscribe', { error });
+        const customMessage = 'OnlineStatusSubscription: Failed to subscribe';
+        logError(customMessage, { error });
+        triggerEvent(ERROR_ALERT_SHOW, {
+          customMessage,
+          error,
+          retryCallback: () => this.subscribe(params),
+        });
       },
       onStart: () => {
         logInfo('OnlineStatusSubscription: Subscribed');

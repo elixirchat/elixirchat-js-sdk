@@ -3,7 +3,7 @@ import { gql } from './GraphQLClient';
 import {
   UNREAD_MESSAGES_CHANGE,
   UNREAD_REPLIES_CHANGE,
-  LAST_READ_MESSAGE_CHANGE,
+  LAST_READ_MESSAGE_CHANGE, ERROR_ALERT_SHOW,
 } from './ElixirChatEventTypes';
 
 export interface IUnreadMessagesCounterData {
@@ -44,6 +44,7 @@ export class UnreadMessagesCounter {
   }
 
   public subscribe = (params: IUnreadMessagesCounterData) => {
+    const { graphQLClientSocket, logInfo, logError, triggerEvent } = this.elixirChat;
     // TODO: remove mock
     // this.onUnreadCountsUpdate({
     //   unreadMessagesCount: 2,
@@ -58,16 +59,16 @@ export class UnreadMessagesCounter {
       // lastReadMessageId: 'zzz', // TODO: remove mock
     });
 
-    this.initializeSocketClient();
-  };
-
-  private initializeSocketClient(): void {
-    const { graphQLClientSocket, logInfo, logError } = this.elixirChat;
-
     graphQLClientSocket.subscribe({
       query: this.subscriptionQuery,
       onAbort: error => {
-        logError('UnreadMessagesCounter: Failed to subscribe', { error });
+        const customMessage = 'UnreadMessagesCounter: Failed to subscribe';
+        logError(customMessage, { error });
+        triggerEvent(ERROR_ALERT_SHOW, {
+          customMessage,
+          error,
+          retryCallback: () => this.subscribe(params),
+        });
       },
       onStart: () => {
         logInfo('UnreadMessagesCounter: Subscribed');

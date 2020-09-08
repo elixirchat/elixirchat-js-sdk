@@ -170,6 +170,18 @@ export function extractSerializedData(data: any, defaultValues: object): object 
 }
 
 
+export function normalizeErrorStack(errorStackString, maxLines) {
+  (errorStackString || '')
+    .trim()
+    .replace(/^Error\n\s*/, '')
+    .split(/\n/)
+    .map(row => row.trim())
+    .filter(row => row)
+    .slice(0, maxLines || undefined)
+    .join('\n');
+}
+
+
 // Simple non-secure hash function (implementation of Java's String.hashCode() method)
 export function hashCode(str: string): string {
   let hash = 0;
