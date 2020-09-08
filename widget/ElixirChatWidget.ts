@@ -110,9 +110,6 @@ export class ElixirChatWidget extends ElixirChat {
   };
 
   private initializeWidget(): void {
-    this.on(WIDGET_IFRAME_READY, iframeDocument => {
-      this.widgetIFrameDocument = iframeDocument;
-    });
     // TODO: set some widget data on join_room_error
     this.on(JOIN_ROOM_SUCCESS, joinRoomData => {
       this.setWidgetData(joinRoomData);
@@ -191,6 +188,11 @@ export class ElixirChatWidget extends ElixirChat {
       setToLocalStorage('elixirchat-current-view', widgetView);
       this.triggerEvent(WIDGET_NAVIGATE_TO, widgetView);
     }
+  };
+
+  public setIFrameDocument = (iframeDocument) => {
+    this.widgetIFrameDocument = iframeDocument;
+    this.triggerEvent(WIDGET_IFRAME_READY, iframeDocument, { firedOnce: true });
   };
 }
 

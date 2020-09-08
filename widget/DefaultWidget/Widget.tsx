@@ -186,6 +186,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
       styles.icons,
       styles.WidgetInsideIFrame,
       styles.WelcomeScreen,
+      styles.Alert,
       styles.Chat,
       styles.ChatMessages,
       styles.ChatTextarea,

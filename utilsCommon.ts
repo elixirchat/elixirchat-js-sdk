@@ -171,7 +171,7 @@ export function extractSerializedData(data: any, defaultValues: object): object 
 
 
 export function normalizeErrorStack(errorStackString, maxLines) {
-  (errorStackString || '')
+  const norm = (errorStackString || '')
     .trim()
     .replace(/^Error\n\s*/, '')
     .split(/\n/)
@@ -179,6 +179,8 @@ export function normalizeErrorStack(errorStackString, maxLines) {
     .filter(row => row)
     .slice(0, maxLines || undefined)
     .join('\n');
+  // console.log('__ stack', { norm, orig: errorStackString });
+  return norm;
 }
 
 

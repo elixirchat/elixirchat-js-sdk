@@ -104,8 +104,8 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
       screenshotFallback: getScreenshotCompatibilityFallback()
     });
 
-    elixirChatWidget.on(WIDGET_IFRAME_READY, iframeDocument => {
-      iframeDocument.body.addEventListener('click', unlockNotificationSoundAutoplay);
+    elixirChatWidget.on(WIDGET_IFRAME_READY, () => {
+      elixirChatWidget.widgetIFrameDocument.body.addEventListener('click', unlockNotificationSoundAutoplay);
     });
     elixirChatWidget.on(JOIN_ROOM_SUCCESS, () => {
       this.setState({ isLoading: true });
