@@ -38,7 +38,7 @@ import {
   JOIN_ROOM_ERROR,
   TYPING_STATUS_CHANGE,
   MESSAGES_CHANGE,
-  MESSAGES_RECEIVE,
+  MESSAGES_RECEIVE, ERROR_ALERT_SHOW,
 } from '../../sdk/ElixirChatEventTypes';
 
 import {
@@ -107,13 +107,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     elixirChatWidget.on(WIDGET_IFRAME_READY, () => {
       elixirChatWidget.widgetIFrameDocument.body.addEventListener('click', unlockNotificationSoundAutoplay);
     });
-    elixirChatWidget.on(JOIN_ROOM_SUCCESS, () => {
-      this.setState({ isLoading: true });
-      elixirChatWidget.fetchMessageHistory(this.MESSAGE_CHUNK_SIZE).then(() => {
-        this.setState({ isLoading: false });
-        this.onMessageHistoryFetch();
-      });
-    });
+    elixirChatWidget.on(JOIN_ROOM_SUCCESS, this.loadInitialMessages);
     elixirChatWidget.on([MESSAGES_CHANGE, MESSAGES_RECEIVE], () => {
       this.updateMessages(elixirChatWidget.messageHistory);
     });
@@ -156,7 +150,29 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     this.messageVisibilityObserver?.disconnect?.();
   }
 
-  onMessageHistoryFetch = () => {
+  loadInitialMessages = () => {
+    const { elixirChatWidget } = this.props;
+    this.setState({ isLoading: true });
+
+    elixirChatWidget.fetchMessageHistory(this.MESSAGE_CHUNK_SIZE)
+      .then(messageChunk => {
+        const hasReachedBeginningOfMessageHistory = messageChunk.length < this.MESSAGE_CHUNK_SIZE;
+        this.setState({ hasReachedBeginningOfMessageHistory });
+        this.onInitialMessagesLoaded();
+      })
+      .catch(e => {
+        elixirChatWidget.triggerEvent(ERROR_ALERT_SHOW, {
+          customMessage: e.errorMessage,
+          retryCallback: this.loadInitialMessages,
+          error: e.rawError,
+        });
+      })
+      .finally(() => {
+        this.setState({ isLoading: false });
+      });
+  };
+
+  onInitialMessagesLoaded = () => {
     const { elixirChatWidget } = this.props;
     if (elixirChatWidget.widgetIsPopupOpen) {
       this.scrollToFirstUnreadMessage();
@@ -168,6 +184,36 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
           this.scrollToFirstUnreadMessage();
         }
       });
+    }
+  };
+
+  loadPrecedingMessages = () => {
+    const { elixirChatWidget } = this.props;
+    const { isLoadingPrecedingMessageHistory, hasReachedBeginningOfMessageHistory } = this.state;
+    const scrollBlock = this.scrollBlock.current;
+    const initialScrollHeight = scrollBlock.scrollHeight;
+
+    if (!isLoadingPrecedingMessageHistory && !hasReachedBeginningOfMessageHistory) {
+      this.setState({ isLoadingPrecedingMessageHistory: true });
+
+      elixirChatWidget.fetchPrecedingMessageHistory(this.MESSAGE_CHUNK_SIZE)
+        .then(messageChunk => {
+          this.setState({
+            hasReachedBeginningOfMessageHistory: messageChunk.length < this.MESSAGE_CHUNK_SIZE,
+          });
+        })
+        .catch(e => {
+          elixirChatWidget.triggerEvent(ERROR_ALERT_SHOW, {
+            customMessage: e.errorMessage,
+            retryCallback: this.loadPrecedingMessages,
+            error: e.rawError,
+          });
+          throw e;
+        })
+        .finally(() => {
+          this.setState({ isLoadingPrecedingMessageHistory: false });
+          scrollBlock.scrollTop = scrollBlock.scrollHeight - initialScrollHeight;
+        });
     }
   };
 
@@ -260,13 +306,16 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
   };
 
   updateMessages = (messageHistory) => {
-    const hasReachedBeginningOfMessageHistory = messageHistory.length < this.MESSAGE_CHUNK_SIZE;
-    const { processedMessages, fullScreenPreviews } = this.processMessages(messageHistory, hasReachedBeginningOfMessageHistory);
+    // const hasReachedBeginningOfMessageHistory = messageHistory.length < this.MESSAGE_CHUNK_SIZE;
+    // const { processedMessages, fullScreenPreviews } = this.processMessages(messageHistory, hasReachedBeginningOfMessageHistory);
+    const { processedMessages, fullScreenPreviews } = this.processMessages(messageHistory);
+
+    // console.log('__ hasReachedBeginningOfMessageHistory', hasReachedBeginningOfMessageHistory, messageHistory.length, this.MESSAGE_CHUNK_SIZE);
 
     this.setState({
       processedMessages,
       fullScreenPreviews,
-      hasReachedBeginningOfMessageHistory,
+      // hasReachedBeginningOfMessageHistory,
     });
 
     requestAnimationFrame(() => {
@@ -405,7 +454,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
   onMessagesScroll = () => {
     const scrollBlock = this.scrollBlock.current;
     if (scrollBlock.scrollTop <= 0) {
-      this.loadPrecedingMessageHistory();
+      this.loadPrecedingMessages();
     }
   };
 
@@ -431,22 +480,6 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
         messageElement.classList.remove(flashedClassName);
       }, 1000);
     });
-  };
-
-  loadPrecedingMessageHistory = (): void => {
-    const { elixirChatWidget } = this.props;
-    const { isLoadingPrecedingMessageHistory, hasReachedBeginningOfMessageHistory } = this.state;
-    const scrollBlock = this.scrollBlock.current;
-    const initialScrollHeight = scrollBlock.scrollHeight;
-
-    if (!isLoadingPrecedingMessageHistory && !hasReachedBeginningOfMessageHistory) {
-      this.setState({ isLoadingPrecedingMessageHistory: true });
-
-      elixirChatWidget.fetchPrecedingMessageHistory(this.MESSAGE_CHUNK_SIZE).finally(() => {
-        this.setState({ isLoadingPrecedingMessageHistory: false });
-        scrollBlock.scrollTop = scrollBlock.scrollHeight - initialScrollHeight;
-      });
-    }
   };
 
   onReplyMessageClick = (messageId) => {

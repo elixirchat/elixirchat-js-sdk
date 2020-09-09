@@ -11,6 +11,7 @@ import {
 } from './ElixirChatWidgetEventTypes';
 
 import {
+  JOIN_ROOM_ERROR,
   JOIN_ROOM_SUCCESS,
 } from '../sdk/ElixirChatEventTypes';
 import {IJoinRoomChannel, IJoinRoomData} from '../sdk/ElixirChat';
@@ -110,9 +111,11 @@ export class ElixirChatWidget extends ElixirChat {
   };
 
   private initializeWidget(): void {
-    // TODO: set some widget data on join_room_error
-    this.on(JOIN_ROOM_SUCCESS, joinRoomData => {
+    this.on([JOIN_ROOM_SUCCESS, JOIN_ROOM_ERROR], joinRoomData => {
+      console.warn('__ joinRoomData', joinRoomData);
       this.setWidgetData(joinRoomData);
+    });
+    this.on(WIDGET_DATA_SET, () => {
       this.togglePopup(this.widgetIsPopupOpen);
       this.toggleMute(this.widgetIsMuted);
       this.navigateTo(this.widgetView);
@@ -140,10 +143,12 @@ export class ElixirChatWidget extends ElixirChat {
     this.widgetSupportEmail = this.widgetConfig.email || supportEmail;
     this.widgetView = getFromLocalStorage('elixirchat-current-view', view);
 
-    this.widgetChannels = (this.widgetConfig.enabledChannels || []).map(channelType => {
-      const normalizedChannelType = channelType?.toLowerCase?.();
-      return _find(joinRoomData.channels, { type: normalizedChannelType });
-    });
+    this.widgetChannels = (this.widgetConfig.enabledChannels || [])
+      .map(channelType => {
+        const normalizedChannelType = channelType?.toLowerCase?.();
+        return _find(joinRoomData.channels, { type: normalizedChannelType });
+      })
+      .filter(channel => channel?.username);
 
     this.triggerEvent(WIDGET_DATA_SET, this, { firedOnce: true });
   }

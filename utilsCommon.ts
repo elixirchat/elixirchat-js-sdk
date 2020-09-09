@@ -12,7 +12,7 @@ export function randomDigitStringId(idLength: number): string {
 
 
 // Lodash-like _.last
-export function _last(arr: Array): any {
+export function _last(arr: Array | string): any {
   return arr[arr.length - 1];
 }
 

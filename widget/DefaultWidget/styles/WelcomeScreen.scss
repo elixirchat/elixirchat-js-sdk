@@ -71,12 +71,12 @@
 
 .elixirchat-welcome-screen-operators__title {
   font-weight: bold;
-  margin-bottom: 15px;
+  margin-bottom: 13px;
 }
 
 .elixirchat-welcome-screen-operators__list {
   padding: 0;
-  margin: 0 0 20px 0;
+  margin: 2px 0 20px 0;
   list-style: none;
 }
 
@@ -91,12 +91,17 @@
   border-radius: 100%;
   vertical-align: top;
   border: 2px solid $color-white;
+  color: $color-white;
   background: {
     color: #EDF2F3;
     size: cover;
     position: center;
     repeat: no-repeat;
   };
+
+  &--counter {
+    color: $color-black;
+  }
 }
 
 .elixirchat-welcome-screen-operators__item--avatar {

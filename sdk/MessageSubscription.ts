@@ -166,7 +166,7 @@ export class MessageSubscription {
   }
 
   public sendMessage = (textareaParams: ISentMessage): Promise<IMessage> => {
-    const { logInfo, logError, sendAPIRequest } = this.elixirChat;
+    const { logInfo, logError, sendAPIRequest, triggerEvent } = this.elixirChat;
     const { variables, binaries } = this.serializeSendMessageParams(textareaParams);
     let tempId;
 
@@ -318,21 +318,6 @@ export class MessageSubscription {
     triggerEvent(MESSAGES_RECEIVE, message);
   };
 
-  // TODO: insert into history? Fix bug
-  // private generateNewClientPlaceholderMessage(messageHistory: Array<IMessage>): IMessage {
-  //   const firstMessageTimestamp = messageHistory?.[0]?.timestamp;
-  //   const timestamp = firstMessageTimestamp || new Date().toISOString();
-  //   return {
-  //     timestamp,
-  //     id: randomDigitStringId(6),
-  //     isSystem: true,
-  //     sender: {},
-  //     attachments: [],
-  //     responseToMessage: {},
-  //     systemType: 'NewClientPlaceholderMessage',
-  //   };
-  // };
-
   private getMessageHistoryByCursor(params: IFetchMessageHistoryParams): Promise<[IMessage]> {
     const { sendAPIRequest } = this.elixirChat;
     const { limit, beforeCursor, afterCursor } = params;
@@ -384,11 +369,12 @@ export class MessageSubscription {
       logError(errorMessage);
       return Promise.reject({ message: errorMessage });
     }
-    return this.getMessageHistoryByCursor({ limit, beforeCursor: latestCursor })
-      .then(messageHistory => {
-        const updatedMessageHistory = _uniqBy([ ...messageHistory, ...this.messageHistory ], 'id');
-        return this.onMessageHistoryChange(updatedMessageHistory);
-      });
+    return this.getMessageHistoryByCursor({ limit, beforeCursor: latestCursor }).then(precedingMessageHistory => {
+      const updatedMessageHistory = _uniqBy([ ...precedingMessageHistory, ...this.messageHistory ], 'id');
+      this.onMessageHistoryChange(updatedMessageHistory);
+      console.warn('__ precedingMessageHistory', precedingMessageHistory, latestCursor);
+      return precedingMessageHistory;
+    });
   };
 
   public markPrecedingMessagesRead = (lastReadMessageId: string): Array<IMessage> => {

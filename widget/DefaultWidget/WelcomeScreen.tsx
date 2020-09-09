@@ -6,10 +6,11 @@ import { ElixirChatWidget } from '../ElixirChatWidget';
 import { WIDGET_DATA_SET } from '../ElixirChatWidgetEventTypes';
 import { UNREAD_MESSAGES_CHANGE } from '../../sdk/ElixirChatEventTypes';
 import {
-  exposeComponentToGlobalScope,
+  exposeComponentToGlobalScope, getAvatarColorByUserId,
   humanizeTimezoneName,
   humanizeUpcomingDate,
 } from '../../utilsWidget';
+import {_last} from '../../utilsCommon';
 
 
 export interface IWelcomeScreenProps {
@@ -78,41 +79,80 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
 
   generateEmployeeList = ({ employeesCount, employees }) => {
     const displayLimit = Math.min(5, employeesCount);
+    let employeeAvatars;
 
-    let employeeAvatars = employees
-      .filter(employee => employee.avatar?.url)
-      .map((employee): any => {
-        return {
-          url: employee.avatar?.url,
-          initials: '',
-        };
+    // if (!employees?.length) {
+    //   employees = [ { id: 'test02' }, { id: 'test03' }, { id: 'test04' }, { id: 'test05' } ];
+    // }
+
+    employeeAvatars = employees
+      .map(this.generateEmployeeAvatar)
+      .sort((a,b) => {
+        return a.url > b.url ? -1 : 1;
       })
       .slice(0, displayLimit);
 
-    if (employeeAvatars.length < displayLimit) {
-      const textAvatars = employees
-        .filter(employee => !employee.avatar?.url)
-        .map((employee): any => {
-          return {
-            url: '',
-            initials: this.generateEmployeeInitials(employee),
-          };
-        })
-        .slice(0, displayLimit - employeeAvatars.length);
 
-      employeeAvatars = [ ...employeeAvatars, ...textAvatars ];
-    }
+    window.__employeeAvatars = employeeAvatars;
+
+    // employeeAvatars = employees
+    //   .filter(employee => employee.avatar?.url)
+    //   .map((employee): any => {
+    //     return {
+    //       url: employee.avatar?.url,
+    //       initials: this.generateEmployeeInitials(employee),
+    //     };
+    //   })
+    //   .slice(0, displayLimit);
+
+    // if (employeeAvatars.length < displayLimit) {
+    //   const textAvatars = employees
+    //     .filter(employee => !employee.avatar?.url)
+    //     .map((employee): any => {
+    //       return {
+    //         url: '',
+    //         initials: this.generateEmployeeInitials(employee),
+    //       };
+    //     })
+    //     .slice(0, displayLimit - employeeAvatars.length);
+    //
+    //   employeeAvatars = [ ...employeeAvatars, ...textAvatars ];
+    // }
+
     return {
       employeeAvatars,
       employeesCount,
     }
   };
 
-  generateEmployeeInitials = (employee) => {
-    const nameInitial = (employee.firstName || '').replace(/[^a-zа-я]/ig, '')[0];
-    const randomLetterDict = 'АВЕКМНОРС';
-    const randomLetter = randomLetterDict[ Math.round( Math.random() * (randomLetterDict.length - 1) ) ];
-    return (nameInitial || randomLetter).toUpperCase();
+  // generateEmployeeInitials = (employee) => {
+  //   const nameInitial = (employee?.firstName || '').toString().replace(/[^a-zа-я]/ig, '')[0];
+  //   if (nameInitial) {
+  //     return nameInitial.toUpperCase();
+  //   }
+  //   else {
+  //     const idLetterDict = 'АВЕКМНОРСТ';
+  //     const idLetterIndex = +(employee?.id || '').toString().replace(/[^0-9]+/ig, '')[0];
+  //     const normalizedIndex = idLetterIndex > -1 ? idLetterIndex : Math.round( Math.random() * (idLetterDict.length - 1) );
+  //     return idLetterDict[ normalizedIndex ];
+  //   }
+  // };
+
+  generateEmployeeAvatar = (employee) => {
+    let url = employee.avatar?.url;
+
+    window.__getAvatarColorByUserId = getAvatarColorByUserId;
+
+    let color = getAvatarColorByUserId(employee?.id);
+    let initials = (employee?.firstName || '').toString().replace(/[^a-zа-я]/ig, '')[0]?.toUpperCase();
+
+    if (!initials) {
+      const idLetterDict = 'АВЕКМНОРСТ';
+      const idLetterIndex = +_last((employee?.id || '').toString().replace(/[^0-9]+/ig, ''));
+      const normalizedIndex = idLetterIndex > -1 ? idLetterIndex : Math.round( Math.random() * (idLetterDict.length - 1) );
+      initials = idLetterDict[ normalizedIndex ];
+    }
+    return { url, color, initials, employee };
   };
 
   generateOnlineStatusMessage = (onlineStatus) => {
@@ -169,24 +209,28 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
         </div>
 
         <div className="elixirchat-welcome-screen-operators">
-          <div className="elixirchat-welcome-screen-operators__title">{widgetChatSubtitle}</div>
-          <ul className="elixirchat-welcome-screen-operators__list">
-            {employeeAvatars.map((avatar, i) => (
-              <li className={cn({
-                'elixirchat-welcome-screen-operators__item': true,
-                'elixirchat-welcome-screen-operators__item--avatar': avatar.url,
-              })}
-                key={i}
-                style={avatar.url ? { backgroundImage: `url(${avatar.url})` } : null}>
-                {avatar.initials}
-              </li>
-            ))}
-            {employeesCount > employeeAvatars.length && (
-              <li className="elixirchat-welcome-screen-operators__item">
-                +{employeesCount - employeeAvatars.length}
-              </li>
-            )}
-          </ul>
+          <div className="elixirchat-welcome-screen-operators__title">
+            {widgetChatSubtitle}
+          </div>
+          {Boolean(employeeAvatars.length) && (
+            <ul className="elixirchat-welcome-screen-operators__list">
+              {employeeAvatars.map((avatar, i) => (
+                <li key={i}
+                  style={avatar.url ? { backgroundImage: `url(${avatar.url})` } : { backgroundColor: avatar.color }}
+                  className={cn({
+                    'elixirchat-welcome-screen-operators__item': true,
+                    'elixirchat-welcome-screen-operators__item--avatar': avatar.url,
+                  })}>
+                  {!Boolean(avatar.url) && avatar.initials}
+                </li>
+              ))}
+              {employeesCount > employeeAvatars.length && (
+                <li className="elixirchat-welcome-screen-operators__item elixirchat-welcome-screen-operators__item--counter">
+                  +{employeesCount - employeeAvatars.length}
+                </li>
+              )}
+            </ul>
+          )}
           <button className="elixirchat-welcome-screen-operators__button"
             onClick={() => elixirChatWidget.navigateTo('chat')}>
             Написать в поддержку

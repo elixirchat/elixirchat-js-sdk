@@ -114,11 +114,11 @@ export function parseGraphQLMethodFromQuery(query: string): string {
 }
 
 
-export function getErrorMessageFromResponse(response){
-  let errorMessage = 'Unknown error';
-  if (response) {
-    if (response.errors && response.errors.length) {
-      errorMessage = response.errors.map(error => {
+export function extractErrorMessage(error){
+  if (error) {
+    // In case error is a GraphQL response
+    if (error.errors && error.errors.length) {
+      return error.errors.map(error => {
         let message = '\n  - ' + error.message;
         if (error.path && error.path.length) {
           message += ' in ' + error.path.join(', ')
@@ -126,9 +126,9 @@ export function getErrorMessageFromResponse(response){
         return message;
       }).join('');
     }
-    else if (response.message) {
-      errorMessage = response.message;
+    else if (error instanceof Error) {
+      return error.toString();
     }
   }
-  return errorMessage;
+  return error?.message || 'Unknown error';
 }

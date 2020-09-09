@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import { ElixirChatWidget } from './widget/ElixirChatWidget';
-import {_round, getUserFullName} from './utilsCommon';
+import {_last, _round, getUserFullName} from './utilsCommon';
 import assets from './widget/DefaultWidget/assets';
 
 import dayjs from 'dayjs';
@@ -259,15 +259,15 @@ export function scrollToElement(element, options = {}, callback = () => {}): ISc
 }
 
 
-export function generateCustomerSupportSenderName(message, widgetTitle) {
-  const { firstName, lastName } = message.sender || {};
-  if (firstName || lastName) {
-    return [firstName, lastName].join(' ');
-  }
-  else {
-    return widgetTitle;
-  }
-}
+// export function generateCustomerSupportSenderName(message, widgetTitle) {
+//   const { firstName, lastName } = message.sender || {};
+//   if (firstName || lastName) {
+//     return [firstName, lastName].join(' ');
+//   }
+//   else {
+//     return widgetTitle;
+//   }
+// }
 
 
 export function generateReplyMessageQuote(messageToReplyTo, elixirChatWidget: ElixirChatWidget) {
@@ -433,4 +433,38 @@ export function isMobileSizeScreen(){
 export function exposeComponentToGlobalScope(name: string, instance: Component, elixirChatWidget: ElixirChatWidget) {
   // Can't simply use instance.constructor.name for the name due to bundler obfuscation; must pass name explicitly
   elixirChatWidget.widgetComponents[name] = instance;
+}
+
+
+export function getAvatarColorByUserId(userId: string): string {
+  const defaultColor = '#0033FF';
+  if (!userId) {
+    return defaultColor;
+  }
+  const idDigits = userId.replace(/[a-z\-_=]/ig, '');
+  const factor = +_last(idDigits) + (0.1 * +idDigits[idDigits.length - 2]);
+  const colorIndex = Math.floor(factor * 2);
+  const colorDict = [
+    '#b35766',
+    '#b38b72',
+    '#d4a471',
+    '#e83b52',
+    '#ef6e9c',
+    '#fd4c26',
+    '#f46e41',
+    '#f87b31',
+    '#bafc09',
+    '#c6da6e',
+    '#7dcb39',
+    '#12972d',
+    '#19c36a',
+    '#79f2c2',
+    '#79e6f2',
+    '#066afc',
+    '#0d01a6',
+    '#c52bf0',
+    '#9405df',
+    '#273c4f',
+  ];
+  return colorDict[colorIndex];
 }

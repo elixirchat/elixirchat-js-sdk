@@ -2,7 +2,7 @@ import { uniqueNamesGenerator } from 'unique-names-generator';
 import {
   capitalize,
   randomDigitStringId,
-  getFromLocalStorage, template, setToLocalStorage, hashCode, _find, normalizeErrorStack,
+  getFromLocalStorage, template, setToLocalStorage, hashCode, _find, normalizeErrorStack, extractSerializedData,
 } from '../utilsCommon';
 
 import { IMessage } from './serializers/serializeMessage';
@@ -19,7 +19,7 @@ import {
   gql,
   insertGraphQlFragments,
   parseGraphQLMethodFromQuery,
-  getErrorMessageFromResponse, simplifyGraphQLJSON,
+  extractErrorMessage, simplifyGraphQLJSON,
 } from './GraphQLClient';
 import { GraphQLClientSocket } from './GraphQLClientSocket';
 
@@ -72,6 +72,7 @@ export interface IJoinRoomData {
   unreadMessagesCount: number;
   unreadRepliesCount: number;
   omnichannelCode: string;
+  error?: any;
 }
 
 export interface IJoinRoomChannel {
@@ -280,22 +281,23 @@ export class ElixirChat {
     return publicGraphQLClient.query(query, variables)
       .then((response: any) => {
         if (response?.joinRoom) {
-          const joinRoomData = this.serializeJoinRoomData(response.joinRoom);
-          this.joinRoomData = joinRoomData;
-          this.onJoinRoomSuccess(joinRoomData);
-          this.triggerEvent(JOIN_ROOM_SUCCESS, joinRoomData, { firedOnce: true });
-          return joinRoomData;
+          return this.onJoinRoomSuccess(response.joinRoom);
         }
         else {
-          this.onJoinRoomError(response, room, client);
+          // throw this.onJoinRoomError(response, room, client);
+          throw this.onJoinRoomError(response, room, client);
         }
       }).catch(error => {
-        this.onJoinRoomError(error, room, client);
+        // throw this.onJoinRoomError(error, room, client);
+        throw this.onJoinRoomError(error, room, client);
       });
   }
 
-  private onJoinRoomSuccess(joinRoomData: IJoinRoomData): void {
+  private onJoinRoomSuccess(rawData: any): IJoinRoomData {
     const { apiUrl, socketUrl } = this.config;
+    const joinRoomData = this.serializeJoinRoomData(rawData);
+    this.logInfo('Joined room', joinRoomData);
+
     const {
       token,
       isOnline,
@@ -304,7 +306,7 @@ export class ElixirChat {
       unreadRepliesCount,
     } = joinRoomData;
 
-    this.logInfo('Joined room', joinRoomData);
+    this.joinRoomData = joinRoomData;
     this.isConnected = true;
 
     this.graphQLClient.initialize({ url: apiUrl, token });
@@ -315,17 +317,24 @@ export class ElixirChat {
     this.onlineStatusSubscription.subscribe({ isOnline, workHoursStartAt });
     this.unreadMessagesCounter.subscribe({ unreadMessagesCount, unreadRepliesCount }); // TODO: fix params
     // this.typingStatusSubscription.subscribe(); // TODO: fix
+
+    this.triggerEvent(JOIN_ROOM_SUCCESS, joinRoomData, { firedOnce: true });
+    return joinRoomData;
   }
 
-  private onJoinRoomError = (error: any, room: any, client: any): void => {
-    const customMessage = `joinRoom: ${getErrorMessageFromResponse(error)}`;
-    this.triggerEvent(ERROR_ALERT_SHOW, {
-      customMessage,
-      error,
-      retryCallback: () => this.joinRoom(room, client),
-    });
-    // this.triggerEvent(JOIN_ROOM_ERROR, error);
-    throw error;
+  private onJoinRoomError(error: any, room: any, client: any): IJoinRoomData {
+    const joinRoomData = this.serializeJoinRoomData(error);
+    this.joinRoomData = joinRoomData;
+    this.triggerEvent(JOIN_ROOM_ERROR, { ...joinRoomData, error });
+
+    setTimeout(() => {
+      this.triggerEvent(ERROR_ALERT_SHOW, {
+        customMessage: `joinRoom: ${extractErrorMessage(error)}`,
+        retryCallback: () => this.joinRoom(room, client),
+        error,
+      });
+    }, 500);
+    throw { ...joinRoomData, error };
   };
 
   private serializeJoinRoomData(data: any): IJoinRoomData {
@@ -334,30 +343,32 @@ export class ElixirChat {
       room = {},
       client = {},
       company = {},
-    } = data;
+    } = data || {};
 
     return {
-      token,
-      logoUrl: company.logoUrl,
-      mainTitle: company.widgetTitle,
-      chatSubtitle: company.widgetChatSubtitle,
+      token: token || '',
+      logoUrl: company.logoUrl || '',
+      mainTitle: company.widgetTitle || '',
+      chatSubtitle: company.widgetChatSubtitle || '',
       channels: this.serializeChannels(company.channels, client.omnichannelCode),
       employeesCount: company.employees?.count || 0,
       employees: simplifyGraphQLJSON(company?.employees).map(employee => {
         return serializeUser(employee, this);
       }),
-      isOnline: company.isWorking,
-      isPopupOpen: room.mustOpenWidget,
-      workHoursStartAt: company.workHoursStartAt,
-      elixirChatClientId: client.id,
-      elixirChatRoomId: room.id,
-      unreadMessagesCount: room.unreadMessagesCount,
-      unreadRepliesCount: room.unreadRepliesCount,
-      omnichannelCode: client.omnichannelCode,
+      isOnline: company.isWorking || false,
+      isPopupOpen: room.mustOpenWidget || false,
+      workHoursStartAt: company.workHoursStartAt || null,
+      elixirChatClientId: client.id || null,
+      elixirChatRoomId: room.id || null,
+      unreadMessagesCount: room.unreadMessagesCount || 0,
+      unreadRepliesCount: room.unreadRepliesCount || 0,
+      omnichannelCode: client.omnichannelCode || '',
     };
   }
 
   private serializeChannels(channels: Array<IJoinRoomChannel>, omnichannelCode: string): Array<IJoinRoomChannel> {
+
+    // return [];
 
     // TODO: remove mock when backend is finished
     channels = [
@@ -422,6 +433,11 @@ export class ElixirChat {
     else {
       const message = 'ElixirChat is not currently connected. Use reconnect({ room, client }) method to connect to a room.';
       this.logError(message);
+      this.triggerEvent(ERROR_ALERT_SHOW, {
+        customMessage: message,
+        retryCallback: () => this.joinRoom(this.config.room, this.config.client),
+        error: { message },
+      });
       return Promise.reject({ message });
     }
   };
@@ -544,7 +560,7 @@ export class ElixirChat {
     return this.graphQLClient.query(query, variables, binaries)
       .then(data => data[graphQLMethod])
       .catch(rawError => {
-        const errorMessage = `${graphQLMethod}: ${getErrorMessageFromResponse(rawError)}`;
+        const errorMessage = `${graphQLMethod}: ${extractErrorMessage(rawError)}`;
         const errorType = rawError?.errors?.[0]?.reason || null;
         const additionalErrorData = {
           errorMessage,
@@ -555,11 +571,6 @@ export class ElixirChat {
           graphQLMethod,
         };
         this.logError(errorMessage, additionalErrorData);
-        this.triggerEvent(ERROR_ALERT_SHOW, {
-          customMessage: errorMessage,
-          error: rawError,
-          retryCallback: () => this.sendAPIRequest(query, variables, binaries),
-        });
         throw {
           errorMessage,
           ...additionalErrorData,
