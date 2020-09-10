@@ -252,6 +252,10 @@ export class ElixirChat {
             isWorking
             workHoursStartAt
             widgetTitle
+            omnichannelChannels {
+              type
+              username
+            }
             employees(first: 20) {
               count
               edges {
@@ -270,6 +274,7 @@ export class ElixirChat {
             mustOpenWidget
             unreadMessagesCount
             unreadRepliesCount
+            lastReadMessageId
           }
         }
       }
@@ -295,8 +300,10 @@ export class ElixirChat {
 
   private onJoinRoomSuccess(rawData: any): IJoinRoomData {
     const { apiUrl, socketUrl } = this.config;
-    const joinRoomData = this.serializeJoinRoomData(rawData);
-    this.logInfo('Joined room', joinRoomData);
+
+    this.joinRoomData = this.serializeJoinRoomData(rawData);
+    this.isConnected = true;
+    this.logInfo('Joined room', this.joinRoomData);
 
     const {
       token,
@@ -304,10 +311,8 @@ export class ElixirChat {
       workHoursStartAt,
       unreadMessagesCount,
       unreadRepliesCount,
-    } = joinRoomData;
-
-    this.joinRoomData = joinRoomData;
-    this.isConnected = true;
+      lastReadMessageId,
+    } = this.joinRoomData;
 
     this.graphQLClient.initialize({ url: apiUrl, token });
     this.graphQLClientSocket.initialize({ url: socketUrl, token });
@@ -315,17 +320,16 @@ export class ElixirChat {
     this.messageSubscription.subscribe();
     this.updateMessageSubscription.subscribe();
     this.onlineStatusSubscription.subscribe({ isOnline, workHoursStartAt });
-    this.unreadMessagesCounter.subscribe({ unreadMessagesCount, unreadRepliesCount }); // TODO: fix params
+    this.unreadMessagesCounter.subscribe({ unreadMessagesCount, unreadRepliesCount, lastReadMessageId }); // TODO: fix params
     // this.typingStatusSubscription.subscribe(); // TODO: fix
 
-    this.triggerEvent(JOIN_ROOM_SUCCESS, joinRoomData, { firedOnce: true });
-    return joinRoomData;
+    this.triggerEvent(JOIN_ROOM_SUCCESS, this.joinRoomData, { firedOnce: true });
+    return this.joinRoomData;
   }
 
   private onJoinRoomError(error: any, room: any, client: any): IJoinRoomData {
-    const joinRoomData = this.serializeJoinRoomData(error);
-    this.joinRoomData = joinRoomData;
-    this.triggerEvent(JOIN_ROOM_ERROR, { ...joinRoomData, error });
+    this.joinRoomData = this.serializeJoinRoomData(error);
+    this.triggerEvent(JOIN_ROOM_ERROR, { ...this.joinRoomData, error });
 
     setTimeout(() => {
       this.triggerEvent(ERROR_ALERT_SHOW, {
@@ -334,7 +338,7 @@ export class ElixirChat {
         error,
       });
     }, 500);
-    throw { ...joinRoomData, error };
+    throw { ...this.joinRoomData, error };
   };
 
   private serializeJoinRoomData(data: any): IJoinRoomData {
@@ -349,8 +353,8 @@ export class ElixirChat {
       token: token || '',
       logoUrl: company.logoUrl || '',
       mainTitle: company.widgetTitle || '',
-      chatSubtitle: company.widgetChatSubtitle || '',
-      channels: this.serializeChannels(company.channels, client.omnichannelCode),
+      chatSubtitle: company.widgetSubtitle || '',
+      channels: this.serializeChannels(company.omnichannelChannels, client.omnichannelCode),
       employeesCount: company.employees?.count || 0,
       employees: simplifyGraphQLJSON(company?.employees).map(employee => {
         return serializeUser(employee, this);
@@ -366,33 +370,33 @@ export class ElixirChat {
     };
   }
 
-  private serializeChannels(channels: Array<IJoinRoomChannel>, omnichannelCode: string): Array<IJoinRoomChannel> {
+  private serializeChannels(omnichannelChannels: Array<IJoinRoomChannel>, omnichannelCode: string): Array<IJoinRoomChannel> {
 
     // return [];
 
     // TODO: remove mock when backend is finished
-    channels = [
-      {
-        type: 'whatsapp',
-        username: '917290961818',
-      },
-      {
-        type: 'telegram',
-        username: 'elixirchat_test_bot',
-      },
-      {
-        type: 'vkontakte',
-        username: 'club198196792',
-      },
-      {
-        type: 'viber',
-        username: 'chathelpdesk',
-      },
-      {
-        type: 'facebook',
-        username: 'huntflow',
-      },
-    ];
+    // omnichannelChannels = [
+    //   {
+    //     type: 'whatsapp',
+    //     username: '917290961818',
+    //   },
+    //   {
+    //     type: 'telegram',
+    //     username: 'elixirchat_test_bot',
+    //   },
+    //   {
+    //     type: 'vkontakte',
+    //     username: 'club198196792',
+    //   },
+    //   {
+    //     type: 'viber',
+    //     username: 'chathelpdesk',
+    //   },
+    //   {
+    //     type: 'facebook',
+    //     username: 'huntflow',
+    //   },
+    // ];
 
     const isMobile = isMobileSizeScreen();
     const manualMessageMask = `Чтобы продолжить, просто отправьте целиком это сообщение. Ваш код: ${omnichannelCode}`;
@@ -413,7 +417,7 @@ export class ElixirChat {
       facebook: 'https://m.me/{{ username }}?ref={{ omnichannelCode }}',
       vkontakte: 'https://vk.me/{{ username }}?ref={{ omnichannelCode }}',
     };
-    return (channels || []).map(channel => {
+    return (omnichannelChannels || []).map(channel => {
       const { username } = channel;
       const type = channel.type.toLowerCase();
       const urlMask = isMobile ? mobileUrlMasks[type] : desktopUrlMasks[type];

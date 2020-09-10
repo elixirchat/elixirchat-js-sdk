@@ -53,7 +53,7 @@ export class UnreadMessagesCounter {
     // this.onUnreadCountsUpdate(params);
     this.onUnreadCountsUpdate({
       ...params,
-      lastReadMessageId: 'Tm9ib2R5V29ya2luZ01lc3NhZ2U6NWYzNDQ4MTUtM2E2MS00M2Y3LTgxN2QtMjYxMjhkZGRlMzNm', // TODO: 1 remove mock
+      // lastReadMessageId: 'Tm9ib2R5V29ya2luZ01lc3NhZ2U6NWYzNDQ4MTUtM2E2MS00M2Y3LTgxN2QtMjYxMjhkZGRlMzNm', // TODO: 1 remove mock
       // lastReadMessageId: 'TWFudWFsTWVzc2FnZTo4MDc5MThhNS04ZDdiLTRkMDYtOTdiZS1jZWQwYmJjZTdjMDY=', // TODO: remove mock
       // lastReadMessageId: 'TWFudWFsTWVzc2FnZTo2NWMwMDRhZS00ZGJlLTQ3NjQtYTM0OC0zZjBhYmMwZTQ4MmM=', // TODO: remove mock
       // lastReadMessageId: 'zzz', // TODO: remove mock
