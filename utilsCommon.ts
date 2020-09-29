@@ -155,6 +155,15 @@ export function getUserFullName(user: IUser, separator: string = ' ') :string {
 }
 
 
+export function parseFullName(fullName: string): { firstName: string, lastName: string } {
+  const [ firstName, lastName ] = (fullName || '').trim().replace(/\s+/, '◆◆◆').split('◆◆◆');
+  return {
+    firstName: firstName || '',
+    lastName: lastName || '',
+  };
+}
+
+
 export function trimEachRow(text: string): string {
   return text
     .split(/\n/)
@@ -172,8 +181,8 @@ export function extractSerializedData(data: any, defaultValues: object): object 
 }
 
 
-export function normalizeErrorStack(errorStackString, maxLines) {
-  const norm = (errorStackString || '')
+export function normalizeErrorStack(errorStackString: string, maxLines?: number): string {
+  return (errorStackString || '')
     .trim()
     .replace(/^Error\n\s*/, '')
     .split(/\n/)
@@ -181,8 +190,6 @@ export function normalizeErrorStack(errorStackString, maxLines) {
     .filter(row => row)
     .slice(0, maxLines || undefined)
     .join('\n');
-  // console.log('__ stack', { norm, orig: errorStackString });
-  return norm;
 }
 
 

@@ -13,20 +13,19 @@
       padding: 15px 30px;
     }
 
-    /* TODO: fix demo CSS */
-    /*body .elixirchat-widget-button {*/
-    /*  background: #FDEC4F;*/
-    /*  color: black;*/
-    /*  box-shadow: 0 8px 14px rgba(21, 19, 25, 0.1);*/
-    /*}*/
-    /*body .elixirchat-widget-button:hover {*/
-    /*  background: #f3e24c;*/
-    /*}*/
+    body .elixirchat-widget-button {
+      background: #FDEC4F;
+      color: black;
+      box-shadow: 0 8px 14px rgba(21, 19, 25, 0.1);
+    }
+    body .elixirchat-widget-button:hover {
+      background: #f3e24c;
+    }
   </style>
   <link crossorigin="anonymous" href="https://fonts.googleapis.com/css?family=Rubik:400,700&display=swap&subset=cyrillic" rel="stylesheet">
 </head>
 
-<!--TODO: remove fake HF background-->
+
 <body>
 <div>
   <h3>ElixirChat Widget Example (customized with CSS)</h3>
@@ -100,16 +99,47 @@
     ],
     fonts: [
       {
-        fontFamily: 'Raleway',
+        fontFamily: 'Rubic',
         fontWeight: 'normal',
       },
       {
-        fontFamily: 'Raleway',
+        fontFamily: 'Rubic',
         fontWeight: 'bold',
       },
     ],
     iframeCSS: `
-    /* Your iframe CSS */
+
+      /* Custom styles inside the iframe */
+
+      body,
+      input,
+      button,
+      textarea {
+        font: 14px/18px "Rubik", sans-serif;
+      }
+      .elixirchat-chat-header__indicator {
+        display: none;
+      }
+      .elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__balloon {
+        background: #FDEC4F;
+        color: black;
+      }
+      .elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__reply-message {
+        color: rgba(0,0,0,.4);
+        border-color: rgba(0,0,0,.25);
+      }
+      .elixirchat-chat-messages__item--by-me a,
+      .elixirchat-chat-messages__item--by-me .elixirchat-chat-files__text-link {
+        color: black !important;
+      }
+      .elixirchat-chat-messages__item--by-me .elixirchat-chat-files__text-secondary {
+        color: rgba(0,0,0,.4);
+      }
+      .elixirchat-chat-messages__sender,
+      .elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__sender,
+      .elixirchat-chat-messages__item--by-operator .elixirchat-chat-messages__sender {
+        color: black;
+      }
   `,
   });
 </script>

@@ -7,7 +7,7 @@ import {
   WIDGET_MUTE_TOGGLE,
   WIDGET_POPUP_TOGGLE,
   WIDGET_NAVIGATE_TO,
-  WIDGET_DATA_SET,
+  WIDGET_DATA_SET, WIDGET_POPUP_OPEN, WIDGET_POPUP_CLOSE,
 } from './ElixirChatWidgetEventTypes';
 
 import {
@@ -112,7 +112,6 @@ export class ElixirChatWidget extends ElixirChat {
 
   private initializeWidget(): void {
     this.on([JOIN_ROOM_SUCCESS, JOIN_ROOM_ERROR], joinRoomData => {
-      console.warn('__ joinRoomData', joinRoomData);
       this.setWidgetData(joinRoomData);
     });
     this.on(WIDGET_DATA_SET, () => {
@@ -159,6 +158,7 @@ export class ElixirChatWidget extends ElixirChat {
       setToLocalStorage('elixirchat-widget-is-visible', isOpen);
       this.logInfo((isOpen ? 'Opened' : 'Closed') + ' widget popup');
       this.triggerEvent(WIDGET_POPUP_TOGGLE, isOpen);
+      this.triggerEvent(isOpen ? WIDGET_POPUP_OPEN : WIDGET_POPUP_CLOSE);
     }
   };
 

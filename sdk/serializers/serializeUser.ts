@@ -25,6 +25,8 @@ export interface IUser {
   id: string | null;
   clientId: string;
   isOperator: boolean;
+  isBot: boolean;
+  isClient: boolean;
   isCurrentClient: boolean;
   firstName: string;
   lastName: string;
@@ -34,7 +36,9 @@ export interface IUser {
 
 export function serializeUser(data: any, elixirChat: ElixirChat): IUser {
   const clientId = data?.foreignId || null;
-  const isOperator = data?.__typename !== 'Client';
+  const isOperator = data?.__typename === 'Employee';
+  const isBot = data?.__typename === 'Bot';
+  const isClient = data?.__typename === 'Client';
   const isCurrentClient = clientId === elixirChat.client.id;
   return {
     ...extractSerializedData(data, {
@@ -42,9 +46,10 @@ export function serializeUser(data: any, elixirChat: ElixirChat): IUser {
       firstName: '',
       lastName: '',
     }),
-    // avatar: serializeFile(data?.avatar, elixirChat),
-    avatar: data?.id === 'RW1wbG95ZWU6ZmY5MzJhNTYtZTM4NS00ZjliLTk4MTQtZTcyMDkwZmU1Yjc3' || data?.id === 'RW1wbG95ZWU6MjJhOTI0OTUtZmM1NC00YzBkLWEwMzUtNGYwZTA2NWFkM2Uy' ? serializeFile(data?.avatar, elixirChat) : serializeFile({}, elixirChat),
+    avatar: serializeFile(data?.avatar, elixirChat),
     clientId,
+    isBot,
+    isClient,
     isOperator,
     isCurrentClient,
   };

@@ -72,10 +72,16 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
         employeesCount,
       });
     });
-    elixirChatWidget.on(UNREAD_MESSAGES_CHANGE, unreadMessagesCount => {
-      this.setState({ unreadMessagesCount });
-    });
+    elixirChatWidget.on(UNREAD_MESSAGES_CHANGE, this.updateUnreadCount);
   }
+
+  componentWillUnmount(){
+    elixirChatWidget.off(UNREAD_MESSAGES_CHANGE, this.updateUnreadCount);
+  }
+
+  updateUnreadCount = (unreadMessagesCount) => {
+    this.setState({ unreadMessagesCount });
+  };
 
   generateEmployeeList = ({ employeesCount, employees }) => {
     const displayLimit = Math.min(5, employeesCount);

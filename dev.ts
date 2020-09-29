@@ -19,8 +19,9 @@ const elixirChatWidget = new ElixirChatWidget({
   },
   client: {
     id: 'dev-client-id',
-    firstName: 'Development',
-    lastName: 'Client'
+    firstName: null,
+    lastName: null,
+    fullName: 'John Doe',
   },
   sentryUrl: 'https://df75ac50adfd495fb3f66b9c0f846fcf@sentry.huntflow.ru/18',
   debug: true,
@@ -29,7 +30,7 @@ const elixirChatWidget = new ElixirChatWidget({
 elixirChatWidget.appendWidget({
   container: document.getElementById('elixirchat-widget'),
   mainTitle: 'Служба заботы Хантфлоу',
-  chatSubtitle: 'Отвечаем в течение пяти минут',
+  chatSubtitle: 'Отвечаем в течение нескольких минут',
   supportEmail: 'test@test.com',
   companyLogoUrl: 'https://huntflow.ru/static/b64228c9963307df7ebebf3e77564329/favicons/android-chrome-192x192.png',
   hideDefaultButton: false,

@@ -2,7 +2,14 @@ import { uniqueNamesGenerator } from 'unique-names-generator';
 import {
   capitalize,
   randomDigitStringId,
-  getFromLocalStorage, template, setToLocalStorage, hashCode, _find, normalizeErrorStack, extractSerializedData,
+  getFromLocalStorage,
+  template,
+  setToLocalStorage,
+  hashCode,
+  _find,
+  normalizeErrorStack,
+  extractSerializedData,
+  parseFullName,
 } from '../utilsCommon';
 
 import { IMessage } from './serializers/serializeMessage';
@@ -44,6 +51,8 @@ export interface IElixirChatUser {
   id: string;
   firstName?: string;
   lastName?: string;
+  fullName?: string;
+  isConfidentAboutFirstName: boolean;
 }
 
 export interface IElixirChatConfig {
@@ -88,7 +97,6 @@ export class ElixirChat {
   public config: IElixirChatConfig = {};
   public room?: IElixirChatRoom;
   public client?: IElixirChatUser;
-  public isPrivateRoom: boolean;
   public joinRoomData: IJoinRoomData = {};
 
   public isInitialized: boolean = false;
@@ -170,27 +178,36 @@ export class ElixirChat {
 
   private serializeClient(rawClient: any): IElixirChatUser {
     rawClient = rawClient || {};
-    const localStorageClient: IElixirChatUser = getFromLocalStorage('elixirchat-client') || {};
-    const anonymousClientData = this.generateAnonymousClientData();
+    let localStorageClient: IElixirChatUser = getFromLocalStorage('elixirchat-client') || {};
+    let isConfidentAboutFirstName = true;
 
-    const clientId = rawClient.id || localStorageClient.id || anonymousClientData.id;
+    if (!rawClient.firstName) {
+      isConfidentAboutFirstName = false;
+    }
 
-    let clientFirstName = typeof rawClient.firstName === 'string'
-      ? rawClient.firstName
-      : localStorageClient.firstName || anonymousClientData.firstName;
+    if (rawClient.fullName && !rawClient.firstName && !rawClient.lastName) {
+      rawClient = {
+        ...rawClient,
+        ...parseFullName(rawClient.fullName),
+      };
+    }
 
-    let clientLastName = typeof rawClient.lastName === 'string'
-      ? rawClient.lastName
-      : localStorageClient.lastName || anonymousClientData.lastName;
+    let clientId = (rawClient.id || localStorageClient.id).toString();
+    let clientFirstName = rawClient.firstName || localStorageClient.firstName;
+    let clientLastName = rawClient.lastName || localStorageClient.lastName;
 
     if (!clientFirstName && !clientLastName) {
-      clientFirstName = localStorageClient.firstName || anonymousClientData.firstName;
-      clientLastName = localStorageClient.lastName || anonymousClientData.lastName;
+      const anonymousClientData = this.generateAnonymousClientData();
+      clientId = anonymousClientData.id;
+      clientFirstName = anonymousClientData.firstName;
+      clientLastName = anonymousClientData.lastName;
+      isConfidentAboutFirstName = false;
     }
     return {
       id: clientId.toString(),
       firstName: clientFirstName,
       lastName: clientLastName,
+      isConfidentAboutFirstName,
     };
   }
 
@@ -209,8 +226,19 @@ export class ElixirChat {
     return {
       id: roomId.toString(),
       title: roomTitle,
-      data: JSON.stringify(roomDataObj),
+      isPrivate: roomId === client.id,
+      data: typeof rawRoom.data === 'object' ? rawRoom.data : {},
     };
+  };
+
+  private serializeRoomData(rawRoomData: any): string {
+    const roomDataObj = {};
+    if (typeof rawRoomData === 'object') {
+      for (let key in rawRoomData) {
+        roomDataObj[key] = rawRoomData[key].toString();
+      }
+    }
+    return JSON.stringify(roomDataObj);
   };
 
   private generateAnonymousClientData(): IElixirChatUser {
@@ -228,15 +256,22 @@ export class ElixirChat {
   private joinRoom(room: any, client: any): Promise<void> {
     this.client = this.serializeClient(client);
     this.room = this.serializeRoom(room, this.client);
-    this.isPrivateRoom = this.room.id === this.client.id;
 
     setToLocalStorage('elixirchat-room', this.room);
     setToLocalStorage('elixirchat-client', this.client);
 
     const variables = {
       companyId: this.config.companyId,
-      client: this.client,
-      room: this.room,
+      client: {
+        id: this.client.id,
+        firstName: this.client.firstName,
+        lastName: this.client.lastName,
+      },
+      room: {
+        id: this.room.id,
+        title: this.room.title,
+        data: this.serializeRoomData(this.room.data),
+      },
     };
 
 
@@ -289,11 +324,9 @@ export class ElixirChat {
           return this.onJoinRoomSuccess(response.joinRoom);
         }
         else {
-          // throw this.onJoinRoomError(response, room, client);
           throw this.onJoinRoomError(response, room, client);
         }
       }).catch(error => {
-        // throw this.onJoinRoomError(error, room, client);
         throw this.onJoinRoomError(error, room, client);
       });
   }
@@ -456,7 +489,7 @@ export class ElixirChat {
       }
       const eventHandler = this.eventHandlers[eventName];
 
-      // Prevents executing the same event handler multiple times when the same component
+      // Prevents subscribing to the same event with the same callback multiple times when the same component
       // mounts/unmounts periodically (e.g. when user switches back and forth from WelcomeScreen to ChatMessages)
       const hash = this.getCallbackUniqueHash(callback);
       eventHandler.callbacks[hash] = callback;
@@ -467,7 +500,17 @@ export class ElixirChat {
   };
 
   public off = (eventName: string, callback: (data: any) => void): void => {
+
+    if (!this.eventHandlers[eventName]?.callbacks) {
+      this.eventHandlers[eventName] = { callbacks: {} };
+    }
     const eventHandler = this.eventHandlers[eventName];
+
+    window.__this = this;
+    window.__callback = callback;
+
+    console.log('__ eventHandler', eventName, eventHandler, callback);
+
     if (callback) {
       for (let hash in eventHandler.callbacks) {
         const currentCallback = eventHandler.callbacks[hash];
