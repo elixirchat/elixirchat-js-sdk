@@ -25,7 +25,6 @@ import {
   replaceMarkdownWithHTML,
   replaceLinksInText,
   sanitizeHTML,
-  scrollToElement,
   isMobileSizeScreen,
   exposeComponentToGlobalScope,
 } from '../../utilsWidget';
@@ -58,7 +57,6 @@ export interface IDefaultWidgetMessagesState {
   isLoading: boolean;
   isLoadingPrecedingMessageHistory: boolean;
   hasReachedBeginningOfMessageHistory: boolean;
-  // hasScrolledToFirstUnreadMessage: boolean;
   processedMessages: Array<object>,
   fullScreenPreviews: Array<object>,
   screenshotFallback: object | null,
@@ -69,14 +67,9 @@ export interface IDefaultWidgetMessagesState {
 export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaultWidgetMessagesState> {
 
   state = {
-    isLoadingError: false, // TODO: fix
-    loadingErrorInfo: null, // TODO: fix
-
     isLoading: false,
     isLoadingPrecedingMessageHistory: false,
     hasReachedBeginningOfMessageHistory: false,
-    // hasScrolledToFirstUnreadMessage: false,
-
     processedMessages: [],
     fullScreenPreviews: [],
     screenshotFallback: null,
@@ -126,15 +119,13 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
       });
     });
 
-
-    // TODO: fix
-    // elixirChatWidget.on(TEXTAREA_VERTICAL_RESIZE, scrollBlockBottomOffset => {
-    //   const hasUserScroll = this.hasUserScroll();
-    //   this.setState({ scrollBlockBottomOffset });
-    //   if (!hasUserScroll) {
-    //     this.scrollToBottom();
-    //   }
-    // });
+    elixirChatWidget.on(TEXTAREA_VERTICAL_RESIZE, scrollBlockBottomOffset => {
+      const hasUserScroll = this.hasUserScroll();
+      this.setState({ scrollBlockBottomOffset });
+      if (!hasUserScroll) {
+        this.scrollToBottom();
+      }
+    });
 
     // TODO: fix
     // elixirChatWidget.on(TYPING_STATUS_CHANGE, currentlyTypingUsers => {
@@ -277,7 +268,10 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
       };
     });
     if (hasReachedBeginningOfMessageHistory && (firstEverMessageInHistory?.sender?.isClient || !firstEverMessageInHistory)) {
-      processedMessages = [ this.generateNewClientPlaceholderMessage(), ...processedMessages ];
+      processedMessages = [
+        this.generateNewClientPlaceholderMessage(firstEverMessageInHistory),
+        ...processedMessages,
+      ];
     }
     return { processedMessages, fullScreenPreviews };
   };
@@ -313,19 +307,20 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     return { previews, files };
   };
 
-  generateNewClientPlaceholderMessage = () => {
+  generateNewClientPlaceholderMessage = (firstEverMessageInHistory) => {
     const { elixirChatWidget } = this.props;
 
     const placeholderMessage = serializeMessage({
       id: randomDigitStringId(6),
       isSystem: true,
-      timestamp: new Date().toISOString(),
+      timestamp: firstEverMessageInHistory?.timestamp || new Date().toISOString(),
       __typename: 'NewClientPlaceholderMessage',
     }, elixirChatWidget);
 
     return {
       ...placeholderMessage,
       showDateLabel: true,
+      showGroupChatLabel: true,
     };
   };
 
@@ -334,10 +329,9 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     const { messageHistory, lastReadMessageId } = elixirChatWidget;
     const lastReadMessageIndex = _findIndex(messageHistory, { id: lastReadMessageId });
     elixirChatWidget.off(WIDGET_POPUP_OPEN, this.scrollToFirstUnreadMessageOnce);
-    // this.setState({ hasScrolledToFirstUnreadMessage: true });
 
-    // If lastReadMessageId isn't within the latest loaded chunk, it means it's preceding
-    // currently loaded messages, therefore the scroll must be set all the way up
+    // If lastReadMessageId isn't within the latest loaded chunk, it means it precedes currently loaded
+    // messages, therefore the scroll must be set all the way up to the beginning
     const lastReadMessagePrecedesLoadedMessageHistory = lastReadMessageId && !lastReadMessageIndex;
 
     if (!lastReadMessagePrecedesLoadedMessageHistory) {
@@ -346,7 +340,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
         const firstUnreadMessage = messageHistory[lastReadMessageIndex + 1];
         const messageElementToScrollTo = this.messageRefs[firstUnreadMessage?.id];
         if (messageElementToScrollTo) {
-          scrollToElement(messageElementToScrollTo, { position: 'end' });
+          messageElementToScrollTo.scrollIntoView({ behavior: 'smooth', block: 'end' });
         }
         else {
           this.scrollToBottom();
@@ -354,13 +348,6 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
       });
     }
   };
-
-  // onMessagesScroll = () => {
-  //   const scrollBlock = this.scrollBlock.current;
-  //   if (scrollBlock.scrollTop <= 0) {
-  //     this.loadPrecedingMessages();
-  //   }
-  // };
 
   hasUserScroll = () => {
     const scrollBlock = this.scrollBlock.current;
@@ -432,15 +419,15 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
   onReplyOriginalMessageClick = (messageId) => {
     const flashedClassName = 'elixirchat-chat-messages__item--flashed';
-    const messageRef = this.messageRefs[messageId] || {};
-    const messageElement = messageRef.current;
+    const messageElement = this.messageRefs[messageId];
 
-    scrollToElement(messageElement, { isSmooth: true, position: 'start' }, () => {
+    if (messageElement) {
+      messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
       messageElement.classList.add(flashedClassName);
-      setTimeout(() => {
+      requestAnimationFrame(() => {
         messageElement.classList.remove(flashedClassName);
-      }, 1000);
-    });
+      },0);
+    }
   };
 
   onReplyButtonClick = (messageId) => {
@@ -546,7 +533,6 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
       processedMessages,
       screenshotFallback,
       isLoading,
-      isLoadingError,
       isLoadingPrecedingMessageHistory,
       scrollBlockBottomOffset,
       currentlyTypingUsers,
@@ -554,7 +540,6 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
     return (
       <div className={cn('elixirchat-chat-scroll', className)}
-        // onScroll={this.onMessagesScroll}
         style={{ bottom: scrollBlockBottomOffset }}
         ref={this.scrollBlock}>
 
@@ -570,6 +555,12 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
           {processedMessages.map(message => (
             <Fragment key={message.id}>
+
+              {message.showGroupChatLabel && !elixirChatWidget.room.isPrivate && (
+                <div className="elixirchat-chat-messages__group-chat-label">
+                  Это групповой чат поддержки для всех членов {elixirChatWidget.room.title}
+                </div>
+              )}
 
               {message.showDateLabel && (
                 <div className="elixirchat-chat-messages__date-title">

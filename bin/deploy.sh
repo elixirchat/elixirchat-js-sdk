@@ -63,6 +63,7 @@ if [ -n "$github_branch" ]; then
 
   print_success "\nCreated local dev release $next_full_version in branch \"$github_branch\".\nDeploying to http://demos.elixir.chat...\n\n\n"
   ansible-playbook -vvvv -u root -i "$ansible_dir" "$ansible_config" --extra-vars "widget_branch=$github_branch"
+  print_error "\n\nAttention:\n  If \"npm run dev\" was running within elixirchat-js-sdk in another terminal window, restart it.\n\n\n"
   exit 0
 fi
 

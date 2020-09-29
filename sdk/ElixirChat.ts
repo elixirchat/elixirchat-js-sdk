@@ -1,19 +1,18 @@
 import { uniqueNamesGenerator } from 'unique-names-generator';
+import { isMobileSizeScreen } from '../utilsWidget';
 import {
   capitalize,
   randomDigitStringId,
   getFromLocalStorage,
-  template,
   setToLocalStorage,
+  template,
   hashCode,
-  _find,
   normalizeErrorStack,
-  extractSerializedData,
   parseFullName,
 } from '../utilsCommon';
 
 import { IMessage } from './serializers/serializeMessage';
-import {fragmentUser, IUser, serializeUser} from './serializers/serializeUser';
+import { fragmentUser, IUser, serializeUser } from './serializers/serializeUser';
 import { Logger } from './Logger';
 import { ScreenshotTaker, IScreenshot } from './ScreenshotTaker';
 import { TypingStatusSubscription } from './TypingStatusSubscription';
@@ -34,9 +33,11 @@ import {
   JOIN_ROOM_SUCCESS,
   JOIN_ROOM_ERROR,
   LAST_READ_MESSAGE_CHANGE,
-  UPDATE_MESSAGES_CHANGE, MESSAGES_RECEIVE, MESSAGES_CHANGE, ERROR_ALERT_SHOW,         // TODO: refactor
+  UPDATE_MESSAGES_CHANGE,
+  ERROR_ALERT_SHOW,
 } from './ElixirChatEventTypes';
-import {isMobileSizeScreen} from '../utilsWidget';
+
+
 
 
 
@@ -505,12 +506,6 @@ export class ElixirChat {
       this.eventHandlers[eventName] = { callbacks: {} };
     }
     const eventHandler = this.eventHandlers[eventName];
-
-    window.__this = this;
-    window.__callback = callback;
-
-    console.log('__ eventHandler', eventName, eventHandler, callback);
-
     if (callback) {
       for (let hash in eventHandler.callbacks) {
         const currentCallback = eventHandler.callbacks[hash];

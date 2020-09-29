@@ -12,6 +12,10 @@
   overflow-y: auto;
 }
 
+.elixirchat-chat-header {
+  box-shadow: 0 1px 2px rgba(0,0,0,.15);
+}
+
 .elixirchat-chat-scroll-progress-bar {
   width: 0;
   height: 1px;
@@ -81,6 +85,13 @@
   }
 }
 
+.elixirchat-chat-messages__group-chat-label {
+  color: $color-gray-dark;
+  text-align: center;
+  font-size: 13px;
+  padding: 15px 20px 29px 20px;
+}
+
 .elixirchat-chat-messages__date-title {
   text-transform: uppercase;
   font-size: 12px;
@@ -94,9 +105,7 @@
 .elixirchat-chat-messages__item {
   max-width: 80%;
   min-width: 50%;
-  //margin-bottom: 15px;
   padding-bottom: 15px;
-  transition: background-color 500ms;
 
   &--by-me {
     align-self: flex-end;
@@ -121,10 +130,15 @@
     }
     &.elixirchat-chat-messages__item--flashed {
       .elixirchat-chat-messages__inner {
-        background: rgba($color-pink, .1);
+        background: rgba($color-pink, .15);
+        transition: none;
       }
     }
   }
+}
+
+.elixirchat-chat-messages__inner {
+  transition: background-color 2000ms;
 }
 
 .elixirchat-chat-messages__sender {

@@ -232,29 +232,13 @@ export interface IScrollToElement {
   ): void
 }
 
-export function scrollToElement(element, options = {}, callback = () => {}): IScrollToElement {
+export function scrollToElement(element, options = {}): IScrollToElement {
   const { isSmooth, position } = options;
-
   if (element && element.tagName) {
     element.scrollIntoView({
       behavior: isSmooth ? 'smooth' : 'auto',
       block: position || 'center',
     });
-
-    // if (typeof IntersectionObserver !== 'undefined') {
-    //   const intersectionObserver = new IntersectionObserver(entries => {
-    //     if (entries[0].isIntersecting) {
-    //       intersectionObserver.unobserve(element);
-    //       callback();
-    //     }
-    //   });
-    //   intersectionObserver.observe(element);
-    // }
-    // else {
-    //   setTimeout(() => {
-    //     callback && callback();
-    //   }, 300); // default callback timeout for browsers not supporting IntersectionObserver
-    // }
   }
 }
 
