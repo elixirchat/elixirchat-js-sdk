@@ -33,6 +33,23 @@
   };
   margin-bottom: 15px;
   border-radius: 100%;
+
+  .icon-logo {
+    display: none;
+  }
+
+  &--default {
+    background: $color-white;
+
+    .icon-logo {
+      color: $color-blue;
+      display: block;
+      width: 100%;
+      font-size: 20px;
+      text-align: center;
+      padding-top: 17px;
+    }
+  }
 }
 
 .elixirchat-welcome-screen-top__title {

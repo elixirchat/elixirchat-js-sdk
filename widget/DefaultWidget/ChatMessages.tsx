@@ -218,6 +218,8 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
   };
 
   onMessageHistoryUpdate = (messageHistory) => {
+
+    // TODO: fix w/ both initial & preceding messages
     const hasReachedBeginningOfMessageHistory = messageHistory.length < this.MESSAGE_CHUNK_SIZE;
     const { processedMessages, fullScreenPreviews } = this.processMessages(messageHistory, hasReachedBeginningOfMessageHistory);
 

@@ -135,7 +135,7 @@ export class ElixirChatWidget extends ElixirChat {
     this.widgetIsPopupOpen = joinRoomData.isPopupOpen || getFromLocalStorage('elixirchat-widget-is-visible', isPopupOpen);
     this.widgetMainTitle = this.widgetConfig.mainTitle || joinRoomData.mainTitle || mainTitle;
     this.widgetChatSubtitle = this.widgetConfig.chatSubtitle || joinRoomData.chatSubtitle || chatSubtitle;
-    this.widgetCompanyLogoUrl = this.widgetConfig.companyLogoUrl || joinRoomData.logoUrl || null;
+    this.widgetCompanyLogoUrl = this.widgetConfig.companyLogoUrl || joinRoomData.companyLogoUrl || null;
 
     this.widgetIsMuted = getFromLocalStorage('elixirchat-notifications-muted', isMuted);
     this.widgetIsButtonHidden = this.widgetConfig.hideDefaultButton || isButtonHidden;

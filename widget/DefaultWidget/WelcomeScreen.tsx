@@ -207,7 +207,12 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
           onClick={elixirChatWidget.closePopup}/>
 
         <div className="elixirchat-welcome-screen-top">
-          <div className="elixirchat-welcome-screen-top__logo" style={{ backgroundImage: `url(${widgetCompanyLogoUrl})` }}/>
+          <div style={{ backgroundImage: `url(${widgetCompanyLogoUrl})` }} className={cn({
+            'elixirchat-welcome-screen-top__logo': true,
+            'elixirchat-welcome-screen-top__logo--default': !widgetCompanyLogoUrl,
+          })}>
+            <i className="icon-logo"/>
+          </div>
           <h1 className="elixirchat-welcome-screen-top__title">{widgetMainTitle}</h1>
           <div className="elixirchat-welcome-screen-top__status">
             {this.generateOnlineStatusMessage(onlineStatus)}
