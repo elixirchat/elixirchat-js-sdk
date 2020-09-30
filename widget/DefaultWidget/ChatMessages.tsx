@@ -681,10 +681,12 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                                 height={_round(preview.thumbnailHeight)}
                                 src={preview.thumbnails[0].url}
                                 alt={preview.name}
-                                // data-error-message="Файл не найден"
                                 onError={e => {
                                   e.target.parentNode.classList.add('elixirchat-chat-previews__item-not-found')
                                 }}/>
+                              <span className="elixirchat-chat-previews__item-not-found-placeholder">
+                                Файл не найден<br/>{preview.name}
+                              </span>
                             </a>
                           </li>
                         ))}

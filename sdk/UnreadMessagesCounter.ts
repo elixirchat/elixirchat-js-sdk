@@ -3,7 +3,8 @@ import { gql } from './GraphQLClient';
 import {
   UNREAD_MESSAGES_CHANGE,
   UNREAD_REPLIES_CHANGE,
-  LAST_READ_MESSAGE_CHANGE, ERROR_ALERT_SHOW,
+  LAST_READ_MESSAGE_CHANGE,
+  ERROR_ALERT_SHOW,
 } from './ElixirChatEventTypes';
 
 export interface IUnreadMessagesCounterData {

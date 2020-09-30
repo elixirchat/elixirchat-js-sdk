@@ -475,41 +475,28 @@
   }
 }
 
-.elixirchat-chat-previews__item-not-found > img {
-  position: relative;
-  min-width: 180px;
+.elixirchat-chat-previews__item-not-found {
   pointer-events: none;
-  cursor: default;
 
-  &:after {
-    content: "(" attr(alt) ")";
-    color: rgba($color-black, .2);
-    display: block;
-    margin: 8px 0 0 20px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    width: calc(100% - 40px);
-    text-align: center;
-  }
-
-  &:before {
-    content: attr(data-error-message);
-    color: rgba($color-black, .2);
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: #fff;
+  .elixirchat-chat-previews__item-not-found-placeholder {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    padding-bottom: 25px;
   }
+}
+
+.elixirchat-chat-previews__item-not-found-placeholder {
+  display: none;
+  color: $color-gray-dark;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: $color-white;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 20px;
+  word-break: break-word;
 }
 
 .elixirchat-chat-typing {
