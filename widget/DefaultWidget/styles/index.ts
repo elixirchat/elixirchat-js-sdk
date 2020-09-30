@@ -15,6 +15,7 @@ export default {
   WidgetOutsideIFrame:  fs.readFileSync(__dirname + '../../../../dist/styles/WidgetOutsideIFrame.css', 'utf8'),
   WidgetInsideIFrame:   fs.readFileSync(__dirname + '../../../../dist/styles/WidgetInsideIFrame.css', 'utf8'),
   Alert:                fs.readFileSync(__dirname + '../../../../dist/styles/Alert.css', 'utf8'),
+  Tooltip:              fs.readFileSync(__dirname + '../../../../dist/styles/Tooltip.css', 'utf8'),
   Chat:                 fs.readFileSync(__dirname + '../../../../dist/styles/Chat.css', 'utf8'),
   ChatMessages:         fs.readFileSync(__dirname + '../../../../dist/styles/ChatMessages.css', 'utf8'),
   ChatTextarea:         fs.readFileSync(__dirname + '../../../../dist/styles/ChatTextarea.css', 'utf8'),

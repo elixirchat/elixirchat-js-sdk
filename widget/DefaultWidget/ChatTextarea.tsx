@@ -12,10 +12,12 @@ import {
   WIDGET_IFRAME_READY,
   SCREENSHOT_REQUEST_SUCCESS,
   SCREENSHOT_REQUEST_ERROR,
-  WIDGET_MUTE_TOGGLE, WIDGET_POPUP_TOGGLE,
+  WIDGET_MUTE_TOGGLE,
+  WIDGET_POPUP_TOGGLE,
 } from '../ElixirChatWidgetEventTypes';
 
 import { TYPING_STATUS_SUBSCRIBE_SUCCESS } from '../../sdk/ElixirChatEventTypes';
+import {Tooltip} from './Tooltip';
 
 export interface IDefaultWidgetTextareaProps {
   elixirChatWidget: ElixirChatWidget;
@@ -362,7 +364,7 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
             <div className="elixirchat-chat-textarea__reply-to">
               <span className="elixirchat-chat-textarea__reply-to-text">
                 <i className="elixirchat-chat-textarea__reply-to-icon icon-reply-right"/>
-                <span title={responseToMessage.text}>
+                <span>
                   {generateReplyMessageQuote(responseToMessage, elixirChatWidget)}
                 </span>
               </span>
@@ -373,25 +375,30 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
 
           <div className="elixirchat-chat-textarea__actions">
             {!Boolean(screenshotFallback) && (
-              <button className="elixirchat-chat-textarea__actions-screenshot"
-                onClick={this.onScreenShotClick}
-                title="Сделать скриншот">
-                <i className="icon-screenshot"/>
-              </button>
+              <Tooltip className="elixirchat-chat-textarea__actions-tooltip" title="Сделать скриншот">
+                <span className="elixirchat-chat-textarea__actions-button">
+                  <button className="elixirchat-chat-textarea__actions-screenshot" onClick={this.onScreenShotClick}>
+                    <i className="icon-screenshot"/>
+                  </button>
+                </span>
+              </Tooltip>
             )}
-            <span className="elixirchat-chat-textarea__actions-attach"
-              title="Прикрепить файл">
-              <label className="elixirchat-chat-textarea__actions-attach-label" htmlFor="DefaultWidget-file-upload">
-                <i className="icon-file"/>
-              </label>
-              <input
-                className="elixirchat-chat-textarea__actions-attach-input"
-                id="DefaultWidget-file-upload"
-                type="file"
-                ref={this.inputFile}
-                multiple={true}
-                onChange={this.onInputFileChange}/>
-            </span>
+            <Tooltip className="elixirchat-chat-textarea__actions-tooltip" title="Прикрепить файл">
+              <span className="elixirchat-chat-textarea__actions-button">
+                <span className="elixirchat-chat-textarea__actions-attach">
+                  <label className="elixirchat-chat-textarea__actions-attach-label" htmlFor="DefaultWidget-file-upload">
+                    <i className="icon-file"/>
+                  </label>
+                  <input
+                    className="elixirchat-chat-textarea__actions-attach-input"
+                    id="DefaultWidget-file-upload"
+                    type="file"
+                    ref={this.inputFile}
+                    multiple={true}
+                    onChange={this.onInputFileChange}/>
+                </span>
+              </span>
+            </Tooltip>
           </div>
 
           <TextareaAutosize

@@ -1,0 +1,31 @@
+@import "./variables";
+@import "./mixins";
+
+$tooltip-background-color: rgba($color-black, .7);
+
+.elixirchat-tooltip {
+  position: absolute;
+  bottom: 100%;
+  background: $tooltip-background-color;
+  color: $color-white;
+  white-space: nowrap;
+  border-radius: 4px;
+  padding: 4px 6px 3px 6px;
+  margin-bottom: 7px;
+  right: 0;
+  backdrop-filter: blur(10px);
+  font-size: 14px;
+
+  &:after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 4px solid $tooltip-background-color;
+    bottom: -4px;
+    right: 0;
+    margin-right: 8px;
+  }
+}

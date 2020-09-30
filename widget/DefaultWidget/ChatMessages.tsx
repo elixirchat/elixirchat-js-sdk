@@ -321,7 +321,6 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
     return {
       ...placeholderMessage,
-      showDateLabel: true,
       showGroupChatLabel: true,
     };
   };
@@ -669,8 +668,8 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                                 <Fragment>
                                   <span className="elixirchat-chat-previews__video-play">&#x25B6;</span>
                                   <span className="elixirchat-chat-previews__video-label">
-                                  {this.formatVideoDuration(preview.duration)}
-                                </span>
+                                    {this.formatVideoDuration(preview.duration)}
+                                  </span>
                                 </Fragment>
                               )}
                               <img className={cn({
@@ -704,7 +703,6 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                           {!message.sender.isCurrentClient && dayjs(message.timestamp).format('H:mm')}
                           {!message.isSystem && (
                             <span className="elixirchat-chat-messages__reply-button"
-                              title="Для ответа дважды кликните сообщение"
                               onClick={() => this.onReplyButtonClick(message.id)}>
                             Ответить
                           </span>

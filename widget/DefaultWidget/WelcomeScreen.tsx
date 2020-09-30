@@ -203,7 +203,6 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
       <div className="elixirchat-welcome-screen-container">
 
         <i className="icon-close-thin elixirchat-welcome-screen-close"
-          title="Закрыть чат"
           onClick={elixirChatWidget.closePopup}/>
 
         <div className="elixirchat-welcome-screen-top">

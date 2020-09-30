@@ -85,7 +85,7 @@ textarea {
   font-size: 13px;
 
   &:hover {
-    opacity: .6;
+    color: rgba($color-white, .6);
   }
 }
 
@@ -106,4 +106,20 @@ textarea {
   @extend .elixirchat-chat-header__button;
   right: 43px;
   padding-right: 8px;
+}
+
+.elixirchat-chat-header__mute-tooltip {
+  bottom: auto;
+  top: 100%;
+  margin-bottom: 0;
+  margin-top: -9px;
+  font-size: 14px;
+  color: $color-white;
+
+  &:after {
+    bottom: auto;
+    top: -4px;
+    transform: scaleY(-1);
+    margin-right: 14px;
+  }
 }

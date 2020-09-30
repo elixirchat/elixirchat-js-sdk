@@ -53,28 +53,38 @@ $color-textarea-bg: #FAFAFA;
 
 .elixirchat-chat-textarea__actions {
   position: absolute;
-  right: 20px;
+  right: 12px;
   bottom: 11px;
   z-index: 2;
   transition: transform 200ms;
 }
 
+.elixirchat-chat-textarea__actions-button {
+  position: relative;
+  margin-left: 10px;
+  display: inline-block;
+}
+
+.elixirchat-chat-textarea__actions-tooltip {
+  &:after {
+    margin-right: 14px;
+  }
+}
+
 .elixirchat-chat-textarea__actions-screenshot,
 .elixirchat-chat-textarea__actions-attach {
   width: 38px;
-  height: 31px;
+  height: 32px;
   background: transparent;
   border: 1px solid darken($color-gray-light, 5);
   border-radius: 7px;
   position: relative;
-  margin-left: 10px;
   display: inline-block;
   vertical-align: top;
   box-sizing: border-box;
   overflow: hidden;
   transition: background-color 200ms;
   color: rgba($color-black, .25);
-  padding-top: 2px;
 
   &:hover {
     background-color: lighten($color-gray-light, 5);
@@ -96,6 +106,7 @@ $color-textarea-bg: #FAFAFA;
   bottom: 0;
   padding-top: 8px;
   text-align: center;
+  font-size: 15px;
 }
 
 .elixirchat-chat-textarea__textarea {
@@ -131,7 +142,8 @@ $color-textarea-bg: #FAFAFA;
 
   &.icon-screenshot {
     font-size: 12px;
-    margin-left: -1px;
+    display: inline-block;
+    margin-top: -3px;
   }
 }
 

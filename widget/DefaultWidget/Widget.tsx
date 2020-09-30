@@ -23,9 +23,9 @@ import { Chat } from './Chat';
 import { IFrameWrapper } from './IFrameWrapper';
 import { WelcomeScreen } from './WelcomeScreen';
 import { FullScreenPreview } from './FullScreenPreview';
+import { Alert } from './Alert';
 import styles from './styles';
 import assets from './assets';
-import {Alert} from './Alert';
 
 export interface IWidgetProps {
   elixirChatWidget: ElixirChatWidget;
@@ -187,6 +187,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
       styles.WidgetInsideIFrame,
       styles.WelcomeScreen,
       styles.Alert,
+      styles.Tooltip,
       styles.Chat,
       styles.ChatMessages,
       styles.ChatTextarea,

@@ -6,6 +6,7 @@ import { ChatMessages } from './ChatMessages';
 import { ChatTextarea } from './ChatTextarea';
 import {IOnlineStatusParams} from '../../sdk/OnlineStatusSubscription';
 import {exposeComponentToGlobalScope} from '../../utilsWidget';
+import {Tooltip} from './Tooltip';
 
 export interface IDefaultWidgetProps {
   elixirChatWidget: any;
@@ -71,15 +72,16 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
             'elixirchat-chat-header__indicator--offline': !onlineStatus.isOnline,
           })}/>
 
-          <button className="elixirchat-chat-header__mute"
-            onClick={() => widgetIsMuted ? elixirChatWidget.unmute() : elixirChatWidget.mute()}
-            title={widgetIsMuted ? 'Включить звук уведомлений' : 'Выключить звук уведомлений'}>
-            <i className={widgetIsMuted ? 'icon-speaker-mute' : 'icon-speaker'}/>
-          </button>
+          <Tooltip className="elixirchat-chat-header__mute-tooltip" title={widgetIsMuted
+            ? 'Включить звук уведомлений'
+            : 'Выключить звук уведомлений'}>
+            <button className="elixirchat-chat-header__mute"
+              onClick={() => widgetIsMuted ? elixirChatWidget.unmute() : elixirChatWidget.mute()}>
+              <i className={widgetIsMuted ? 'icon-speaker-mute' : 'icon-speaker'}/>
+            </button>
+          </Tooltip>
 
-          <button className="elixirchat-chat-header__close"
-            title="Закрыть чат"
-            onClick={elixirChatWidget.closePopup}>
+          <button className="elixirchat-chat-header__close" onClick={elixirChatWidget.closePopup}>
             <i className="icon-close-thin"/>
           </button>
         </div>

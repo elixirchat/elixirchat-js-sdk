@@ -221,39 +221,6 @@ export async function getImageDimensions(imageUrl: string): Promise<{ width: num
 }
 
 
-export interface IScrollToElement {
-  (
-    element: HTMLElement,
-    options: {
-      isSmooth: boolean;  // same as native Element.scrollIntoView({ behavior: 'smooth' })
-      position: string;   // same as native Element.scrollIntoView({ block: ... })
-    },
-    callback: () => {}
-  ): void
-}
-
-export function scrollToElement(element, options = {}): IScrollToElement {
-  const { isSmooth, position } = options;
-  if (element && element.tagName) {
-    element.scrollIntoView({
-      behavior: isSmooth ? 'smooth' : 'auto',
-      block: position || 'center',
-    });
-  }
-}
-
-
-// export function generateCustomerSupportSenderName(message, widgetTitle) {
-//   const { firstName, lastName } = message.sender || {};
-//   if (firstName || lastName) {
-//     return [firstName, lastName].join(' ');
-//   }
-//   else {
-//     return widgetTitle;
-//   }
-// }
-
-
 export function generateReplyMessageQuote(messageToReplyTo, elixirChatWidget: ElixirChatWidget) {
   const { sender, text } = messageToReplyTo || {};
   if (text) {
