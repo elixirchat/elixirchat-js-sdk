@@ -1,0 +1,33 @@
+@import "./variables";
+@import "./mixins";
+
+.elixirchat-formatted-markdown {
+  word-break: break-word;
+  hyphens: auto;
+
+  b {
+    font-weight: 500;
+  }
+
+  p {
+    margin: 7px 0;
+  }
+
+  ul, ol {
+    padding-left: 25px;
+    margin: 7px 0 15px 0;
+  }
+
+  li {
+    margin-bottom: 5px;
+  }
+
+  p, ul, ol, li {
+    &:first-child {
+      margin-top: 0;
+    }
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}

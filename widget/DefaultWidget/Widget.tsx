@@ -198,6 +198,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
       styles.Chat,
       styles.ChatMessages,
       styles.ChatTextarea,
+      styles.FormattedMarkdown,
     ].join('\n');
 
     return {

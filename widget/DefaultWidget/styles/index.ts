@@ -21,4 +21,5 @@ export default {
   ChatTextarea:         fs.readFileSync(__dirname + '../../../../dist/styles/ChatTextarea.css', 'utf8'),
   WelcomeScreen:        fs.readFileSync(__dirname + '../../../../dist/styles/WelcomeScreen.css', 'utf8'),
   FullScreenPreview:    fs.readFileSync(__dirname + '../../../../dist/styles/FullScreenPreview.css', 'utf8'),
+  FormattedMarkdown:    fs.readFileSync(__dirname + '../../../../dist/styles/FormattedMarkdown.css', 'utf8'),
 };

@@ -88,7 +88,7 @@
 .elixirchat-chat-messages__group-chat-label {
   color: $color-gray-dark;
   text-align: center;
-  padding: 26px 20px 37px 20px;
+  padding: 27px 20px 40px 20px;
   line-height: 20px;
 }
 
@@ -185,35 +185,7 @@
 }
 
 .elixirchat-chat-messages__text {
-  word-break: break-word;
-  hyphens: auto;
   line-height: 20px;
-
-  b {
-    font-weight: 500;
-  }
-
-  p {
-    margin: 7px 0;
-  }
-
-  ul, ol {
-    padding-left: 25px;
-    margin: 7px 0 15px 0;
-  }
-
-  li {
-    margin-bottom: 5px;
-  }
-
-  p, ul, ol, li {
-    &:first-child {
-      margin-top: 0;
-    }
-    &:last-child {
-      margin-bottom: 0;
-    }
-  }
 
   kbd {
     font: 13px/17px $font-family-text;

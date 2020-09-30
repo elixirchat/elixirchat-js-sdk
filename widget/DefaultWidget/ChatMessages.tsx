@@ -21,9 +21,9 @@ import {
   generateReplyMessageQuote,
   playNotificationSound,
   unlockNotificationSoundAutoplay,
-  replaceMarkdownWithHTML,
-  replaceLinksInText,
-  sanitizeHTML,
+  // replaceMarkdownWithHTML,
+  // replaceLinksInText,
+  // sanitizeHTML,
   isMobileSizeScreen,
   exposeComponentToGlobalScope,
 } from '../../utilsWidget';
@@ -46,6 +46,7 @@ import {
   WIDGET_IFRAME_READY, WIDGET_POPUP_CLOSE, WIDGET_POPUP_OPEN,
   WIDGET_POPUP_TOGGLE,
 } from '../ElixirChatWidgetEventTypes';
+import { FormattedMarkdown } from './FormattedMarkdown';
 
 
 export interface IDefaultWidgetMessagesProps {
@@ -610,11 +611,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                         )}
 
                         {message.text && (
-                          <div className="elixirchat-chat-messages__text" dangerouslySetInnerHTML={{
-                            __html: replaceMarkdownWithHTML(
-                              replaceLinksInText(sanitizeHTML(message.text))
-                            )
-                          }}/>
+                          <FormattedMarkdown className="elixirchat-chat-messages__text" markdown={message.text}/>
                         )}
 
                         {Boolean(message.files.length) && (
