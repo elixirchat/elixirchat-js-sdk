@@ -44,7 +44,6 @@ export const fragmentMessage = insertGraphQlFragments(gql`
 `, { fragmentUser, fragmentFile });
 
 
-// TODO: update
 export interface IMessage {
   id: string;
   tempId: string | null;

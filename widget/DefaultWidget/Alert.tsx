@@ -1,23 +1,15 @@
 import React, { Component, Fragment } from 'react';
-import cn from 'classnames';
-import {
-  // ERROR_ALERT_HIDE,
-  ERROR_ALERT_SHOW, ONLINE_STATUS_CHANGE} from '../../sdk/ElixirChatEventTypes';
-import {WIDGET_DATA_SET, WIDGET_MUTE_TOGGLE, WIDGET_POPUP_TOGGLE} from '../ElixirChatWidgetEventTypes';
-import { ChatMessages } from './ChatMessages';
-import { ChatTextarea } from './ChatTextarea';
-import { IOnlineStatusParams } from '../../sdk/OnlineStatusSubscription';
+import { ERROR_ALERT_SHOW } from '../../sdk/ElixirChatEventTypes';
+import { WIDGET_POPUP_OPEN } from '../ElixirChatWidgetEventTypes';
+import { cn, normalizeErrorStack } from '../../utilsCommon';
 import { exposeComponentToGlobalScope } from '../../utilsWidget';
-import {extractErrorMessage} from '../../sdk/GraphQLClient';
-import {normalizeErrorStack, trimEachRow} from '../../utilsCommon';
+import { extractErrorMessage } from '../../sdk/GraphQLClient';
 
 export interface IDefaultWidgetAlertProps {
   elixirChatWidget: any;
 }
 
-export interface IDefaultWidgetAlertState {
-
-}
+export interface IDefaultWidgetAlertState {}
 
 export class Alert extends Component<IDefaultWidgetAlertProps, IDefaultWidgetAlertState> {
 
@@ -32,25 +24,8 @@ export class Alert extends Component<IDefaultWidgetAlertProps, IDefaultWidgetAle
 
   messageBlock = React.createRef();
 
-  // TODO: remove
-  __set_test_data = () => {
-    this.onAlertShow({
-      error: { message: 'Failed to fetch lololo', toString: () => 'Failed to fetch lololo' },
-      // error: { message: '{"errors":[{"message":"Dataloader.GetError","stack":"[{Dataloader, :do_get, 2, [file: \'lib/dataloader.ex\', line: 198]}, {Absinthe.Resolution.Helpers, :\\"-do_dataloader/5-fun-0-\\", 6, [file: \'lib/absinthe/resolution/helpers.ex\', line: 359]}, {Absinthe.Middleware.Dataloader, :get_result, 2, [file: \'lib/absinthe/middleware/dataloader.ex\', line: 37]}, {Absinthe.Phase.Document.Execution.Resolution, :reduce_resolution, 1, [file: \'lib/absinthe/phase/document/execution/resolution.ex\', line: 230]}, {Absinthe.Phase.Document.Execution.Resolution, :do_resolve_field, 3, [file: \'lib/absinthe/phase/document/execution/resolution.ex\', line: 185]}, {Absinthe.Phase.Document.Execution.Resolution, :walk_results, 6, [file: \'lib/absinthe/phase/document/execution/resolution.ex\', line: 114]}, {Absinthe.Phase.Document.Execution.Resolution, :walk_result, 5, [file: \'lib/absinthe/phase/document/execution/resolution.ex\', line: 93]}, {Absinthe.Phase.Document.Execution.Resolution, :walk_results, 6, [file: \'lib/absinthe/phase/document/execution/resolution.ex\', line: 114]}, {Absinthe.Phase.Document.Execution.Resolution, :walk_result, 5, [file: \'lib/absinthe/phase/document/execution/resolution.ex\', line: 93]}, {Absinthe.Phase.Document.Execution.Resolution, :walk_results, 6, [file: \'lib/absinthe/phase/document/execution/resolution.ex\', line: 114]}, {Absinthe.Phase.Document.Execution.Resolution, :walk_result, 5, [file: \'lib/absinthe/phase/document/execution/resolution.ex\', line: 103]}, {Absinthe.Phase.Document.Execution.Resolution, :walk_results, 6, [file: \'lib/absinthe/phase/document/execution/resolution.ex\', line: 114]}, {Absinthe.Phase.Document.Execution.Resolution, :walk_result, 5, [file: \'lib/absinthe/phase/document/execution/resolution.ex\', line: 93]}, {Absinthe.Phase.Document.Execution.Resolution, :walk_results, 6, [file: \'lib/absinthe/phase/document/execution/resolution.ex\', line: 114]}, {Absinthe.Phase.Document.Execution.Resolution, :walk_result, 5, [file: \'lib/absinthe/phase/document/execution/resolution.ex\', line: 93]}, {Absinthe.Phase.Document.Execution.Resolution, :perform_resolution, 3, [file: \'lib/absinthe/phase/document/execution/resolution.ex\', line: 67]}, {Absinthe.Phase.Document.Execution.Resolution, :resolve_current, 3, [file: \'lib/absinthe/phase/document/execution/resolution.ex\', line: 24]}, {Absinthe.Pipeline, :run_phase, 3, [file: \'lib/absinthe/pipeline.ex\', line: 368]}, {Absinthe.Plug, :run_query, 4, [file: \'lib/absinthe/plug.ex\', line: 445]}, {Absinthe.Plug, :call, 2, [file: \'lib/absinthe/plug.ex\', line: 258]}]","status":500}]}', toString: () => 'Failed to fetch lololo' },
-      retryCallback: () => {
-        console.log('test retry');
-        setTimeout(() => {
-          this.__set_test_data();
-        }, 500);
-      },
-    });
-  };
-
   componentDidMount() {
     const { elixirChatWidget } = this.props;
-
-    console.warn('__ mount', 1);
-
     elixirChatWidget.on(ERROR_ALERT_SHOW, this.onAlertShow);
     exposeComponentToGlobalScope('Alert', this, elixirChatWidget);
   }
@@ -71,7 +46,7 @@ export class Alert extends Component<IDefaultWidgetAlertProps, IDefaultWidgetAle
       emailText,
       alertData,
     }, () => {
-      this.waitForPopupToOpen( this.setErrorBlockHeight );
+      this.waitForPopupToOpen(this.setErrorBlockHeight);
     });
   };
 
@@ -81,7 +56,7 @@ export class Alert extends Component<IDefaultWidgetAlertProps, IDefaultWidgetAle
       callback();
     }
     else {
-      elixirChatWidget.on(WIDGET_POPUP_TOGGLE, isPopupOpen => isPopupOpen && callback());
+      elixirChatWidget.on(WIDGET_POPUP_OPEN, callback);
     }
   };
 
@@ -120,11 +95,18 @@ export class Alert extends Component<IDefaultWidgetAlertProps, IDefaultWidgetAle
     return customMessage || extractErrorMessage(error);
   };
 
+  trimEachRow = (text) => {
+    return text
+      .split(/\n/)
+      .map(row => row.trim())
+      .join('\n');
+  };
+
   generateEmailText = (alertData, errorDetails, errorStack) => {
     const { elixirChatWidget } = this.props;
     const { client: { firstName, lastName, id } } = elixirChatWidget;
 
-    return trimEachRow(`Чат поддержки не загружается. Появляется сообщение:
+    return this.trimEachRow(`Чат поддержки не загружается. Появляется сообщение:
       «${errorDetails}»
 
       Мои данные:

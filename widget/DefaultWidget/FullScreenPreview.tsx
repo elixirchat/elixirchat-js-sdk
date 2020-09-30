@@ -1,8 +1,12 @@
 import React, { Component } from 'react';
-import cn from 'classnames';
 import { ElixirChatWidget } from '../ElixirChatWidget';
-import { IMAGE_PREVIEW_CLOSE, IMAGE_PREVIEW_OPEN, WIDGET_IFRAME_READY } from '../ElixirChatWidgetEventTypes';
+import { cn } from '../../utilsCommon';
 import { fitDimensionsIntoLimits, isWithinElement } from '../../utilsWidget';
+import {
+  IMAGE_PREVIEW_CLOSE,
+  IMAGE_PREVIEW_OPEN,
+  WIDGET_IFRAME_READY,
+} from '../ElixirChatWidgetEventTypes';
 
 export interface IFullScreenPreviewProps {
   elixirChatWidget: ElixirChatWidget;

@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
-import cn from 'classnames';
 import { ONLINE_STATUS_CHANGE } from '../../sdk/ElixirChatEventTypes';
 import { WIDGET_DATA_SET, WIDGET_MUTE_TOGGLE } from '../ElixirChatWidgetEventTypes';
+import { IOnlineStatusParams } from '../../sdk/OnlineStatusSubscription';
 import { ChatMessages } from './ChatMessages';
 import { ChatTextarea } from './ChatTextarea';
-import {IOnlineStatusParams} from '../../sdk/OnlineStatusSubscription';
-import {exposeComponentToGlobalScope} from '../../utilsWidget';
-import {Tooltip} from './Tooltip';
+import { Tooltip } from './Tooltip';
+import { cn } from '../../utilsCommon';
+import { exposeComponentToGlobalScope } from '../../utilsWidget';
 
 export interface IDefaultWidgetProps {
   elixirChatWidget: any;

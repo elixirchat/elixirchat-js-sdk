@@ -1,15 +1,15 @@
 import { Component } from 'react';
-import { ElixirChatWidget } from './widget/ElixirChatWidget';
-import {_last, _round, getUserFullName} from './utilsCommon';
-import assets from './widget/DefaultWidget/assets';
-
 import dayjs from 'dayjs';
 import dayjsCalendar from 'dayjs/plugin/calendar';
 import 'dayjs/locale/ru';
 
+import { ElixirChatWidget } from './widget/ElixirChatWidget';
+import { IMessage } from './sdk/serializers/serializeMessage';
+import { _last, _round, getUserFullName } from './utilsCommon';
+import assets from './widget/DefaultWidget/assets';
+
 dayjs.locale('ru');
 dayjs.extend(dayjsCalendar);
-
 
 
 export function inflect(number: number, endings: [string], hideNumber?: boolean): string {
@@ -43,29 +43,6 @@ export function playNotificationSound(): void {
   catch (e) {
     console.error('Unable to play notification sound before any action was taken by the user in the current browser tab');
   }
-}
-
-
-export interface IGenerateFontFaceRule {
-  (
-    fontFamily: string,
-    fontWeight: string | null,
-    fontStyle: string | null,
-    fontUrl: string,
-    format: string
-  ): string
-}
-
-
-export function generateSvgIconsCSS(iconClassNamePrefix: string, iconMap: object): string {
-  const iconsCSSArr = [];
-  for (let iconName in iconMap) {
-    const iconUrl = iconMap[iconName];
-    iconsCSSArr.push(
-      `.${iconClassNamePrefix}${iconName} { background-image: url("${iconUrl}"); }`
-    );
-  }
-  return iconsCSSArr.join('\n');
 }
 
 
@@ -221,10 +198,13 @@ export async function getImageDimensions(imageUrl: string): Promise<{ width: num
 }
 
 
-export function generateReplyMessageQuote(messageToReplyTo, elixirChatWidget: ElixirChatWidget) {
-  const { sender, text } = messageToReplyTo || {};
+export function generateReplyMessageQuote(messageToReplyTo: IMessage, elixirChatWidget: ElixirChatWidget) {
+  const { sender, text, attachments } = messageToReplyTo || {};
   if (text) {
     return text.substr(0, 100);
+  }
+  else if (attachments?.length) {
+    return attachments.map(attachment => attachment.name).join(', ');
   }
   else if (!sender?.isOperator) {
     return getUserFullName(sender);

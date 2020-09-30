@@ -1,6 +1,5 @@
 import React, { Component, Fragment } from 'react';
 import ReactDOM from 'react-dom';
-import cn from 'classnames';
 import { ElixirChatWidget } from '../ElixirChatWidget';
 import { UNREAD_MESSAGES_CHANGE } from '../../sdk/ElixirChatEventTypes';
 import {
@@ -10,12 +9,11 @@ import {
   WIDGET_POPUP_TOGGLE,
 } from '../ElixirChatWidgetEventTypes';
 
-import { detectBrowser } from '../../utilsCommon';
+import { cn, detectBrowser } from '../../utilsCommon';
 import {
   base64toBlobUrl,
-  generateSvgIconsCSS,
   exposeComponentToGlobalScope,
-  unlockNotificationSoundAutoplay
+  unlockNotificationSoundAutoplay,
 } from '../../utilsWidget';
 
 import { generateFontFaceCSS, FontExtractor } from '../FontExtractor';
@@ -26,6 +24,7 @@ import { FullScreenPreview } from './FullScreenPreview';
 import { Alert } from './Alert';
 import styles from './styles';
 import assets from './assets';
+
 
 export interface IWidgetProps {
   elixirChatWidget: ElixirChatWidget;
@@ -61,7 +60,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
 
   componentDidMount() {
     const { elixirChatWidget } = this.props;
-    const { outsideIframeCSS, insideIframeCSS } = this.generateCSS();
+    const { outsideIframeCSS, insideIframeCSS } = this.renderAllCSS();
     exposeComponentToGlobalScope('Widget', this, elixirChatWidget);
 
     this.fontExtractor = new FontExtractor(elixirChatWidget, window);
@@ -158,16 +157,24 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
   };
 
   renderSvgIconsCSS = () => {
-    return generateSvgIconsCSS('svg-icon-', {
-      whatsapp: base64toBlobUrl(assets.iconWhatsapp),
-      telegram: base64toBlobUrl(assets.iconTelegram),
-      facebook: base64toBlobUrl(assets.iconFacebook),
-      viber: base64toBlobUrl(assets.iconViber),
-      vkontakte: base64toBlobUrl(assets.iconVK),
-    });
+    const icons = {
+      whatsapp: assets.iconWhatsapp,
+      telegram: assets.iconTelegram,
+      facebook: assets.iconFacebook,
+      viber: assets.iconViber,
+      vkontakte: assets.iconVK,
+    };
+    const cssRules = [];
+    for (let iconName in icons) {
+      const iconUrl = base64toBlobUrl(icons[iconName]);
+      cssRules.push(
+        `.svg-icon-${iconName} { background-image: url("${iconUrl}"); }`
+      );
+    }
+    return cssRules.join('\n');
   };
 
-  generateCSS = () => {
+  renderAllCSS = () => {
     const { elixirChatWidget } = this.props;
     const defaultFontFaceCSS = this.renderDefaultFontCSS();
     const svgIconsCSS = this.renderSvgIconsCSS();

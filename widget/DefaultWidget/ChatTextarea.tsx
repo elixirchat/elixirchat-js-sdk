@@ -1,23 +1,21 @@
-import React, {Component, Fragment} from 'react';
-import cn from 'classnames';
+import React, { Component, Fragment } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 import { ElixirChatWidget } from '../ElixirChatWidget';
-import {randomDigitStringId, setToLocalStorage} from '../../utilsCommon';
+import { Tooltip } from './Tooltip';
+import { cn, randomDigitStringId, setToLocalStorage } from '../../utilsCommon';
 import { getImageDimensions, generateReplyMessageQuote } from '../../utilsWidget';
 import { getScreenshotCompatibilityFallback } from '../../sdk/ScreenshotTaker';
+import { TYPING_STATUS_SUBSCRIBE_SUCCESS } from '../../sdk/ElixirChatEventTypes';
 import {
   REPLY_MESSAGE,
   IMAGE_PREVIEW_CLOSE,
   TEXTAREA_VERTICAL_RESIZE,
-  WIDGET_IFRAME_READY,
   SCREENSHOT_REQUEST_SUCCESS,
   SCREENSHOT_REQUEST_ERROR,
+  WIDGET_IFRAME_READY,
   WIDGET_MUTE_TOGGLE,
   WIDGET_POPUP_TOGGLE,
 } from '../ElixirChatWidgetEventTypes';
-
-import { TYPING_STATUS_SUBSCRIBE_SUCCESS } from '../../sdk/ElixirChatEventTypes';
-import {Tooltip} from './Tooltip';
 
 export interface IDefaultWidgetTextareaProps {
   elixirChatWidget: ElixirChatWidget;
@@ -213,7 +211,7 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
       textareaResponseToMessageId,
     } = this.state;
 
-    if(e.keyCode === 13 && e.shiftKey === false) { // Press "Enter" without holding Shift
+    if(e.key === 'Enter' && e.shiftKey === false) { // Press "Enter" without holding Shift
       e.preventDefault();
       if (textareaText.trim() || textareaAttachments.length) {
         this.onMessageSubmit({ textareaText, textareaResponseToMessageId, textareaAttachments });

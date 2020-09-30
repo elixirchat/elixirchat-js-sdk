@@ -1,17 +1,16 @@
 import React, { Component, Fragment } from 'react';
-import cn from 'classnames';
 import { IJoinRoomChannel } from '../../sdk/ElixirChat';
 import { IOnlineStatusParams } from '../../sdk/OnlineStatusSubscription';
 import { ElixirChatWidget } from '../ElixirChatWidget';
 import { WIDGET_DATA_SET } from '../ElixirChatWidgetEventTypes';
 import { UNREAD_MESSAGES_CHANGE } from '../../sdk/ElixirChatEventTypes';
+import { cn, _last } from '../../utilsCommon';
 import {
-  exposeComponentToGlobalScope, getAvatarColorByUserId,
-  humanizeTimezoneName,
   humanizeUpcomingDate,
+  humanizeTimezoneName,
+  getAvatarColorByUserId,
+  exposeComponentToGlobalScope,
 } from '../../utilsWidget';
-import {_last} from '../../utilsCommon';
-
 
 export interface IWelcomeScreenProps {
   elixirChatWidget: ElixirChatWidget;
@@ -23,8 +22,8 @@ export interface IWelcomeScreenState {
   widgetChannels: Array<IJoinRoomChannel>;
   widgetCompanyLogoUrl: string;
   unreadMessagesCount: number;
-  employeesCount: number;
   employeeAvatars: Array<{ url: string, initials: string }>;
+  employeesCount: number;
   onlineStatus: IOnlineStatusParams;
 }
 
@@ -76,6 +75,7 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
   }
 
   componentWillUnmount(){
+    const { elixirChatWidget } = this.props;
     elixirChatWidget.off(UNREAD_MESSAGES_CHANGE, this.updateUnreadCount);
   }
 
@@ -85,45 +85,12 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
 
   generateEmployeeList = ({ employeesCount, employees }) => {
     const displayLimit = Math.min(5, employeesCount);
-    let employeeAvatars;
-
-    // if (!employees?.length) {
-    //   employees = [ { id: 'test02' }, { id: 'test03' }, { id: 'test04' }, { id: 'test05' } ];
-    // }
-
-    employeeAvatars = employees
+    const employeeAvatars = employees
       .map(this.generateEmployeeAvatar)
       .sort((a,b) => {
         return a.url > b.url ? -1 : 1;
       })
       .slice(0, displayLimit);
-
-
-    window.__employeeAvatars = employeeAvatars;
-
-    // employeeAvatars = employees
-    //   .filter(employee => employee.avatar?.url)
-    //   .map((employee): any => {
-    //     return {
-    //       url: employee.avatar?.url,
-    //       initials: this.generateEmployeeInitials(employee),
-    //     };
-    //   })
-    //   .slice(0, displayLimit);
-
-    // if (employeeAvatars.length < displayLimit) {
-    //   const textAvatars = employees
-    //     .filter(employee => !employee.avatar?.url)
-    //     .map((employee): any => {
-    //       return {
-    //         url: '',
-    //         initials: this.generateEmployeeInitials(employee),
-    //       };
-    //     })
-    //     .slice(0, displayLimit - employeeAvatars.length);
-    //
-    //   employeeAvatars = [ ...employeeAvatars, ...textAvatars ];
-    // }
 
     return {
       employeeAvatars,
@@ -131,24 +98,8 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
     }
   };
 
-  // generateEmployeeInitials = (employee) => {
-  //   const nameInitial = (employee?.firstName || '').toString().replace(/[^a-zа-я]/ig, '')[0];
-  //   if (nameInitial) {
-  //     return nameInitial.toUpperCase();
-  //   }
-  //   else {
-  //     const idLetterDict = 'АВЕКМНОРСТ';
-  //     const idLetterIndex = +(employee?.id || '').toString().replace(/[^0-9]+/ig, '')[0];
-  //     const normalizedIndex = idLetterIndex > -1 ? idLetterIndex : Math.round( Math.random() * (idLetterDict.length - 1) );
-  //     return idLetterDict[ normalizedIndex ];
-  //   }
-  // };
-
   generateEmployeeAvatar = (employee) => {
     let url = employee.avatar?.url;
-
-    window.__getAvatarColorByUserId = getAvatarColorByUserId;
-
     let color = getAvatarColorByUserId(employee?.id);
     let initials = (employee?.firstName || '').toString().replace(/[^a-zа-я]/ig, '')[0]?.toUpperCase();
 

@@ -1,14 +1,13 @@
 import React, { Component, Fragment } from 'react';
-import cn from 'classnames';
 import dayjs from 'dayjs';
 import dayjsCalendar from 'dayjs/plugin/calendar';
 import 'dayjs/locale/ru';
 import {
+  cn,
   _round,
   _findIndex,
   isWebImage,
   isWebVideo,
-  trimEachRow,
   detectBrowser,
   getUserFullName,
   randomDigitStringId,

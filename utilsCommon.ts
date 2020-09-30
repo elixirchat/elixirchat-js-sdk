@@ -164,14 +164,6 @@ export function parseFullName(fullName: string): { firstName: string, lastName: 
 }
 
 
-export function trimEachRow(text: string): string {
-  return text
-    .split(/\n/)
-    .map(row => row.trim())
-    .join('\n');
-}
-
-
 export function extractSerializedData(data: any, defaultValues: object): object {
   const serializedData = {};
   for (let key in defaultValues) {
@@ -202,4 +194,21 @@ export function hashCode(str: string): string {
     hash = hash & hash;
   }
   return hash;
+}
+
+
+// Same as https://www.npmjs.com/package/classnames but lightweight
+export function cn(...args){
+  if (typeof args[0] === 'object') {
+    const classNameArr = [];
+    for (let className in args[0]) {
+      if ( args[0][className] ) {
+        classNameArr.push(className);
+      }
+    }
+    return classNameArr.join(' ');
+  }
+  else {
+    return args.join(' ');
+  }
 }
