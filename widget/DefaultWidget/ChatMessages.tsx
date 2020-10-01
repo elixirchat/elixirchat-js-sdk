@@ -70,7 +70,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     processedMessages: [],
     fullScreenPreviews: [],
     screenshotFallback: null,
-    scrollBlockBottomOffset: null, // TODO: fix
+    scrollBlockBottomOffset: null,
     currentlyTypingUsers: [], // TODO: fix
   };
 

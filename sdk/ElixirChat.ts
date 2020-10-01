@@ -68,20 +68,21 @@ export interface IElixirChatConfig {
 
 export interface IJoinRoomData {
   token: string;
-  companyLogoUrl: string;
+  isOnline: boolean;
+  workHoursStartAt: null | string;
   mainTitle: string;
   chatSubtitle: string;
+  companyLogoUrl: string;
   channels: Array<IJoinRoomChannel>;
   employeesCount: number;
   employees: Array<IUser>;
-  isOnline: boolean;
+  omnichannelCode: string;
   isPopupOpen: boolean;
-  workHoursStartAt: null | string;
-  elixirChatClientId: string;
-  elixirChatRoomId: string;
   unreadMessagesCount: number;
   unreadRepliesCount: number;
-  omnichannelCode: string;
+  lastReadMessageId: null | string;
+  elixirChatClientId: string;
+  elixirChatRoomId: string;
   error?: any;
 }
 
@@ -303,8 +304,6 @@ export class ElixirChat {
           }
           room {
             id
-            title
-            foreignId
             mustOpenWidget
             unreadMessagesCount
             unreadRepliesCount
@@ -383,22 +382,23 @@ export class ElixirChat {
 
     return {
       token: token || '',
-      companyLogoUrl: company.companyLogoUrl || '', // TODO: verify support on backend
-      mainTitle: company.widgetTitle || '',
-      chatSubtitle: company.widgetSubtitle || '',
+      isOnline: company.isWorking || false,
+      workHoursStartAt: company.workHoursStartAt || null,
+      mainTitle: company.widgetTitle || '',         // TODO: rename
+      chatSubtitle: company.widgetSubtitle || '',   // TODO: rename
+      companyLogoUrl: company.widgetLogo || '',     // TODO: rename
       channels: this.serializeChannels(company.omnichannelChannels, client.omnichannelCode),
       employeesCount: company.employees?.count || 0,
       employees: simplifyGraphQLJSON(company?.employees).map(employee => {
         return serializeUser(employee, this);
       }),
-      isOnline: company.isWorking || false,
+      omnichannelCode: client.omnichannelCode || '',
       isPopupOpen: room.mustOpenWidget || false,
-      workHoursStartAt: company.workHoursStartAt || null,
-      elixirChatClientId: client.id || null,
-      elixirChatRoomId: room.id || null,
       unreadMessagesCount: room.unreadMessagesCount || 0,
       unreadRepliesCount: room.unreadRepliesCount || 0,
-      omnichannelCode: client.omnichannelCode || '',
+      lastReadMessageId: room.lastReadMessageId || null,
+      elixirChatClientId: client.id || null,
+      elixirChatRoomId: room.id || null,
     };
   }
 
