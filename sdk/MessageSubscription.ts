@@ -1,13 +1,13 @@
 import { ElixirChat } from './ElixirChat';
 import {
   MESSAGES_RECEIVE,
-  MESSAGES_CHANGE_HISTORY,
+  MESSAGES_HISTORY_CHANGE,
   ERROR_ALERT,
-  MESSAGES_PREPEND_HISTORY
+  MESSAGES_HISTORY_PREPEND
 } from './ElixirChatEventTypes';
 import { IFile } from './serializers/serializeFile';
 import { IMessage, serializeMessage, fragmentMessage } from './serializers/serializeMessage';
-import { randomDigitStringId, isWebImage, _last, _uniqBy } from '../utilsCommon';
+import { randomDigitStringId, getMediaType, _last, _uniqBy } from '../utilsCommon';
 import {
   gql,
   simplifyGraphQLJSON,
@@ -158,7 +158,7 @@ export class MessageSubscription {
       }
       return updatedMessage;
     });
-    triggerEvent(MESSAGES_CHANGE_HISTORY, this.messageHistory);
+    triggerEvent(MESSAGES_HISTORY_CHANGE, this.messageHistory);
   };
 
   private doesMessageMatchQuery(message: IMessage, query: object){
@@ -274,7 +274,7 @@ export class MessageSubscription {
       const { id, file, width, height } = attachment;
       const url = URL.createObjectURL(file);
       let thumbnails = [];
-      if (isWebImage(file.type) && width && height) {
+      if (getMediaType(file.type) === 'image' && width && height) {
         thumbnails = [{ id, url }];
       }
       return {
@@ -299,20 +299,6 @@ export class MessageSubscription {
       },
       ...customData,
     }, this.elixirChat);
-
-    // return {
-    //   tempId,
-    //   id: randomDigitStringId(6),
-    //   text: text.trim() || '',
-    //   timestamp: new Date().toISOString(),
-    //   sender: {
-    //     isOperator: false,
-    //     isCurrentClient: true,
-    //   },
-    //   responseToMessage: serializedResponseToMessage || {},
-    //   attachments: serializedAttachments,
-    //   isSubmitting: true,
-    // };
   }
 
   private appendMessageConditionally(message: IMessage): void {
@@ -352,17 +338,10 @@ export class MessageSubscription {
     });
   };
 
-  // private onMessageHistoryChange(messageHistory: Array<IMessage>): Array<IMessage> {
-  //   const { triggerEvent } = this.elixirChat;
-  //   this.messageHistory = messageHistory;
-  //   triggerEvent(MESSAGES_CHANGED, messageHistory);
-  //   return messageHistory;
-  // };
-
   public fetchMessageHistory = (limit: number): Promise<[IMessage] | any> => {
     const { triggerEvent } = this.elixirChat;
     return this.getMessageHistoryByCursor({ limit }).then(messageHistory => {
-      triggerEvent(MESSAGES_CHANGE_HISTORY, messageHistory);
+      triggerEvent(MESSAGES_HISTORY_CHANGE, messageHistory);
       this.messageHistory = messageHistory;
       return messageHistory;
     });
@@ -379,7 +358,7 @@ export class MessageSubscription {
     }
     return this.getMessageHistoryByCursor({ limit, beforeCursor: latestCursor }).then(precedingMessageHistory => {
       this.messageHistory = _uniqBy([ ...precedingMessageHistory, ...this.messageHistory ], 'id');
-      triggerEvent(MESSAGES_PREPEND_HISTORY, precedingMessageHistory);
+      triggerEvent(MESSAGES_HISTORY_PREPEND, precedingMessageHistory);
       return precedingMessageHistory;
     });
   };
@@ -393,7 +372,7 @@ export class MessageSubscription {
         message.isUnread = false;
       }
     });
-    triggerEvent(MESSAGES_CHANGE_HISTORY, this.messageHistory);
+    triggerEvent(MESSAGES_HISTORY_CHANGE, this.messageHistory);
   };
 
   public unsubscribe = () => {

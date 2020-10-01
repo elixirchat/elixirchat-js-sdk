@@ -6,6 +6,12 @@ export function randomDigitStringId(idLength: number): string {
 }
 
 
+// Lodash-like _.upperFirst
+export function _upperFirst(str: string): string {
+  return str.substr(0, 1).toUpperCase() + str.substr(1);
+}
+
+
 // Lodash-like _.last
 export function _last(arr: Array | string): any {
   return arr[arr.length - 1];
@@ -133,13 +139,14 @@ export function setToLocalStorage(key: string, data: any){
 }
 
 
-export function isWebImage(mimeType: string): boolean {
-  return ['image/jpg', 'image/jpeg', 'image/png', 'image/gif'].includes(mimeType.toLowerCase());
-}
-
-
-export function isWebVideo(mimeType: string): boolean {
-  return mimeType.toLowerCase().trim() === 'video/mp4';
+export function getMediaType(mimeType: string): string | null {
+  if ( ['image/jpg', 'image/jpeg', 'image/png', 'image/gif'].includes(mimeType.toLowerCase()) ) {
+    return 'image';
+  }
+  else if ( mimeType.toLowerCase().trim() === 'video/mp4' ) {
+    return 'video';
+  }
+  return null;
 }
 
 

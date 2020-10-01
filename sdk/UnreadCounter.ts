@@ -7,6 +7,7 @@ import {
   ERROR_ALERT, UNREAD_COUNTER_SUBSCRIBE_SUCCESS,
 } from './ElixirChatEventTypes';
 
+
 export interface IUnreadCounterData {
   unreadMessagesCount: number;
   unreadRepliesCount: number;

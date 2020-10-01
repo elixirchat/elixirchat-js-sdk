@@ -128,12 +128,6 @@
         background: rgba($color-pink, .05);
       }
     }
-    &.elixirchat-chat-messages__item--flashed {
-      .elixirchat-chat-messages__inner {
-        background: rgba($color-pink, .15);
-        transition: none;
-      }
-    }
   }
 }
 
