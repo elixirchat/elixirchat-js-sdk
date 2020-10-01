@@ -86,7 +86,7 @@ export class WidgetAssets {
       telegram:             fs.readFileSync(__dirname + '/DefaultWidget/assets/images/channel-telegram.svg', { encoding: 'base64' }),
       facebook:             fs.readFileSync(__dirname + '/DefaultWidget/assets/images/channel-facebook.svg', { encoding: 'base64' }),
       viber:                fs.readFileSync(__dirname + '/DefaultWidget/assets/images/channel-viber.svg', { encoding: 'base64' }),
-      vk:                   fs.readFileSync(__dirname + '/DefaultWidget/assets/images/channel-vk.svg', { encoding: 'base64' }),
+      vkontakte:            fs.readFileSync(__dirname + '/DefaultWidget/assets/images/channel-vk.svg', { encoding: 'base64' }),
     };
     const base64Mp3Data = {
       notificationSound:    fs.readFileSync(__dirname + '/DefaultWidget/assets/audio/notification.mp3', { encoding: 'base64' }),
