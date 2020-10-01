@@ -6,7 +6,7 @@ const elixirChatWidget = new ElixirChatWidget({
   companyId: 'd774c50a-42ff-46ba-8ed6-1904d4485ac4',
   room: {
     id: 'dev-room-id',
-    title: 'Development room title',
+    title: 'ElixirChat Dev Widget',
     data: {
       type: 'Internal',
       last_action: 'June 25',
@@ -23,17 +23,14 @@ const elixirChatWidget = new ElixirChatWidget({
     lastName: null,
     fullName: 'John Doe',
   },
-  sentryUrl: 'https://df75ac50adfd495fb3f66b9c0f846fcf@sentry.huntflow.ru/18',
   debug: true,
 });
 
 elixirChatWidget.appendWidget({
   container: document.getElementById('elixirchat-widget'),
-  mainTitle: 'Служба заботы Хантфлоу',
-  chatSubtitle: 'Отвечаем в течение нескольких минут',
-  companyLogoUrl: 'https://huntflow.ru/static/b64228c9963307df7ebebf3e77564329/favicons/android-chrome-192x192.png',
-  supportEmail: 'test@test.com',
-  hideDefaultButton: false,
+  mainTitle: 'Служба поддержки',
+  chatSubtitle: 'Ответим в течение нескольких минут',
+  supportEmail: 'support@elixir.chat',
   enabledChannels: [
     'whatsapp',
     'telegram',
@@ -41,21 +38,7 @@ elixirChatWidget.appendWidget({
     'vkontakte',
     'viber',
   ],
-  fonts: [
-    // {
-    //   fontFamily: 'Raleway',
-    //   fontWeight: 'normal',
-    //   // src: [
-    //   //   { url: 'https://site.com/test.woff', format: 'woff' },
-    //   //   { url: 'https://site.com/test.ttf', format: 'truetype' },
-    //   // ]
-    // },
-    // {
-    //   fontFamily: 'Raleway',
-    //   fontWeight: 'bold',
-    // },
-  ],
   iframeCSS: `
-    /* Your iframe CSS */
+    /* Custom styles inside the iframe */
   `,
 });

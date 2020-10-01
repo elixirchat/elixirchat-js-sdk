@@ -47,7 +47,7 @@
     client: {
       id: 'private-client-id',
       firstName: 'Private',
-      lastName: 'Client'
+      lastName: 'Client',
     },
     debug: true, // Enables verbose console output
   });
@@ -56,15 +56,22 @@
    * Feel free to use ElixirChat API methods
    * @see https://github.com/elixirchat/elixirchat-js-sdk#elixirchat-methods
    */
-  elixirChatWidget.on('MESSAGES_HISTORY_APPEND_ONE', message => {
+  elixirChatWidget.on('MESSAGES_RECEIVE', message => {
     console.warn('New message', message);
   });
 
   elixirChatWidget.appendWidget({
     container: document.getElementById('elixirchat-widget'),
-    widgetTitle: 'Private widget',
-    supportEmail: 'test@test.com',
-    debug: true,
+    mainTitle: 'Служба поддержки',
+    chatSubtitle: 'Ответим в течение нескольких минут',
+    supportEmail: 'support@elixir.chat',
+    enabledChannels: [
+      'whatsapp',
+      'telegram',
+      'facebook',
+      'vkontakte',
+      'viber',
+    ],
   });
 </script>
 </body>

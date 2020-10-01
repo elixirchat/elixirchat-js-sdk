@@ -81,7 +81,7 @@
   <textarea rows="1" placeholder="Type message and press Enter..." onkeyup="onTextareaKeyup(event)"></textarea>
 
   <button id="screenshot" onclick="takeScreenshot(event)">Take screenshot</button>
-  <img src="" id="screenshot-preview">
+  <img src="" id="screenshot-preview" alt=""/>
 
   Attach files:
   <input type="file" multiple>
@@ -142,7 +142,12 @@ elixirChat.on('JOIN_ROOM_SUCCESS', () => {
   document.getElementById('client').innerHTML = `<b>Client:</b> ${elixirChat.client.firstName} ${elixirChat.client.lastName} (ID: ${elixirChat.client.id})`;
 });
 
-elixirChat.on('MESSAGES_HISTORY_APPEND_ONE', message => {
+elixirChat.on('MESSAGES_RECEIVE', message => {
+  messages.push(message);
+  renderMessages(messages, true);
+});
+
+elixirChat.on('MESSAGES_RECEIVE', message => {
   messages.push(message);
   renderMessages(messages, true);
 });
