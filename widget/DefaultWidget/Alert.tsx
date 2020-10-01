@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { ERROR_ALERT_SHOW } from '../../sdk/ElixirChatEventTypes';
+import { ERROR_ALERT } from '../../sdk/ElixirChatEventTypes';
 import { WIDGET_POPUP_OPEN } from '../ElixirChatWidgetEventTypes';
 import { cn, normalizeErrorStack } from '../../utilsCommon';
 import { exposeComponentToGlobalScope } from '../../utilsWidget';
@@ -26,8 +26,8 @@ export class Alert extends Component<IDefaultWidgetAlertProps, IDefaultWidgetAle
 
   componentDidMount() {
     const { elixirChatWidget } = this.props;
-    elixirChatWidget.on(ERROR_ALERT_SHOW, this.onAlertShow);
-    exposeComponentToGlobalScope('Alert', this, elixirChatWidget);
+    elixirChatWidget.on(ERROR_ALERT, this.onAlertShow);
+    exposeComponentToGlobalScope(this, elixirChatWidget);
   }
 
   onAlertShow = (alertData) => {

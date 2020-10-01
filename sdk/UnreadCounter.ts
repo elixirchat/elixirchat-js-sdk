@@ -1,19 +1,19 @@
 import { ElixirChat } from './ElixirChat';
 import { gql } from './GraphQLClient';
 import {
-  UNREAD_MESSAGES_CHANGE,
-  UNREAD_REPLIES_CHANGE,
-  LAST_READ_MESSAGE_ID_CHANGE,
-  ERROR_ALERT_SHOW, UNREAD_MESSAGES_SUBSCRIBE_SUCCESS,
+  UNREAD_COUNTER_MESSAGES_CHANGE,
+  UNREAD_COUNTER_REPLIES_CHANGE,
+  UNREAD_COUNTER_LAST_READ_MESSAGE_CHANGE,
+  ERROR_ALERT, UNREAD_COUNTER_SUBSCRIBE_SUCCESS,
 } from './ElixirChatEventTypes';
 
-export interface IUnreadMessagesCounterData {
+export interface IUnreadCounterData {
   unreadMessagesCount: number;
   unreadRepliesCount: number;
   lastReadMessageId?: string;
 }
 
-export class UnreadMessagesCounter {
+export class UnreadCounter {
 
   public unreadMessagesCount: number = 0;
   public unreadRepliesCount: number = 0;
@@ -44,33 +44,33 @@ export class UnreadMessagesCounter {
     this.elixirChat = elixirChat;
   }
 
-  public subscribe = (initialData: IUnreadMessagesCounterData) => {
+  public subscribe = (initialData: IUnreadCounterData) => {
     const { graphQLClientSocket, logInfo, logError, triggerEvent } = this.elixirChat;
-    this.onUnreadCountsUpdate(initialData);
+    this.onUnreadCounterUpdate(initialData);
 
     graphQLClientSocket.subscribe({
       query: this.subscriptionQuery,
       onAbort: error => {
-        const customMessage = 'UnreadMessagesCounter: Failed to subscribe';
+        const customMessage = 'UnreadCounter: Failed to subscribe';
         logError(customMessage, { error });
-        triggerEvent(ERROR_ALERT_SHOW, {
+        triggerEvent(ERROR_ALERT, {
           customMessage,
           error,
           retryCallback: () => this.subscribe(initialData),
         });
       },
       onStart: () => {
-        logInfo('UnreadMessagesCounter: Subscribed');
-        triggerEvent(UNREAD_MESSAGES_SUBSCRIBE_SUCCESS, initialData);
+        logInfo('UnreadCounter: Subscribed');
+        triggerEvent(UNREAD_COUNTER_SUBSCRIBE_SUCCESS, initialData);
       },
       onResult: response => {
-        const data: IUnreadMessagesCounterData = response?.data?.updateReadMessages || {};
-        this.onUnreadCountsUpdate(data);
+        const data: IUnreadCounterData = response?.data?.updateReadMessages || {};
+        this.onUnreadCounterUpdate(data);
       },
     });
   };
 
-  private onUnreadCountsUpdate(data: IUnreadMessagesCounterData): void {
+  private onUnreadCounterUpdate(data: IUnreadCounterData): void {
     const { triggerEvent, logInfo } = this.elixirChat;
     const { unreadMessagesCount, unreadRepliesCount, lastReadMessageId } = data;
     const normalizedLastReadMessageId = (lastReadMessageId || '').toString().trim();
@@ -78,21 +78,21 @@ export class UnreadMessagesCounter {
     if (unreadMessagesCount !== this.unreadMessagesCount) {
       this.unreadMessagesCount = unreadMessagesCount;
       logInfo('Unread messages count changed to ' + unreadMessagesCount);
-      triggerEvent(UNREAD_MESSAGES_CHANGE, unreadMessagesCount);
+      triggerEvent(UNREAD_COUNTER_MESSAGES_CHANGE, unreadMessagesCount);
     }
     if (unreadRepliesCount !== this.unreadRepliesCount) {
       this.unreadRepliesCount = unreadRepliesCount;
       logInfo('Unread replies count changed to ' + unreadRepliesCount);
-      triggerEvent(UNREAD_REPLIES_CHANGE, unreadRepliesCount);
+      triggerEvent(UNREAD_COUNTER_REPLIES_CHANGE, unreadRepliesCount);
     }
     if (normalizedLastReadMessageId !== this.lastReadMessageId) {
       this.lastReadMessageId = normalizedLastReadMessageId;
       logInfo('Last message marked as read changed to: ' + normalizedLastReadMessageId);
-      triggerEvent(LAST_READ_MESSAGE_ID_CHANGE, normalizedLastReadMessageId);
+      triggerEvent(UNREAD_COUNTER_LAST_READ_MESSAGE_CHANGE, normalizedLastReadMessageId);
     }
   };
 
-  public setLastReadMessage = (messageId: string): Promise<IUnreadMessagesCounterData> => {
+  public setLastReadMessage = (messageId: string): Promise<IUnreadCounterData> => {
     const { sendAPIRequest } = this.elixirChat;
     if (messageId !== this.lastReadMessageId) {
       return sendAPIRequest(this.setLastReadMessageQuery, { messageId });
@@ -101,8 +101,8 @@ export class UnreadMessagesCounter {
 
   public unsubscribe = () => {
     const { graphQLClientSocket, logInfo } = this.elixirChat;
-    logInfo('UnreadMessagesCounter: Unsubscribing...');
+    logInfo('UnreadCounter: Unsubscribing...');
     graphQLClientSocket.unsubscribe(this.subscriptionQuery);
-    this.onUnreadCountsUpdate({ unreadMessagesCount: 0, unreadRepliesCount: 0 });
+    this.onUnreadCounterUpdate({ unreadMessagesCount: 0, unreadRepliesCount: 0 });
   };
 }

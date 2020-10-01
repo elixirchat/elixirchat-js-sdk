@@ -18,7 +18,7 @@ import { ScreenshotTaker, IScreenshot } from './ScreenshotTaker';
 import { TypingStatusSubscription } from './TypingStatusSubscription';
 import { UpdateMessageSubscription } from './UpdateMessageSubscription';
 import { OnlineStatusSubscription } from './OnlineStatusSubscription';
-import { UnreadMessagesCounter, IUnreadMessagesCounterData } from './UnreadMessagesCounter';
+import { UnreadCounter, IUnreadCounterData } from './UnreadCounter';
 import { MessageSubscription, ISentMessageSerialized } from './MessageSubscription';
 import {
   GraphQLClient,
@@ -32,9 +32,9 @@ import { GraphQLClientSocket } from './GraphQLClientSocket';
 import {
   JOIN_ROOM_SUCCESS,
   JOIN_ROOM_ERROR,
-  LAST_READ_MESSAGE_ID_CHANGE,
-  MESSAGES_UPDATED,
-  ERROR_ALERT_SHOW,
+  UNREAD_COUNTER_LAST_READ_MESSAGE_CHANGE,
+  MESSAGES_CHANGE_SINGLE_MESSAGE,
+  ERROR_ALERT,
 } from './ElixirChatEventTypes';
 
 
@@ -108,13 +108,13 @@ export class ElixirChat {
     return this.onlineStatusSubscription.onlineStatus;
   };
   public get unreadMessagesCount(): number {
-    return this.unreadMessagesCounter.unreadMessagesCount;
+    return this.unreadCounter.unreadMessagesCount;
   }
   public get unreadRepliesCount(): number {
-    return this.unreadMessagesCounter.unreadRepliesCount;
+    return this.unreadCounter.unreadRepliesCount;
   }
   public get lastReadMessageId(): number {
-    return this.unreadMessagesCounter.lastReadMessageId;
+    return this.unreadCounter.lastReadMessageId;
   }
   public get messageHistory(): boolean {
     return this.messageSubscription.messageHistory;
@@ -125,7 +125,7 @@ export class ElixirChat {
   public updateMessageSubscription: UpdateMessageSubscription;
   public onlineStatusSubscription: OnlineStatusSubscription;
   public typingStatusSubscription: TypingStatusSubscription;
-  public unreadMessagesCounter: UnreadMessagesCounter;
+  public unreadCounter: UnreadCounter;
   public screenshotTaker: ScreenshotTaker;
   public logger: Logger;
 
@@ -162,15 +162,15 @@ export class ElixirChat {
     this.logger = new Logger({ elixirChat: this });
     this.screenshotTaker = new ScreenshotTaker({ elixirChat: this });
     this.messageSubscription = new MessageSubscription({ elixirChat: this });
-    this.unreadMessagesCounter = new UnreadMessagesCounter({ elixirChat: this });
+    this.unreadCounter = new UnreadCounter({ elixirChat: this });
     this.updateMessageSubscription = new UpdateMessageSubscription({ elixirChat: this });
     this.typingStatusSubscription = new TypingStatusSubscription({ elixirChat: this });
     this.onlineStatusSubscription = new OnlineStatusSubscription({ elixirChat: this });
 
-    this.on(MESSAGES_UPDATED, updatedMessage => {
+    this.on(MESSAGES_CHANGE_SINGLE_MESSAGE, updatedMessage => {
       this.messageSubscription.changeMessageBy({ id: updatedMessage.id }, updatedMessage);
     });
-    this.on(LAST_READ_MESSAGE_ID_CHANGE, lastReadMessageId => {
+    this.on(UNREAD_COUNTER_LAST_READ_MESSAGE_CHANGE, lastReadMessageId => {
       this.messageSubscription.markPrecedingMessagesRead(lastReadMessageId);
     });
 
@@ -353,7 +353,7 @@ export class ElixirChat {
     this.messageSubscription.subscribe();
     this.updateMessageSubscription.subscribe();
     this.onlineStatusSubscription.subscribe({ isOnline, workHoursStartAt });
-    this.unreadMessagesCounter.subscribe({ unreadMessagesCount, unreadRepliesCount, lastReadMessageId });
+    this.unreadCounter.subscribe({ unreadMessagesCount, unreadRepliesCount, lastReadMessageId });
     // this.typingStatusSubscription.subscribe(); // TODO: fix
 
     this.triggerEvent(JOIN_ROOM_SUCCESS, this.joinRoomData, { firedOnce: true });
@@ -365,7 +365,7 @@ export class ElixirChat {
     this.triggerEvent(JOIN_ROOM_ERROR, { ...this.joinRoomData, error });
 
     setTimeout(() => {
-      this.triggerEvent(ERROR_ALERT_SHOW, {
+      this.triggerEvent(ERROR_ALERT, {
         customMessage: `joinRoom: ${extractErrorMessage(error)}`,
         retryCallback: () => this.joinRoom(room, client),
         error,
@@ -474,7 +474,7 @@ export class ElixirChat {
     else {
       const message = 'ElixirChat is not currently connected. Use reconnect({ room, client }) method to connect to a room.';
       this.logError(message);
-      this.triggerEvent(ERROR_ALERT_SHOW, {
+      this.triggerEvent(ERROR_ALERT, {
         customMessage: message,
         retryCallback: () => this.joinRoom(this.config.room, this.config.client),
         error: { message },
@@ -577,9 +577,9 @@ export class ElixirChat {
     });
   };
 
-  public setLastReadMessage = (messageId: string): Promise<IUnreadMessagesCounterData> => {
+  public setLastReadMessage = (messageId: string): Promise<IUnreadCounterData> => {
     return this.checkIfConnected().then(() => {
-      return this.unreadMessagesCounter.setLastReadMessage(messageId);
+      return this.unreadCounter.setLastReadMessage(messageId);
     });
   };
 
@@ -629,7 +629,7 @@ export class ElixirChat {
       this.isConnected = false;
       this.messageSubscription.unsubscribe();
       this.updateMessageSubscription.unsubscribe();
-      this.unreadMessagesCounter.unsubscribe();
+      this.unreadCounter.unsubscribe();
       this.typingStatusSubscription.unsubscribe();
       this.onlineStatusSubscription.unsubscribe();
     });

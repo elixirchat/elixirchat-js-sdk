@@ -3,7 +3,7 @@ import { IJoinRoomChannel } from '../../sdk/ElixirChat';
 import { IOnlineStatusParams } from '../../sdk/OnlineStatusSubscription';
 import { ElixirChatWidget } from '../ElixirChatWidget';
 import { WIDGET_DATA_SET } from '../ElixirChatWidgetEventTypes';
-import { UNREAD_MESSAGES_CHANGE } from '../../sdk/ElixirChatEventTypes';
+import { UNREAD_COUNTER_MESSAGES_CHANGE } from '../../sdk/ElixirChatEventTypes';
 import { cn, _last } from '../../utilsCommon';
 import {
   humanizeUpcomingDate,
@@ -45,7 +45,7 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
 
   componentDidMount() {
     const { elixirChatWidget } = this.props;
-    exposeComponentToGlobalScope('WelcomeScreen', this, elixirChatWidget);
+    exposeComponentToGlobalScope(this, elixirChatWidget);
 
     elixirChatWidget.on(WIDGET_DATA_SET, () => {
       const {
@@ -71,12 +71,12 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
         employeesCount,
       });
     });
-    elixirChatWidget.on(UNREAD_MESSAGES_CHANGE, this.updateUnreadCount);
+    elixirChatWidget.on(UNREAD_COUNTER_MESSAGES_CHANGE, this.updateUnreadCount);
   }
 
   componentWillUnmount(){
     const { elixirChatWidget } = this.props;
-    elixirChatWidget.off(UNREAD_MESSAGES_CHANGE, this.updateUnreadCount);
+    elixirChatWidget.off(UNREAD_COUNTER_MESSAGES_CHANGE, this.updateUnreadCount);
   }
 
   updateUnreadCount = (unreadMessagesCount) => {

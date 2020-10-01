@@ -1,34 +1,27 @@
 import React, { Component, Fragment } from 'react';
 import ReactDOM from 'react-dom';
 import { ElixirChatWidget } from '../ElixirChatWidget';
-import {
-  UNREAD_MESSAGES_CHANGE,
-  UNREAD_MESSAGES_SUBSCRIBE_SUCCESS,
-  UNREAD_REPLIES_CHANGE
-} from '../../sdk/ElixirChatEventTypes';
-import {
-  FONTS_EXTRACTED,
-  WIDGET_DATA_SET,
-  WIDGET_NAVIGATE_TO,
-  WIDGET_POPUP_TOGGLE,
-} from '../ElixirChatWidgetEventTypes';
-
-import { cn, detectBrowser } from '../../utilsCommon';
-import {
-  base64toBlobUrl,
-  playNotificationSound,
-  exposeComponentToGlobalScope,
-  unlockNotificationSoundAutoplay,
-} from '../../utilsWidget';
-
-import { generateFontFaceCSS, FontExtractor } from '../FontExtractor';
+import { FontExtractor, generateFontFaceCSS } from '../FontExtractor';
+import { WidgetAssets } from '../WidgetAssets';
+import { Alert } from './Alert';
 import { Chat } from './Chat';
 import { IFrameWrapper } from './IFrameWrapper';
 import { WelcomeScreen } from './WelcomeScreen';
 import { FullScreenPreview } from './FullScreenPreview';
-import { Alert } from './Alert';
-import styles from './styles';
-import assets from './assets';
+import { exposeComponentToGlobalScope } from '../../utilsWidget';
+import { cn, detectBrowser } from '../../utilsCommon';
+
+import {
+  UNREAD_COUNTER_MESSAGES_CHANGE,
+  UNREAD_COUNTER_REPLIES_CHANGE,
+  UNREAD_COUNTER_SUBSCRIBE_SUCCESS,
+} from '../../sdk/ElixirChatEventTypes';
+
+import {
+  WIDGET_DATA_SET,
+  WIDGET_NAVIGATE_TO,
+  WIDGET_POPUP_TOGGLE,
+} from '../ElixirChatWidgetEventTypes';
 
 
 export interface IWidgetProps {
@@ -38,8 +31,8 @@ export interface IWidgetProps {
 export interface IWidgetState {
   unreadMessagesCount: number;
   detectedBrowser: string;
-  outsideIframeCSS: string;
-  insideIframeCSS: string;
+  outsideIframeStyles: string;
+  insideIframeStyles: string;
   widgetView: string;
   widgetViewIsAnimating: null | string;
   widgetIsPopupOpen: boolean;
@@ -52,8 +45,8 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
   state = {
     unreadMessagesCount: 0,
     detectedBrowser: null,
-    outsideIframeCSS: null,
-    insideIframeCSS: null,
+    outsideIframeStyles: '',
+    insideIframeStyles: '',
     widgetView: '',
     widgetViewIsAnimating: null,
     widgetIsPopupOpen: false,
@@ -62,163 +55,60 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
   };
 
   fontExtractor: FontExtractor;
+  widgetAssets: WidgetAssets;
 
   componentDidMount() {
     const { elixirChatWidget } = this.props;
-    const { outsideIframeCSS, insideIframeCSS } = this.renderAllCSS();
-    exposeComponentToGlobalScope('Widget', this, elixirChatWidget);
+    exposeComponentToGlobalScope(this, elixirChatWidget);
 
-    this.fontExtractor = new FontExtractor(elixirChatWidget, window);
-
-    this.setState({
-      insideIframeCSS,
-      outsideIframeCSS,
-      detectedBrowser: detectBrowser(),
-    });
-
-    elixirChatWidget.on(FONTS_EXTRACTED, fontRules => {
-      this.setState({
-        insideIframeCSS: insideIframeCSS + '\n\n' + generateFontFaceCSS(fontRules),
+    this.widgetAssets = new WidgetAssets(elixirChatWidget);
+    this.fontExtractor = new FontExtractor(elixirChatWidget.widgetConfig.fonts, window);
+    this.fontExtractor.extract(fontRules => {
+      this.appendToStyles({
+        insideIframeStyles: generateFontFaceCSS(fontRules),
       });
     });
+
+    const { outsideIframeStyles, insideIframeStyles } = this.widgetAssets;
+    this.appendToStyles({ outsideIframeStyles, insideIframeStyles });
 
     elixirChatWidget.on(WIDGET_DATA_SET, () => {
-      const {
-        widgetIsButtonHidden,
-        widgetIsPopupOpen,
-        widgetView,
-        unreadMessagesCount,
-      } = elixirChatWidget;
-
-      this.setState({
-        unreadMessagesCount,
-        widgetView,
-        widgetIsPopupOpen,
-        widgetIsButtonHidden,
-      });
+      const { widgetIsButtonHidden, widgetIsPopupOpen, widgetView } = elixirChatWidget;
+      this.setState({ widgetIsButtonHidden, widgetIsPopupOpen, widgetView });
     });
 
-    document.body.addEventListener('click', unlockNotificationSoundAutoplay);
-
-    elixirChatWidget.on(WIDGET_NAVIGATE_TO, widgetView => {
-      this.setState({ widgetViewIsAnimating: true });
-      setTimeout(() => {
-        this.setState({
-          widgetView,
-          widgetViewIsAnimating: false
-        });
-      }, 400);
-    });
-    elixirChatWidget.on(UNREAD_MESSAGES_CHANGE, unreadMessagesCount => {
+    elixirChatWidget.on(UNREAD_COUNTER_MESSAGES_CHANGE, unreadMessagesCount => {
       this.setState({ unreadMessagesCount });
     });
-    elixirChatWidget.on(UNREAD_MESSAGES_SUBSCRIBE_SUCCESS, () => {
-      console.log('__ sub', 1);
-      elixirChatWidget.on(UNREAD_REPLIES_CHANGE, (unreadRepliesCount) => {
-        console.log('__ sub', 2, unreadRepliesCount);
+    elixirChatWidget.on(UNREAD_COUNTER_SUBSCRIBE_SUCCESS, () => {
+      elixirChatWidget.on(UNREAD_COUNTER_REPLIES_CHANGE, (unreadRepliesCount) => {
         if (unreadRepliesCount) {
-          playNotificationSound();
+          this.playNotificationSound();
         }
       });
     });
+    elixirChatWidget.on(WIDGET_NAVIGATE_TO, this.onViewChange);
     elixirChatWidget.on(WIDGET_POPUP_TOGGLE, this.onPopupToggle);
+
+    this.setState({ detectedBrowser: detectBrowser() });
+    document.body.addEventListener('click', this.unlockNotificationSoundAutoplay);
   }
 
-  renderDefaultFontCSS = () => {
-    return generateFontFaceCSS([
-      {
-        fontFamily: 'elixirchat-icons',
-        src: [{
-          url: base64toBlobUrl(assets.fontElixirchatIcons),
-          format: 'woff',
-        }],
-      },
-      {
-        fontFamily: 'Graphik',
-        fontWeight: 'normal',
-        fontStyle: 'normal',
-        src: [{
-          url: base64toBlobUrl(assets.fontGraphikRegular),
-          format: 'woff',
-        }],
-      },
-      {
-        fontFamily: 'Graphik',
-        fontWeight: 'normal',
-        fontStyle: 'italic',
-        src: [{
-          url: base64toBlobUrl(assets.fontGraphikRegularItalic),
-          format: 'woff',
-        }],
-      },
-      {
-        fontFamily: 'Graphik',
-        fontWeight: '500',
-        src: [{
-          url: base64toBlobUrl(assets.fontGraphikMedium),
-          format: 'woff',
-        }],
-      },
-      {
-        fontFamily: 'Graphik',
-        fontWeight: 'bold',
-        src: [{
-          url: base64toBlobUrl(assets.fontGraphikBold),
-          format: 'woff',
-        }],
-      },
-    ]);
+  appendToStyles = ({ outsideIframeStyles, insideIframeStyles }) => {
+    this.setState({
+      outsideIframeStyles: this.state.outsideIframeStyles + '\n\n' + (outsideIframeStyles || ''),
+      insideIframeStyles: this.state.insideIframeStyles + '\n\n' + (insideIframeStyles || ''),
+    });
   };
 
-  renderSvgIconsCSS = () => {
-    const icons = {
-      whatsapp: assets.iconWhatsapp,
-      telegram: assets.iconTelegram,
-      facebook: assets.iconFacebook,
-      viber: assets.iconViber,
-      vkontakte: assets.iconVK,
-    };
-    const cssRules = [];
-    for (let iconName in icons) {
-      const iconUrl = base64toBlobUrl(icons[iconName]);
-      cssRules.push(
-        `.svg-icon-${iconName} { background-image: url("${iconUrl}"); }`
-      );
-    }
-    return cssRules.join('\n');
-  };
-
-  renderAllCSS = () => {
-    const { elixirChatWidget } = this.props;
-    const defaultFontFaceCSS = this.renderDefaultFontCSS();
-    const svgIconsCSS = this.renderSvgIconsCSS();
-
-    const outsideIframeCSS = [
-      defaultFontFaceCSS,
-      styles.icons,
-      styles.WidgetOutsideIFrame,
-      styles.FullScreenPreview,
-    ].join('\n');
-
-    const insideIframeCSS = [
-      elixirChatWidget.widgetConfig.iframeCSS,
-      defaultFontFaceCSS,
-      svgIconsCSS,
-      styles.icons,
-      styles.WidgetInsideIFrame,
-      styles.WelcomeScreen,
-      styles.Alert,
-      styles.Tooltip,
-      styles.Chat,
-      styles.ChatMessages,
-      styles.ChatTextarea,
-      styles.FormattedMarkdown,
-    ].join('\n');
-
-    return {
-      outsideIframeCSS,
-      insideIframeCSS,
-    };
+  onViewChange = (widgetView) => {
+    this.setState({ widgetViewIsAnimating: true });
+    setTimeout(() => {
+      this.setState({
+        widgetView,
+        widgetViewIsAnimating: false
+      });
+    }, 400);
   };
 
   onPopupToggle = (widgetIsPopupOpen) => {
@@ -231,6 +121,31 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
     });
   };
 
+  /**
+   * Prevents browser from muting audio autoplay
+   * @see https://medium.com/@curtisrobinson/how-to-auto-play-audio-in-safari-with-javascript-21d50b0a2765
+   */
+  unlockNotificationSoundAutoplay = (e) => {
+    const notification = new Audio(this.widgetAssets.assets.mp3.notificationSound);
+    notification.play().then(() => {
+      notification.pause();
+      notification.currentTime = 0;
+    });
+    if (e.target.tagName !== 'TEXTAREA') { // In Firefox, click on textarea doesn't unlock autoplay
+      e.currentTarget.removeEventListener(e.type, this.unlockNotificationSoundAutoplay);
+    }
+  };
+
+  playNotificationSound = () => {
+    const notification = new Audio(this.widgetAssets.assets.mp3.notificationSound);
+    try {
+      notification.play();
+    }
+    catch (e) {
+      console.error('Unable to play notification sound before any action was taken by the user in the current browser tab');
+    }
+  };
+
   render() {
     const { elixirChatWidget } = this.props;
     const {
@@ -240,8 +155,8 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
       widgetView,
       widgetViewIsAnimating,
       unreadMessagesCount,
-      outsideIframeCSS,
-      insideIframeCSS,
+      outsideIframeStyles,
+      insideIframeStyles,
       detectedBrowser,
     } = this.state;
 
@@ -249,7 +164,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
 
     return (
       <Fragment>
-        <style dangerouslySetInnerHTML={{ __html: outsideIframeCSS }}/>
+        <style dangerouslySetInnerHTML={{ __html: outsideIframeStyles }}/>
 
         {!widgetIsButtonHidden && (
           <button className={cn({
@@ -275,7 +190,8 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
           'elixirchat-widget-iframe--opening': widgetIsPopupOpeningAnimation,
         })}>
           <Fragment>
-            <style dangerouslySetInnerHTML={{ __html: insideIframeCSS }}/>
+            <style dangerouslySetInnerHTML={{ __html: insideIframeStyles }}/>
+
             <div className={cn({
               'elixirchat-widget-view': true,
               'elixirchat-widget-view--animating': widgetViewIsAnimating,

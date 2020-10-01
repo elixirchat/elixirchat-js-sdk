@@ -31,7 +31,7 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
 
   componentDidMount() {
     const { elixirChatWidget } = this.props;
-    exposeComponentToGlobalScope('Chat', this, elixirChatWidget);
+    exposeComponentToGlobalScope(this, elixirChatWidget);
 
     elixirChatWidget.on(WIDGET_DATA_SET, () => {
       const { widgetMainTitle, widgetIsMuted, onlineStatus } = elixirChatWidget;

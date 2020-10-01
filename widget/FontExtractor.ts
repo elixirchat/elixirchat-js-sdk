@@ -1,5 +1,3 @@
-import { ElixirChatWidget } from './ElixirChatWidget';
-import { FONTS_EXTRACTED } from './ElixirChatWidgetEventTypes';
 import { _flatten } from '../utilsCommon';
 
 export interface IFontRule {
@@ -16,31 +14,37 @@ export interface IFontSrc {
 
 export class FontExtractor {
 
+  public widgetConfigFonts: any = {};
+  public parentWindow: Window = null;
   public serializedConfig: Array<IFontRule> = [];
   public parentFontFaceRules: Array<IFontRule> = [];
 
-  constructor(elixirChatWidget: ElixirChatWidget, parentWindow: Window){
-    const { widgetConfig, triggerEvent } = elixirChatWidget;
-    this.serializedConfig = (widgetConfig.fonts || []).map(this.serializeFontRule);
+  constructor(widgetConfigFonts: any, parentWindow: Window){
+    this.widgetConfigFonts = widgetConfigFonts;
+    this.parentWindow = parentWindow;
+  }
+
+  public extract = (callback?: any) => {
+    this.serializedConfig = (this.widgetConfigFonts || []).map(this.serializeFontRule);
 
     const fontsWithSrc = this.serializedConfig.filter(rule => rule.src?.length);
     const fontsWithoutSrc = this.serializedConfig.filter(rule => !rule.src?.length);
 
     if (!fontsWithoutSrc.length) {
-      triggerEvent(FONTS_EXTRACTED, fontsWithSrc);
+      callback && callback(fontsWithSrc);
     }
     else {
-      this.waitUntilWindowLoaded(parentWindow, () => {
-        this.parentFontFaceRules = this.getParentFontFaceRules(parentWindow);
+      this.waitUntilWindowLoaded(this.parentWindow, () => {
+        this.parentFontFaceRules = this.getParentFontFaceRules(this.parentWindow);
         const matchingParentFontRules = _flatten(
           fontsWithoutSrc.map(rule => {
             return this.findMatchingFontFaceRules(this.parentFontFaceRules, rule);
           })
         );
-        triggerEvent(FONTS_EXTRACTED, [ ...fontsWithSrc, ...matchingParentFontRules ]);
+        callback && callback([ ...fontsWithSrc, ...matchingParentFontRules ]);
       });
     }
-  }
+  };
 
   private serializeFontRule(rule: IFontRule) {
     const normalizeValue = (value) => {
@@ -68,11 +72,11 @@ export class FontExtractor {
     }
   };
 
-  private getParentFontFaceRules(parentWindow: Window): Array<IFontRule> {
+  private getParentFontFaceRules(targetWindow: Window): Array<IFontRule> {
     const fontFaceRules = [];
 
-    for (let i = 0; i < parentWindow.document.styleSheets.length; i++) {
-      const sheet = parentWindow.document.styleSheets[i];
+    for (let i = 0; i < targetWindow.document.styleSheets.length; i++) {
+      const sheet = targetWindow.document.styleSheets[i];
       let rules;
       let linkHref;
       try {

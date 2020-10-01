@@ -6,7 +6,6 @@ import 'dayjs/locale/ru';
 import { ElixirChatWidget } from './widget/ElixirChatWidget';
 import { IMessage } from './sdk/serializers/serializeMessage';
 import { _last, _round, getUserFullName } from './utilsCommon';
-import assets from './widget/DefaultWidget/assets';
 
 dayjs.locale('ru');
 dayjs.extend(dayjsCalendar);
@@ -17,54 +16,6 @@ export function inflect(number: number, endings: [string], hideNumber?: boolean)
   const endingIndex = (number % 100 > 4 && number % 100 < 20) ? 2 : cases[ Math.min(number % 10, 5) ];
   const ending = endings[endingIndex] || endings[0];
   return hideNumber ? ending : number + ' ' + ending;
-}
-
-/**
- * Prevents browser from muting audio autoplay
- * @see https://medium.com/@curtisrobinson/how-to-auto-play-audio-in-safari-with-javascript-21d50b0a2765
- */
-export function unlockNotificationSoundAutoplay(e: Event): void {
-  const notification = new Audio(assets.notificationSound);
-  notification.play().then(() => {
-    notification.pause();
-    notification.currentTime = 0;
-  });
-
-  if (e.target.tagName !== 'TEXTAREA') { // In Firefox, click on textarea doesn't unlock autoplay
-    e.currentTarget.removeEventListener(e.type, unlockNotificationSoundAutoplay);
-  }
-}
-
-export function playNotificationSound(): void {
-  const notification = new Audio(assets.notificationSound);
-  try {
-    notification.play();
-  }
-  catch (e) {
-    console.error('Unable to play notification sound before any action was taken by the user in the current browser tab');
-  }
-}
-
-
-export function base64toBlobUrl(base64Url: string, sliceSize: number = 512): string {
-  const [ dataUrlPrefix, base64Data ] = base64Url.trim().split(',');
-  const contentType = dataUrlPrefix.replace(/data:\s*/, '').replace(/s*;s*base64s*/, '');
-  const byteCharacters = atob(base64Data);
-  const byteArrays = [];
-
-  for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
-    const slice = byteCharacters.slice(offset, offset + sliceSize);
-
-    const byteNumbers = new Array(slice.length);
-    for (let i = 0; i < slice.length; i++) {
-      byteNumbers[i] = slice.charCodeAt(i);
-    }
-
-    const byteArray = new Uint8Array(byteNumbers);
-    byteArrays.push(byteArray);
-  }
-  const blob = new Blob(byteArrays, { type: contentType });
-  return URL.createObjectURL(blob);
 }
 
 
@@ -242,9 +193,8 @@ export function isMobileSizeScreen(){
 }
 
 
-export function exposeComponentToGlobalScope(name: string, instance: Component, elixirChatWidget: ElixirChatWidget) {
-  // Can't simply use instance.constructor.name for the name due to bundler obfuscation; must pass name explicitly
-  elixirChatWidget.widgetComponents[name] = instance;
+export function exposeComponentToGlobalScope(instance: Component, elixirChatWidget: ElixirChatWidget) {
+  elixirChatWidget.widgetComponents[instance.constructor.name] = instance;
 }
 
 

@@ -16,11 +16,9 @@ import {
 import {
   inflect,
   humanizeFileSize,
-  humanizeTimezoneName,
   humanizeUpcomingDate,
-  playNotificationSound,
+  humanizeTimezoneName,
   generateReplyMessageQuote,
-  unlockNotificationSoundAutoplay,
   exposeComponentToGlobalScope,
   isMobileSizeScreen,
 } from '../../utilsWidget';
@@ -32,9 +30,9 @@ import { serializeMessage } from '../../sdk/serializers/serializeMessage';
 import {
   JOIN_ROOM_SUCCESS,
   TYPING_STATUS_CHANGE,
-  MESSAGES_CHANGE,
+  MESSAGES_CHANGE_HISTORY,
   MESSAGES_RECEIVE,
-  ERROR_ALERT_SHOW,
+  ERROR_ALERT,
 } from '../../sdk/ElixirChatEventTypes';
 
 import {
@@ -85,7 +83,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
   componentDidMount() {
     const { elixirChatWidget } = this.props;
-    exposeComponentToGlobalScope('ChatMessages', this, elixirChatWidget);
+    exposeComponentToGlobalScope(this, elixirChatWidget);
 
     dayjs.locale('ru');
     dayjs.extend(dayjsCalendar);
@@ -94,9 +92,6 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
       screenshotFallback: getScreenshotCompatibilityFallback()
     });
 
-    elixirChatWidget.on(WIDGET_IFRAME_READY, () => {
-      elixirChatWidget.widgetIFrameDocument.body.addEventListener('click', unlockNotificationSoundAutoplay);
-    });
     elixirChatWidget.on(WIDGET_POPUP_OPEN, () => {
       if (detectBrowser() === 'safari') {
         this.preventSafariFromLockingScroll();
@@ -105,7 +100,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     elixirChatWidget.on(JOIN_ROOM_SUCCESS, this.loadInitialMessages);
     elixirChatWidget.on(MESSAGES_RECEIVE, this.onMessageReceive);
 
-    elixirChatWidget.on([MESSAGES_CHANGE, MESSAGES_RECEIVE], () => {
+    elixirChatWidget.on([MESSAGES_CHANGE_HISTORY, MESSAGES_RECEIVE], () => {
       this.onMessageHistoryUpdate(elixirChatWidget.messageHistory);
     });
 
@@ -143,14 +138,14 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     elixirChatWidget.fetchMessageHistory(this.MESSAGE_CHUNK_SIZE)
       .then(() => {
         if (elixirChatWidget.widgetIsPopupOpen) {
-          requestAnimationFrame(this.scrollToFirstUnreadMessageOnce);
+          this.scrollToFirstUnreadMessageOnce();
         }
         else {
           elixirChatWidget.on(WIDGET_POPUP_OPEN, this.scrollToFirstUnreadMessageOnce);
         }
       })
       .catch(e => {
-        elixirChatWidget.triggerEvent(ERROR_ALERT_SHOW, {
+        elixirChatWidget.triggerEvent(ERROR_ALERT, {
           customMessage: e.errorMessage,
           retryCallback: this.loadInitialMessages,
           error: e.rawError,
@@ -175,7 +170,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
           scrollBlock.scrollTop = scrollBlock.scrollHeight - initialScrollHeight;
         })
         .catch(e => {
-          elixirChatWidget.triggerEvent(ERROR_ALERT_SHOW, {
+          elixirChatWidget.triggerEvent(ERROR_ALERT, {
             customMessage: e.errorMessage,
             retryCallback: this.loadPrecedingMessages,
             error: e.rawError,
@@ -318,6 +313,8 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
   };
 
   scrollToFirstUnreadMessageOnce = () => {
+    return;
+
     const { elixirChatWidget } = this.props;
     const { messageHistory, lastReadMessageId } = elixirChatWidget;
     const lastReadMessageIndex = _findIndex(messageHistory, { id: lastReadMessageId });
@@ -339,7 +336,9 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
         }, messageElementToScrollTo);
 
         if (messageElementToScrollTo) {
-          messageElementToScrollTo.scrollIntoView({ behavior: 'smooth', block: 'end' });
+          setTimeout(() => {
+            messageElementToScrollTo.scrollIntoView({ behavior: 'smooth', block: 'end' });
+          }, 500);
         }
         else {
           this.scrollToBottom();

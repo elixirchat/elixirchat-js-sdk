@@ -1,6 +1,6 @@
 import { ElixirChat } from './ElixirChat';
 import { gql } from './GraphQLClient';
-import {ERROR_ALERT_SHOW, ONLINE_STATUS_CHANGE} from './ElixirChatEventTypes';
+import {ERROR_ALERT, ONLINE_STATUS_CHANGE} from './ElixirChatEventTypes';
 
 export interface IOnlineStatusParams {
   isOnline: boolean;
@@ -44,7 +44,7 @@ export class OnlineStatusSubscription {
       onAbort: error => {
         const customMessage = 'OnlineStatusSubscription: Failed to subscribe';
         logError(customMessage, { error });
-        triggerEvent(ERROR_ALERT_SHOW, {
+        triggerEvent(ERROR_ALERT, {
           customMessage,
           error,
           retryCallback: () => this.subscribe(params),

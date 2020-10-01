@@ -9,7 +9,7 @@ CSS_FILE_README_TEXT="/*
 
   In order to add new icons to the elixirchat-icons font:
   1. Copy your SVG icons into widget/DefaultWidget/assets/fonts/elixirchat-icons-source
-  2. Run \`npm update-icon-font\` in terminal (this will regenerate elixirchat-icons.woff and icons.scss)
+  2. Run \`npm update-icon-font\` in terminal (this will regenerate elixirchat-icons.woff and Icons.scss)
   3. Use your new icons e.g. <i className=\"icon-my-new-icon\"/> (for when your original SVG file was named my-new-icon.svg)
 
   NOTE:
@@ -18,7 +18,7 @@ CSS_FILE_README_TEXT="/*
 
 */"
 
-CSS_FILE_PATH="widget/DefaultWidget/styles/icons.scss"
+CSS_FILE_PATH="widget/DefaultWidget/styles/Icons.scss"
 ICON_FONT_DIRECTORY="widget/DefaultWidget/assets/fonts/"
 ICON_FONT_NAME="elixirchat-icons"
 SVG_ICONS_DIRECTORY="widget/DefaultWidget/assets/fonts/elixirchat-icons-source"

@@ -1,5 +1,10 @@
 import { ElixirChat } from './ElixirChat';
-import {MESSAGES_RECEIVE, MESSAGES_CHANGE, ERROR_ALERT_SHOW} from './ElixirChatEventTypes';
+import {
+  MESSAGES_RECEIVE,
+  MESSAGES_CHANGE_HISTORY,
+  ERROR_ALERT,
+  MESSAGES_PREPEND_HISTORY
+} from './ElixirChatEventTypes';
 import { IFile } from './serializers/serializeFile';
 import { IMessage, serializeMessage, fragmentMessage } from './serializers/serializeMessage';
 import { randomDigitStringId, isWebImage, _last, _uniqBy } from '../utilsCommon';
@@ -93,7 +98,7 @@ export class MessageSubscription {
       onAbort: error => {
         const customMessage = 'MessageSubscription: Failed to subscribe';
         logError('MessageSubscription: Failed to subscribe', { error });
-        triggerEvent(ERROR_ALERT_SHOW, { customMessage, error, retryCallback: this.subscribe });
+        triggerEvent(ERROR_ALERT, { customMessage, error, retryCallback: this.subscribe });
       },
       onStart: () => {
         logInfo('MessageSubscription: Subscribed');
@@ -153,7 +158,7 @@ export class MessageSubscription {
       }
       return updatedMessage;
     });
-    triggerEvent(MESSAGES_CHANGE, this.messageHistory);
+    triggerEvent(MESSAGES_CHANGE_HISTORY, this.messageHistory);
   };
 
   private doesMessageMatchQuery(message: IMessage, query: object){
@@ -347,21 +352,24 @@ export class MessageSubscription {
     });
   };
 
-  private onMessageHistoryChange(messageHistory: Array<IMessage>): Array<IMessage> {
-    const { triggerEvent } = this.elixirChat;
-    this.messageHistory = messageHistory;
-    triggerEvent(MESSAGES_CHANGE, messageHistory);
-    return messageHistory;
-  };
+  // private onMessageHistoryChange(messageHistory: Array<IMessage>): Array<IMessage> {
+  //   const { triggerEvent } = this.elixirChat;
+  //   this.messageHistory = messageHistory;
+  //   triggerEvent(MESSAGES_CHANGED, messageHistory);
+  //   return messageHistory;
+  // };
 
   public fetchMessageHistory = (limit: number): Promise<[IMessage] | any> => {
+    const { triggerEvent } = this.elixirChat;
     return this.getMessageHistoryByCursor({ limit }).then(messageHistory => {
-      return this.onMessageHistoryChange(messageHistory);
+      triggerEvent(MESSAGES_CHANGE_HISTORY, messageHistory);
+      this.messageHistory = messageHistory;
+      return messageHistory;
     });
   };
 
   public fetchPrecedingMessageHistory = (limit: number): Promise<[IMessage] | any> => {
-    const { logError } = this.elixirChat;
+    const { logError, triggerEvent } = this.elixirChat;
     const latestCursor = this.messageHistory[0]?.cursor;
 
     if (!latestCursor) {
@@ -370,14 +378,14 @@ export class MessageSubscription {
       return Promise.reject({ message: errorMessage });
     }
     return this.getMessageHistoryByCursor({ limit, beforeCursor: latestCursor }).then(precedingMessageHistory => {
-      const updatedMessageHistory = _uniqBy([ ...precedingMessageHistory, ...this.messageHistory ], 'id');
-      this.onMessageHistoryChange(updatedMessageHistory);
-      console.warn('__ precedingMessageHistory', precedingMessageHistory, latestCursor);
+      this.messageHistory = _uniqBy([ ...precedingMessageHistory, ...this.messageHistory ], 'id');
+      triggerEvent(MESSAGES_PREPEND_HISTORY, precedingMessageHistory);
       return precedingMessageHistory;
     });
   };
 
   public markPrecedingMessagesRead = (lastReadMessageId: string): Array<IMessage> => {
+    const { triggerEvent } = this.elixirChat;
     const messageIds = this.messageHistory.map(message => message.id);
     const lastReadMessageIndex = messageIds.indexOf(lastReadMessageId);
     this.messageHistory.forEach((message, index) => {
@@ -385,7 +393,7 @@ export class MessageSubscription {
         message.isUnread = false;
       }
     });
-    this.onMessageHistoryChange(this.messageHistory);
+    triggerEvent(MESSAGES_CHANGE_HISTORY, this.messageHistory);
   };
 
   public unsubscribe = () => {
