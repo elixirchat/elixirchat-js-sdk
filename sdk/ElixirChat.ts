@@ -285,11 +285,13 @@ export class ElixirChat {
           company {
             isWorking
             workHoursStartAt
+            widgetLogo
             widgetTitle
             widgetSubtitle
             omnichannelChannels {
               type
               username
+              isConnected
             }
             employees(first: 20) {
               count

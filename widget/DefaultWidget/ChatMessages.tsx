@@ -112,7 +112,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     requestAnimationFrame(() => {
       this.messageVisibilityObserver = new IntersectionObserver(this.onIntersectionObserverTrigger, {
         root: this.scrollBlock.current,
-        threshold: 1,
+        threshold: 0.9, // triggers when 90% of message is visible
       });
     });
 
@@ -363,6 +363,11 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     const { messageHistory } = elixirChatWidget;
     const entry = entries[0];
     const messageElement = entry.target;
+
+    console.warn('__ is intersecting 1', entry.isIntersecting, messageElement, {
+      entry,
+      messageData: this.getDatasetValue(messageElement, 'messageData'),
+    });
 
     if (entry.isIntersecting) {
       this.setDatasetValues(messageElement, { isMessageWithinViewport: true });
