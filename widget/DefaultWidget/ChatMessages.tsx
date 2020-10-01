@@ -18,35 +18,32 @@ import {
   humanizeFileSize,
   humanizeTimezoneName,
   humanizeUpcomingDate,
-  generateReplyMessageQuote,
   playNotificationSound,
+  generateReplyMessageQuote,
   unlockNotificationSoundAutoplay,
-  // replaceMarkdownWithHTML,
-  // replaceLinksInText,
-  // sanitizeHTML,
-  isMobileSizeScreen,
   exposeComponentToGlobalScope,
+  isMobileSizeScreen,
 } from '../../utilsWidget';
 
 import { ElixirChatWidget } from '../ElixirChatWidget';
+import { FormattedMarkdown } from './FormattedMarkdown';
 import { getScreenshotCompatibilityFallback } from '../../sdk/ScreenshotTaker';
 import { serializeMessage } from '../../sdk/serializers/serializeMessage';
 import {
   JOIN_ROOM_SUCCESS,
-  JOIN_ROOM_ERROR,
   TYPING_STATUS_CHANGE,
   MESSAGES_CHANGE,
-  MESSAGES_RECEIVE, ERROR_ALERT_SHOW,
+  MESSAGES_RECEIVE,
+  ERROR_ALERT_SHOW,
 } from '../../sdk/ElixirChatEventTypes';
 
 import {
   IMAGE_PREVIEW_OPEN,
-  REPLY_MESSAGE,
   TEXTAREA_VERTICAL_RESIZE,
-  WIDGET_IFRAME_READY, WIDGET_POPUP_CLOSE, WIDGET_POPUP_OPEN,
-  WIDGET_POPUP_TOGGLE,
+  REPLY_MESSAGE,
+  WIDGET_IFRAME_READY,
+  WIDGET_POPUP_OPEN,
 } from '../ElixirChatWidgetEventTypes';
-import { FormattedMarkdown } from './FormattedMarkdown';
 
 
 export interface IDefaultWidgetMessagesProps {
@@ -100,8 +97,8 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     elixirChatWidget.on(WIDGET_IFRAME_READY, () => {
       elixirChatWidget.widgetIFrameDocument.body.addEventListener('click', unlockNotificationSoundAutoplay);
     });
-    elixirChatWidget.on(WIDGET_POPUP_TOGGLE, isOpen => {
-      if (isOpen && detectBrowser() === 'safari') {
+    elixirChatWidget.on(WIDGET_POPUP_OPEN, () => {
+      if (detectBrowser() === 'safari') {
         this.preventSafariFromLockingScroll();
       }
     });

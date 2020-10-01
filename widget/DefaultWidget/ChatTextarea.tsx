@@ -14,7 +14,7 @@ import {
   SCREENSHOT_REQUEST_ERROR,
   WIDGET_IFRAME_READY,
   WIDGET_MUTE_TOGGLE,
-  WIDGET_POPUP_TOGGLE,
+  WIDGET_POPUP_TOGGLE, WIDGET_POPUP_OPEN,
 } from '../ElixirChatWidgetEventTypes';
 
 export interface IDefaultWidgetTextareaProps {
@@ -74,11 +74,9 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
     //     this.focusTextarea();
     //   }
     // });
-    elixirChatWidget.on(WIDGET_POPUP_TOGGLE, isOpen => {
-      if (isOpen) {
-        this.onVerticalResize();
-        this.focusTextarea();
-      }
+    elixirChatWidget.on(WIDGET_POPUP_OPEN, () => {
+      this.onVerticalResize();
+      this.focusTextarea();
     });
     elixirChatWidget.on(SCREENSHOT_REQUEST_SUCCESS, this.onScreenshotRequestSuccess);
     elixirChatWidget.on(SCREENSHOT_REQUEST_ERROR, () => { elixirChatWidget.openPopup(); });

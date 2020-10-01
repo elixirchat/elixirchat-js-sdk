@@ -30,4 +30,22 @@
       margin-bottom: 0;
     }
   }
+
+  ol {
+    list-style: none;
+
+    li {
+      position: relative;
+
+      &:before {
+        content: attr(data-markdown-counter) '.';
+        position: absolute;
+        right: 100%;
+        margin-right: 4px;
+        white-space: nowrap;
+        text-align: center;
+        min-width: 11px;
+      }
+    }
+  }
 }

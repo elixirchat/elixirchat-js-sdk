@@ -1,11 +1,6 @@
 import { IUser } from './sdk/serializers/serializeUser';
 
 
-export function capitalize(str: string): string {
-  return str.substr(0, 1).toUpperCase() + str.substr(1);
-}
-
-
 export function randomDigitStringId(idLength: number): string {
   return (Array(idLength).join('0') + Math.random()).slice(-idLength);
 }
