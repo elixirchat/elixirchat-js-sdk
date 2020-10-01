@@ -1,7 +1,11 @@
 import React, { Component, Fragment } from 'react';
 import ReactDOM from 'react-dom';
 import { ElixirChatWidget } from '../ElixirChatWidget';
-import { UNREAD_MESSAGES_CHANGE } from '../../sdk/ElixirChatEventTypes';
+import {
+  UNREAD_MESSAGES_CHANGE,
+  UNREAD_MESSAGES_SUBSCRIBE_SUCCESS,
+  UNREAD_REPLIES_CHANGE
+} from '../../sdk/ElixirChatEventTypes';
 import {
   FONTS_EXTRACTED,
   WIDGET_DATA_SET,
@@ -12,6 +16,7 @@ import {
 import { cn, detectBrowser } from '../../utilsCommon';
 import {
   base64toBlobUrl,
+  playNotificationSound,
   exposeComponentToGlobalScope,
   unlockNotificationSoundAutoplay,
 } from '../../utilsWidget';
@@ -106,6 +111,15 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
     });
     elixirChatWidget.on(UNREAD_MESSAGES_CHANGE, unreadMessagesCount => {
       this.setState({ unreadMessagesCount });
+    });
+    elixirChatWidget.on(UNREAD_MESSAGES_SUBSCRIBE_SUCCESS, () => {
+      console.log('__ sub', 1);
+      elixirChatWidget.on(UNREAD_REPLIES_CHANGE, (unreadRepliesCount) => {
+        console.log('__ sub', 2, unreadRepliesCount);
+        if (unreadRepliesCount) {
+          playNotificationSound();
+        }
+      });
     });
     elixirChatWidget.on(WIDGET_POPUP_TOGGLE, this.onPopupToggle);
   }

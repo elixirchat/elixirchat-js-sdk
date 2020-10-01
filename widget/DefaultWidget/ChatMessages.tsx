@@ -143,7 +143,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     elixirChatWidget.fetchMessageHistory(this.MESSAGE_CHUNK_SIZE)
       .then(() => {
         if (elixirChatWidget.widgetIsPopupOpen) {
-          this.scrollToFirstUnreadMessageOnce();
+          requestAnimationFrame(this.scrollToFirstUnreadMessageOnce);
         }
         else {
           elixirChatWidget.on(WIDGET_POPUP_OPEN, this.scrollToFirstUnreadMessageOnce);
@@ -195,13 +195,8 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
       mustOpenWidget: shouldOpenPopup,
     } = message;
 
-    const shouldPlayNotificationSound = !isCurrentClient && !elixirChatWidget.widgetIsMuted; // TODO: fix
-
     if (shouldOpenPopup) {
       elixirChatWidget.openPopup();
-    }
-    if (shouldPlayNotificationSound) {
-      playNotificationSound();
     }
     requestAnimationFrame(() => {
       const shouldScrollMessagesToBottom = document.hasFocus()
@@ -334,9 +329,15 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
     if (!lastReadMessagePrecedesLoadedMessageHistory) {
       requestAnimationFrame(() => {
-        const lastReadMessageIndex = _findIndex(messageHistory, { id: lastReadMessageId });
         const firstUnreadMessage = messageHistory[lastReadMessageIndex + 1];
         const messageElementToScrollTo = this.messageRefs[firstUnreadMessage?.id];
+
+        console.error('__ SCROLL TO 1ST UNREAD', {
+          lastReadMessageId,
+          lastReadMessageIndex,
+          firstUnreadMessage,
+        }, messageElementToScrollTo);
+
         if (messageElementToScrollTo) {
           messageElementToScrollTo.scrollIntoView({ behavior: 'smooth', block: 'end' });
         }

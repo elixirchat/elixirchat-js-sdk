@@ -3,8 +3,8 @@ import { gql } from './GraphQLClient';
 import {
   UNREAD_MESSAGES_CHANGE,
   UNREAD_REPLIES_CHANGE,
-  LAST_READ_MESSAGE_CHANGE,
-  ERROR_ALERT_SHOW,
+  LAST_READ_MESSAGE_ID_CHANGE,
+  ERROR_ALERT_SHOW, UNREAD_MESSAGES_SUBSCRIBE_SUCCESS,
 } from './ElixirChatEventTypes';
 
 export interface IUnreadMessagesCounterData {
@@ -44,9 +44,9 @@ export class UnreadMessagesCounter {
     this.elixirChat = elixirChat;
   }
 
-  public subscribe = (params: IUnreadMessagesCounterData) => {
+  public subscribe = (initialData: IUnreadMessagesCounterData) => {
     const { graphQLClientSocket, logInfo, logError, triggerEvent } = this.elixirChat;
-    this.onUnreadCountsUpdate(params);
+    this.onUnreadCountsUpdate(initialData);
 
     graphQLClientSocket.subscribe({
       query: this.subscriptionQuery,
@@ -56,11 +56,12 @@ export class UnreadMessagesCounter {
         triggerEvent(ERROR_ALERT_SHOW, {
           customMessage,
           error,
-          retryCallback: () => this.subscribe(params),
+          retryCallback: () => this.subscribe(initialData),
         });
       },
       onStart: () => {
         logInfo('UnreadMessagesCounter: Subscribed');
+        triggerEvent(UNREAD_MESSAGES_SUBSCRIBE_SUCCESS, initialData);
       },
       onResult: response => {
         const data: IUnreadMessagesCounterData = response?.data?.updateReadMessages || {};
@@ -87,7 +88,7 @@ export class UnreadMessagesCounter {
     if (normalizedLastReadMessageId !== this.lastReadMessageId) {
       this.lastReadMessageId = normalizedLastReadMessageId;
       logInfo('Last message marked as read changed to: ' + normalizedLastReadMessageId);
-      triggerEvent(LAST_READ_MESSAGE_CHANGE, normalizedLastReadMessageId);
+      triggerEvent(LAST_READ_MESSAGE_ID_CHANGE, normalizedLastReadMessageId);
     }
   };
 

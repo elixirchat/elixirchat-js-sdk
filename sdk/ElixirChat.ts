@@ -32,8 +32,8 @@ import { GraphQLClientSocket } from './GraphQLClientSocket';
 import {
   JOIN_ROOM_SUCCESS,
   JOIN_ROOM_ERROR,
-  LAST_READ_MESSAGE_CHANGE,
-  UPDATE_MESSAGES_CHANGE,
+  LAST_READ_MESSAGE_ID_CHANGE,
+  MESSAGES_UPDATED,
   ERROR_ALERT_SHOW,
 } from './ElixirChatEventTypes';
 
@@ -167,10 +167,10 @@ export class ElixirChat {
     this.typingStatusSubscription = new TypingStatusSubscription({ elixirChat: this });
     this.onlineStatusSubscription = new OnlineStatusSubscription({ elixirChat: this });
 
-    this.on(UPDATE_MESSAGES_CHANGE, updatedMessage => {
+    this.on(MESSAGES_UPDATED, updatedMessage => {
       this.messageSubscription.changeMessageBy({ id: updatedMessage.id }, updatedMessage);
     });
-    this.on(LAST_READ_MESSAGE_CHANGE, lastReadMessageId => {
+    this.on(LAST_READ_MESSAGE_ID_CHANGE, lastReadMessageId => {
       this.messageSubscription.markPrecedingMessagesRead(lastReadMessageId);
     });
 
