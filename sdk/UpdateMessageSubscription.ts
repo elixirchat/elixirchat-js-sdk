@@ -1,5 +1,5 @@
 import { ElixirChat } from './ElixirChat';
-import {ERROR_ALERT, U_MESSAGES_CHANGE_SINGLE_MESSAGE} from './ElixirChatEventTypes';
+import {ERROR_ALERT, UPDATE_MESSAGE_SUBSCRIPTION_CHANGE_MESSAGE} from './ElixirChatEventTypes';
 import { fragmentMessage, serializeMessage } from './serializers/serializeMessage';
 import { gql, insertGraphQlFragments } from './GraphQLClient';
 
@@ -36,7 +36,7 @@ export class UpdateMessageSubscription {
         const data = response?.data?.updateMessage;
         if (data) {
           const updatedMessage = serializeMessage(data, this.elixirChat);
-          triggerEvent(U_MESSAGES_CHANGE_SINGLE_MESSAGE, updatedMessage);
+          triggerEvent(UPDATE_MESSAGE_SUBSCRIPTION_CHANGE_MESSAGE, updatedMessage);
         }
       },
     });

@@ -1,10 +1,11 @@
 import { ElixirChat } from './ElixirChat';
 import { gql } from './GraphQLClient';
 import {
+  UNREAD_COUNTER_LAST_READ_MESSAGE_CHANGE,
   UNREAD_COUNTER_MESSAGES_CHANGE,
   UNREAD_COUNTER_REPLIES_CHANGE,
-  UNREAD_COUNTER_LAST_READ_MESSAGE_CHANGE,
-  ERROR_ALERT, UNREAD_COUNTER_SUBSCRIBE_SUCCESS,
+  UNREAD_COUNTER_NOTIFY_ABOUT_NEW_REPLIES,
+  ERROR_ALERT,
 } from './ElixirChatEventTypes';
 
 
@@ -47,7 +48,7 @@ export class UnreadCounter {
 
   public subscribe = (initialData: IUnreadCounterData) => {
     const { graphQLClientSocket, logInfo, logError, triggerEvent } = this.elixirChat;
-    this.onUnreadCounterUpdate(initialData);
+    this.onUnreadCounterUpdate(initialData, true);
 
     graphQLClientSocket.subscribe({
       query: this.subscriptionQuery,
@@ -62,7 +63,6 @@ export class UnreadCounter {
       },
       onStart: () => {
         logInfo('UnreadCounter: Subscribed');
-        triggerEvent(UNREAD_COUNTER_SUBSCRIBE_SUCCESS, initialData);
       },
       onResult: response => {
         const data: IUnreadCounterData = response?.data?.updateReadMessages || {};
@@ -71,7 +71,7 @@ export class UnreadCounter {
     });
   };
 
-  private onUnreadCounterUpdate(data: IUnreadCounterData): void {
+  private onUnreadCounterUpdate(data: IUnreadCounterData, isInitial): void {
     const { triggerEvent, logInfo } = this.elixirChat;
     const { unreadMessagesCount, unreadRepliesCount, lastReadMessageId } = data;
     const normalizedLastReadMessageId = (lastReadMessageId || '').toString().trim();
@@ -82,9 +82,14 @@ export class UnreadCounter {
       triggerEvent(UNREAD_COUNTER_MESSAGES_CHANGE, unreadMessagesCount);
     }
     if (unreadRepliesCount !== this.unreadRepliesCount) {
-      this.unreadRepliesCount = unreadRepliesCount;
+      const shouldNotifyAboutNew = unreadRepliesCount > this.unreadRepliesCount;
       logInfo('Unread replies count changed to ' + unreadRepliesCount);
+      this.unreadRepliesCount = unreadRepliesCount;
       triggerEvent(UNREAD_COUNTER_REPLIES_CHANGE, unreadRepliesCount);
+
+      if (shouldNotifyAboutNew && !isInitial) {
+        triggerEvent(UNREAD_COUNTER_NOTIFY_ABOUT_NEW_REPLIES, unreadRepliesCount);
+      }
     }
     if (normalizedLastReadMessageId !== this.lastReadMessageId) {
       this.lastReadMessageId = normalizedLastReadMessageId;

@@ -29,6 +29,8 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
     },
   };
 
+  chatMessages = React.createRef();
+
   componentDidMount() {
     const { elixirChatWidget } = this.props;
     exposeComponentToGlobalScope(this, elixirChatWidget);
@@ -49,6 +51,15 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
     });
   }
 
+  onBackButtonClick = () => {
+    const { elixirChatWidget } = this.props;
+    try {
+      elixirChatWidget.widgetChatScrollY = this.chatMessages.current.scrollBlock.current.scrollTop;
+    }
+    catch (e) {}
+    elixirChatWidget.navigateTo('welcome-screen');
+  };
+
   render() {
     const { elixirChatWidget, className } = this.props;
     const {
@@ -60,8 +71,7 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
     return (
       <div className={cn('elixirchat-chat-container', className)}>
         <div className="elixirchat-chat-header">
-          <i className="elixirchat-chat-header__back icon-arrow-left"
-            onClick={() => elixirChatWidget.navigateTo('welcome-screen')}/>
+          <i className="elixirchat-chat-header__back icon-arrow-left" onClick={this.onBackButtonClick}/>
 
           <span className="elixirchat-chat-header__title" title={'Версия ' + process.env.ELIXIRCHAT_VERSION}>
             {widgetMainTitle}
@@ -86,7 +96,7 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
           </button>
         </div>
 
-        <ChatMessages elixirChatWidget={elixirChatWidget}/>
+        <ChatMessages elixirChatWidget={elixirChatWidget} ref={this.chatMessages}/>
         <ChatTextarea elixirChatWidget={elixirChatWidget}/>
       </div>
     );

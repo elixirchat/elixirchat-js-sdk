@@ -68,6 +68,7 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
     elixirChatWidget.on(WIDGET_FULLSCREEN_PREVIEW_CLOSE, this.focusTextarea);
     elixirChatWidget.on(WIDGET_MUTE_TOGGLE, this.focusTextarea);
     elixirChatWidget.on(WIDGET_POPUP_OPEN, this.focusTextarea);
+    elixirChatWidget.on(WIDGET_POPUP_OPEN, this.onVerticalResize);
 
     elixirChatWidget.on(WIDGET_REPLY_MESSAGE, messageId => {
       this.setState({ textareaResponseToMessageId: messageId });
@@ -93,6 +94,7 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
     window.removeEventListener('dragover', this.cancelWidgetPopupDrag);
 
     elixirChatWidget.off(WIDGET_POPUP_OPEN, this.focusTextarea);
+    elixirChatWidget.off(WIDGET_POPUP_OPEN, this.onVerticalResize);
   }
 
   preventLoosingUploadingFiles = (e) => {
@@ -155,6 +157,8 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
   };
 
   onVerticalResize = () => {
+
+
     const { elixirChatWidget } = this.props;
     requestAnimationFrame(() => {
       const containerElement = this.container.current;

@@ -33,7 +33,7 @@ import {
   JOIN_ROOM_SUCCESS,
   JOIN_ROOM_ERROR,
   UNREAD_COUNTER_LAST_READ_MESSAGE_CHANGE,
-  U_MESSAGES_CHANGE_SINGLE_MESSAGE,
+  UPDATE_MESSAGE_SUBSCRIPTION_CHANGE_MESSAGE,
   ERROR_ALERT,
 } from './ElixirChatEventTypes';
 
@@ -167,7 +167,7 @@ export class ElixirChat {
     this.typingStatusSubscription = new TypingStatusSubscription({ elixirChat: this });
     this.onlineStatusSubscription = new OnlineStatusSubscription({ elixirChat: this });
 
-    this.on(U_MESSAGES_CHANGE_SINGLE_MESSAGE, updatedMessage => {
+    this.on(UPDATE_MESSAGE_SUBSCRIPTION_CHANGE_MESSAGE, updatedMessage => {
       this.messageSubscription.changeMessageBy({ id: updatedMessage.id }, updatedMessage);
     });
     this.on(UNREAD_COUNTER_LAST_READ_MESSAGE_CHANGE, lastReadMessageId => {

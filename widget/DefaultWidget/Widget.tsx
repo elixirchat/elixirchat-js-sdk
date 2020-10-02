@@ -13,8 +13,7 @@ import { cn, detectBrowser } from '../../utilsCommon';
 
 import {
   UNREAD_COUNTER_MESSAGES_CHANGE,
-  UNREAD_COUNTER_REPLIES_CHANGE,
-  UNREAD_COUNTER_SUBSCRIBE_SUCCESS,
+  UNREAD_COUNTER_NOTIFY_ABOUT_NEW_REPLIES,
 } from '../../sdk/ElixirChatEventTypes';
 
 import {
@@ -30,7 +29,6 @@ export interface IWidgetProps {
 
 export interface IWidgetState {
   unreadMessagesCount: number;
-  unreadRepliesCount: number;
   detectedBrowser: string;
   outsideIframeStyles: string;
   insideIframeStyles: string;
@@ -45,7 +43,6 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
 
   state = {
     unreadMessagesCount: 0,
-    unreadRepliesCount: 0,
     detectedBrowser: null,
     outsideIframeStyles: '',
     insideIframeStyles: '',
@@ -54,7 +51,6 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
     widgetIsPopupOpen: false,
     widgetIsPopupOpeningAnimation: false,
     widgetIsButtonHidden: false,
-
   };
 
   fontExtractor: FontExtractor;
@@ -83,9 +79,9 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
     elixirChatWidget.on(UNREAD_COUNTER_MESSAGES_CHANGE, unreadMessagesCount => {
       this.setState({ unreadMessagesCount });
     });
-    elixirChatWidget.on(UNREAD_COUNTER_SUBSCRIBE_SUCCESS, this.playNotificationOnNewUnreadReplies);
-    elixirChatWidget.on(WIDGET_NAVIGATE_TO, this.onViewChange);
+    elixirChatWidget.on(UNREAD_COUNTER_NOTIFY_ABOUT_NEW_REPLIES, this.playNotificationSound);
     elixirChatWidget.on(WIDGET_POPUP_TOGGLE, this.onPopupToggle);
+    elixirChatWidget.on(WIDGET_NAVIGATE_TO, this.onViewChange);
 
     this.setState({ detectedBrowser: detectBrowser() });
     document.body.addEventListener('click', this.unlockNotificationSoundAutoplay);
@@ -134,6 +130,10 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
   };
 
   playNotificationSound = () => {
+    const { elixirChatWidget } = this.props;
+    if (elixirChatWidget.widgetIsMuted) {
+      return;
+    }
     const notification = new Audio(this.widgetAssets.assets.mp3.notificationSound);
     try {
       notification.play();
@@ -141,18 +141,6 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
     catch (e) {
       console.error('Unable to play notification sound before any action was taken by the user in the current browser tab');
     }
-  };
-
-  playNotificationOnNewUnreadReplies = (unreadCounterInitialState) => {
-    const { elixirChatWidget } = this.props;
-    this.setState({ unreadRepliesCount: unreadCounterInitialState.unreadRepliesCount });
-
-    elixirChatWidget.on(UNREAD_COUNTER_REPLIES_CHANGE, (unreadRepliesCount) => {
-      if (unreadRepliesCount > this.state.unreadRepliesCount && !elixirChatWidget.widgetIsMuted) {
-        this.playNotificationSound();
-      }
-      this.setState({ unreadRepliesCount });
-    });
   };
 
   render() {

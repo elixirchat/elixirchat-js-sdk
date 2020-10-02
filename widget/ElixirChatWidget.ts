@@ -69,6 +69,7 @@ export class ElixirChatWidget extends ElixirChat {
   public widgetCompanyLogoUrl: string | null;
   public widgetSupportEmail: string;
   public widgetChannels: Array<IJoinRoomChannel>;
+  public widgetChatScrollY: number | null;
 
   public widgetDefaultParams = {
     isMuted: false,
@@ -139,6 +140,7 @@ export class ElixirChatWidget extends ElixirChat {
     this.widgetIsButtonHidden = this.widgetConfig.hideDefaultButton || isButtonHidden;
     this.widgetSupportEmail = this.widgetConfig.email || supportEmail;
     this.widgetView = getFromLocalStorage('elixirchat-current-view', view);
+    this.widgetChatScrollY = 0;
 
     this.widgetChannels = (this.widgetConfig.enabledChannels || [])
       .map(channelType => {

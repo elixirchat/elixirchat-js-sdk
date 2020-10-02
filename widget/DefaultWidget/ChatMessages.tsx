@@ -10,7 +10,7 @@ import {
   getMediaType,
   detectBrowser,
   getUserFullName,
-  randomDigitStringId,
+  randomDigitStringId, _last,
 } from '../../utilsCommon';
 
 import {
@@ -183,7 +183,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
     elixirChatWidget.fetchMessageHistory(this.MESSAGE_CHUNK_SIZE)
       .then(() => {
-        this.waitForPopupToOpen(this.scrollToFirstUnreadMessageOnce);
+        this.waitForPopupToOpen(this.scrollToAppropriatePositionOnce);
       })
       .catch(e => {
         elixirChatWidget.triggerEvent(ERROR_ALERT, {
@@ -318,14 +318,24 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     };
   };
 
-  scrollToFirstUnreadMessageOnce = () => {
+  scrollToAppropriatePositionOnce = () => {
+    const { elixirChatWidget } = this.props;
+    elixirChatWidget.off(WIDGET_POPUP_OPEN, this.scrollToAppropriatePositionOnce);
+
+    if (elixirChatWidget.widgetChatScrollY) {
+      this.scrollBlock.current.scrollTop = elixirChatWidget.widgetChatScrollY;
+    }
+    else {
+      this.scrollToFirstUnreadMessage();
+    }
+  };
+
+  scrollToFirstUnreadMessage = () => {
     const { elixirChatWidget } = this.props;
     const { messageHistory, lastReadMessageId } = elixirChatWidget;
     const lastReadMessageIndex = _findIndex(messageHistory, { id: lastReadMessageId });
-    elixirChatWidget.off(WIDGET_POPUP_OPEN, this.scrollToFirstUnreadMessageOnce);
 
-    // If lastReadMessageId isn't within the latest loaded chunk, it means it precedes currently loaded
-    // messages, therefore the scroll must be set all the way up to the beginning
+    // If the last read message precedes loaded message history, just keep scroll at the top of the list
     const lastReadMessagePrecedesLoadedMessageHistory = lastReadMessageId && !lastReadMessageIndex;
 
     if (!lastReadMessagePrecedesLoadedMessageHistory) {
@@ -335,7 +345,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
         if (messageElementToScrollTo) {
           setTimeout(() => {
             messageElementToScrollTo.scrollIntoView({ behavior: 'smooth', block: 'end' });
-          }, 500);
+          });
         }
         else {
           this.scrollToBottom();
@@ -344,15 +354,15 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     }
   };
 
-  hasUserScroll = () => {
-    const scrollBlock = this.scrollBlock.current;
-    return scrollBlock.scrollTop <= scrollBlock.scrollHeight - scrollBlock.offsetHeight - 30;
-  };
-
   scrollToBottom = () => {
     setTimeout(() => {
       this.scrollBlock.current.scrollTop = this.scrollBlock.current.scrollHeight;
     });
+  };
+
+  hasUserScroll = () => {
+    const scrollBlock = this.scrollBlock.current;
+    return scrollBlock.scrollTop <= scrollBlock.scrollHeight - scrollBlock.offsetHeight - 30;
   };
 
   initializeMessagesIntersectionObserver = () => {
