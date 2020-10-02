@@ -33,6 +33,7 @@ export interface IFile {
   width: number;
   duration: number,
   contentType: string | null;
+  isScreenshot: boolean;
   thumbnails?: Array<IFile>;
   url: string;
 }

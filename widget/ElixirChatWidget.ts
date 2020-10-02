@@ -1,20 +1,18 @@
 import 'babel-polyfill';
-import {_find, getFromLocalStorage, logEvent, setToLocalStorage} from '../utilsCommon';
+import { _find, getFromLocalStorage, logEvent, setToLocalStorage } from '../utilsCommon';
 import { renderWidgetReactComponent } from './DefaultWidget/Widget';
 import { IFontRule } from './FontExtractor';
+import { IJoinRoomChannel, IJoinRoomData } from '../sdk/ElixirChat';
+import { JOIN_ROOM_SUCCESS, JOIN_ROOM_ERROR } from '../sdk/ElixirChatEventTypes';
 import {
   WIDGET_IFRAME_READY,
+  WIDGET_NAVIGATE_TO,
+  WIDGET_DATA_SET,
   WIDGET_MUTE_TOGGLE,
   WIDGET_POPUP_TOGGLE,
-  WIDGET_NAVIGATE_TO,
-  WIDGET_DATA_SET, WIDGET_POPUP_OPEN, WIDGET_POPUP_CLOSE,
+  WIDGET_POPUP_OPEN,
+  WIDGET_POPUP_CLOSE,
 } from './ElixirChatWidgetEventTypes';
-
-import {
-  JOIN_ROOM_ERROR,
-  JOIN_ROOM_SUCCESS,
-} from '../sdk/ElixirChatEventTypes';
-import {IJoinRoomChannel, IJoinRoomData} from '../sdk/ElixirChat';
 
 
 let ElixirChat = window.ElixirChat;
@@ -85,7 +83,7 @@ export class ElixirChatWidget extends ElixirChat {
   public widgetComponents: any = {};
   public widgetIFrameDocument: Document = {};
 
-  public appendWidget = async (widgetConfig: IElixirChatWidgetConfig): void => {
+  public appendWidget = (widgetConfig: IElixirChatWidgetConfig): void => {
     this.widgetConfig = widgetConfig || {};
     const container = this.widgetConfig.container;
 

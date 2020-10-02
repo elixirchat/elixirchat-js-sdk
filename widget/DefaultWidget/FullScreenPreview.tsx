@@ -3,8 +3,8 @@ import { ElixirChatWidget } from '../ElixirChatWidget';
 import { cn } from '../../utilsCommon';
 import { fitDimensionsIntoLimits, isWithinElement } from '../../utilsWidget';
 import {
-  IMAGE_PREVIEW_CLOSE,
-  IMAGE_PREVIEW_OPEN,
+  WIDGET_FULLSCREEN_PREVIEW_CLOSE,
+  WIDGET_FULLSCREEN_PREVIEW_OPEN,
   WIDGET_IFRAME_READY,
 } from '../ElixirChatWidgetEventTypes';
 
@@ -44,7 +44,7 @@ export class FullScreenPreview extends Component<IFullScreenPreviewProps, IFullS
   componentDidMount() {
     const { elixirChatWidget } = this.props;
 
-    elixirChatWidget.on(IMAGE_PREVIEW_OPEN, ({ preview, sender, gallery }) => {
+    elixirChatWidget.on(WIDGET_FULLSCREEN_PREVIEW_OPEN, ({ preview, sender, gallery }) => {
       this.setState({ preview, sender, gallery, isVisible: true });
       this.updatePreviewDimensions(preview);
       this.animateSlide();
@@ -153,7 +153,7 @@ export class FullScreenPreview extends Component<IFullScreenPreviewProps, IFullS
 
   closePreview = () => {
     const { elixirChatWidget } = this.props;
-    elixirChatWidget.triggerEvent(IMAGE_PREVIEW_CLOSE);
+    elixirChatWidget.triggerEvent(WIDGET_FULLSCREEN_PREVIEW_CLOSE);
     this.setState({ isVisible: false });
   };
 

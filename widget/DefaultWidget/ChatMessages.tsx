@@ -38,9 +38,9 @@ import {
 } from '../../sdk/ElixirChatEventTypes';
 
 import {
-  IMAGE_PREVIEW_OPEN,
-  TEXTAREA_VERTICAL_RESIZE,
-  REPLY_MESSAGE,
+  WIDGET_FULLSCREEN_PREVIEW_OPEN,
+  WIDGET_TEXTAREA_RESIZE,
+  WIDGET_REPLY_MESSAGE,
   WIDGET_IFRAME_READY,
   WIDGET_POPUP_OPEN,
 } from '../ElixirChatWidgetEventTypes';
@@ -105,7 +105,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     elixirChatWidget.on(MESSAGES_HISTORY_CHANGE, this.onMessageHistoryChange);
     elixirChatWidget.on(MESSAGES_HISTORY_PREPEND, this.onMessageHistoryPrepend);
 
-    elixirChatWidget.on(TEXTAREA_VERTICAL_RESIZE, scrollBlockBottomOffset => {
+    elixirChatWidget.on(WIDGET_TEXTAREA_RESIZE, scrollBlockBottomOffset => {
       const hasUserScroll = this.hasUserScroll();
       this.setState({ scrollBlockBottomOffset });
       if (!hasUserScroll) {
@@ -438,13 +438,13 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
   onReplyButtonClick = (messageId) => {
     const { elixirChatWidget } = this.props;
-    elixirChatWidget.triggerEvent(REPLY_MESSAGE, messageId);
+    elixirChatWidget.triggerEvent(WIDGET_REPLY_MESSAGE, messageId);
   };
 
   onPreviewClick = (e, preview, sender) => {
     const { elixirChatWidget } = this.props;
     const { fullScreenPreviews } = this.state;
-    elixirChatWidget.triggerEvent(IMAGE_PREVIEW_OPEN, {
+    elixirChatWidget.triggerEvent(WIDGET_FULLSCREEN_PREVIEW_OPEN, {
       preview,
       sender,
       gallery: fullScreenPreviews,
@@ -696,8 +696,8 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                     <div className="elixirchat-chat-messages__bottom">
                       {message.submissionErrorCode && (
                         <span className="elixirchat-chat-messages__submission-error">
-                        {this.renderSubmissionErrorMessage(message)}
-                      </span>
+                          {this.renderSubmissionErrorMessage(message)}
+                        </span>
                       )}
                       {!message.submissionErrorCode && (
                         <Fragment>

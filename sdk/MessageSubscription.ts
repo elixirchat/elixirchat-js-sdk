@@ -191,7 +191,7 @@ export class MessageSubscription {
       variables.tempId = tempId;
       this.changeMessageBy({ tempId }, {
         isSubmitting: true,
-        submissionErrorCode: null, // TODO: fix
+        submissionErrorCode: null,
       });
     }
 

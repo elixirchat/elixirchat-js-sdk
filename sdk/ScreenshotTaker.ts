@@ -1,6 +1,6 @@
 import { ElixirChat } from './ElixirChat';
 import { detectPlatform } from '../utilsCommon';
-import { SCREENSHOT_REQUEST_ERROR, SCREENSHOT_REQUEST_SUCCESS } from '../widget/ElixirChatWidgetEventTypes';
+import { WIDGET_SCREENSHOT_REQUEST_ERROR, WIDGET_SCREENSHOT_REQUEST_SUCCESS } from '../widget/ElixirChatWidgetEventTypes';
 
 export interface IScreenshot {
   dataUrl: string,
@@ -88,14 +88,14 @@ export class ScreenshotTaker {
             setTimeout(() => {
               const screenshot: IScreenshot = this.captureVideoFrame();
               this.stopMediaStream();
-              triggerEvent(SCREENSHOT_REQUEST_SUCCESS, screenshot);
+              triggerEvent(WIDGET_SCREENSHOT_REQUEST_SUCCESS, screenshot);
               resolve(screenshot);
             }, 500);
           };
           this.video.play();
         })
         .catch(error => {
-          triggerEvent(SCREENSHOT_REQUEST_ERROR, error);
+          triggerEvent(WIDGET_SCREENSHOT_REQUEST_ERROR, error);
           reject(error);
         });
     });
