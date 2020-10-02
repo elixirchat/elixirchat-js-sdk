@@ -1,18 +1,20 @@
 import { uniqueNamesGenerator } from 'unique-names-generator';
 import { isMobileSizeScreen } from '../utilsWidget';
 import {
-  capitalize,
+  _uniq,
+  _upperFirst,
+  parseFullName,
+  parseGETParams,
   randomDigitStringId,
   getFromLocalStorage,
   setToLocalStorage,
   template,
   hashCode,
   normalizeErrorStack,
-  parseFullName,
 } from '../utilsCommon';
 
 import { IMessage } from './serializers/serializeMessage';
-import { fragmentUser, IUser, serializeUser } from './serializers/serializeUser';
+import { IUser, serializeUser, fragmentUser } from './serializers/serializeUser';
 import { Logger } from './Logger';
 import { ScreenshotTaker, IScreenshot } from './ScreenshotTaker';
 import { TypingStatusSubscription } from './TypingStatusSubscription';
@@ -20,14 +22,16 @@ import { UpdateMessageSubscription } from './UpdateMessageSubscription';
 import { OnlineStatusSubscription } from './OnlineStatusSubscription';
 import { UnreadCounter, IUnreadCounterData } from './UnreadCounter';
 import { MessageSubscription, ISentMessageSerialized } from './MessageSubscription';
+import { GraphQLClientSocket } from './GraphQLClientSocket';
 import {
   GraphQLClient,
   gql,
+  simplifyGraphQLJSON,
   insertGraphQlFragments,
   parseGraphQLMethodFromQuery,
-  extractErrorMessage, simplifyGraphQLJSON,
+  extractErrorMessage,
 } from './GraphQLClient';
-import { GraphQLClientSocket } from './GraphQLClientSocket';
+
 
 import {
   JOIN_ROOM_SUCCESS,
@@ -36,9 +40,6 @@ import {
   UPDATE_MESSAGE_SUBSCRIPTION_CHANGE_MESSAGE,
   ERROR_ALERT,
 } from './ElixirChatEventTypes';
-
-
-
 
 
 export interface IElixirChatRoom {
@@ -100,6 +101,8 @@ export class ElixirChat {
   public room?: IElixirChatRoom;
   public client?: IElixirChatUser;
   public joinRoomData: IJoinRoomData = {};
+  public enabledFeatures: Array<string> = [];
+  public allFeaturesInTesting: Array<string> = [];
 
   public isInitialized: boolean = false;
   public isConnected: boolean;
@@ -175,6 +178,7 @@ export class ElixirChat {
     });
 
     this.logInfo('Initializing ElixirChat', config);
+    this.initializeEnabledFeatures();
     return this.joinRoom(this.config.room, this.config.client);
   }
 
@@ -245,7 +249,7 @@ export class ElixirChat {
 
   private generateAnonymousClientData(): IElixirChatUser {
     const baseTitle = uniqueNamesGenerator({ length: 2, separator: ' ', dictionaries: null });
-    const [ firstName, lastName ] = baseTitle.split(' ').map(capitalize);
+    const [ firstName, lastName ] = baseTitle.split(' ').map(_upperFirst);
     const randomFourDigitPostfix = randomDigitStringId(4);
     const uniqueId = baseTitle.replace(' ', '-') + '-' + randomFourDigitPostfix;
     return {
@@ -641,6 +645,37 @@ export class ElixirChat {
     this.logInfo('Attempting to reconnect to another room', config);
     this.disconnect();
     return this.joinRoom(config.room, config.client);
+  };
+
+  /**
+   * To enable an experimental feature, open a link in the following format
+   * @example
+   *  http://example.com/your/path?__elixir-enable-feature=<FEATURE-NAME>
+   *  or http://example.com/your/path#__elixir-enable-feature=<FEATURE-NAME> (with #hash)
+   *
+   * To disable it, pass the "__elixir-disable-feature" option:
+   * @example http://localhost:8001/?__elixir-disable-feature=<FEATURE-NAME> (or using #hash)
+   */
+  private initializeEnabledFeatures(): void {
+    const urlParams = {
+      ...parseGETParams(location.search),
+      ...parseGETParams(location.hash),
+    };
+    let enabledFeatures = getFromLocalStorage('elixirchat-enabled-features', []);
+
+    if (urlParams['__elixir-enable-feature']) {
+      enabledFeatures = _uniq([ ...enabledFeatures,  urlParams['__elixir-enable-feature'].toLowerCase()]);
+    }
+    else if (urlParams['__elixir-disable-feature']) {
+      enabledFeatures = enabledFeatures.filter(feature => feature !== urlParams['__elixir-disable-feature'].toLowerCase());
+    }
+    setToLocalStorage('elixirchat-enabled-features', enabledFeatures);
+    this.enabledFeatures = enabledFeatures;
+  };
+
+  public isFeatureEnabled = (featureName: string): boolean => {
+    this.allFeaturesInTesting = _uniq([ ...this.allFeaturesInTesting, featureName.toLowerCase() ]);
+    return this.enabledFeatures.includes(featureName.toLowerCase());
   };
 }
 

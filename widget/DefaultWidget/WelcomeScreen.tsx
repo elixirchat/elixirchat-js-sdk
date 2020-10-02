@@ -203,7 +203,7 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
           </button>
         </div>
 
-        {Boolean(widgetChannels.length) && (
+        {elixirChatWidget.isFeatureEnabled('omnichannel') && Boolean(widgetChannels.length) && (
           <div className="elixirchat-welcome-screen-channels">
             <div className="elixirchat-welcome-screen-channels__title">Поддержка в других каналах</div>
             <ul className="elixirchat-welcome-screen-channels__list">

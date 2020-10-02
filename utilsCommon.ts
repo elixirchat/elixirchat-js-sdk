@@ -70,6 +70,19 @@ export function _findIndex(arr: Array, validation: Function | object) {
 }
 
 
+// Lodash-like _.uniq
+export function _uniq(arr: Array): Array {
+  const uniqueItemsTable = {};
+  return arr.filter(item => {
+    if (!uniqueItemsTable[item]) {
+      uniqueItemsTable[item] = true;
+      return true;
+    }
+    return false;
+  });
+}
+
+
 // Lodash-like _.uniqBy
 export function _uniqBy(arr: Array, propFunction: Function | string): Array {
   const uniqueItemsTable = {};
@@ -213,4 +226,20 @@ export function cn(...args){
   else {
     return args.join(' ');
   }
+}
+
+
+export function parseGETParams(getParamsString){
+  const params = {};
+  if (!getParamsString.trim()) {
+    return {};
+  }
+  getParamsString
+    .replace(/^#?\??/, '')
+    .split('&')
+    .forEach(param => {
+      const [ key, value ] = param.split('=');
+      params[key] = value;
+    });
+  return params;
 }
