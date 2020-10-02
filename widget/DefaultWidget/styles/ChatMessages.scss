@@ -467,14 +467,13 @@
 
 .elixirchat-chat-typing {
   position: relative;
-  padding: 0 30px 0 24px;
+  margin: -25px 30px 0 30px;
+  padding-left: 26px;
   background: $color-white;
-  color: darken($color-gray-light, 8);
+  color: $color-gray-dark;
   height: 18px;
   opacity: 0;
   transition: all 200ms;
-  transform: translateY(6px);
-  margin-top: -5px;
 
   &--visible {
     opacity: 1;
@@ -487,7 +486,7 @@
   left: 0;
   top: 3px;
   font-size: 11px;
-  color: darken($color-gray-light, 5);
+  color: lighten($color-gray-dark, 5);
 }
 
 .elixirchat-chat-previews__video-play {

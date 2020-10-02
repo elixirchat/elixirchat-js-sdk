@@ -56,10 +56,11 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
   componentDidMount(): void {
     const { elixirChatWidget } = this.props;
 
+    const savedTypedText = this.getLocallySavedTypedText();
+    this.setState(savedTypedText);
+
     elixirChatWidget.on(TYPING_STATUS_SUBSCRIBE_SUCCESS, () => {
-      const savedTypedText = this.getLocallySavedTypedText();
       elixirChatWidget.dispatchTypedText(savedTypedText.textareaText);
-      this.setState(savedTypedText);
     });
 
     elixirChatWidget.on(WIDGET_SCREENSHOT_REQUEST_SUCCESS, this.onScreenshotRequestSuccess);

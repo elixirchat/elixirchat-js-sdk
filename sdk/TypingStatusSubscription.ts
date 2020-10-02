@@ -1,12 +1,11 @@
 import * as Phoenix from 'phoenix';
 import { ElixirChat } from './ElixirChat';
+import { IGraphQLClientSocketConfig } from './GraphQLClientSocket';
 import {
   TYPING_STATUS_CHANGE,
   TYPING_STATUS_SUBSCRIBE_SUCCESS,
   TYPING_STATUS_SUBSCRIBE_ERROR,
 } from './ElixirChatEventTypes';
-
-import { logEvent } from '../utilsCommon';
 
 export interface ITypingUser {
   id: string;
@@ -19,7 +18,10 @@ export interface ITypingUser {
 
 export class TypingStatusSubscription {
 
-  protected elixirChat: ElixirChat;
+  public url: string;
+  public token?: string;
+  public elixirChat: ElixirChat;
+
   protected phoenixSocket: any;
   protected channel: any;
   protected currentlyTypingUsers: Array<ITypingUser> = [];
@@ -30,22 +32,29 @@ export class TypingStatusSubscription {
     this.elixirChat = elixirChat;
   }
 
-  public subscribe = () => {
-    this.initializeSocket();
+  public initialize = ({ url, token }: IGraphQLClientSocketConfig) => {
+    this.url = url;
+    this.token = token;
   };
 
-  public unsubscribe = () => {
-    const { debug } = this.elixirChat;
-    logEvent(debug, 'Unsubscribing from typing status change...');
+  public subscribe = () => {
+    const { triggerEvent, logError } = this.elixirChat;
 
-    this.channel.leave();
-    this.channel = null;
-    this.phoenixSocket = null;
-    this.currentlyTypingUsers = [];
+    this.phoenixSocket = new Phoenix.Socket(this.url, {
+      params: {
+        token: this.token,
+      }
+    });
+    this.phoenixSocket.onError(error => {
+      const message = 'TypingStatusSubscription: Failed to subscribe: could not open connection via Phoenix.Socket';
+      logError(message, error);
+      triggerEvent(TYPING_STATUS_SUBSCRIBE_ERROR, error);
+    });
 
-    Object.values(this.typingTimeouts).forEach(timeout => clearTimeout(timeout));
-    this.typingTimeouts = [];
-    this.typedText = '';
+    this.phoenixSocket.onOpen(() => {
+      this.joinChannel();
+    });
+    this.phoenixSocket.connect();
   };
 
   public dispatchTypedText = (typedText: string | false, dispatchForcefully: boolean = false): void => {
@@ -60,54 +69,33 @@ export class TypingStatusSubscription {
     }
   };
 
-  protected initializeSocket(): void {
-    const { triggerEvent, debug, socketUrl, authToken } = this.elixirChat;
-
-    this.phoenixSocket = new Phoenix.Socket(socketUrl, {
-      params: {
-        token: authToken
-      }
-    });
-
-    this.phoenixSocket.onError(error => {
-      const message = 'Failed to subscribe to typing status change: could not open connection via Phoenix.Socket';
-      logEvent(debug, message, error, 'error');
-      triggerEvent(TYPING_STATUS_SUBSCRIBE_ERROR, error);
-    });
-
-    this.phoenixSocket.onOpen(() => {
-      this.joinChannel();
-    });
-    this.phoenixSocket.connect();
-  };
-
   protected joinChannel(): void {
-    const { triggerEvent, debug, elixirChatRoomId } = this.elixirChat; // TODO: fix (joinRoomData)
+    const { triggerEvent, logError, logInfo, joinRoomData } = this.elixirChat;
 
     if (this.channel) {
       this.channel.leave();
     }
 
-    this.channel = this.phoenixSocket.channel('public:room:' + elixirChatRoomId, {});
+    this.channel = this.phoenixSocket.channel('public:room:' + joinRoomData.elixirChatRoomId, {});
     this.channel.join()
       .receive('error', error => {
-        logEvent(debug, 'Failed to subscribe to typing status change: channel received error', error, 'error');
+        logError('TypingStatusSubscription: Failed to subscribe: channel received error', error);
         triggerEvent(TYPING_STATUS_SUBSCRIBE_ERROR, error);
       })
       .receive('timeout', () => {
-        logEvent(debug, 'Failed to subscribe to typing status change: channel received timeout', null, 'error');
+        logError('TypingStatusSubscription: Failed to subscribe: channel received timeout');
         triggerEvent(TYPING_STATUS_SUBSCRIBE_ERROR);
       })
       .receive('ok', (data) => {
         this.channel.on('presence_diff', this.onPresenceDiff);
         this.dispatchTypedText(this.typedText, true);
-        logEvent(debug, 'Successfully subscribed to typing status change', data);
+        logInfo('TypingStatusSubscription: Subscribed', data);
         setTimeout(() => triggerEvent(TYPING_STATUS_SUBSCRIBE_SUCCESS, data));
       })
   };
 
   protected onPresenceDiff = (diff: any): void => {
-    const { elixirChatClientId } = this.elixirChat; // TODO: fix (joinRoomData)
+    const { joinRoomData } = this.elixirChat;
     let userId;
     let userData;
     let userMeta;
@@ -119,7 +107,7 @@ export class TypingStatusSubscription {
     }
     catch (e) {}
 
-    if (!userMeta || userId === elixirChatClientId) {
+    if (!userMeta || userId === joinRoomData.elixirChatClientId) {
       return;
     }
 
@@ -161,14 +149,22 @@ export class TypingStatusSubscription {
   };
 
   protected triggerOnChangeEvent(updatedTypingUsers): void {
-    const { triggerEvent, debug } = this.elixirChat;
-
+    const { triggerEvent } = this.elixirChat;
     if (updatedTypingUsers.length || this.currentlyTypingUsers.length) {
-      const didStopTyping = this.currentlyTypingUsers.length > updatedTypingUsers.length;
       this.currentlyTypingUsers = updatedTypingUsers;
-
-      logEvent(debug, `Some users ${didStopTyping ? 'stopped' : 'started'} typing`, this.currentlyTypingUsers);
       triggerEvent(TYPING_STATUS_CHANGE, this.currentlyTypingUsers);
     }
   }
+
+  public unsubscribe = () => {
+    const { logInfo } = this.elixirChat;
+    logInfo('TypingStatusSubscription: Unsubscribing...');
+
+    this.channel.leave();
+
+    Object.values(this.typingTimeouts).forEach(timeout => clearTimeout(timeout));
+    this.currentlyTypingUsers = [];
+    this.typingTimeouts = [];
+    this.typedText = '';
+  };
 }

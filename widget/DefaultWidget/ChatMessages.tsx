@@ -71,7 +71,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     fullScreenPreviews: [],
     screenshotFallback: null,
     scrollBlockBottomOffset: null,
-    currentlyTypingUsers: [], // TODO: fix
+    currentlyTypingUsers: [],
   };
 
   MAX_THUMBNAIL_SIZE: number = isMobileSizeScreen() ? 208 : 256;
@@ -113,10 +113,9 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
       }
     });
 
-    // TODO: fix
-    // elixirChatWidget.on(TYPING_STATUS_CHANGE, currentlyTypingUsers => {
-    //   this.setState({ currentlyTypingUsers });
-    // });
+    elixirChatWidget.on(TYPING_STATUS_CHANGE, currentlyTypingUsers => {
+      this.setState({ currentlyTypingUsers });
+    });
 
     requestAnimationFrame(this.initializeMessagesIntersectionObserver);
   }
@@ -795,21 +794,21 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
             </Fragment>
           ))}
+        </div>
 
-          <div className={cn({
-            'elixirchat-chat-typing': true,
-            'elixirchat-chat-typing--visible': Boolean(currentlyTypingUsers.length),
-          })}>
-            <Fragment>
-              <i className="elixirchat-chat-typing__icon icon-typing"/>
-              {inflect(currentlyTypingUsers.length, [
-                'человек пишет...',
-                'человека пишут...',
-                'человек пишут...',
-              ])}
-            </Fragment>
-          </div>
 
+        <div className={cn({
+          'elixirchat-chat-typing': true,
+          'elixirchat-chat-typing--visible': Boolean(currentlyTypingUsers.length),
+        })}>
+          <Fragment>
+            <i className="elixirchat-chat-typing__icon icon-typing"/>
+            {inflect(currentlyTypingUsers.length, [
+              'человек пишет...',
+              'человека пишут...',
+              'человек пишут...',
+            ])}
+          </Fragment>
         </div>
       </div>
     );

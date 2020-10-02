@@ -356,7 +356,9 @@ export class ElixirChat {
     this.updateMessageSubscription.subscribe();
     this.onlineStatusSubscription.subscribe({ isOnline, workHoursStartAt });
     this.unreadCounter.subscribe({ unreadMessagesCount, unreadRepliesCount, lastReadMessageId });
-    // this.typingStatusSubscription.subscribe(); // TODO: fix
+
+    this.typingStatusSubscription.initialize({ url: socketUrl, token });
+    this.typingStatusSubscription.subscribe();
 
     this.triggerEvent(JOIN_ROOM_SUCCESS, this.joinRoomData, { firedOnce: true });
     return this.joinRoomData;
