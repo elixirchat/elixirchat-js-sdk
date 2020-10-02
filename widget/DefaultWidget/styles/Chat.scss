@@ -3,30 +3,6 @@
 
 $chat-header-height: 60px;
 
-body {
-  margin: 0;
-  padding: 0;
-}
-
-body,
-input,
-button,
-textarea {
-  font: 14px/18px $font-family-text;
-  outline: none;
-  color: $color-black;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-.m-pointer {
-  cursor: pointer;
-}
-
-.m-nw {
-  white-space: nowrap;
-}
-
 .elixirchat-chat-container {
   position: absolute;
   top: 0;
@@ -34,6 +10,7 @@ textarea {
   right: 0;
   left: 0;
   background: $color-white;
+  border-radius: $iframe-border-radius;
 }
 
 .elixirchat-chat-header {
@@ -47,6 +24,7 @@ textarea {
   left: 0;
   right: 0;
   z-index: 2;
+  border-radius: $iframe-border-radius $iframe-border-radius 0 0;
 }
 
 .elixirchat-chat-header__title {

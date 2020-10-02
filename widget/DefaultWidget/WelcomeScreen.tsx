@@ -167,8 +167,11 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
       <div className="elixirchat-welcome-screen-container">
 
         <i className="icon-close-thin elixirchat-welcome-screen-close"
-          style={{ opacity: closeIconOpacity }}
-          onClick={elixirChatWidget.closePopup}/>
+          onClick={elixirChatWidget.closePopup}
+          style={{
+            opacity: closeIconOpacity,
+            display: closeIconOpacity < 0 ? 'hidden' : null
+          }}/>
 
         <div className="elixirchat-welcome-screen-top">
           <div style={{ backgroundImage: `url(${widgetCompanyLogoUrl})` }} className={cn({

@@ -19,3 +19,6 @@ $color-white: #FFFFFF;
 $color-blue: #0033FF;
 $color-pink: #FF0066;
 $color-green: #50C900;
+
+// TODO: Fix iframe border-radius + overflow: hidden in Safari (check WelcomeScreen)
+$iframe-border-radius: 8px;

@@ -10,7 +10,7 @@ import {
   getMediaType,
   detectBrowser,
   getUserFullName,
-  randomDigitStringId, _last,
+  randomDigitStringId,
 } from '../../utilsCommon';
 
 import {
@@ -382,10 +382,6 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
           if (messageData.isUnread) {
             this.onScrollOverUnreadMessage(messageData.id);
           }
-          if (messageData.id === messageHistory[0]?.id) {
-            // TODO: figure out how to init this AFTER messages are loaded and initially scrolled the last unread
-            // this.loadPrecedingMessages();
-          }
         }
         else {
           this.setDatasetValues(messageElement, { isMessageWithinViewport: false });
@@ -555,6 +551,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
     return (
       <div className={cn('elixirchat-chat-scroll', className)}
+        onScroll={e => e.target.scrollTop < 0 ? this.loadPrecedingMessages() : null}
         style={{ bottom: scrollBlockBottomOffset }}
         ref={this.scrollBlock}>
 

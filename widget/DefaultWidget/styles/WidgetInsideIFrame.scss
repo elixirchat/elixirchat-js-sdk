@@ -1,6 +1,30 @@
 @import "./variables";
 @import "./mixins";
 
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body,
+input,
+button,
+textarea {
+  font: 14px/18px $font-family-text;
+  outline: none;
+  color: $color-black;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.m-pointer {
+  cursor: pointer;
+}
+
+.m-nw {
+  white-space: nowrap;
+}
+
 .elixirchat-widget-view {
   transition: all 50ms;
 

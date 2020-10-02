@@ -10,7 +10,7 @@ $color-textarea-bg: #FAFAFA;
   z-index: 3;
   background: $color-textarea-bg;
   box-shadow: 0 -1px 0 rgba($color-black, .13);
-  border-radius: 0 0 8px 8px;
+  border-radius: 0 0 $iframe-border-radius $iframe-border-radius;
 }
 
 .elixirchat-chat-textarea__reply-to {
@@ -186,7 +186,6 @@ $color-textarea-bg: #FAFAFA;
   right: 0;
   z-index: 2;
   background: $color-white;
-  border-radius: 8px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -195,6 +194,7 @@ $color-textarea-bg: #FAFAFA;
   color: lighten($color-gray-dark, 10);
   font-size: 15px;
   line-height: 21px;
+  border-radius: $iframe-border-radius;
 }
 
 .elixirchat-chat-draggable-area__icon {

@@ -19,6 +19,7 @@
   background: $color-blue;
   color: $color-white;
   padding: 36px 32px 125px 32px;
+  border-radius: $iframe-border-radius $iframe-border-radius 0 0;
 }
 
 .elixirchat-welcome-screen-top__logo {

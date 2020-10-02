@@ -85,7 +85,7 @@ $mobile-max-size: 480px;
 }
 
 .elixirchat-widget-iframe {
-  border-radius: 8px;
+  border-radius: $iframe-border-radius;
   background: #FAFAFA;
   position: fixed;
   max-height: 525px;
