@@ -280,8 +280,6 @@ export class ElixirChat {
       },
     };
 
-    // TODO: add omnichannelChannels -> isConnected, when supported on backend
-    // TODO: add company -> companyLogoUrl when supported on backend
     const query = insertGraphQlFragments(gql`
       mutation($companyId: Uuid!, $room: ForeignRoom, $client: ForeignClient!) {
         joinRoom (companyId: $companyId, room: $room, client: $client) {

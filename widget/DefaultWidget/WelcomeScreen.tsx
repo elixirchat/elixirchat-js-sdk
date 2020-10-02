@@ -25,6 +25,7 @@ export interface IWelcomeScreenState {
   employeeAvatars: Array<{ url: string, initials: string }>;
   employeesCount: number;
   onlineStatus: IOnlineStatusParams;
+  closeIconOpacity: number;
 }
 
 export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreenState> {
@@ -41,6 +42,7 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
       isOnline: false,
       workHoursStartAt: null,
     },
+    closeIconOpacity: 1,
   };
 
   componentDidMount() {
@@ -71,12 +73,15 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
         employeesCount,
       });
     });
+
     elixirChatWidget.on(UNREAD_COUNTER_MESSAGES_CHANGE, this.updateUnreadCount);
+    elixirChatWidget.widgetIFrameDocument.addEventListener('scroll', this.onScroll);
   }
 
   componentWillUnmount(){
     const { elixirChatWidget } = this.props;
     elixirChatWidget.off(UNREAD_COUNTER_MESSAGES_CHANGE, this.updateUnreadCount);
+    elixirChatWidget.widgetIFrameDocument.removeEventListener('scroll', this.onScroll);
   }
 
   updateUnreadCount = (unreadMessagesCount) => {
@@ -135,6 +140,13 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
     }
   };
 
+  onScroll = (e) => {
+    const CLOSE_ICON_MAX_SCROLL_TOP = 80;
+    this.setState({
+      closeIconOpacity: 1 - ( e.target.body.scrollTop / CLOSE_ICON_MAX_SCROLL_TOP ),
+    });
+  };
+
   render() {
     const { elixirChatWidget } = this.props;
     const {
@@ -146,6 +158,7 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
       employeeAvatars,
       employeesCount,
       onlineStatus,
+      closeIconOpacity,
     } = this.state;
 
     const visibleUnreadMessagesCount = unreadMessagesCount > 99 ? '99+' : unreadMessagesCount;
@@ -154,6 +167,7 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
       <div className="elixirchat-welcome-screen-container">
 
         <i className="icon-close-thin elixirchat-welcome-screen-close"
+          style={{ opacity: closeIconOpacity }}
           onClick={elixirChatWidget.closePopup}/>
 
         <div className="elixirchat-welcome-screen-top">

@@ -2,14 +2,12 @@
 @import "./mixins";
 
 .elixirchat-welcome-screen-container {
-  background: #FAFAFA;
-  min-height: 550px;
   overflow: hidden;
 }
 
 .elixirchat-welcome-screen-close {
   color: $color-white;
-  position: absolute;
+  position: fixed;
   top: 17px;
   right: 15px;
   padding: 10px;
@@ -82,7 +80,7 @@
   background: $color-white;
   box-shadow: 0 6px 6px -4px rgba(0,0,0,.03);
   border-radius: 3px;
-  margin: -95px 20px 50px 20px;
+  margin: -95px 20px 22px 20px;
   padding: 20px;
 }
 
@@ -157,6 +155,7 @@
 
 .elixirchat-welcome-screen-channels {
   text-align: center;
+  padding: 23px 0 50px 0;
 }
 
 .elixirchat-welcome-screen-channels__title {
