@@ -51,7 +51,7 @@ export class MessageSubscription {
 
   public elixirChat: ElixirChat;
   public messageHistory: Array<IMessage> = [];
-  public MESSAGE_HISTORY_REQUEST_INTERVAL: number = 30 * 1000;
+  public MESSAGE_HISTORY_REQUEST_INTERVAL: number = 60 * 1000;
 
   private temporaryMessageTempIds: Array<string> = [];
   private messageHistoryRequestInterval: number = null;
@@ -91,7 +91,7 @@ export class MessageSubscription {
 
   public subscribe = (): void => {
     const { graphQLClientSocket, logInfo, logError, triggerEvent } = this.elixirChat;
-    this.updateMessageHistoryOnInterval();
+    this.initializeUpdatingMessageHistoryOnInterval();
 
     graphQLClientSocket.subscribe({
       query: this.subscriptionQuery,
@@ -107,14 +107,16 @@ export class MessageSubscription {
     });
   };
 
-  private updateMessageHistoryOnInterval(): void {
+  private initializeUpdatingMessageHistoryOnInterval(): void {
     clearInterval(this.messageHistoryRequestInterval);
     this.messageHistoryRequestInterval = setInterval(() => {
-      const limit = 20;
-      const afterCursor = _last(this.messageHistory)?.cursor || null;
-      this.getMessageHistoryByCursor({ limit, afterCursor }).then(missedMessages => {
-        missedMessages.forEach(this.onMessageReceive);
-      });
+      const limit = 10;
+      const afterCursor = _last(this.messageHistory)?.cursor;
+      if (afterCursor) {
+        this.getMessageHistoryByCursor({ limit, afterCursor }).then(missedMessages => {
+          missedMessages.forEach(this.onMessageReceive);
+        });
+      }
     }, this.MESSAGE_HISTORY_REQUEST_INTERVAL);
   }
 

@@ -180,20 +180,27 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     const { elixirChatWidget } = this.props;
     this.setState({ isLoading: true });
 
-    elixirChatWidget.fetchMessageHistory(this.MESSAGE_CHUNK_SIZE)
-      .then(() => {
-        this.waitForPopupToOpen(this.scrollToAppropriatePositionOnce);
-      })
-      .catch(e => {
-        elixirChatWidget.triggerEvent(ERROR_ALERT, {
-          customMessage: e.errorMessage,
-          retryCallback: this.loadInitialMessages,
-          error: e.rawError,
+    if (elixirChatWidget.messageHistory.length) {
+      this.onMessageHistoryChange(elixirChatWidget.messageHistory);
+      this.waitForPopupToOpen(this.scrollToAppropriatePositionOnce);
+      this.setState({ isLoading: false });
+    }
+    else {
+      elixirChatWidget.fetchMessageHistory(this.MESSAGE_CHUNK_SIZE)
+        .then(() => {
+          this.waitForPopupToOpen(this.scrollToAppropriatePositionOnce);
+        })
+        .catch(e => {
+          elixirChatWidget.triggerEvent(ERROR_ALERT, {
+            customMessage: e.errorMessage,
+            retryCallback: this.loadInitialMessages,
+            error: e.rawError,
+          });
+        })
+        .finally(() => {
+          this.setState({ isLoading: false });
         });
-      })
-      .finally(() => {
-        this.setState({ isLoading: false });
-      });
+    }
   };
 
   loadPrecedingMessages = () => {
