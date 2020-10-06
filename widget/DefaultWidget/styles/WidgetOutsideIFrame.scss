@@ -1,7 +1,8 @@
 @import "./variables";
 @import "./mixins";
 
-$mobile-max-size: 480px;
+$max-height: 535px;
+$max-width-mobile: 480px;
 
 .elixirchat-widget-button {
   font-family: $font-family-icons;
@@ -24,7 +25,7 @@ $mobile-max-size: 480px;
     background-color: darken($color-pink, 6);
   }
 
-  @include elixir-media-query(0px, $mobile-max-size) {
+  @include elixir-media-query(0px, $max-width-mobile) {
     right: 20px;
     bottom: 20px;
   }
@@ -47,6 +48,7 @@ $mobile-max-size: 480px;
     font-size: 24px;
     padding: 3px 0 0 1px;
   }
+
   &.icon-close-thin {
     opacity: 0;
     font-size: 20px;
@@ -86,9 +88,9 @@ $mobile-max-size: 480px;
 
 .elixirchat-widget-iframe {
   border-radius: $iframe-border-radius;
+  max-height: $max-height;
   background: #FAFAFA;
   position: fixed;
-  max-height: 525px;
   height: calc(100vh - 130px);
   width: 380px;
   bottom: 100px;
@@ -111,7 +113,7 @@ $mobile-max-size: 480px;
     display: block;
   }
 
-  @include elixir-media-query(0px, $mobile-max-size) {
+  @include elixir-media-query(0px, $max-width-mobile) {
     bottom: 0;
     right: 0;
     left: 0;

@@ -189,7 +189,7 @@ export function isWithinElement(target, container){
 
 // TODO: detect mobile platforms/OS rather than screen size
 export function isMobileSizeScreen(){
-  return window.innerWidth < 480; // equals to $mobile-max-size from Widget.scss
+  return window.innerWidth < 480; // equals to $max-width-mobile from Widget.scss
 }
 
 
