@@ -50,7 +50,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
     widgetViewIsAnimating: null,
     widgetIsPopupOpen: false,
     widgetIsPopupOpeningAnimation: false,
-    widgetIsButtonHidden: false,
+    widgetIsButtonHidden: true,
   };
 
   fontExtractor: FontExtractor;
