@@ -53,6 +53,7 @@ export interface IDefaultWidgetMessagesState {
   isLoading: boolean;
   isLoadingPrecedingMessageHistory: boolean;
   hasReachedBeginningOfMessageHistory: boolean;
+  hasInitiallyScrolledToAppropriatePosition: boolean;
   processedMessages: Array<object>,
   fullScreenPreviews: Array<object>,
   screenshotFallback: object | null,
@@ -66,6 +67,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     isLoading: false,
     isLoadingPrecedingMessageHistory: false,
     hasReachedBeginningOfMessageHistory: false,
+    hasInitiallyScrolledToAppropriatePosition: false,
     processedMessages: [],
     fullScreenPreviews: [],
     screenshotFallback: null,
@@ -76,11 +78,13 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
   MAX_THUMBNAIL_SIZE: number = isMobileSizeScreen() ? 208 : 256;
   MESSAGE_CHUNK_SIZE: number = 20;
   MARK_AS_READ_TIMEOUT: number = 2000; // ms
+  LOAD_PRECEDING_MESSAGES_SCROLL_Y_POSITION: number = 10;
 
   scrollBlock: { current: HTMLElement } = React.createRef();
   scrollBlockInner: { current: HTMLElement } = React.createRef();
   messageVisibilityObserver: IntersectionObserver = null;
   messageRefs: object = {};
+  initialScrollTimeout = null;
 
   componentDidMount() {
     const { elixirChatWidget } = this.props;
@@ -128,6 +132,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     if (this.messageVisibilityObserver) {
       this.messageVisibilityObserver.disconnect();
     }
+    clearTimeout(this.initialScrollTimeout);
   }
 
   onMessageReceive = (message) => {
@@ -182,12 +187,12 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     if (elixirChatWidget.messageHistory.length) {
       this.onMessageHistoryChange(elixirChatWidget.messageHistory);
       this.setState({ isLoading: false });
-      elixirChatWidget.waitForPopupToOpen(this.scrollToAppropriatePositionOnce);
+      elixirChatWidget.waitForPopupToOpen(this.scrollInitiallyToAppropriatePosition);
     }
     else {
       elixirChatWidget.fetchMessageHistory(this.MESSAGE_CHUNK_SIZE)
         .then(() => {
-          elixirChatWidget.waitForPopupToOpen(this.scrollToAppropriatePositionOnce);
+          elixirChatWidget.waitForPopupToOpen(this.scrollInitiallyToAppropriatePosition);
         })
         .catch(e => {
           elixirChatWidget.triggerEvent(ERROR_ALERT, {
@@ -204,11 +209,21 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
   loadPrecedingMessages = () => {
     const { elixirChatWidget } = this.props;
-    const { isLoading, isLoadingPrecedingMessageHistory, hasReachedBeginningOfMessageHistory } = this.state;
+    const {
+      isLoading,
+      isLoadingPrecedingMessageHistory,
+      hasReachedBeginningOfMessageHistory,
+      hasInitiallyScrolledToAppropriatePosition,
+    } = this.state;
+
     const scrollBlock = this.scrollBlock.current;
     const initialScrollHeight = scrollBlock.scrollHeight;
+    const shouldLoadPreviousMessages = !isLoading
+      && !isLoadingPrecedingMessageHistory
+      && !hasReachedBeginningOfMessageHistory
+      && hasInitiallyScrolledToAppropriatePosition;
 
-    if (!isLoading && !isLoadingPrecedingMessageHistory && !hasReachedBeginningOfMessageHistory) {
+    if (shouldLoadPreviousMessages) {
       this.setState({ isLoadingPrecedingMessageHistory: true });
 
       elixirChatWidget.fetchPrecedingMessageHistory(this.MESSAGE_CHUNK_SIZE)
@@ -313,16 +328,23 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     };
   };
 
-  scrollToAppropriatePositionOnce = () => {
+  scrollInitiallyToAppropriatePosition = () => {
     const { elixirChatWidget } = this.props;
-    elixirChatWidget.off(WIDGET_POPUP_OPEN, this.scrollToAppropriatePositionOnce);
+    elixirChatWidget.off(WIDGET_POPUP_OPEN, this.scrollInitiallyToAppropriatePosition);
 
     if (elixirChatWidget.widgetChatScrollY) {
-      this.scrollBlock.current.scrollTop = elixirChatWidget.widgetChatScrollY;
+      requestAnimationFrame(() => {
+        this.scrollBlock.current.scrollTop = elixirChatWidget.widgetChatScrollY;
+      });
     }
     else {
       this.scrollToFirstUnreadMessage();
     }
+
+    clearTimeout(this.initialScrollTimeout);
+    this.initialScrollTimeout = setTimeout(() => {
+      this.setState({ hasInitiallyScrolledToAppropriatePosition: true });
+    }, 3000);
   };
 
   scrollToFirstUnreadMessage = () => {
@@ -545,7 +567,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
     return (
       <div className={cn('elixirchat-chat-scroll', className)}
-        onScroll={e => e.target.scrollTop < 0 ? this.loadPrecedingMessages() : null}
+        onScroll={e => e.target.scrollTop <= this.LOAD_PRECEDING_MESSAGES_SCROLL_Y_POSITION && this.loadPrecedingMessages()}
         style={{ bottom: scrollBlockBottomOffset }}
         ref={this.scrollBlock}>
 
