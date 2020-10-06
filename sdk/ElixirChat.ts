@@ -648,13 +648,13 @@ export class ElixirChat {
   };
 
   /**
-   * To enable an experimental feature, open a link in the following format
+   * To enable an experimental feature, open a link in the following format to a website with an embedded ElixirChat Widget
    * @example
-   *  http://example.com/your/path?__elixir-enable-feature=<FEATURE-NAME>
+   *  http://example.com/your/path?__elixir-enable-feature=<FEATURE-NAME> (with ?query params)
    *  or http://example.com/your/path#__elixir-enable-feature=<FEATURE-NAME> (with #hash)
    *
    * To disable it, pass the "__elixir-disable-feature" option:
-   * @example http://localhost:8001/?__elixir-disable-feature=<FEATURE-NAME> (or using #hash)
+   * @example http://localhost:8001/?__elixir-disable-feature=<FEATURE-NAME> (either with ?query params or #hash)
    */
   private initializeEnabledFeatures(): void {
     const urlParams = {

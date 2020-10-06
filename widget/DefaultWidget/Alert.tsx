@@ -31,6 +31,7 @@ export class Alert extends Component<IDefaultWidgetAlertProps, IDefaultWidgetAle
   }
 
   onAlertShow = (alertData) => {
+    const { elixirChatWidget } = this.props;
     const { isOpen } = this.state;
     if (isOpen) {
       return;
@@ -46,18 +47,8 @@ export class Alert extends Component<IDefaultWidgetAlertProps, IDefaultWidgetAle
       emailText,
       alertData,
     }, () => {
-      this.waitForPopupToOpen(this.setErrorBlockHeight);
+      elixirChatWidget.waitForPopupToOpen(this.setErrorBlockHeight);
     });
-  };
-
-  waitForPopupToOpen = (callback) => {
-    const { elixirChatWidget } = this.props;
-    if (elixirChatWidget.widgetIsPopupOpen) {
-      callback();
-    }
-    else {
-      elixirChatWidget.on(WIDGET_POPUP_OPEN, callback);
-    }
   };
 
   setErrorBlockHeight = () => {

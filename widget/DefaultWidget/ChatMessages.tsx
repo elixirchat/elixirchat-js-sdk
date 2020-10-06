@@ -41,7 +41,6 @@ import {
   WIDGET_FULLSCREEN_PREVIEW_OPEN,
   WIDGET_TEXTAREA_RESIZE,
   WIDGET_REPLY_MESSAGE,
-  WIDGET_IFRAME_READY,
   WIDGET_POPUP_OPEN,
 } from '../ElixirChatWidgetEventTypes';
 
@@ -182,13 +181,13 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
     if (elixirChatWidget.messageHistory.length) {
       this.onMessageHistoryChange(elixirChatWidget.messageHistory);
-      this.waitForPopupToOpen(this.scrollToAppropriatePositionOnce);
       this.setState({ isLoading: false });
+      elixirChatWidget.waitForPopupToOpen(this.scrollToAppropriatePositionOnce);
     }
     else {
       elixirChatWidget.fetchMessageHistory(this.MESSAGE_CHUNK_SIZE)
         .then(() => {
-          this.waitForPopupToOpen(this.scrollToAppropriatePositionOnce);
+          elixirChatWidget.waitForPopupToOpen(this.scrollToAppropriatePositionOnce);
         })
         .catch(e => {
           elixirChatWidget.triggerEvent(ERROR_ALERT, {
@@ -225,16 +224,6 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
           scrollBlock.scrollTop = scrollBlock.scrollHeight - initialScrollHeight;
           this.setState({ isLoadingPrecedingMessageHistory: false });
         });
-    }
-  };
-
-  waitForPopupToOpen = (callback) => {
-    const { elixirChatWidget } = this.props;
-    if (elixirChatWidget.widgetIsPopupOpen) {
-      callback();
-    }
-    else {
-      elixirChatWidget.on(WIDGET_POPUP_OPEN, callback);
     }
   };
 
@@ -372,8 +361,6 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
   };
 
   initializeMessagesIntersectionObserver = () => {
-    const { elixirChatWidget } = this.props;
-    const { messageHistory } = elixirChatWidget;
     const observerParams = {
       root: this.scrollBlock.current,
       threshold: 0.9, // triggers when 90% of message is within the viewport

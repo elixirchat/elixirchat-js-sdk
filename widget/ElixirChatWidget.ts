@@ -199,6 +199,15 @@ export class ElixirChatWidget extends ElixirChat {
     this.widgetIFrameDocument = iframeDocument;
     this.triggerEvent(WIDGET_IFRAME_READY, iframeDocument, { firedOnce: true });
   };
+
+  public waitForPopupToOpen = (callback) => {
+    if (this.widgetIsPopupOpen) {
+      callback();
+    }
+    else {
+      this.on(WIDGET_POPUP_OPEN, callback);
+    }
+  };
 }
 
 if (typeof window !== 'undefined') {
