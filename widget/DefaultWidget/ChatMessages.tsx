@@ -247,7 +247,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
       const isDifferentDateFromPreviousMessage = previousMessage.id
         && dayjs(previousMessage.timestamp).isBefore(dayjs(message.timestamp).startOf('day'));
 
-      if (isDifferentDateFromPreviousMessage) {
+      if (isDifferentDateFromPreviousMessage && !message.isDeleted) {
         showDateLabel = true;
       }
 
