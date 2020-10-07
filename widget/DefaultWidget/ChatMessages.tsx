@@ -161,7 +161,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
   updateMessageHistory = (params, callback) => {
     const { chunk, prepend, append } = params;
-    const hasReachedBeginningOfMessageHistory = chunk.length < this.MESSAGE_CHUNK_SIZE;
+    const hasReachedBeginningOfMessageHistory = !append && chunk.length < this.MESSAGE_CHUNK_SIZE;
     let processedMessages = this.processMessages(chunk, hasReachedBeginningOfMessageHistory);
     let fullScreenPreviews = this.extractFullScreenPreviews(chunk);
 
