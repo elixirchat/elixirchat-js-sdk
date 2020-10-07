@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
 # Checks if elixirchat-js-sdk is being installed as a dependency in ANOTHER project
-# (meaning NOT simply running "npm install" within elixirchat-js-sdk folder)
+# (meaning running "npm install elixirchat-js-sdk" in another project, NOT simply
+# running "npm install" within elixirchat-js-sdk folder)
 #
 # If elixirchat-js-sdk is being installed as a dependency in ANOTHER project,
 # parcel-bunder and node-sass must be installed prior to launching bin/postinstall.sh

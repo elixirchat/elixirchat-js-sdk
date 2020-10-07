@@ -29,7 +29,5 @@ change_variable_in_dotenv_file "ELIXIRCHAT_VERSION" "$next_package_json_version"
 git add .env
 
 npm run build
-git add build/default-widget.js
-git add build/default-widget.min.js
-git add build/sdk.js
 git add build/sdk.min.js
+git add build/default-widget.min.js

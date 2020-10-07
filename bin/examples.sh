@@ -28,8 +28,6 @@ function replace_api_urls_with_local_server () {
 function update_examples_files () {
   mkdir -p dist/build/examples
 
-  cp -rf build/sdk.js                       dist/build/sdk.js
-  cp -rf build/default-widget.js            dist/build/default-widget.js
   cp -rf build/sdk.min.js                   dist/build/sdk.min.js
   cp -rf build/default-widget.min.js        dist/build/default-widget.min.js
 

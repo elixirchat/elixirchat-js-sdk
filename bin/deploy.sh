@@ -53,9 +53,7 @@ if [ -n "$github_branch" ]; then
   change_variable_in_dotenv_file "ELIXIRCHAT_VERSION" "$next_full_version" .env
   git add .env
   npm run build
-  git add build/default-widget.js
   git add build/default-widget.min.js
-  git add build/sdk.js
   git add build/sdk.min.js
 
   git commit -am "Dev release $next_full_version"
