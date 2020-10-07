@@ -286,7 +286,6 @@ export class MessageSubscription {
     };
   };
 
-  // TODO: fix?
   private generateTemporaryMessage(textareaParams: ISentMessage, customData?: any): IMessage {
     const { text, attachments, responseToMessageId } = textareaParams;
 

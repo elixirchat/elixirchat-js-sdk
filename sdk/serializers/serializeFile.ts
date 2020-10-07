@@ -52,9 +52,6 @@ export function serializeFile(data: any, elixirChat: ElixirChat): IFile {
   const { url, thumbnails } = data || {};
   const fileUrl = serializeFileUrl(url, elixirChat);
   const thumbnailUrl = serializeFileUrl(thumbnails?.[0]?.url, elixirChat);
-  const firstThumbnail = {
-    url: serializeFileUrl(thumbnailUrl || fileUrl, elixirChat),
-  };
 
   return {
     ...extractSerializedData(data, {
@@ -67,7 +64,7 @@ export function serializeFile(data: any, elixirChat: ElixirChat): IFile {
       contentType: '',
       isScreenshot: false,
     }),
-    thumbnails: [ firstThumbnail ],
+    thumbnails: [{ url: thumbnailUrl }],
     url: serializeFileUrl(fileUrl || thumbnailUrl, elixirChat),
   };
 }
