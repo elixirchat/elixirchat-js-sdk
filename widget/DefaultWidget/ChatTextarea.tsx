@@ -14,6 +14,7 @@ import {
   WIDGET_SCREENSHOT_REQUEST_ERROR,
   WIDGET_MUTE_TOGGLE,
   WIDGET_POPUP_OPEN,
+  WIDGET_IFRAME_READY,
 } from '../ElixirChatWidgetEventTypes';
 
 export interface IDefaultWidgetTextareaProps {
@@ -81,8 +82,10 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
     this.focusTextarea();
     this.setState({ screenshotFallback: getScreenshotCompatibilityFallback() });
 
-    elixirChatWidget.widgetIFrameDocument.body.addEventListener('dragover', this.onWidgetPopupDrag);
-    elixirChatWidget.widgetIFrameDocument.body.addEventListener('drop', this.onBodyDrop);
+    elixirChatWidget.on(WIDGET_IFRAME_READY, () => {
+      elixirChatWidget.widgetIFrameDocument.body.addEventListener('dragover', this.onWidgetPopupDrag);
+      elixirChatWidget.widgetIFrameDocument.body.addEventListener('drop', this.onBodyDrop);
+    });
 
     window.addEventListener('dragover', this.cancelWidgetPopupDrag);
     window.addEventListener('beforeunload', this.preventLoosingUploadingFiles);

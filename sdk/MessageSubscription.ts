@@ -333,7 +333,7 @@ export class MessageSubscription {
     triggerEvent(MESSAGES_RECEIVE, message);
   };
 
-  private async getMessageHistoryByCursor(params: IFetchMessageHistoryParams): Promise<[IMessage]> {
+  private getMessageHistoryByCursor(params: IFetchMessageHistoryParams): Promise<[IMessage]> {
     const { sendAPIRequest } = this.elixirChat;
     const { limit, beforeCursor, afterCursor } = params;
     let variables;

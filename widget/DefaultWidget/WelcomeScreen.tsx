@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { IJoinRoomChannel } from '../../sdk/ElixirChat';
 import { IOnlineStatusParams } from '../../sdk/OnlineStatusSubscription';
 import { ElixirChatWidget } from '../ElixirChatWidget';
-import { WIDGET_DATA_SET } from '../ElixirChatWidgetEventTypes';
+import { WIDGET_DATA_SET, WIDGET_IFRAME_READY } from '../ElixirChatWidgetEventTypes';
 import { UNREAD_COUNTER_MESSAGES_CHANGE } from '../../sdk/ElixirChatEventTypes';
 import { cn, _last } from '../../utilsCommon';
 import {
@@ -75,7 +75,9 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
     });
 
     elixirChatWidget.on(UNREAD_COUNTER_MESSAGES_CHANGE, this.updateUnreadCount);
-    elixirChatWidget.widgetIFrameDocument.addEventListener('scroll', this.onScroll);
+    elixirChatWidget.on(WIDGET_IFRAME_READY, () => {
+      elixirChatWidget.widgetIFrameDocument.addEventListener('scroll', this.onScroll);
+    });
   }
 
   componentWillUnmount(){
