@@ -378,7 +378,7 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
                 </span>
               </Tooltip>
             )}
-            <Tooltip className="elixirchat-chat-textarea__actions-tooltip" title="Прикрепить файл">
+            <Tooltip className="elixirchat-chat-textarea__actions-tooltip" title="Прикрепить файлы">
               <span className="elixirchat-chat-textarea__actions-button">
                 <span className="elixirchat-chat-textarea__actions-attach">
                   <label className="elixirchat-chat-textarea__actions-attach-label" htmlFor="DefaultWidget-file-upload">
