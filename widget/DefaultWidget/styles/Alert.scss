@@ -73,8 +73,10 @@
 }
 
 .elixirchat-alert__message {
-  white-space: pre-line;
-  hyphens: auto;
+  ul {
+    padding-left: 22px;
+    margin: 5px 0 0 0;
+  }
 }
 
 .elixirchat-alert__button-block {

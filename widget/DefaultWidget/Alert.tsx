@@ -1,9 +1,9 @@
 import React, { Component, Fragment } from 'react';
 import { ERROR_ALERT } from '../../sdk/ElixirChatEventTypes';
-import { WIDGET_POPUP_OPEN } from '../ElixirChatWidgetEventTypes';
 import { cn, normalizeErrorStack } from '../../utilsCommon';
 import { exposeComponentToGlobalScope } from '../../utilsWidget';
 import { extractErrorMessage } from '../../sdk/GraphQLClient';
+import { FormattedMarkdown } from './FormattedMarkdown';
 
 export interface IDefaultWidgetAlertProps {
   elixirChatWidget: any;
@@ -73,21 +73,31 @@ export class Alert extends Component<IDefaultWidgetAlertProps, IDefaultWidgetAle
 
   generateErrorDetails = (alertData) => {
     const { customMessage, error } = alertData || {};
+    const maxErrorDetailsLength = 300;
     const networkFailureKeys = [
       'Failed to fetch',
       'NetworkError when attempting to fetch resource'
     ];
-    const networkFailureMessage = 'Не удается связаться с сервером.\n Убедитесь, что у вас хорошее интернет-соединение, и ваша сеть не блокирует запросы к серверу.';
+
+    const networkFailureMessage = this.trimEachRow(`
+      Не удается связаться с сервером.
+      Такое может быть:
+      * при нестабильном интернете
+      * когда ваша сеть блокирует некоторые сайты
+      * когда у вас установлены блокировщики рекламы или похожие расширения
+    `);
     for (let i = 0; i < networkFailureKeys.length; i++) {
       if ((error?.message || '').toLowerCase().includes( networkFailureKeys[i].toLowerCase() )) {
         return networkFailureMessage;
       }
     }
-    return customMessage || extractErrorMessage(error);
+    const errorDetails = customMessage || extractErrorMessage(error);
+    return errorDetails.slice(0, maxErrorDetailsLength) + errorDetails.length > maxErrorDetailsLength ? '…' : '';
   };
 
   trimEachRow = (text) => {
     return text
+      .trim()
       .split(/\n/)
       .map(row => row.trim())
       .join('\n');
@@ -168,9 +178,9 @@ export class Alert extends Component<IDefaultWidgetAlertProps, IDefaultWidgetAle
               <h3 className="elixirchat-alert__header-title">Ошибка</h3>
               <i className="elixirchat-alert__header-icon icon-close-thin"
                 onClick={this.onCloseClick}/>
-              <span className="elixirchat-alert__message">
-                {errorDetails.slice(0, 300)}{errorDetails.length > 300 ? '…' : ''}
-              </span>
+              <FormattedMarkdown
+                className="elixirchat-alert__message"
+                markdown={errorDetails}/>
               <div className="elixirchat-alert__button-block">
                 <button className="elixirchat-alert__retry-button" onClick={this.onRetryClick}>
                   Попробовать еще раз

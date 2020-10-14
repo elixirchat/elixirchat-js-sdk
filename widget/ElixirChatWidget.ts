@@ -114,7 +114,7 @@ export class ElixirChatWidget extends ElixirChat {
       this.setWidgetData(joinRoomData);
     });
     this.on(WIDGET_DATA_SET, () => {
-      this.togglePopup(this.widgetIsPopupOpen);
+      this.togglePopup({ isOpen: this.widgetIsPopupOpen });
       this.toggleMute(this.widgetIsMuted);
       this.navigateTo(this.widgetView);
     });
@@ -152,7 +152,9 @@ export class ElixirChatWidget extends ElixirChat {
     this.triggerEvent(WIDGET_DATA_SET, this, { firedOnce: true });
   }
 
-  public togglePopup(isOpen: boolean): void {
+  public togglePopup = (params?: object): void => {
+    const isOpen = typeof params === 'object' && 'isOpen' in params ? Boolean(params.isOpen) : !this.widgetIsPopupOpen;
+
     if (this.widgetIsPopupOpen !== isOpen) {
       this.widgetIsPopupOpen = isOpen;
       setToLocalStorage('elixirchat-widget-is-visible', isOpen);
@@ -162,6 +164,14 @@ export class ElixirChatWidget extends ElixirChat {
     }
   };
 
+  public openPopup = (): void => {
+    this.togglePopup({ isOpen: true });
+  };
+
+  public closePopup = (): void => {
+    this.togglePopup({ isOpen: false });
+  };
+
   private toggleMute(isMuted: boolean): void {
     if (this.widgetIsMuted !== isMuted) {
       this.widgetIsMuted = isMuted;
@@ -169,14 +179,6 @@ export class ElixirChatWidget extends ElixirChat {
       this.logInfo((isMuted ? 'Muted' : 'Unmuted') + ' widget popup');
       this.triggerEvent(WIDGET_MUTE_TOGGLE, isMuted);
     }
-  };
-
-  public openPopup = (): void => {
-    this.togglePopup(true);
-  };
-
-  public closePopup = (): void => {
-    this.togglePopup(false);
   };
 
   public mute = (): void => {
