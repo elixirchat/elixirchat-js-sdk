@@ -38,7 +38,10 @@ export class FontExtractor {
         this.parentFontFaceRules = this.getParentFontFaceRules(this.parentWindow);
         const matchingParentFontRules = _flatten(
           fontsWithoutSrc.map(rule => {
-            return this.findMatchingFontFaceRules(this.parentFontFaceRules, rule);
+            let lolo = this.findMatchingFontFaceRules(this.parentFontFaceRules, rule);
+            // console.warn('__ lolo 2', { lolo, rule, fontsWithoutSrc });
+
+            return lolo;
           })
         );
         callback && callback([ ...fontsWithSrc, ...matchingParentFontRules ]);
@@ -140,10 +143,14 @@ export class FontExtractor {
   }
 
   private findMatchingFontFaceRules(fontList: Array<IFontRule>, params: IFontRule) :Array<IFontRule> {
-    return fontList.filter(font => {
-      const sameFamily = font.fontFamily === params.fontFamily;
-      const sameWeight = params.fontWeight ? font.fontWeight === params.fontWeight : true;
-      const sameStyle = params.fontStyle ? font.fontStyle === params.fontStyle : true;
+    return fontList.filter(rawRule => {
+      const rule = this.serializeFontRule(rawRule);
+      const sameFamily = rule.fontFamily === params.fontFamily;
+      const sameWeight = params.fontWeight ? rule.fontWeight === params.fontWeight : true;
+      const sameStyle = params.fontStyle ? rule.fontStyle === params.fontStyle : true;
+
+      // console.warn('__ ZZZ', { rawRule, params, sameFamily, sameWeight, sameStyle, rule });
+
       return sameFamily && sameWeight && sameStyle;
     });
   }

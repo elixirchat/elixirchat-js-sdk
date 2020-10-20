@@ -10,6 +10,7 @@
       padding: 15px 30px;
     }
   </style>
+  <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&display=swap" rel="stylesheet" crossorigin="anonymous">
 </head>
 <body>
 <div>
@@ -80,8 +81,29 @@
       'vkontakte',
       'viber',
     ],
+    fonts: [
+      {
+        fontFamily: 'Raleway',
+        // fontWeight: 'normal',
+        fontWeight: '400',
+      },
+      {
+        fontFamily: 'Raleway',
+        // fontWeight: 'bold',
+        fontWeight: '700',
+      },
+    ],
     iframeCSS: `
-      /* Custom styles inside the iframe */
+      body, input, button, textarea {
+        font-family: Raleway, "Helvetica Neue", sans-serif !important;
+      }
+      .elixirchat-chat-messages__sender b {
+        color: #22BBD2 !important;
+      }
+      .elixirchat-welcome-screen-operators__button,
+      .elixirchat-chat-messages__item--by-me .elixirchat-chat-messages__balloon {
+        background: #5951BE !important;
+      }
     `,
   });
 </script>
