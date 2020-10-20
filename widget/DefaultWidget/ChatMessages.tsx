@@ -787,6 +787,13 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                         </div>
                       )}
 
+                      {message.systemData.type === 'HighLoadMessage' && (
+                        <div className="elixirchat-chat-messages__text">
+                          Время ответа может увеличиться из-за большого количества вопросов,
+                          мы обязательно вернёмся к вам, спасибо за ожидание.
+                        </div>
+                      )}
+
                       {message.systemData.type === 'NewClientPlaceholderMessage' && (
                         <div className="elixirchat-chat-messages__text">
                           {elixirChatWidget.client.isConfidentAboutFirstName

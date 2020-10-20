@@ -15,8 +15,6 @@ $chat-header-height: 60px;
 
 .elixirchat-chat-header {
   height: $chat-header-height;
-  //background: $color-blue;
-  //color: $color-white;
   box-sizing: border-box;
   padding: 22px 72px 0 44px;
   position: fixed;
@@ -51,7 +49,6 @@ $chat-header-height: 60px;
 
 .elixirchat-chat-header__button {
   height: $chat-header-height;
-  //color: $color-white;
   color: darken($color-gray-light, 10);
   position: absolute;
   top: 1px;
@@ -65,7 +62,6 @@ $chat-header-height: 60px;
   font-size: 13px;
 
   &:hover {
-    //color: rgba($color-white, .6);
     color: $color-gray-dark;
   }
 }

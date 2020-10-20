@@ -38,10 +38,7 @@ export class FontExtractor {
         this.parentFontFaceRules = this.getParentFontFaceRules(this.parentWindow);
         const matchingParentFontRules = _flatten(
           fontsWithoutSrc.map(rule => {
-            let lolo = this.findMatchingFontFaceRules(this.parentFontFaceRules, rule);
-            // console.warn('__ lolo 2', { lolo, rule, fontsWithoutSrc });
-
-            return lolo;
+            return this.findMatchingFontFaceRules(this.parentFontFaceRules, rule);
           })
         );
         callback && callback([ ...fontsWithSrc, ...matchingParentFontRules ]);
@@ -148,9 +145,6 @@ export class FontExtractor {
       const sameFamily = rule.fontFamily === params.fontFamily;
       const sameWeight = params.fontWeight ? rule.fontWeight === params.fontWeight : true;
       const sameStyle = params.fontStyle ? rule.fontStyle === params.fontStyle : true;
-
-      // console.warn('__ ZZZ', { rawRule, params, sameFamily, sameWeight, sameStyle, rule });
-
       return sameFamily && sameWeight && sameStyle;
     });
   }

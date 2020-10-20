@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { IJoinRoomChannel } from '../../sdk/ElixirChat';
 import { IOnlineStatusParams } from '../../sdk/OnlineStatusSubscription';
 import { ElixirChatWidget } from '../ElixirChatWidget';
-import { WIDGET_DATA_SET, WIDGET_IFRAME_READY } from '../ElixirChatWidgetEventTypes';
+import { WIDGET_DATA_SET } from '../ElixirChatWidgetEventTypes';
 import { UNREAD_COUNTER_MESSAGES_CHANGE } from '../../sdk/ElixirChatEventTypes';
 import { cn, _last } from '../../utilsCommon';
 import {
@@ -25,7 +25,6 @@ export interface IWelcomeScreenState {
   employeeAvatars: Array<{ url: string, initials: string }>;
   employeesCount: number;
   onlineStatus: IOnlineStatusParams;
-  // closeIconOpacity: number;
 }
 
 export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreenState> {
@@ -42,7 +41,6 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
       isOnline: false,
       workHoursStartAt: null,
     },
-    // closeIconOpacity: 1,
   };
 
   componentDidMount() {
@@ -75,15 +73,11 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
     });
 
     elixirChatWidget.on(UNREAD_COUNTER_MESSAGES_CHANGE, this.updateUnreadCount);
-    // elixirChatWidget.on(WIDGET_IFRAME_READY, () => {
-    //   elixirChatWidget.widgetIFrameDocument.addEventListener('scroll', this.onScroll);
-    // });
   }
 
   componentWillUnmount(){
     const { elixirChatWidget } = this.props;
     elixirChatWidget.off(UNREAD_COUNTER_MESSAGES_CHANGE, this.updateUnreadCount);
-    // elixirChatWidget.widgetIFrameDocument.removeEventListener('scroll', this.onScroll);
   }
 
   updateUnreadCount = (unreadMessagesCount) => {
@@ -129,12 +123,6 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
       );
     }
     else {
-      // let message = 'Оффлайн';
-      // if (workHoursStartAt || 1) {
-      //   // message = `${message}. Ответим завтра в 10:00 по Екатеринбургу`;
-      //   message = `${message}. Ответим ${humanizeUpcomingDate(workHoursStartAt)} ${humanizeTimezoneName(workHoursStartAt)}`;
-      // }
-
       return (
         <Fragment>
           <i className="elixirchat-welcome-screen-top__status-offline"/> Не в сети
@@ -143,34 +131,21 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
               Ответим {humanizeUpcomingDate(workHoursStartAt)} {humanizeTimezoneName(workHoursStartAt)}
             </div>
           )}
-
-          {/*Ответим завтра в 10:00 по Екатеринбургу*/}
-          {/*/!*Ответим {humanizeUpcomingDate(workHoursStartAt)} {humanizeTimezoneName(workHoursStartAt)}*!/*/}
-
         </Fragment>
       );
     }
   };
 
-  // onScroll = (e) => {
-  //   const CLOSE_ICON_MAX_SCROLL_TOP = 80;
-  //   this.setState({
-  //     closeIconOpacity: 1 - ( e.target.body.scrollTop / CLOSE_ICON_MAX_SCROLL_TOP ),
-  //   });
-  // };
-
   render() {
     const { elixirChatWidget } = this.props;
     const {
       widgetMainTitle,
-      // widgetChatSubtitle,
       widgetCompanyLogoUrl,
       widgetChannels,
       unreadMessagesCount,
       employeeAvatars,
       employeesCount,
       onlineStatus,
-      // closeIconOpacity,
     } = this.state;
 
     const visibleUnreadMessagesCount = unreadMessagesCount > 99 ? '99+' : unreadMessagesCount;
@@ -178,13 +153,7 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
     return (
       <div className="elixirchat-welcome-screen-container">
 
-        <i className="icon-close-thin elixirchat-welcome-screen-close"
-          onClick={elixirChatWidget.closePopup}
-          // style={{
-          //   opacity: closeIconOpacity,
-          //   display: closeIconOpacity < 0 ? 'hidden' : null
-          // }}
-        />
+        <i className="icon-close-thin elixirchat-welcome-screen-close" onClick={elixirChatWidget.closePopup}/>
 
         <div style={{ backgroundImage: `url(${widgetCompanyLogoUrl})` }} className={cn({
           'elixirchat-welcome-screen-top__logo': true,
@@ -198,10 +167,6 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
         <div className="elixirchat-welcome-screen-top__status">
           {this.generateOnlineStatusMessage(onlineStatus)}
         </div>
-
-        {/*<div className="elixirchat-welcome-screen-operators__title">*/}
-        {/*  {widgetChatSubtitle}*/}
-        {/*</div>*/}
 
         {Boolean(employeeAvatars.length) && (
           <ul className="elixirchat-welcome-screen-operators__list">
@@ -232,10 +197,8 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
             </span>
           )}
         </button>
-        {/*<div className="elixirchat-welcome-screen-operators">*/}
-        {/*</div>*/}
 
-        {elixirChatWidget.isFeatureEnabled('omnichannel') && Boolean(widgetChannels.length) && (
+        {Boolean(widgetChannels.length) && (
           <div className="elixirchat-welcome-screen-channels">
             <div className="elixirchat-welcome-screen-channels__title">Поддержка в других каналах</div>
             <ul className="elixirchat-welcome-screen-channels__list">
