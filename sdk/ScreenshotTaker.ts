@@ -109,6 +109,7 @@ export class ScreenshotTaker {
     }
     const blob = new Blob([ new Uint8Array(blobArray) ]);
     const fileName = `Screenshot ${new Date().toLocaleString()}.png`;
+
     return new File([blob], fileName, {
       type: 'image/png',
     });

@@ -101,8 +101,8 @@ export class ElixirChat {
   public room?: IElixirChatRoom;
   public client?: IElixirChatUser;
   public joinRoomData: IJoinRoomData = {};
-  public enabledFeatures: Array<string> = [];
-  public allFeaturesInTesting: Array<string> = [];
+  public enabledExperimentalFeatures: Array<string> = [];
+  public experimentalFeaturesInTesting: Array<string> = [];
 
   public isInitialized: boolean = false;
   public isConnected: boolean;
@@ -178,7 +178,7 @@ export class ElixirChat {
     });
 
     this.logInfo('Initializing ElixirChat', config);
-    this.initializeEnabledFeatures();
+    this.initializeExperimentalFeatures();
     return this.joinRoom(this.config.room, this.config.client);
   }
 
@@ -248,10 +248,11 @@ export class ElixirChat {
   };
 
   private generateAnonymousClientData(): IElixirChatUser {
-    const baseTitle = uniqueNamesGenerator({ length: 2, separator: ' ', dictionaries: null });
-    const [ firstName, lastName ] = baseTitle.split(' ').map(_upperFirst);
+    const separator = ' ';
+    const baseTitle = uniqueNamesGenerator({ length: 2, dictionaries: null, separator });
+    const [ firstName, lastName ] = baseTitle.split(separator).map(_upperFirst);
     const randomFourDigitPostfix = randomDigitStringId(4);
-    const uniqueId = baseTitle.replace(' ', '-') + '-' + randomFourDigitPostfix;
+    const uniqueId = baseTitle.replace(separator, '-') + '-' + randomFourDigitPostfix;
     return {
       id: uniqueId,
       firstName,
@@ -656,26 +657,31 @@ export class ElixirChat {
    * To disable it, pass the "__elixir-disable-feature" option:
    * @example http://localhost:8001/?__elixir-disable-feature=<FEATURE-NAME> (either with ?query params or #hash)
    */
-  private initializeEnabledFeatures(): void {
+  private initializeExperimentalFeatures(): void {
     const urlParams = {
       ...parseGETParams(location.search),
       ...parseGETParams(location.hash),
     };
-    let enabledFeatures = getFromLocalStorage('elixirchat-enabled-features', []);
+    let enabledExperimentalFeatures = getFromLocalStorage('elixirchat-enabled-features', []);
 
     if (urlParams['__elixir-enable-feature']) {
-      enabledFeatures = _uniq([ ...enabledFeatures,  urlParams['__elixir-enable-feature'].toLowerCase()]);
+      enabledExperimentalFeatures = _uniq([
+        ...enabledExperimentalFeatures,
+        urlParams['__elixir-enable-feature'].toLowerCase(),
+      ]);
     }
     else if (urlParams['__elixir-disable-feature']) {
-      enabledFeatures = enabledFeatures.filter(feature => feature !== urlParams['__elixir-disable-feature'].toLowerCase());
+      enabledExperimentalFeatures = enabledExperimentalFeatures.filter(feature => {
+        return feature !== urlParams['__elixir-disable-feature'].toLowerCase();
+      });
     }
-    setToLocalStorage('elixirchat-enabled-features', enabledFeatures);
-    this.enabledFeatures = enabledFeatures;
+    setToLocalStorage('elixirchat-enabled-features', enabledExperimentalFeatures);
+    this.enabledExperimentalFeatures = enabledExperimentalFeatures;
   };
 
   public isFeatureEnabled = (featureName: string): boolean => {
-    this.allFeaturesInTesting = _uniq([ ...this.allFeaturesInTesting, featureName.toLowerCase() ]);
-    return this.enabledFeatures.includes(featureName.toLowerCase());
+    this.experimentalFeaturesInTesting = _uniq([ ...this.experimentalFeaturesInTesting, featureName.toLowerCase() ]);
+    return this.enabledExperimentalFeatures.includes(featureName.toLowerCase());
   };
 }
 
