@@ -3,10 +3,15 @@
 
 .elixirchat-welcome-screen-container {
   overflow: hidden;
+  padding: 30px;
+  position: relative;
+  min-height: 100%;
+  box-sizing: border-box;
 }
 
 .elixirchat-welcome-screen-close {
-  color: $color-white;
+  //color: $color-white;
+  color: darken($color-gray-light, 5);
   position: fixed;
   top: 17px;
   right: 15px;
@@ -15,22 +20,23 @@
   cursor: pointer;
 }
 
-.elixirchat-welcome-screen-top {
-  background: $color-blue;
-  color: $color-white;
-  padding: 36px 32px 125px 32px;
-  border-radius: $iframe-border-radius $iframe-border-radius 0 0;
-}
+//.elixirchat-welcome-screen-top {
+//  //background: $color-blue;
+//  //color: $color-white;
+//  //padding: 36px 32px 125px 32px;
+//  //border-radius: $iframe-border-radius $iframe-border-radius 0 0;
+//}
 
 .elixirchat-welcome-screen-top__logo {
-  width: 50px;
-  height: 50px;
+  width: 65px;
+  height: 65px;
   background: {
     size: cover;
     position: center;
     repeat: no-repeat;
   };
-  margin-bottom: 15px;
+  margin: 25px auto 15px auto;
+  //margin-bottom: 15px;
   border-radius: 100%;
 
   .icon-logo {
@@ -38,31 +44,36 @@
   }
 
   &--default {
-    background: $color-white;
+    background: $color-blue;
 
     .icon-logo {
-      color: $color-blue;
+      color: $color-white;
       display: block;
       width: 100%;
-      font-size: 20px;
+      font-size: 27px;
       text-align: center;
-      padding-top: 17px;
+      padding-top: 21px;
     }
   }
 }
 
 .elixirchat-welcome-screen-top__title {
-  font-size: 20px;
+  font-size: 22px;
   line-height: 24px;
   font-weight: bold;
-  margin: 0 0 9px 0;
+  margin: 0 0 7px 0;
+  text-align: center;
+}
+
+.elixirchat-welcome-screen-top__status {
+  text-align: center;
 }
 
 .elixirchat-welcome-screen-top__status-online {
   background: $color-green;
   display: inline-block;
   vertical-align: baseline;
-  margin-left: 3px;
+  margin-right: 3px;
   width: 9px;
   height: 9px;
   border-radius: 100%;
@@ -77,22 +88,24 @@
   padding-top: 2px;
 }
 
-.elixirchat-welcome-screen-operators {
-  background: $color-white;
-  box-shadow: 0 6px 6px -4px rgba(0,0,0,.03);
-  border-radius: 3px;
-  margin: -95px 20px 22px 20px;
-  padding: 20px;
-}
+//.elixirchat-welcome-screen-operators {
+//  //background: $color-white;
+//  //box-shadow: 0 6px 6px -4px rgba(0,0,0,.03);
+//  //border-radius: 3px;
+//  //margin: -95px 20px 22px 20px;
+//  padding: 20px;
+//}
 
-.elixirchat-welcome-screen-operators__title {
-  font-weight: bold;
-  margin-bottom: 13px;
-}
+//.elixirchat-welcome-screen-operators__title {
+//  font-weight: bold;
+//  margin-bottom: 13px;
+//}
 
 .elixirchat-welcome-screen-operators__list {
   padding: 0;
-  margin: 2px 0 20px 0;
+  margin: 32px 0 -9px 0;
+  //display: inline-block;
+  text-align: center;
   list-style: none;
 }
 
@@ -125,8 +138,8 @@
 }
 
 .elixirchat-welcome-screen-operators__button {
-  height: 45px;
-  line-height: 46px;
+  height: 48px;
+  line-height: 49px;
   text-align: center;
   background: $color-blue;
   color: $color-white;
@@ -136,6 +149,8 @@
   border-radius: 4px;
   transition: background 200ms;
   cursor: pointer;
+  margin-top: 32px;
+  font-size: 16px;
 
   &:hover {
     background: darken($color-blue, 10);
@@ -156,12 +171,17 @@
 
 .elixirchat-welcome-screen-channels {
   text-align: center;
-  padding: 23px 0 50px 0;
+  position: absolute;
+  bottom: 42px;
+  //width: 100%;
+  left: 0;
+  right: 0;
+  //padding: 23px 0 50px 0;
 }
 
 .elixirchat-welcome-screen-channels__title {
-  font-weight: bold;
-  margin-bottom: 17px;
+  //font-weight: bold;
+  margin-bottom: 14px;
 }
 
 .elixirchat-welcome-screen-channels__list {
@@ -172,9 +192,28 @@
 
 .elixirchat-welcome-screen-channels__item {
   display: inline-block;
-  width: 40px;
-  height: 40px;
+  vertical-align: top;
+  width: 36px;
+  height: 36px;
   margin: 0 0 0 13px;
+
+  &--whatsapp {
+    width: 46px;
+    height: 46px;
+    margin-top: -5px;
+    margin-right: -3px;
+  }
+
+  &--vkontakte {
+    margin-top: 1px;
+  }
+
+  &--viber {
+    width: 40px;
+    height: 40px;
+    margin-top: 1px;
+    margin-left: 11px;
+  }
 
   &:first-child {
     margin-left: 0;
@@ -191,9 +230,10 @@
     repeat: no-repeat;
   };
   cursor: pointer;
-  transition: all 200ms;
+
+  //transition: opacity 200ms; // TODO: fix transition glitch
 
   &:hover {
-    opacity: .8;
+    opacity: .86;
   }
 }

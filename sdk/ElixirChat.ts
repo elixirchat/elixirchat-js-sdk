@@ -387,6 +387,34 @@ export class ElixirChat {
       company = {},
     } = data || {};
 
+    // TODO: remove
+    company.omnichannelChannels = [
+      {
+        "isConnected": false,
+        "type": "FACEBOOK",
+        "username": "100621418482771"
+      },
+      {
+        "isConnected": true,
+        "type": "TELEGRAM",
+        "username": "elixirchat_test_bot"
+      },
+      {
+        "isConnected": true,
+        "type": "VKONTAKTE",
+        "username": "club198196792"
+      },
+      {
+        "isConnected": false,
+        "type": "VIBER",
+        "username": "elixirchattest"
+      },
+      {
+        "isConnected": false,
+        "type": "WHATSAPP",
+        "username": "74956486502"
+      }];
+
     return {
       token: token || '',
       isOnline: company.isWorking || false,

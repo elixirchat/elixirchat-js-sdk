@@ -27,6 +27,7 @@ textarea {
 
 .elixirchat-widget-view {
   transition: all 50ms;
+  min-height: 100%;
 
   &--animating {
     transform: scale(1.05);

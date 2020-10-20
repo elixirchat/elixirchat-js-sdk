@@ -25,7 +25,7 @@ export interface IWelcomeScreenState {
   employeeAvatars: Array<{ url: string, initials: string }>;
   employeesCount: number;
   onlineStatus: IOnlineStatusParams;
-  closeIconOpacity: number;
+  // closeIconOpacity: number;
 }
 
 export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreenState> {
@@ -42,7 +42,7 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
       isOnline: false,
       workHoursStartAt: null,
     },
-    closeIconOpacity: 1,
+    // closeIconOpacity: 1,
   };
 
   componentDidMount() {
@@ -75,15 +75,15 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
     });
 
     elixirChatWidget.on(UNREAD_COUNTER_MESSAGES_CHANGE, this.updateUnreadCount);
-    elixirChatWidget.on(WIDGET_IFRAME_READY, () => {
-      elixirChatWidget.widgetIFrameDocument.addEventListener('scroll', this.onScroll);
-    });
+    // elixirChatWidget.on(WIDGET_IFRAME_READY, () => {
+    //   elixirChatWidget.widgetIFrameDocument.addEventListener('scroll', this.onScroll);
+    // });
   }
 
   componentWillUnmount(){
     const { elixirChatWidget } = this.props;
     elixirChatWidget.off(UNREAD_COUNTER_MESSAGES_CHANGE, this.updateUnreadCount);
-    elixirChatWidget.widgetIFrameDocument.removeEventListener('scroll', this.onScroll);
+    // elixirChatWidget.widgetIFrameDocument.removeEventListener('scroll', this.onScroll);
   }
 
   updateUnreadCount = (unreadMessagesCount) => {
@@ -124,43 +124,53 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
     if (isOnline) {
       return (
         <Fragment>
-          Онлайн <i className="elixirchat-welcome-screen-top__status-online"/>
+          <i className="elixirchat-welcome-screen-top__status-online"/> Сейчас в сети
         </Fragment>
       );
     }
     else {
+      // let message = 'Оффлайн';
+      // if (workHoursStartAt || 1) {
+      //   // message = `${message}. Ответим завтра в 10:00 по Екатеринбургу`;
+      //   message = `${message}. Ответим ${humanizeUpcomingDate(workHoursStartAt)} ${humanizeTimezoneName(workHoursStartAt)}`;
+      // }
+
       return (
         <Fragment>
-          Оффлайн <i className="elixirchat-welcome-screen-top__status-offline"/>
+          <i className="elixirchat-welcome-screen-top__status-offline"/> Не в сети
           {Boolean(workHoursStartAt) && (
             <div className="elixirchat-welcome-screen-top__status-details">
               Ответим {humanizeUpcomingDate(workHoursStartAt)} {humanizeTimezoneName(workHoursStartAt)}
             </div>
           )}
+
+          {/*Ответим завтра в 10:00 по Екатеринбургу*/}
+          {/*/!*Ответим {humanizeUpcomingDate(workHoursStartAt)} {humanizeTimezoneName(workHoursStartAt)}*!/*/}
+
         </Fragment>
       );
     }
   };
 
-  onScroll = (e) => {
-    const CLOSE_ICON_MAX_SCROLL_TOP = 80;
-    this.setState({
-      closeIconOpacity: 1 - ( e.target.body.scrollTop / CLOSE_ICON_MAX_SCROLL_TOP ),
-    });
-  };
+  // onScroll = (e) => {
+  //   const CLOSE_ICON_MAX_SCROLL_TOP = 80;
+  //   this.setState({
+  //     closeIconOpacity: 1 - ( e.target.body.scrollTop / CLOSE_ICON_MAX_SCROLL_TOP ),
+  //   });
+  // };
 
   render() {
     const { elixirChatWidget } = this.props;
     const {
       widgetMainTitle,
-      widgetChatSubtitle,
+      // widgetChatSubtitle,
       widgetCompanyLogoUrl,
       widgetChannels,
       unreadMessagesCount,
       employeeAvatars,
       employeesCount,
       onlineStatus,
-      closeIconOpacity,
+      // closeIconOpacity,
     } = this.state;
 
     const visibleUnreadMessagesCount = unreadMessagesCount > 99 ? '99+' : unreadMessagesCount;
@@ -170,64 +180,70 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
 
         <i className="icon-close-thin elixirchat-welcome-screen-close"
           onClick={elixirChatWidget.closePopup}
-          style={{
-            opacity: closeIconOpacity,
-            display: closeIconOpacity < 0 ? 'hidden' : null
-          }}/>
+          // style={{
+          //   opacity: closeIconOpacity,
+          //   display: closeIconOpacity < 0 ? 'hidden' : null
+          // }}
+        />
 
-        <div className="elixirchat-welcome-screen-top">
-          <div style={{ backgroundImage: `url(${widgetCompanyLogoUrl})` }} className={cn({
-            'elixirchat-welcome-screen-top__logo': true,
-            'elixirchat-welcome-screen-top__logo--default': !widgetCompanyLogoUrl,
-          })}>
-            <i className="icon-logo"/>
-          </div>
-          <h1 className="elixirchat-welcome-screen-top__title">{widgetMainTitle}</h1>
-          <div className="elixirchat-welcome-screen-top__status">
-            {this.generateOnlineStatusMessage(onlineStatus)}
-          </div>
+        <div style={{ backgroundImage: `url(${widgetCompanyLogoUrl})` }} className={cn({
+          'elixirchat-welcome-screen-top__logo': true,
+          'elixirchat-welcome-screen-top__logo--default': !widgetCompanyLogoUrl,
+        })}>
+          <i className="icon-logo"/>
         </div>
 
-        <div className="elixirchat-welcome-screen-operators">
-          <div className="elixirchat-welcome-screen-operators__title">
-            {widgetChatSubtitle}
-          </div>
-          {Boolean(employeeAvatars.length) && (
-            <ul className="elixirchat-welcome-screen-operators__list">
-              {employeeAvatars.map((avatar, i) => (
-                <li key={i}
-                  style={avatar.url ? { backgroundImage: `url(${avatar.url})` } : { backgroundColor: avatar.color }}
-                  className={cn({
-                    'elixirchat-welcome-screen-operators__item': true,
-                    'elixirchat-welcome-screen-operators__item--avatar': avatar.url,
-                  })}>
-                  {!Boolean(avatar.url) && avatar.initials}
-                </li>
-              ))}
-              {employeesCount > employeeAvatars.length && (
-                <li className="elixirchat-welcome-screen-operators__item elixirchat-welcome-screen-operators__item--counter">
-                  +{employeesCount - employeeAvatars.length}
-                </li>
-              )}
-            </ul>
-          )}
-          <button className="elixirchat-welcome-screen-operators__button"
-            onClick={() => elixirChatWidget.navigateTo('chat')}>
-            Написать в поддержку
-            {Boolean(visibleUnreadMessagesCount) && (
-              <span className="elixirchat-welcome-screen-operators__button-counter">
-                {visibleUnreadMessagesCount}
-              </span>
+        <h1 className="elixirchat-welcome-screen-top__title">{widgetMainTitle}</h1>
+
+        <div className="elixirchat-welcome-screen-top__status">
+          {this.generateOnlineStatusMessage(onlineStatus)}
+        </div>
+
+        {/*<div className="elixirchat-welcome-screen-operators__title">*/}
+        {/*  {widgetChatSubtitle}*/}
+        {/*</div>*/}
+
+        {Boolean(employeeAvatars.length) && (
+          <ul className="elixirchat-welcome-screen-operators__list">
+            {employeeAvatars.map((avatar, i) => (
+              <li key={i}
+                style={avatar.url ? { backgroundImage: `url(${avatar.url})` } : { backgroundColor: avatar.color }}
+                className={cn({
+                  'elixirchat-welcome-screen-operators__item': true,
+                  'elixirchat-welcome-screen-operators__item--avatar': avatar.url,
+                })}>
+                {!Boolean(avatar.url) && avatar.initials}
+              </li>
+            ))}
+            {employeesCount > employeeAvatars.length && (
+              <li className="elixirchat-welcome-screen-operators__item elixirchat-welcome-screen-operators__item--counter">
+                +{employeesCount - employeeAvatars.length}
+              </li>
             )}
-          </button>
-        </div>
+          </ul>
+        )}
+
+        <button className="elixirchat-welcome-screen-operators__button"
+          onClick={() => elixirChatWidget.navigateTo('chat')}>
+          Написать в чат
+          {Boolean(visibleUnreadMessagesCount) && (
+            <span className="elixirchat-welcome-screen-operators__button-counter">
+              {visibleUnreadMessagesCount}
+            </span>
+          )}
+        </button>
+        {/*<div className="elixirchat-welcome-screen-operators">*/}
+        {/*</div>*/}
 
         {elixirChatWidget.isFeatureEnabled('omnichannel') && Boolean(widgetChannels.length) && (
           <div className="elixirchat-welcome-screen-channels">
             <div className="elixirchat-welcome-screen-channels__title">Поддержка в других каналах</div>
             <ul className="elixirchat-welcome-screen-channels__list">
               {widgetChannels.map(channel => (
-                <li key={channel.type} className="elixirchat-welcome-screen-channels__item">
+                <li key={channel.type} className={cn({
+                  'elixirchat-welcome-screen-channels__item': true,
+                  [`elixirchat-welcome-screen-channels__item--${channel.type}`]: true,
+                })}>
                   <a className={`elixirchat-welcome-screen-channels__link svg-icon-${channel.type}`}
                     href={channel.url}
                     target="_blank">
