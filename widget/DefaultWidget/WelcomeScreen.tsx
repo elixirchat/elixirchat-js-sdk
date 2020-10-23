@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { IJoinRoomChannel } from '../../sdk/ElixirChat';
 import { IOnlineStatusParams } from '../../sdk/OnlineStatusSubscription';
 import { ElixirChatWidget } from '../ElixirChatWidget';
-import { WIDGET_DATA_SET } from '../ElixirChatWidgetEventTypes';
+import { WIDGET_DATA_SET, WIDGET_MUTE_TOGGLE } from '../ElixirChatWidgetEventTypes';
 import { UNREAD_COUNTER_MESSAGES_CHANGE } from '../../sdk/ElixirChatEventTypes';
 import { cn, _last } from '../../utilsCommon';
 import {
@@ -11,16 +11,17 @@ import {
   getAvatarColorByUserId,
   exposeComponentToGlobalScope,
 } from '../../utilsWidget';
+import { Tooltip } from './Tooltip';
 
 export interface IWelcomeScreenProps {
   elixirChatWidget: ElixirChatWidget;
 }
 
 export interface IWelcomeScreenState {
-  widgetMainTitle: string;
-  widgetChatSubtitle: string;
+  widgetTitle: string;
+  widgetLogo: string;
   widgetChannels: Array<IJoinRoomChannel>;
-  widgetCompanyLogoUrl: string;
+  widgetIsMuted: boolean;
   unreadMessagesCount: number;
   employeeAvatars: Array<{ url: string, initials: string }>;
   employeesCount: number;
@@ -30,10 +31,10 @@ export interface IWelcomeScreenState {
 export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreenState> {
 
   state = {
-    widgetMainTitle: '',
-    widgetChatSubtitle: '',
+    widgetTitle: '',
     widgetChannels: [],
-    widgetCompanyLogoUrl: '',
+    widgetLogo: '',
+    widgetIsMuted: false,
     unreadMessagesCount: 0,
     employeeAvatars: [],
     employeesCount: 0,
@@ -49,10 +50,10 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
 
     elixirChatWidget.on(WIDGET_DATA_SET, () => {
       const {
-        widgetMainTitle,
-        widgetChatSubtitle,
-        widgetCompanyLogoUrl,
+        widgetTitle,
+        widgetLogo,
         widgetChannels,
+        widgetIsMuted,
         onlineStatus,
         unreadMessagesCount,
         joinRoomData,
@@ -61,15 +62,19 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
       const { employeeAvatars, employeesCount } = this.generateEmployeeList(joinRoomData);
 
       this.setState({
-        widgetMainTitle,
-        widgetChatSubtitle,
-        widgetCompanyLogoUrl,
+        widgetTitle,
+        widgetLogo,
         widgetChannels,
+        widgetIsMuted,
         onlineStatus,
         unreadMessagesCount,
         employeeAvatars,
         employeesCount,
       });
+    });
+
+    elixirChatWidget.on(WIDGET_MUTE_TOGGLE, widgetIsMuted => {
+      this.setState({ widgetIsMuted });
     });
 
     elixirChatWidget.on(UNREAD_COUNTER_MESSAGES_CHANGE, this.updateUnreadCount);
@@ -118,16 +123,16 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
     if (isOnline) {
       return (
         <Fragment>
-          <i className="elixirchat-welcome-screen-top__status-online"/> Сейчас в сети
+          <i className="elixirchat-welcome-screen__status-online"/> Сейчас в сети
         </Fragment>
       );
     }
     else {
       return (
         <Fragment>
-          <i className="elixirchat-welcome-screen-top__status-offline"/> Не в сети
+          <i className="elixirchat-welcome-screen__status-offline"/> Не в сети
           {Boolean(workHoursStartAt) && (
-            <div className="elixirchat-welcome-screen-top__status-details">
+            <div className="elixirchat-welcome-screen__status-details">
               Ответим {humanizeUpcomingDate(workHoursStartAt)} {humanizeTimezoneName(workHoursStartAt)}
             </div>
           )}
@@ -139,9 +144,10 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
   render() {
     const { elixirChatWidget } = this.props;
     const {
-      widgetMainTitle,
-      widgetCompanyLogoUrl,
+      widgetTitle,
+      widgetLogo,
       widgetChannels,
+      widgetIsMuted,
       unreadMessagesCount,
       employeeAvatars,
       employeesCount,
@@ -151,63 +157,74 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
     const visibleUnreadMessagesCount = unreadMessagesCount > 99 ? '99+' : unreadMessagesCount;
 
     return (
-      <div className="elixirchat-welcome-screen-container">
+      <div className="elixirchat-welcome-screen__container">
 
-        <i className="icon-close-thin elixirchat-welcome-screen-close" onClick={elixirChatWidget.closePopup}/>
+        <Tooltip className="elixirchat-welcome-screen__mute-tooltip" title={widgetIsMuted
+          ? 'Включить звук уведомлений'
+          : 'Выключить звук уведомлений'}>
+          <button className="elixirchat-welcome-screen__mute"
+            onClick={() => widgetIsMuted ? elixirChatWidget.unmute() : elixirChatWidget.mute()}>
+            <i className={widgetIsMuted ? 'icon-speaker-mute' : 'icon-speaker'}/>
+          </button>
+        </Tooltip>
 
-        <div style={{ backgroundImage: `url(${widgetCompanyLogoUrl})` }} className={cn({
-          'elixirchat-welcome-screen-top__logo': true,
-          'elixirchat-welcome-screen-top__logo--default': !widgetCompanyLogoUrl,
+        <button className="elixirchat-welcome-screen__close" onClick={elixirChatWidget.closePopup}>
+          <i className="icon-close-thin"/>
+        </button>
+
+        <div style={{ backgroundImage: `url(${widgetLogo})` }} className={cn({
+          'elixirchat-welcome-screen__logo': true,
+          'elixirchat-welcome-screen__logo--default': !widgetLogo,
         })}>
           <i className="icon-logo"/>
         </div>
 
-        <h1 className="elixirchat-welcome-screen-top__title">{widgetMainTitle}</h1>
+        <h1 className="elixirchat-welcome-screen__title">{widgetTitle}</h1>
 
-        <div className="elixirchat-welcome-screen-top__status">
+        <div className="elixirchat-welcome-screen__status">
           {this.generateOnlineStatusMessage(onlineStatus)}
         </div>
 
         {Boolean(employeeAvatars.length) && (
-          <ul className="elixirchat-welcome-screen-operators__list">
+          <ul className="elixirchat-welcome-screen__operators">
             {employeeAvatars.map((avatar, i) => (
               <li key={i}
                 style={avatar.url ? { backgroundImage: `url(${avatar.url})` } : { backgroundColor: avatar.color }}
                 className={cn({
-                  'elixirchat-welcome-screen-operators__item': true,
-                  'elixirchat-welcome-screen-operators__item--avatar': avatar.url,
+                  'elixirchat-welcome-screen__operators-item': true,
+                  'elixirchat-welcome-screen__operators-item--avatar': avatar.url,
                 })}>
                 {!Boolean(avatar.url) && avatar.initials}
               </li>
             ))}
             {employeesCount > employeeAvatars.length && (
-              <li className="elixirchat-welcome-screen-operators__item elixirchat-welcome-screen-operators__item--counter">
+              <li className="elixirchat-welcome-screen__operators-item elixirchat-welcome-screen__operators-item--counter">
                 +{employeesCount - employeeAvatars.length}
               </li>
             )}
           </ul>
         )}
 
-        <button className="elixirchat-welcome-screen-operators__button"
+        <button className="elixirchat-welcome-screen__chat-button"
           onClick={() => elixirChatWidget.navigateTo('chat')}>
           Написать в чат
           {Boolean(visibleUnreadMessagesCount) && (
-            <span className="elixirchat-welcome-screen-operators__button-counter">
+            <span className="elixirchat-welcome-screen__chat-button-counter">
               {visibleUnreadMessagesCount}
             </span>
           )}
         </button>
 
         {Boolean(widgetChannels.length) && (
-          <div className="elixirchat-welcome-screen-channels">
-            <div className="elixirchat-welcome-screen-channels__title">Поддержка в других каналах</div>
-            <ul className="elixirchat-welcome-screen-channels__list">
+          <div className="elixirchat-welcome-screen__channels">
+            <div className="elixirchat-welcome-screen__channels-title">Поддержка в других каналах</div>
+            <ul className="elixirchat-welcome-screen__channels-list">
               {widgetChannels.map(channel => (
                 <li key={channel.type} className={cn({
-                  'elixirchat-welcome-screen-channels__item': true,
-                  [`elixirchat-welcome-screen-channels__item--${channel.type}`]: true,
+                  'elixirchat-welcome-screen__channels-item': true,
+                  [`elixirchat-welcome-screen__channels-item--${channel.type}`]: true,
                 })}>
-                  <a className={`elixirchat-welcome-screen-channels__link svg-icon-${channel.type}`}
+                  <a className={`elixirchat-welcome-screen__channels-link svg-icon-${channel.type}`}
                     href={channel.url}
                     target="_blank">
                   </a>

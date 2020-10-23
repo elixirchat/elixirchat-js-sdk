@@ -33,7 +33,7 @@ export interface IWidgetState {
   outsideIframeStyles: string;
   insideIframeStyles: string;
   widgetView: string;
-  widgetViewIsAnimating: null | string;
+  widgetViewAnimation: null | string;
   widgetIsPopupOpen: boolean;
   widgetIsPopupOpeningAnimation: boolean;
   widgetIsButtonHidden: boolean;
@@ -47,7 +47,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
     outsideIframeStyles: '',
     insideIframeStyles: '',
     widgetView: '',
-    widgetViewIsAnimating: null,
+    widgetViewAnimation: null,
     widgetIsPopupOpen: false,
     widgetIsPopupOpeningAnimation: false,
     widgetIsButtonHidden: true,
@@ -95,11 +95,16 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
   };
 
   onViewChange = (widgetView) => {
-    this.setState({ widgetViewIsAnimating: true });
+
+    console.log('__ on view change', widgetView);
+
+    const widgetViewAnimation = widgetView === 'welcome-screen' ? 'slide-right' : 'expand';
+
+    this.setState({ widgetViewAnimation });
     setTimeout(() => {
       this.setState({
         widgetView,
-        widgetViewIsAnimating: false
+        widgetViewAnimation: null
       });
     }, 400);
   };
@@ -150,7 +155,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
       widgetIsPopupOpen,
       widgetIsPopupOpeningAnimation,
       widgetView,
-      widgetViewIsAnimating,
+      widgetViewAnimation,
       unreadMessagesCount,
       outsideIframeStyles,
       insideIframeStyles,
@@ -191,10 +196,12 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
 
             <div className={cn({
               'elixirchat-widget-view': true,
-              'elixirchat-widget-view--animating': widgetViewIsAnimating,
+              'elixirchat-widget-view--animating-expand': widgetViewAnimation === 'expand',
+              'elixirchat-widget-view--animating-slide-right': widgetViewAnimation === 'slide-right',
+              ['elixirchat-browser--' + detectedBrowser]: true,
             })}>
               {widgetView === 'chat' && (
-                <Chat className={`elixirchat-browser--${detectedBrowser}`} elixirChatWidget={elixirChatWidget}/>
+                <Chat elixirChatWidget={elixirChatWidget}/>
               )}
               {widgetView === 'welcome-screen' && (
                 <WelcomeScreen elixirChatWidget={elixirChatWidget}/>

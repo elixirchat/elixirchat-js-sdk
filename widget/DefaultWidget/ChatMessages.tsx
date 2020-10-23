@@ -21,7 +21,7 @@ import {
   generateReplyMessageQuote,
   exposeComponentToGlobalScope,
   fitDimensionsIntoLimits,
-  isMobileSizeScreen,
+  isMobile,
 } from '../../utilsWidget';
 
 import { ElixirChatWidget } from '../ElixirChatWidget';
@@ -75,7 +75,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     currentlyTypingUsers: [],
   };
 
-  MAX_THUMBNAIL_SIZE: number = isMobileSizeScreen() ? 208 : 256;
+  MAX_THUMBNAIL_SIZE: number = isMobile() ? 208 : 256;
   MESSAGE_CHUNK_SIZE: number = 20;
   MARK_AS_READ_TIMEOUT: number = 2000; // ms
   LOAD_PRECEDING_MESSAGES_SCROLL_Y_POSITION: number = 10;
@@ -618,7 +618,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
                         {!message.sender.isCurrentClient && (
                           <div className="elixirchat-chat-messages__sender">
-                            <b>{getUserFullName(message.sender) || elixirChatWidget.widgetMainTitle}</b>
+                            <b>{getUserFullName(message.sender) || elixirChatWidget.widgetTitle}</b>
                             {Boolean(message.mentions.length) && (
                               <Fragment>
                                 &nbsp;→ @&nbsp;
@@ -750,7 +750,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                   <div className="elixirchat-chat-messages__inner">
                     <div className="elixirchat-chat-messages__balloon">
                       <div className="elixirchat-chat-messages__sender">
-                        <b>{getUserFullName(message.sender) || elixirChatWidget.widgetMainTitle}</b>
+                        <b>{getUserFullName(message.sender) || elixirChatWidget.widgetTitle}</b>
                       </div>
 
                       {message.systemData.type === 'ScreenshotRequestedMessage' && (

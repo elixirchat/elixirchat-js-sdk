@@ -29,7 +29,13 @@ textarea {
   transition: all 50ms;
   min-height: 100vh;
 
-  &--animating {
+  &--animating-slide-right {
+    transform: translateX(30px);
+    opacity: 0;
+    transition: all 300ms;
+  }
+
+  &--animating-expand {
     transform: scale(1.05);
     opacity: 0;
     transition: all 300ms;

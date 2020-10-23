@@ -97,6 +97,7 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
     elixirChatWidget.widgetIFrameDocument.body.removeEventListener('drop', this.onBodyDrop);
     window.removeEventListener('dragover', this.cancelWidgetPopupDrag);
 
+    elixirChatWidget.off(WIDGET_MUTE_TOGGLE, this.focusTextarea);
     elixirChatWidget.off(WIDGET_POPUP_OPEN, this.focusTextarea);
     elixirChatWidget.off(WIDGET_POPUP_OPEN, this.onVerticalResize);
   }

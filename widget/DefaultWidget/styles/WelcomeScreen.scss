@@ -1,25 +1,15 @@
 @import "./variables";
 @import "./mixins";
 
-.elixirchat-welcome-screen-container {
+.elixirchat-welcome-screen__container {
   overflow: hidden;
-  padding: 30px;
+  padding: 30px 30px 158px 30px;
   position: relative;
   min-height: 100vh;
   box-sizing: border-box;
 }
 
-.elixirchat-welcome-screen-close {
-  color: darken($color-gray-light, 5);
-  position: fixed;
-  top: 17px;
-  right: 15px;
-  padding: 10px;
-  font-size: 15px;
-  cursor: pointer;
-}
-
-.elixirchat-welcome-screen-top__logo {
+.elixirchat-welcome-screen__logo {
   width: 65px;
   height: 65px;
   background: {
@@ -48,7 +38,7 @@
   }
 }
 
-.elixirchat-welcome-screen-top__title {
+.elixirchat-welcome-screen__title {
   font-size: 22px;
   line-height: 24px;
   font-weight: bold;
@@ -56,11 +46,11 @@
   text-align: center;
 }
 
-.elixirchat-welcome-screen-top__status {
+.elixirchat-welcome-screen__status {
   text-align: center;
 }
 
-.elixirchat-welcome-screen-top__status-online {
+.elixirchat-welcome-screen__status-online {
   background: $color-green;
   display: inline-block;
   vertical-align: baseline;
@@ -70,23 +60,23 @@
   border-radius: 100%;
 }
 
-.elixirchat-welcome-screen-top__status-offline {
-  @extend .elixirchat-welcome-screen-top__status-online;
+.elixirchat-welcome-screen__status-offline {
+  @extend .elixirchat-welcome-screen__status-online;
   background: $color-pink;
 }
 
-.elixirchat-welcome-screen-top__status-details {
+.elixirchat-welcome-screen__status-details {
   padding-top: 2px;
 }
 
-.elixirchat-welcome-screen-operators__list {
+.elixirchat-welcome-screen__operators {
   padding: 0;
   margin: 32px 0 -9px 0;
   text-align: center;
   list-style: none;
 }
 
-.elixirchat-welcome-screen-operators__item {
+.elixirchat-welcome-screen__operators-item {
   display: inline-block;
   margin: 0 -8px 0 0;
   padding: 0;
@@ -110,11 +100,11 @@
   }
 }
 
-.elixirchat-welcome-screen-operators__item--avatar {
+.elixirchat-welcome-screen__operators-item--avatar {
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.04);
 }
 
-.elixirchat-welcome-screen-operators__button {
+.elixirchat-welcome-screen__chat-button {
   height: 48px;
   line-height: 49px;
   text-align: center;
@@ -132,9 +122,13 @@
   &:hover {
     background: darken($color-blue, 10);
   }
+
+  .elixirchat-browser--safari & {
+    line-height: 46px;
+  }
 }
 
-.elixirchat-welcome-screen-operators__button-counter {
+.elixirchat-welcome-screen__chat-button-counter {
   background: $color-pink;
   border-radius: 21px;
   line-height: 14px;
@@ -146,7 +140,7 @@
   font-size: 13px;
 }
 
-.elixirchat-welcome-screen-channels {
+.elixirchat-welcome-screen__channels {
   text-align: center;
   position: absolute;
   bottom: 42px;
@@ -154,17 +148,17 @@
   right: 0;
 }
 
-.elixirchat-welcome-screen-channels__title {
+.elixirchat-welcome-screen__channels-title {
   margin-bottom: 14px;
 }
 
-.elixirchat-welcome-screen-channels__list {
+.elixirchat-welcome-screen__channels-list {
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.elixirchat-welcome-screen-channels__item {
+.elixirchat-welcome-screen__channels-item {
   display: inline-block;
   vertical-align: top;
   width: 36px;
@@ -194,7 +188,7 @@
   }
 }
 
-.elixirchat-welcome-screen-channels__link {
+.elixirchat-welcome-screen__channels-link {
   display: block;
   width: 100%;
   height: 100%;
@@ -207,5 +201,51 @@
 
   &:hover {
     opacity: .86;
+  }
+}
+
+.elixirchat-welcome-screen__mute,
+.elixirchat-welcome-screen__close {
+  color: darken($color-gray-light, 10);
+  height: 52px;
+  top: 1px;
+  position: fixed;
+  background: none;
+  cursor: pointer;
+  padding: 0 18px;
+  border: 0;
+  transition: opacity 200ms;
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+
+  &:hover {
+    color: $color-gray-dark;
+  }
+}
+
+.elixirchat-welcome-screen__close {
+  right: 3px;
+  padding-left: 8px;
+}
+
+.elixirchat-welcome-screen__mute {
+  right: 43px;
+  padding-right: 8px;
+}
+
+.elixirchat-welcome-screen__mute-tooltip {
+  bottom: auto;
+  top: 100%;
+  margin-bottom: 0;
+  margin-top: -9px;
+  font-size: 14px;
+  color: $color-white;
+
+  &:after {
+    bottom: auto;
+    top: -4px;
+    transform: scaleY(-1);
+    margin-right: 14px;
   }
 }

@@ -13,7 +13,7 @@ export interface IDefaultWidgetProps {
 }
 
 export interface IDefaultWidgetState {
-  widgetMainTitle: string;
+  widgetTitle: string;
   widgetIsMuted: boolean;
   onlineStatus: IOnlineStatusParams;
 }
@@ -21,7 +21,7 @@ export interface IDefaultWidgetState {
 export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
 
   state = {
-    widgetMainTitle: '',
+    widgetTitle: '',
     widgetIsMuted: false,
     onlineStatus: {
       isOnline: false,
@@ -36,9 +36,9 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
     exposeComponentToGlobalScope(this, elixirChatWidget);
 
     elixirChatWidget.on(WIDGET_DATA_SET, () => {
-      const { widgetMainTitle, widgetIsMuted, onlineStatus } = elixirChatWidget;
+      const { widgetTitle, widgetIsMuted, onlineStatus } = elixirChatWidget;
       this.setState({
-        widgetMainTitle,
+        widgetTitle,
         widgetIsMuted,
         onlineStatus,
       });
@@ -63,7 +63,7 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
   render() {
     const { elixirChatWidget, className } = this.props;
     const {
-      widgetMainTitle,
+      widgetTitle,
       widgetIsMuted,
       onlineStatus,
     } = this.state;
@@ -71,16 +71,18 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
     return (
       <div className={cn('elixirchat-chat-container', className)}>
         <div className="elixirchat-chat-header">
-          <i className="elixirchat-chat-header__back icon-arrow-left" onClick={this.onBackButtonClick}/>
 
-          <span className="elixirchat-chat-header__title" title={'Версия ' + process.env.ELIXIRCHAT_VERSION}>
-            {widgetMainTitle}
-          </span>
+          <i className="elixirchat-chat-header__back icon-arrow-left"
+            onClick={this.onBackButtonClick}/>
 
           <i className={cn({
             'elixirchat-chat-header__indicator': true,
             'elixirchat-chat-header__indicator--offline': !onlineStatus.isOnline,
           })}/>
+
+          <span className="elixirchat-chat-header__title" title={'Версия ' + process.env.ELIXIRCHAT_VERSION}>
+            {widgetTitle}
+          </span>
 
           <Tooltip className="elixirchat-chat-header__mute-tooltip" title={widgetIsMuted
             ? 'Включить звук уведомлений'

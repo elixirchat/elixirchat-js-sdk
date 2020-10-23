@@ -1,6 +1,6 @@
 @import "./variables";
 
-$color-textarea-bg: #FAFAFA;
+$color-textarea-bg: #FFF;
 
 .elixirchat-chat-textarea {
   position: fixed;
@@ -88,6 +88,14 @@ $color-textarea-bg: #FAFAFA;
 
   &:hover {
     background-color: lighten($color-gray-light, 5);
+  }
+}
+
+.elixirchat-chat-textarea__actions-screenshot {
+  padding-top: 1px;
+
+  .elixirchat-browser--safari & {
+    padding-top: 3px;
   }
 }
 

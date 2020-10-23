@@ -1,5 +1,5 @@
 import { uniqueNamesGenerator } from 'unique-names-generator';
-import { isMobileSizeScreen } from '../utilsWidget';
+import { isMobile } from '../utilsWidget';
 import {
   _uniq,
   _upperFirst,
@@ -71,9 +71,8 @@ export interface IJoinRoomData {
   token: string;
   isOnline: boolean;
   workHoursStartAt: null | string;
-  mainTitle: string;
-  chatSubtitle: string;
-  companyLogoUrl: string;
+  widgetTitle: string;
+  widgetLogo: string;
   channels: Array<IJoinRoomChannel>;
   employeesCount: number;
   employees: Array<IUser>;
@@ -290,7 +289,6 @@ export class ElixirChat {
             workHoursStartAt
             widgetLogo
             widgetTitle
-            widgetSubtitle
             omnichannelChannels {
               type
               username
@@ -391,9 +389,8 @@ export class ElixirChat {
       token: token || '',
       isOnline: company.isWorking || false,
       workHoursStartAt: company.workHoursStartAt || null,
-      mainTitle: company.widgetTitle || '',         // TODO: rename
-      chatSubtitle: company.widgetSubtitle || '',   // TODO: rename
-      companyLogoUrl: company.widgetLogo || '',     // TODO: rename
+      widgetTitle: company.widgetTitle || '',
+      widgetLogo: company.widgetLogo || '',
       channels: this.serializeChannels(company.omnichannelChannels, client.omnichannelCode),
       employeesCount: company.employees?.count || 0,
       employees: simplifyGraphQLJSON(company?.employees).map(employee => {
@@ -410,7 +407,6 @@ export class ElixirChat {
   }
 
   private serializeChannels(omnichannelChannels: Array<IJoinRoomChannel>, omnichannelCode: string): Array<IJoinRoomChannel> {
-    const isMobile = isMobileSizeScreen();
     const manualMessageMask = `Чтобы продолжить, просто отправьте целиком это сообщение. Ваш код: ${omnichannelCode}`;
     const desktopUrlMasks = {
       whatsapp: {
@@ -447,21 +443,52 @@ export class ElixirChat {
         baseUrl: 'viber://pa?chatURI={{ username }}',
         userParams: '&context={{ omnichannelCode }}',
       },
-
       vkontakte: {
         baseUrl: 'https://vk.me/{{ username }}',
         userParams: '?ref={{ omnichannelCode }}',
       },
-      // TODO: optimize facebook
       facebook: {
         baseUrl: 'https://m.me/{{ username }}',
         userParams: '?ref={{ omnichannelCode }}',
       },
     };
+    const isMobileBrowser = isMobile();
+
+
+    // TODO: remove mock
+    omnichannelChannels = [
+      {
+        "isConnected": false,
+        "type": "FACEBOOK",
+        "username": "100621418482771"
+      },
+      {
+        "isConnected": true,
+        "type": "TELEGRAM",
+        "username": "elixirchat_test_bot"
+      },
+      {
+        "isConnected": true,
+        "type": "VKONTAKTE",
+        "username": "club198196792"
+      },
+      {
+        "isConnected": false,
+        "type": "VIBER",
+        "username": "elixirchattest"
+      },
+      {
+        "isConnected": false,
+        "type": "WHATSAPP",
+        "username": "74956486502"
+      }]
+
+
+
     return (omnichannelChannels || []).map(channel => {
       const { username, isConnected = false } = channel;
       const type = channel.type.toLowerCase();
-      const mask = isMobile ? mobileUrlMasks[type] : desktopUrlMasks[type];
+      const mask = isMobileBrowser ? mobileUrlMasks[type] : desktopUrlMasks[type];
       const urlMask = isConnected ? mask.baseUrl : mask.baseUrl + mask.userParams;
       const url = template(urlMask, {
         username,
@@ -638,8 +665,6 @@ export class ElixirChat {
       this.typingStatusSubscription.unsubscribe();
       this.onlineStatusSubscription.unsubscribe();
     });
-    // TODO: remove firedOnce params? use .off()?
-    // TODO: remove eventHandlers?
   };
 
   public reconnect = (config: { room?: IElixirChatRoom, client?: IElixirChatUser }): Promise<void> => {

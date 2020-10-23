@@ -99,13 +99,13 @@
   border-bottom: 1px solid $color-black;
   line-height: 21px;
   margin-bottom: 15px;
+  margin-top: 28px;
   width: 100%;
 }
 
 .elixirchat-chat-messages__item {
   max-width: 80%;
-  min-width: 50%;
-  padding-bottom: 15px;
+  padding-bottom: 10px;
 
   &--by-me {
     align-self: flex-end;
@@ -144,7 +144,7 @@
   }
 
   .elixirchat-chat-messages__item--by-operator & {
-    color: $color-pink;
+    color: $color-pink !important;
   }
 }
 

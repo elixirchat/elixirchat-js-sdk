@@ -47,12 +47,6 @@ export function humanizeFileSize(sizeInBytes: number): string {
 export function humanizeTimezoneName(date: Date): string {
   date = new Date(date);
 
-  // TODO: Калининград
-  // TODO: Украина
-  // TODO: Белоруссия
-  // TODO: Прибалтика
-  // TODO: figure out when to add GMT+00 (e.g. for Eastern Europe)
-
   const timezoneDict = {
     Moscow: 'по Москве',
     Samara: 'по Самаре',
@@ -161,7 +155,7 @@ export function generateReplyMessageQuote(messageToReplyTo: IMessage, elixirChat
     return getUserFullName(sender);
   }
   else {
-    return getUserFullName(sender) || elixirChatWidget.widgetMainTitle;
+    return getUserFullName(sender) || elixirChatWidget.widgetTitle;
   }
 }
 
@@ -187,9 +181,19 @@ export function isWithinElement(target, container){
 }
 
 
-// TODO: detect mobile platforms/OS rather than screen size
-export function isMobileSizeScreen(){
-  return window.innerWidth < 480; // equals to $max-width-mobile from Widget.scss
+export function isMobile(){
+  const mobileRegex = [
+    /Android/i,
+    /webOS/i,
+    /iPhone/i,
+    /iPad/i,
+    /iPod/i,
+    /BlackBerry/i,
+    /Windows Phone/i
+  ];
+  return mobileRegex.some((toMatchItem) => {
+    return navigator.userAgent.match(toMatchItem);
+  });
 }
 
 

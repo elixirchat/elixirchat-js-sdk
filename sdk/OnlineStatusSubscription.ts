@@ -32,11 +32,6 @@ export class OnlineStatusSubscription {
     const { graphQLClientSocket, logInfo, logError, triggerEvent } = this.elixirChat;
     const { isOnline, workHoursStartAt } = params || {};
 
-    // TODO: remove mock
-    // this.onStatusChange({
-    //   isOnline: false,
-    //   workHoursStartAt: '2020-09-02T13:30:00Z',
-    // });
     this.onStatusChange({ isOnline, workHoursStartAt });
 
     graphQLClientSocket.subscribe({

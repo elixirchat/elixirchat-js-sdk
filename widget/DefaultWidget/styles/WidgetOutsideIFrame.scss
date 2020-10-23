@@ -1,7 +1,7 @@
 @import "./variables";
 @import "./mixins";
 
-$max-height: 535px;
+$max-height: 800px;
 $max-width-mobile: 480px;
 
 .elixirchat-widget-button {
@@ -90,9 +90,8 @@ $max-width-mobile: 480px;
   border-radius: $iframe-border-radius;
   max-height: $max-height;
   background: $color-white;
-  //background: #FAFAFA;
   position: fixed;
-  height: calc(100vh - 130px);
+  height: 80%;
   width: 380px;
   bottom: 100px;
   right: 30px;

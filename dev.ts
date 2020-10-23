@@ -28,8 +28,8 @@ const elixirChatWidget = new ElixirChatWidget({
 
 elixirChatWidget.appendWidget({
   container: document.getElementById('elixirchat-widget'),
-  mainTitle: 'Служба поддержки',
-  chatSubtitle: 'Ответим в течение нескольких минут',
+  title: 'Служба поддержки',
+  logo: 'https://picsum.photos/200',
   supportEmail: 'support@elixir.chat',
   enabledChannels: [
     'whatsapp',
