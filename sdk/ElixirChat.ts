@@ -454,37 +454,6 @@ export class ElixirChat {
     };
     const isMobileBrowser = isMobile();
 
-
-    // TODO: remove mock
-    omnichannelChannels = [
-      {
-        "isConnected": false,
-        "type": "FACEBOOK",
-        "username": "100621418482771"
-      },
-      {
-        "isConnected": true,
-        "type": "TELEGRAM",
-        "username": "elixirchat_test_bot"
-      },
-      {
-        "isConnected": true,
-        "type": "VKONTAKTE",
-        "username": "club198196792"
-      },
-      {
-        "isConnected": false,
-        "type": "VIBER",
-        "username": "elixirchattest"
-      },
-      {
-        "isConnected": false,
-        "type": "WHATSAPP",
-        "username": "74956486502"
-      }]
-
-
-
     return (omnichannelChannels || []).map(channel => {
       const { username, isConnected = false } = channel;
       const type = channel.type.toLowerCase();
