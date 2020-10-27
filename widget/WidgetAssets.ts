@@ -26,7 +26,6 @@ export class WidgetAssets {
     ].join('\n');
 
     this.insideIframeStyles = [
-      elixirChatWidget.widgetConfig.iframeCSS || '',
       fontFaceCSS,
       svgIconsCSS,
       styles.Icons,

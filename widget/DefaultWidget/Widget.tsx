@@ -193,6 +193,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
         })}>
           <Fragment>
             <style dangerouslySetInnerHTML={{ __html: insideIframeStyles }}/>
+            <style dangerouslySetInnerHTML={{ __html: elixirChatWidget.widgetConfig.iframeCSS }}/>
 
             <div className={cn({
               'elixirchat-widget-view': true,
