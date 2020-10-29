@@ -95,9 +95,6 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
   };
 
   onViewChange = (widgetView) => {
-
-    console.log('__ on view change', widgetView);
-
     const widgetViewAnimation = widgetView === 'welcome-screen' ? 'slide-right' : 'slide-left';
 
     this.setState({ widgetViewAnimation });
@@ -106,7 +103,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
         widgetView,
         widgetViewAnimation: null
       });
-    }, 400);
+    }, 250);
   };
 
   onPopupToggle = (widgetIsPopupOpen) => {

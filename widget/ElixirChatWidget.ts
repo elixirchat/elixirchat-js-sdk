@@ -3,7 +3,12 @@ import { _find, getFromLocalStorage, logEvent, setToLocalStorage } from '../util
 import { renderWidgetReactComponent } from './DefaultWidget/Widget';
 import { IFontRule } from './FontExtractor';
 import { IJoinRoomChannel, IJoinRoomData } from '../sdk/ElixirChat';
-import { JOIN_ROOM_SUCCESS, JOIN_ROOM_ERROR } from '../sdk/ElixirChatEventTypes';
+import {
+  JOIN_ROOM_ERROR,
+  JOIN_ROOM_SUCCESS,
+  MESSAGES_RETRIEVE_LAST_MESSAGE_CURSOR,
+} from '../sdk/ElixirChatEventTypes';
+
 import {
   WIDGET_IFRAME_READY,
   WIDGET_NAVIGATE_TO,
@@ -113,7 +118,11 @@ export class ElixirChatWidget extends ElixirChat {
     this.on(WIDGET_DATA_SET, () => {
       this.togglePopup({ isOpen: this.widgetIsPopupOpen });
       this.toggleMute(this.widgetIsMuted);
-      this.navigateTo(this.widgetView);
+    });
+    this.on(MESSAGES_RETRIEVE_LAST_MESSAGE_CURSOR, () => {
+      const storedView = getFromLocalStorage('elixirchat-current-view');
+      const defaultView = this.messageSubscription.hasEmptyMessageHistory ? 'welcome-screen' : 'chat';
+      this.navigateTo(storedView || defaultView);
     });
   }
 
@@ -133,7 +142,6 @@ export class ElixirChatWidget extends ElixirChat {
     this.widgetIsMuted = getFromLocalStorage('elixirchat-notifications-muted', isMuted);
     this.widgetIsButtonHidden = this.widgetConfig.hideDefaultButton || isButtonHidden;
     this.widgetSupportEmail = this.widgetConfig.supportEmail || supportEmail;
-    this.widgetView = getFromLocalStorage('elixirchat-current-view', view);
     this.widgetChatScrollY = 0;
 
     this.widgetChannels = (this.widgetConfig.enabledChannels || [])

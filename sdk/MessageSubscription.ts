@@ -2,8 +2,9 @@ import { ElixirChat } from './ElixirChat';
 import {
   MESSAGES_RECEIVE,
   MESSAGES_HISTORY_CHANGE,
+  MESSAGES_HISTORY_PREPEND,
+  MESSAGES_RETRIEVE_LAST_MESSAGE_CURSOR,
   ERROR_ALERT,
-  MESSAGES_HISTORY_PREPEND
 } from './ElixirChatEventTypes';
 import { IFile } from './serializers/serializeFile';
 import { IMessage, serializeMessage, fragmentMessage } from './serializers/serializeMessage';
@@ -117,17 +118,22 @@ export class MessageSubscription {
     });
   };
 
-  private initializePollingMessageHistoryOnInterval(): void {
+  private async initializePollingMessageHistoryOnInterval(): void {
     clearInterval(this.pollingInterval);
 
-    this.pollingInterval = setInterval(async () => {
-      if (!this.lastMessageCursor && !this.hasEmptyMessageHistory) {
-        const lastMessageCursor = await this.getMessageHistoryByCursor({ limit: 1 }).then(chunk => chunk[0])?.cursor || null;
-        if (!lastMessageCursor) {
-          this.hasEmptyMessageHistory = true;
-        }
-        this.lastMessageCursor = lastMessageCursor;
+    if (!this.lastMessageCursor && !this.hasEmptyMessageHistory) {
+      const { triggerEvent } = this.elixirChat;
+      const lastMessage = await this.getMessageHistoryByCursor({ limit: 1 }).then(chunk => chunk[0]);
+      const lastMessageCursor = lastMessage?.cursor || null;
+
+      if (!lastMessageCursor) {
+        this.hasEmptyMessageHistory = true;
       }
+      this.lastMessageCursor = lastMessageCursor;
+      triggerEvent(MESSAGES_RETRIEVE_LAST_MESSAGE_CURSOR, lastMessage);
+    }
+
+    this.pollingInterval = setInterval(() => {
       if (this.lastMessageCursor) {
         const pollingParams = {
           limit: 10,
