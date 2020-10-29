@@ -7,6 +7,7 @@ import {
   JOIN_ROOM_ERROR,
   JOIN_ROOM_SUCCESS,
   MESSAGES_RETRIEVE_LAST_MESSAGE_CURSOR,
+  MESSAGES_RECEIVE,
 } from '../sdk/ElixirChatEventTypes';
 
 import {
@@ -122,6 +123,11 @@ export class ElixirChatWidget extends ElixirChat {
       const storedView = getFromLocalStorage('elixirchat-current-view');
       const defaultView = this.messageSubscription.hasEmptyMessageHistory ? 'welcome-screen' : 'chat';
       this.navigateTo(storedView || defaultView);
+    });
+    this.on(MESSAGES_RECEIVE, message => {
+      if (message.mustOpenWidget) {
+        this.openPopup();
+      }
     });
   }
 

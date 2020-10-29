@@ -137,10 +137,6 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
   onMessageReceive = (message) => {
     const { elixirChatWidget } = this.props;
-
-    if (message.mustOpenWidget) {
-      elixirChatWidget.openPopup();
-    }
     const shouldScrollMessagesToBottom = document.hasFocus()
       && elixirChatWidget.widgetIsPopupOpen
       && (message.sender.isCurrentClient || !this.hasUserScroll());
