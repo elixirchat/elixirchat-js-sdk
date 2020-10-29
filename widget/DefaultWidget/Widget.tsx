@@ -98,7 +98,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
 
     console.log('__ on view change', widgetView);
 
-    const widgetViewAnimation = widgetView === 'welcome-screen' ? 'slide-right' : 'expand';
+    const widgetViewAnimation = widgetView === 'welcome-screen' ? 'slide-right' : 'slide-left';
 
     this.setState({ widgetViewAnimation });
     setTimeout(() => {
@@ -197,7 +197,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
 
             <div className={cn({
               'elixirchat-widget-view': true,
-              'elixirchat-widget-view--animating-expand': widgetViewAnimation === 'expand',
+              'elixirchat-widget-view--animating-slide-left': widgetViewAnimation === 'slide-left',
               'elixirchat-widget-view--animating-slide-right': widgetViewAnimation === 'slide-right',
               ['elixirchat-browser--' + detectedBrowser]: true,
             })}>

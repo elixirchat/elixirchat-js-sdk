@@ -26,17 +26,17 @@ textarea {
 }
 
 .elixirchat-widget-view {
-  transition: all 50ms;
+  transition: opacity 300ms;
   min-height: 100vh;
 
-  &--animating-slide-right {
-    transform: translateX(30px);
+  &--animating-slide-left {
+    transform: translateX(-30px);
     opacity: 0;
     transition: all 300ms;
   }
 
-  &--animating-expand {
-    transform: scale(1.05);
+  &--animating-slide-right {
+    transform: translateX(30px);
     opacity: 0;
     transition: all 300ms;
   }
