@@ -127,6 +127,7 @@ export class ElixirChatWidget extends ElixirChat {
     this.on(MESSAGES_RECEIVE, message => {
       if (message.mustOpenWidget) {
         this.openPopup();
+        this.navigateTo('chat');
       }
     });
   }
