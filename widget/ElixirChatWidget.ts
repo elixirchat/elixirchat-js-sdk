@@ -78,7 +78,6 @@ export class ElixirChatWidget extends ElixirChat {
     isMuted: false,
     isPopupOpen: false,
     isButtonHidden: false,
-    view: 'welcome-screen',
     title: 'Служба поддержки',
     supportEmail: 'support@elixir.chat',
   };
@@ -128,7 +127,6 @@ export class ElixirChatWidget extends ElixirChat {
 
   private setWidgetData(joinRoomData: IJoinRoomData){
     const {
-      view,
       title,
       isMuted,
       isPopupOpen,

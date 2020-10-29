@@ -118,39 +118,51 @@ export class MessageSubscription {
     });
   };
 
-  private async initializePollingMessageHistoryOnInterval(): void {
+  private retrieveLastMessageCursor(): void {
+    return new Promise(async resolve => {
+      if (this.lastMessageCursor) {
+        resolve(this.lastMessageCursor);
+      }
+      else if (!this.hasEmptyMessageHistory) {
+        const { triggerEvent } = this.elixirChat;
+        const lastMessage = await this.getMessageHistoryByCursor({ limit: 1 }).then(chunk => chunk[0]);
+        const lastMessageCursor = lastMessage?.cursor || null;
+        if (!lastMessageCursor) {
+          this.hasEmptyMessageHistory = true;
+        }
+        triggerEvent(MESSAGES_RETRIEVE_LAST_MESSAGE_CURSOR, lastMessage);
+        this.lastMessageCursor = lastMessageCursor;
+        resolve(lastMessageCursor);
+      }
+      else {
+        resolve(null);
+      }
+    });
+  }
+
+  private initializePollingMessageHistoryOnInterval(): void {
     clearInterval(this.pollingInterval);
 
-    if (!this.lastMessageCursor && !this.hasEmptyMessageHistory) {
-      const { triggerEvent } = this.elixirChat;
-      const lastMessage = await this.getMessageHistoryByCursor({ limit: 1 }).then(chunk => chunk[0]);
-      const lastMessageCursor = lastMessage?.cursor || null;
-
-      if (!lastMessageCursor) {
-        this.hasEmptyMessageHistory = true;
-      }
-      this.lastMessageCursor = lastMessageCursor;
-      triggerEvent(MESSAGES_RETRIEVE_LAST_MESSAGE_CURSOR, lastMessage);
-    }
-
-    this.pollingInterval = setInterval(() => {
-      if (this.lastMessageCursor) {
-        const pollingParams = {
-          limit: 10,
-          afterCursor: this.lastMessageCursor,
-        };
-        this.getMessageHistoryByCursor(pollingParams).then(chunk => {
-          const messageHistoryIds = this.messageHistory.map(({ id }) => id);
-          const missedMessages = chunk.filter(message => !messageHistoryIds.includes(message.id));
-          if (missedMessages.length) {
-            missedMessages.forEach(this.onMessageReceive);
-          }
-          if (chunk.length) {
-            this.lastMessageCursor = _last(chunk)?.cursor || null;
-          }
-        });
-      }
-    }, this.MESSAGE_HISTORY_POLLING_TIMEOUT);
+    this.retrieveLastMessageCursor().then(lastMessageCursor => {
+      this.pollingInterval = setInterval(() => {
+        if (lastMessageCursor) {
+          const pollingParams = {
+            limit: 10,
+            afterCursor: lastMessageCursor,
+          };
+          this.getMessageHistoryByCursor(pollingParams).then(chunk => {
+            const messageHistoryIds = this.messageHistory.map(({ id }) => id);
+            const missedMessages = chunk.filter(message => !messageHistoryIds.includes(message.id));
+            if (missedMessages.length) {
+              missedMessages.forEach(this.onMessageReceive);
+            }
+            if (chunk.length) {
+              this.lastMessageCursor = _last(chunk)?.cursor || null;
+            }
+          });
+        }
+      }, this.MESSAGE_HISTORY_POLLING_TIMEOUT);
+    });
   }
 
   private onMessageReceive = (message: IMessage): void => {
