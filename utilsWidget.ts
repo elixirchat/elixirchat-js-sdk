@@ -6,24 +6,16 @@ import 'dayjs/locale/ru';
 import { ElixirChatWidget } from './widget/ElixirChatWidget';
 import { IMessage } from './sdk/serializers/serializeMessage';
 import { _last, _round, getUserFullName } from './utilsCommon';
+import { i18n, i18nUtils } from './widget/DefaultWidget/i18n';
 
-dayjs.locale('ru');
 dayjs.extend(dayjsCalendar);
-
-
-export function inflect(number: number, endings: [string], hideNumber?: boolean): string {
-  const cases = [2, 0, 1, 1, 1, 2];
-  const endingIndex = (number % 100 > 4 && number % 100 < 20) ? 2 : cases[ Math.min(number % 10, 5) ];
-  const ending = endings[endingIndex] || endings[0];
-  return hideNumber ? ending : number + ' ' + ending;
-}
 
 
 export function humanizeFileSize(sizeInBytes: number): string {
   const unitsDict = {
-    'kb': 'Кб',
-    'mb': 'Мб',
-    'gb': 'Гб',
+    kb: i18n.unit_kb,
+    mb: i18n.unit_mb,
+    gb: i18n.unit_gb,
   };
   const sizeInKb = sizeInBytes / 1024;
   const sizeInMb = sizeInKb / 1024;
@@ -40,7 +32,7 @@ export function humanizeFileSize(sizeInBytes: number): string {
     primaryUnit = 'mb';
   }
   primarySize = primarySize < 0.1 ? 0.1 : +(primarySize.toFixed(1));
-  return primarySize.toLocaleString('ru-RU') + ' ' + unitsDict[primaryUnit];
+  return primarySize.toLocaleString(i18nUtils.selectedLanguage) + ' ' + unitsDict[primaryUnit];
 }
 
 
@@ -48,28 +40,28 @@ export function humanizeTimezoneName(date: Date): string {
   date = new Date(date);
 
   const timezoneDict = {
-    Moscow: 'по Москве',
-    Samara: 'по Самаре',
-    Yekaterinburg: 'по Екатеринбургу',
-    Novosibirsk: 'по Новосибирску',
-    Omsk: 'по Омску',
-    Krasnoyarsk: 'по Красноярску',
-    Irkutsk: 'по Иркутску',
-    Yakutsk: 'по Якутску',
-    Vladivostok: 'по Владивостоку',
-    Sakhalin: 'по Южно-Сахалинску',
-    Magadan: 'по Магадану',
-    Kamchat: 'по Петропавловску-Камчатскому',
-    Anadyr: 'по Анадырю',
-    Tajikistan: 'по Душанбе',
-    Turkmenistan: 'по Ашхабаду',
-    Uzbekistan: 'по Ташкенту',
-    Kyrgyzstan: 'по Бишкеку',
-    Azerbaijan: 'по Баку',
-    Armenia: 'по Еревану',
-    'East Kazakhstan': 'по Алматы',
-    'West Kazakhstan': 'по западноказахстанскому времени',
-    'Eastern Europe': `по восточноевропейскому времени (${humanizeTimezoneOffset(date)})`
+    Moscow: i18n.timezone_moscow,
+    Samara: i18n.timezone_samara,
+    Yekaterinburg: i18n.timezone_yekaterinburg,
+    Novosibirsk: i18n.timezone_novosibirsk,
+    Omsk: i18n.timezone_omsk,
+    Krasnoyarsk: i18n.timezone_krasnoyarsk,
+    Irkutsk: i18n.timezone_irkutsk,
+    Yakutsk: i18n.timezone_yakutsk,
+    Vladivostok: i18n.timezone_vladivostok,
+    Sakhalin: i18n.timezone_sakhalin,
+    Magadan: i18n.timezone_magadan,
+    Kamchat: i18n.timezone_kamchatka,
+    Anadyr: i18n.timezone_anadyr,
+    Tajikistan: i18n.timezone_tajikistan,
+    Turkmenistan: i18n.timezone_turkmenistan,
+    Uzbekistan: i18n.timezone_uzbekistan,
+    Kyrgyzstan: i18n.timezone_kyrgyzstan,
+    Azerbaijan: i18n.timezone_azerbaijan,
+    Armenia: i18n.timezone_armenia,
+    'East Kazakhstan': i18n.timezone_east_kazakhstan,
+    'West Kazakhstan': i18n.timezone_west_kazakhstan,
+    'Eastern Europe': `${i18n.timezone_eastern_europe} (${humanizeTimezoneOffset(date)})`
   };
   const timezoneName = date
     .toTimeString()
@@ -80,7 +72,7 @@ export function humanizeTimezoneName(date: Date): string {
       return timezoneDict[timezoneKeyword];
     }
   }
-  return `по вашему времени (${humanizeTimezoneOffset(date)})`;
+  return `${i18n.timezone_custom} (${humanizeTimezoneOffset(date)})`;
 }
 
 
@@ -99,25 +91,19 @@ export function humanizeTimezoneOffset(date: Date) {
 
 export function humanizeUpcomingDate(date: Date | string): string {
   date = new Date(date);
-  const inflectDayDict = {
-    'понедельник': 'в понедельник',
-    'вторник': 'во вторник',
-    'среда': 'в среду',
-    'четверг': 'в четверг',
-    'пятница': 'в пятницу',
-    'суббота': 'в субботу',
-    'воскресенье': 'в воскресенье',
-  };
+
+  dayjs.locale(i18nUtils.selectedLanguage);
+
   let humanizedDate = dayjs(date).calendar(null, {
-    nextWeek: 'dddd [в] H:mm',
-    nextDay: '[завтра в] H:mm',
-    sameDay: '[сегодня в] H:mm',
-    lastDay: 'D MMMM [в] H:mm',
-    lastWeek: 'D MMMM [в] H:mm',
-    sameElse: 'D MMMM [в] H:mm',
+    nextWeek: i18n.upcoming_date_next_week,
+    nextDay: i18n.upcoming_date_next_day,
+    sameDay: i18n.upcoming_date_same_day,
+    lastDay: i18n.upcoming_date_default,
+    lastWeek: i18n.upcoming_date_default,
+    sameElse: i18n.upcoming_date_default,
   });
-  for (let nominativeDay in inflectDayDict) {
-    humanizedDate = humanizedDate.replace(nominativeDay, inflectDayDict[nominativeDay]);
+  for (let nominativeDay in i18n.upcoming_weekday_inflection_dict) {
+    humanizedDate = humanizedDate.replace(nominativeDay, i18n.upcoming_weekday_inflection_dict[nominativeDay]);
   }
   return humanizedDate;
 }
@@ -155,7 +141,7 @@ export function generateReplyMessageQuote(messageToReplyTo: IMessage, elixirChat
     return getUserFullName(sender);
   }
   else {
-    return getUserFullName(sender) || elixirChatWidget.widgetTitle;
+    return getUserFullName(sender) || i18n.caption_main;
   }
 }
 

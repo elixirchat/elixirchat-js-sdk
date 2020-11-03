@@ -1,5 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import { ERROR_ALERT } from '../../sdk/ElixirChatEventTypes';
+import { i18n } from './i18n';
 import { cn, normalizeErrorStack } from '../../utilsCommon';
 import { exposeComponentToGlobalScope } from '../../utilsWidget';
 import { extractErrorMessage } from '../../sdk/GraphQLClient';
@@ -79,20 +80,14 @@ export class Alert extends Component<IDefaultWidgetAlertProps, IDefaultWidgetAle
       'NetworkError when attempting to fetch resource'
     ];
 
-    const networkFailureMessage = this.trimEachRow(`
-      Не удается связаться с сервером.
-      Такое может быть:
-      * при нестабильном интернете
-      * когда ваша сеть блокирует некоторые сайты
-      * когда у вас установлены блокировщики рекламы или похожие расширения
-    `);
+    const networkFailureMessage = this.trimEachRow(i18n.alert_error_disconnected);
     for (let i = 0; i < networkFailureKeys.length; i++) {
       if ((error?.message || '').toLowerCase().includes( networkFailureKeys[i].toLowerCase() )) {
         return networkFailureMessage;
       }
     }
     const errorDetails = customMessage || extractErrorMessage(error);
-    return errorDetails.slice(0, maxErrorDetailsLength) + errorDetails.length > maxErrorDetailsLength ? '…' : '';
+    return errorDetails.slice(0, maxErrorDetailsLength) + (errorDetails.length > maxErrorDetailsLength ? '…' : '');
   };
 
   trimEachRow = (text) => {
@@ -107,27 +102,27 @@ export class Alert extends Component<IDefaultWidgetAlertProps, IDefaultWidgetAle
     const { elixirChatWidget } = this.props;
     const { client: { firstName, lastName, id } } = elixirChatWidget;
 
-    return this.trimEachRow(`Чат поддержки не загружается. Появляется сообщение:
-      «${errorDetails}»
+    return this.trimEachRow(`${i18n.alert_email_intro}
+      "${errorDetails}"
 
-      Мои данные:
+      ${i18n.alert_email_user_info_title}
       ${firstName} ${lastName} (ID: ${id})
 
-      Технические данные:
+      ${i18n.alert_email_debug_info_title}
       Error: ${alertData.customMessage || extractErrorMessage(alertData.error)}
       Timestamp: ${new Date().toString()}
       User-agent: ${navigator.userAgent}
       Screen: ${screen.availWidth}x${screen.availHeight}
       Device pixel ratio: ${devicePixelRatio}
 
-      Трассировка стека:
+      Stack trace:
       ${errorStack}`);
   };
 
   generateMailToHref = () => {
     const { elixirChatWidget } = this.props;
     const { emailText } = this.state;
-    const subject = 'Ошибка в чате поддержки';
+    const subject = i18n.alert_email_subject;
     return `mailto:${elixirChatWidget.widgetSupportEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailText)}`;
   };
 
@@ -175,7 +170,7 @@ export class Alert extends Component<IDefaultWidgetAlertProps, IDefaultWidgetAle
         <div className="elixirchat-alert__block" ref={this.messageBlock}>
           {!isExpanded && (
             <Fragment>
-              <h3 className="elixirchat-alert__header-title">Ошибка</h3>
+              <h3 className="elixirchat-alert__header-title">{i18n.alert_title}</h3>
               <i className="elixirchat-alert__header-icon icon-close-thin"
                 onClick={this.onCloseClick}/>
               <FormattedMarkdown
@@ -183,10 +178,10 @@ export class Alert extends Component<IDefaultWidgetAlertProps, IDefaultWidgetAle
                 markdown={errorDetails}/>
               <div className="elixirchat-alert__button-block">
                 <button className="elixirchat-alert__retry-button" onClick={this.onRetryClick}>
-                  Попробовать еще раз
+                  {i18n.alert_retry}
                 </button>
                 <span className="elixirchat-alert__expand-link" onClick={this.onExpandToEmailClick}>
-                  Связаться по email
+                  {i18n.alert_contact_by_email}
                 </span>
               </div>
             </Fragment>
@@ -194,7 +189,7 @@ export class Alert extends Component<IDefaultWidgetAlertProps, IDefaultWidgetAle
 
           {isExpanded && (
             <Fragment>
-              <h3 className="elixirchat-alert__header-title">Сообщение об ошибке</h3>
+              <h3 className="elixirchat-alert__header-title">{i18n.alert_email_title}</h3>
               <i className="elixirchat-alert__header-icon icon-close-thin"
                 onClick={this.onCollapseClick}/>
               <textarea className="elixirchat-alert__error-text"
@@ -203,7 +198,7 @@ export class Alert extends Component<IDefaultWidgetAlertProps, IDefaultWidgetAle
               <a className="elixirchat-alert__send-email-button"
                 href={this.generateMailToHref()}
                 target="_blank">
-                Отправить на {elixirChatWidget.widgetSupportEmail}
+                {i18n.alert_email_send_caption} {elixirChatWidget.widgetSupportEmail}
               </a>
             </Fragment>
           )}

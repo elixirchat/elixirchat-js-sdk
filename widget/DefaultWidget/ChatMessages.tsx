@@ -2,6 +2,8 @@ import React, { Component, Fragment } from 'react';
 import dayjs from 'dayjs';
 import dayjsCalendar from 'dayjs/plugin/calendar';
 import 'dayjs/locale/ru';
+
+import { i18n, i18nUtils } from './i18n';
 import {
   cn,
   _round,
@@ -14,14 +16,13 @@ import {
 } from '../../utilsCommon';
 
 import {
-  inflect,
+  isMobile,
   humanizeFileSize,
   humanizeUpcomingDate,
   humanizeTimezoneName,
   generateReplyMessageQuote,
   exposeComponentToGlobalScope,
   fitDimensionsIntoLimits,
-  isMobile,
 } from '../../utilsWidget';
 
 import { ElixirChatWidget } from '../ElixirChatWidget';
@@ -90,7 +91,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     const { elixirChatWidget } = this.props;
     exposeComponentToGlobalScope(this, elixirChatWidget);
 
-    dayjs.locale('ru');
+    dayjs.locale(i18nUtils.selectedLanguage);
     dayjs.extend(dayjsCalendar);
 
     this.setState({
@@ -510,27 +511,27 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
     const { elixirChatWidget } = this.props;
     const defaultMessage = (
       <Fragment>
-        Ошибка отправки
+        {i18n.message_submission_error}
         <span className="elixirchat-chat-messages__submission-error-link"
           onClick={() => elixirChatWidget.retrySendMessage(message)}>
-          Еще раз
+          {i18n.message_retry}
         </span>
       </Fragment>
     );
     const badConnectionMessage = (
       <Fragment>
-        Не отправлено
+        {i18n.message_not_sent}
         <span className="elixirchat-chat-messages__submission-error-link"
           onClick={() => elixirChatWidget.retrySendMessage(message)}>
-          Еще раз
+          {i18n.message_retry}
         </span>
       </Fragment>
     );
     const unsupportedFileTypeMessage = (
-      <Fragment>Вложения такого типа<br/> не поддерживаются</Fragment>
+      <Fragment>{i18n.attachment_type_not_supported}</Fragment>
     );
     const tooLargeFileMessage = (
-      <Fragment>Поддерживаются файлы до 5Мб</Fragment>
+      <Fragment>{i18n.attachment_too_large}</Fragment>
     );
     const messageByErrorCode = {
       '415': unsupportedFileTypeMessage,
@@ -582,17 +583,17 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
               {message.showGroupChatLabel && !elixirChatWidget.room.isPrivate && (
                 <div className="elixirchat-chat-messages__group-chat-label">
-                  Это групповой чат поддержки для всех членов {elixirChatWidget.room.title}
+                  {i18n.caption_group_chat}{elixirChatWidget.room.title}
                 </div>
               )}
 
               {message.showDateLabel && (
                 <div className="elixirchat-chat-messages__date-title">
                   {dayjs(message.timestamp).calendar(null, {
-                    sameDay: '[Сегодня, ] D MMMM',
-                    lastDay: '[Вчера, ] D MMMM',
-                    lastWeek: 'D MMMM',
-                    sameElse: 'D MMMM',
+                    sameDay: i18n.message_date_same_day,
+                    lastDay: i18n.message_date_last_day,
+                    lastWeek: i18n.message_date_default,
+                    sameElse: i18n.message_date_default,
                   })}
                 </div>
               )}
@@ -614,12 +615,14 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
                         {!message.sender.isCurrentClient && (
                           <div className="elixirchat-chat-messages__sender">
-                            <b>{getUserFullName(message.sender) || elixirChatWidget.widgetTitle}</b>
+                            <b>{getUserFullName(message.sender) || i18n.caption_main}</b>
                             {Boolean(message.mentions.length) && (
                               <Fragment>
                                 &nbsp;→ @&nbsp;
                                 {message.mentions.map(mention => {
-                                  return mention.value === 'ALL' ? 'Все' : getUserFullName(mention.client, '\u00A0');
+                                  return mention.value === 'ALL'
+                                    ? i18n.mention_all
+                                    : getUserFullName(mention.client, '\u00A0');
                                 }).join(', ')}
                               </Fragment>
                             )}
@@ -661,7 +664,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                                   <a className="elixirchat-chat-files__text-link" href={file.url} target="_blank">{file.name}</a>
                                   <br/>
                                   <span className="elixirchat-chat-files__text-secondary">
-                                    {message.isSubmitting ? 'Загрузка...' : humanizeFileSize(file.bytesSize)}
+                                    {message.isSubmitting ? i18n.loading : humanizeFileSize(file.bytesSize)}
                                   </span>
                                 </div>
                               </li>
@@ -703,7 +706,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                                   e.target.parentNode.classList.add('elixirchat-chat-previews__item-not-found')
                                 }}/>
                               <span className="elixirchat-chat-previews__item-not-found-placeholder">
-                                Файл не найден<br/>{preview.name}
+                                {i18n.attachment_not_found}<br/>{preview.name}
                               </span>
                             </a>
                           </li>
@@ -723,7 +726,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                           {!message.isSystem && (
                             <span className="elixirchat-chat-messages__reply-button"
                               onClick={() => this.onReplyButtonClick(message.id)}>
-                            Ответить
+                              {i18n.message_reply}
                           </span>
                           )}
                           {message.sender.isCurrentClient && dayjs(message.timestamp).format('H:mm')}
@@ -746,27 +749,27 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                   <div className="elixirchat-chat-messages__inner">
                     <div className="elixirchat-chat-messages__balloon">
                       <div className="elixirchat-chat-messages__sender">
-                        <b>{getUserFullName(message.sender) || elixirChatWidget.widgetTitle}</b>
+                        <b>{getUserFullName(message.sender) || i18n.caption_main}</b>
                       </div>
 
                       {message.systemData.type === 'ScreenshotRequestedMessage' && (
                         <Fragment>
                           <div className="elixirchat-chat-messages__text">
-                            Пожалуйста, пришлите скриншот вашего экрана.
+                            {i18n.message_send_screenshot}
                             {(Boolean(screenshotFallback) && Boolean(screenshotFallback.pressKey)) && (
                               <Fragment>
-                                &nbsp;Для этого нажмите {this.renderKeyShortcut(screenshotFallback.pressKey)}
+                                &nbsp;{i18n.message_send_screenshot_instructions_1} {this.renderKeyShortcut(screenshotFallback.pressKey)}
                                 {screenshotFallback.pressKeySecondary && (
                                   <Fragment>&nbsp;({this.renderKeyShortcut(screenshotFallback.pressKeySecondary)})</Fragment>
                                 )},
-                                а затем вставьте результат в текстовое поле.
+                                {i18n.message_send_screenshot_instructions_2}
                               </Fragment>
                             )}
                           </div>
                           {!Boolean(screenshotFallback) && (
                             <button className="elixirchat-chat-messages__take-screenshot"
                               onClick={this.onTakeScreenshotClick}>
-                              Сделать скриншот
+                              {i18n.message_take_screenshot_button}
                             </button>
                           )}
                         </Fragment>
@@ -774,10 +777,10 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
                       {message.systemData.type === 'NobodyWorkingMessage' && (
                         <div className="elixirchat-chat-messages__text">
-                          К сожалению, все операторы поддержки сейчас оффлайн
+                          {i18n.message_agents_busy_1}
                           {message.systemData?.workHoursStartAt && (
-                            <Fragment>, но будут снова в сети и ответят на ваш
-                              вопрос {humanizeUpcomingDate(message.systemData?.workHoursStartAt)} {humanizeTimezoneName(message.systemData?.workHoursStartAt)}.
+                            <Fragment>
+                              {i18n.message_agents_busy_2} {humanizeUpcomingDate(message.systemData?.workHoursStartAt)} {humanizeTimezoneName(message.systemData?.workHoursStartAt)}.
                             </Fragment>
                           )}
                         </div>
@@ -785,18 +788,17 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
                       {message.systemData.type === 'HighLoadMessage' && (
                         <div className="elixirchat-chat-messages__text">
-                          Время ответа может увеличиться из-за большого количества вопросов,
-                          мы обязательно вернёмся к вам, спасибо за ожидание.
+                          {i18n.message_long_wait_time}
                         </div>
                       )}
 
                       {message.systemData.type === 'NewClientPlaceholderMessage' && (
                         <div className="elixirchat-chat-messages__text">
                           {elixirChatWidget.client.isConfidentAboutFirstName
-                            ? `Здравствуйте, ${elixirChatWidget.client.firstName}! `
-                            : 'Здравствуйте! '
+                            ? `${i18n.message_new_client_greetings_1} ${elixirChatWidget.client.firstName}! `
+                            : i18n.message_new_client_greetings_2 + ' '
                           }
-                          Как мы можем вам помочь?
+                          {i18n.message_new_client_greetings_3}
                         </div>
                       )}
                     </div>
@@ -819,11 +821,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
         })}>
           <Fragment>
             <i className="elixirchat-chat-typing__icon icon-typing"/>
-            {inflect(currentlyTypingUsers.length, [
-              'человек пишет...',
-              'человека пишут...',
-              'человек пишут...',
-            ])}
+            {i18nUtils.inflect(currentlyTypingUsers.length, i18n.typing)}
           </Fragment>
         </div>
       </div>

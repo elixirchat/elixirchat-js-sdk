@@ -2,6 +2,7 @@ import React, { Component, Fragment } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 import { ElixirChatWidget } from '../ElixirChatWidget';
 import { Tooltip } from './Tooltip';
+import { i18n } from './i18n';
 import { cn, randomDigitStringId, setToLocalStorage } from '../../utilsCommon';
 import { getImageDimensions, generateReplyMessageQuote } from '../../utilsWidget';
 import { getScreenshotCompatibilityFallback } from '../../sdk/ScreenshotTaker';
@@ -274,7 +275,7 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
       const file = clipboardItem.getAsFile();
       if (file) {
         this.addAttachments([{
-          name: 'Вставлено из буфера',
+          name: i18n.attachment_from_clipboard,
           file,
         }]);
       }
@@ -292,13 +293,13 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
     const { textareaText } = this.state;
 
     this.addAttachments([{
-      name: 'Скриншот экрана',
+      name: i18n.attachment_is_screenshot,
       file: screenshot.file,
       isScreenshot: true,
     }]);
 
     elixirChatWidget.openPopup();
-    const updatedText = textareaText.trim() ? textareaText : 'Вот скриншот моего экрана';
+    const updatedText = textareaText.trim() ? textareaText : i18n.message_my_screenshot;
     this.setState({ textareaText: updatedText });
   };
 
@@ -371,7 +372,7 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
 
           <div className="elixirchat-chat-textarea__actions">
             {!Boolean(screenshotFallback) && (
-              <Tooltip className="elixirchat-chat-textarea__actions-tooltip" title="Сделать скриншот">
+              <Tooltip className="elixirchat-chat-textarea__actions-tooltip" title={i18n.message_take_screenshot_button}>
                 <span className="elixirchat-chat-textarea__actions-button">
                   <button className="elixirchat-chat-textarea__actions-screenshot" onClick={this.onScreenShotClick}>
                     <i className="icon-screenshot"/>
@@ -379,7 +380,7 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
                 </span>
               </Tooltip>
             )}
-            <Tooltip className="elixirchat-chat-textarea__actions-tooltip" title="Прикрепить файлы">
+            <Tooltip className="elixirchat-chat-textarea__actions-tooltip" title={i18n.message_attach_files_button}>
               <span className="elixirchat-chat-textarea__actions-button">
                 <span className="elixirchat-chat-textarea__actions-attach">
                   <label className="elixirchat-chat-textarea__actions-attach-label" htmlFor="DefaultWidget-file-upload">
@@ -399,7 +400,7 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
 
           <TextareaAutosize
             className="elixirchat-chat-textarea__textarea"
-            placeholder="Напишите сообщение..."
+            placeholder={i18n.message_textarea_placeholder}
             inputRef={tag => {this.textarea = tag;}}
             minRows={1}
             maxRows={5}
@@ -436,7 +437,7 @@ export class ChatTextarea extends Component<IDefaultWidgetTextareaProps, IDefaul
             <div className="elixirchat-chat-draggable-backdrop"/>
             <div className="elixirchat-chat-draggable-area">
               <i className="elixirchat-chat-draggable-area__icon icon-file"/>
-              <div>Перетащите файлы для загрузки</div>
+              <div>{i18n.attachment_drag_and_drop}</div>
             </div>
           </Fragment>
         )}

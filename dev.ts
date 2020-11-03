@@ -23,12 +23,12 @@ const elixirChatWidget = new ElixirChatWidget({
     lastName: null,
     fullName: 'John Doe',
   },
+  locale: 'en',
   debug: true,
 });
 
 elixirChatWidget.appendWidget({
   container: document.getElementById('elixirchat-widget'),
-  title: 'Служба поддержки',
   logo: 'https://picsum.photos/200',
   supportEmail: 'support@elixir.chat',
   enabledChannels: [
@@ -41,4 +41,8 @@ elixirChatWidget.appendWidget({
   iframeCSS: `
     /* Custom styles inside the iframe */
   `,
+  customLocalization: {
+    ru: { caption_main: 'Служба заботы' },
+    en: { caption_main: 'Customer Care' },
+  },
 });

@@ -1,4 +1,5 @@
 import { uniqueNamesGenerator } from 'unique-names-generator';
+import { i18n, i18nUtils, I18nUtils } from '../widget/DefaultWidget/i18n';
 import { isMobile } from '../utilsWidget';
 import {
   _uniq,
@@ -34,11 +35,11 @@ import {
 
 
 import {
-  JOIN_ROOM_SUCCESS,
+  ERROR_ALERT,
   JOIN_ROOM_ERROR,
+  JOIN_ROOM_SUCCESS,
   UNREAD_COUNTER_LAST_READ_MESSAGE_CHANGE,
   UPDATE_MESSAGE_SUBSCRIPTION_CHANGE_MESSAGE,
-  ERROR_ALERT,
 } from './ElixirChatEventTypes';
 
 
@@ -63,6 +64,7 @@ export interface IElixirChatConfig {
   companyId: string;
   room?: IElixirChatRoom;
   client?: IElixirChatUser;
+  locale?: string,
   debug?: boolean,
   sentryUrl?: boolean,
 }
@@ -71,7 +73,6 @@ export interface IJoinRoomData {
   token: string;
   isOnline: boolean;
   workHoursStartAt: null | string;
-  widgetTitle: string;
   widgetLogo: string;
   channels: Array<IJoinRoomChannel>;
   employeesCount: number;
@@ -99,6 +100,7 @@ export class ElixirChat {
   public config: IElixirChatConfig = {};
   public room?: IElixirChatRoom;
   public client?: IElixirChatUser;
+  public locale?: string;
   public joinRoomData: IJoinRoomData = {};
   public enabledExperimentalFeatures: Array<string> = [];
   public experimentalFeaturesInTesting: Array<string> = [];
@@ -130,6 +132,7 @@ export class ElixirChat {
   public unreadCounter: UnreadCounter;
   public screenshotTaker: ScreenshotTaker;
   public logger: Logger;
+  public i18nUtils: I18nUtils;
 
   private eventHandlers: object = {};
 
@@ -168,6 +171,7 @@ export class ElixirChat {
     this.updateMessageSubscription = new UpdateMessageSubscription({ elixirChat: this });
     this.typingStatusSubscription = new TypingStatusSubscription({ elixirChat: this });
     this.onlineStatusSubscription = new OnlineStatusSubscription({ elixirChat: this });
+    this.i18nUtils = i18nUtils;
 
     this.on(UPDATE_MESSAGE_SUBSCRIPTION_CHANGE_MESSAGE, updatedMessage => {
       this.messageSubscription.changeMessageBy({ id: updatedMessage.id }, updatedMessage);
@@ -178,7 +182,7 @@ export class ElixirChat {
 
     this.logInfo('Initializing ElixirChat', config);
     this.initializeExperimentalFeatures();
-    return this.joinRoom(this.config.room, this.config.client);
+    return this.joinRoom(this.config.room, this.config.client, this.config.locale);
   }
 
   private serializeClient(rawClient: any): IElixirChatUser {
@@ -259,9 +263,10 @@ export class ElixirChat {
     };
   }
 
-  private joinRoom(room: any, client: any): Promise<void> {
+  private joinRoom(room: any, client: any, locale?: string): Promise<void> {
     this.client = this.serializeClient(client);
     this.room = this.serializeRoom(room, this.client);
+    this.locale = i18nUtils.setLanguage(locale);
 
     setToLocalStorage('elixirchat-room', this.room);
     setToLocalStorage('elixirchat-client', this.client);
@@ -272,6 +277,7 @@ export class ElixirChat {
         id: this.client.id,
         firstName: this.client.firstName,
         lastName: this.client.lastName,
+        locale: this.locale.toUpperCase(),
       },
       room: {
         id: this.room.id,
@@ -288,7 +294,6 @@ export class ElixirChat {
             isWorking
             workHoursStartAt
             widgetLogo
-            widgetTitle
             omnichannelChannels {
               type
               username
@@ -325,10 +330,10 @@ export class ElixirChat {
           return this.onJoinRoomSuccess(response.joinRoom);
         }
         else {
-          throw this.onJoinRoomError(response, room, client);
+          throw this.onJoinRoomError(response, room, client, locale);
         }
       }).catch(error => {
-        throw this.onJoinRoomError(error, room, client);
+        throw this.onJoinRoomError(error, room, client, locale);
       });
   }
 
@@ -363,14 +368,14 @@ export class ElixirChat {
     return this.joinRoomData;
   }
 
-  private onJoinRoomError(error: any, room: any, client: any): IJoinRoomData {
+  private onJoinRoomError(error: any, room: any, client: any, locale?: string): IJoinRoomData {
     this.joinRoomData = this.serializeJoinRoomData(error);
     this.triggerEvent(JOIN_ROOM_ERROR, { ...this.joinRoomData, error });
 
     setTimeout(() => {
       this.triggerEvent(ERROR_ALERT, {
         customMessage: `joinRoom: ${extractErrorMessage(error)}`,
-        retryCallback: () => this.joinRoom(room, client),
+        retryCallback: () => this.joinRoom(room, client, locale),
         error,
       });
     }, 500);
@@ -389,7 +394,6 @@ export class ElixirChat {
       token: token || '',
       isOnline: company.isWorking || false,
       workHoursStartAt: company.workHoursStartAt || null,
-      widgetTitle: company.widgetTitle || '',
       widgetLogo: company.widgetLogo || '',
       channels: this.serializeChannels(company.omnichannelChannels, client.omnichannelCode),
       employeesCount: company.employees?.count || 0,
@@ -407,7 +411,7 @@ export class ElixirChat {
   }
 
   private serializeChannels(omnichannelChannels: Array<IJoinRoomChannel>, omnichannelCode: string): Array<IJoinRoomChannel> {
-    const manualMessageMask = `Чтобы продолжить, просто отправьте целиком это сообщение. Ваш код: ${omnichannelCode}`;
+    const manualMessageMask = `${i18n.messenger_manual_message} ${omnichannelCode}`;
     const desktopUrlMasks = {
       whatsapp: {
         baseUrl: 'https://web.whatsapp.com/send?phone={{ username }}',
@@ -473,11 +477,11 @@ export class ElixirChat {
       return Promise.resolve();
     }
     else {
-      const message = 'ElixirChat is not currently connected. Use reconnect({ room, client }) method to connect to a room.';
+      const message = 'ElixirChat is not currently connected. Use reconnect({ room, client, locale }) method to connect to a room.';
       this.logError(message);
       this.triggerEvent(ERROR_ALERT, {
         customMessage: message,
-        retryCallback: () => this.joinRoom(this.config.room, this.config.client),
+        retryCallback: () => this.joinRoom(this.config.room, this.config.client, this.config.locale),
         error: { message },
       });
       return Promise.reject({ message });
@@ -636,10 +640,10 @@ export class ElixirChat {
     });
   };
 
-  public reconnect = (config: { room?: IElixirChatRoom, client?: IElixirChatUser }): Promise<void> => {
+  public reconnect = (config: { room?: IElixirChatRoom, client?: IElixirChatUser, locale?: string }): Promise<void> => {
     this.logInfo('Attempting to reconnect to another room', config);
     this.disconnect();
-    return this.joinRoom(config.room, config.client);
+    return this.joinRoom(config.room, config.client, config.locale);
   };
 
   /**

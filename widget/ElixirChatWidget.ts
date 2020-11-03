@@ -3,11 +3,13 @@ import { _find, getFromLocalStorage, logEvent, setToLocalStorage } from '../util
 import { renderWidgetReactComponent } from './DefaultWidget/Widget';
 import { IFontRule } from './FontExtractor';
 import { IJoinRoomChannel, IJoinRoomData } from '../sdk/ElixirChat';
+import { i18nUtils } from './DefaultWidget/i18n';
+
 import {
   JOIN_ROOM_ERROR,
   JOIN_ROOM_SUCCESS,
-  MESSAGES_RETRIEVE_LAST_MESSAGE_CURSOR,
   MESSAGES_RECEIVE,
+  MESSAGES_RETRIEVE_LAST_MESSAGE_CURSOR,
 } from '../sdk/ElixirChatEventTypes';
 
 import {
@@ -53,12 +55,13 @@ if (!ElixirChat) {
 
 export interface IElixirChatWidgetConfig {
   container: HTMLElement;
-  title?: string;
+  title?: { en?: string; ru?: string };
   logo?: string;
   supportEmail?: string;
   fonts?: Array<IFontRule>;
   enabledChannels?: Array<string>;
   hideDefaultButton?: boolean;
+  customLocalization?: any;
   iframeCSS?: string;
 }
 
@@ -69,7 +72,6 @@ export class ElixirChatWidget extends ElixirChat {
   public widgetIsPopupOpen: boolean;
   public widgetIsButtonHidden: boolean;
   public widgetView: string;
-  public widgetTitle: string;
   public widgetLogo: string | null;
   public widgetSupportEmail: string;
   public widgetChannels: Array<IJoinRoomChannel>;
@@ -79,7 +81,6 @@ export class ElixirChatWidget extends ElixirChat {
     isMuted: false,
     isPopupOpen: false,
     isButtonHidden: false,
-    title: 'Служба поддержки',
     supportEmail: 'support@elixir.chat',
   };
 
@@ -102,6 +103,8 @@ export class ElixirChatWidget extends ElixirChat {
       const errorMessage = 'You must provide an HTMLElement as a "container" option to appendWidget() method';
       this.logError(errorMessage, this.widgetConfig);
       throw errorMessage;
+
+
     }
 
     this.initializeWidget();
@@ -134,7 +137,6 @@ export class ElixirChatWidget extends ElixirChat {
 
   private setWidgetData(joinRoomData: IJoinRoomData){
     const {
-      title,
       isMuted,
       isPopupOpen,
       isButtonHidden,
@@ -142,7 +144,6 @@ export class ElixirChatWidget extends ElixirChat {
     } = this.widgetDefaultParams;
 
     this.widgetIsPopupOpen = joinRoomData.isPopupOpen || getFromLocalStorage('elixirchat-widget-is-visible', isPopupOpen);
-    this.widgetTitle = this.widgetConfig.title || joinRoomData.widgetTitle || title;
     this.widgetLogo = this.widgetConfig.logo || joinRoomData.widgetLogo || null;
     this.widgetIsMuted = getFromLocalStorage('elixirchat-notifications-muted', isMuted);
     this.widgetIsButtonHidden = this.widgetConfig.hideDefaultButton || isButtonHidden;
@@ -155,6 +156,8 @@ export class ElixirChatWidget extends ElixirChat {
         return _find(joinRoomData.channels, { type: normalizedChannelType });
       })
       .filter(channel => channel?.username);
+
+    i18nUtils.addCustomLocalization(this.widgetConfig.customLocalization);
 
     this.triggerEvent(WIDGET_DATA_SET, this, { firedOnce: true });
   }

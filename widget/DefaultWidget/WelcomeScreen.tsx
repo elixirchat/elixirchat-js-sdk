@@ -2,8 +2,11 @@ import React, { Component, Fragment } from 'react';
 import { IJoinRoomChannel } from '../../sdk/ElixirChat';
 import { IOnlineStatusParams } from '../../sdk/OnlineStatusSubscription';
 import { ElixirChatWidget } from '../ElixirChatWidget';
-import { WIDGET_DATA_SET, WIDGET_MUTE_TOGGLE } from '../ElixirChatWidgetEventTypes';
+import { i18n } from './i18n';
 import { UNREAD_COUNTER_MESSAGES_CHANGE } from '../../sdk/ElixirChatEventTypes';
+import { WIDGET_DATA_SET, WIDGET_MUTE_TOGGLE } from '../ElixirChatWidgetEventTypes';
+import { Tooltip } from './Tooltip';
+
 import { cn, _last } from '../../utilsCommon';
 import {
   humanizeUpcomingDate,
@@ -11,14 +14,12 @@ import {
   getAvatarColorByUserId,
   exposeComponentToGlobalScope,
 } from '../../utilsWidget';
-import { Tooltip } from './Tooltip';
 
 export interface IWelcomeScreenProps {
   elixirChatWidget: ElixirChatWidget;
 }
 
 export interface IWelcomeScreenState {
-  widgetTitle: string;
   widgetLogo: string;
   widgetChannels: Array<IJoinRoomChannel>;
   widgetIsMuted: boolean;
@@ -31,7 +32,6 @@ export interface IWelcomeScreenState {
 export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreenState> {
 
   state = {
-    widgetTitle: '',
     widgetChannels: [],
     widgetLogo: '',
     widgetIsMuted: false,
@@ -50,7 +50,6 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
 
     elixirChatWidget.on(WIDGET_DATA_SET, () => {
       const {
-        widgetTitle,
         widgetLogo,
         widgetChannels,
         widgetIsMuted,
@@ -62,7 +61,6 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
       const { employeeAvatars, employeesCount } = this.generateEmployeeList(joinRoomData);
 
       this.setState({
-        widgetTitle,
         widgetLogo,
         widgetChannels,
         widgetIsMuted,
@@ -110,7 +108,7 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
     let initials = (employee?.firstName || '').toString().replace(/[^a-zа-я]/ig, '')[0]?.toUpperCase();
 
     if (!initials) {
-      const idLetterDict = 'АВЕКМНОРСТ';
+      const idLetterDict = i18n.agents_initials_dict;
       const idLetterIndex = +_last((employee?.id || '').toString().replace(/[^0-9]+/ig, ''));
       const normalizedIndex = idLetterIndex > -1 ? idLetterIndex : Math.round( Math.random() * (idLetterDict.length - 1) );
       initials = idLetterDict[ normalizedIndex ];
@@ -123,17 +121,17 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
     if (isOnline) {
       return (
         <Fragment>
-          <i className="elixirchat-welcome-screen__status-online"/> Сейчас в сети
+          <i className="elixirchat-welcome-screen__status-online"/> {i18n.status_online}
         </Fragment>
       );
     }
     else {
       return (
         <Fragment>
-          <i className="elixirchat-welcome-screen__status-offline"/> Не в сети
+          <i className="elixirchat-welcome-screen__status-offline"/> {i18n.status_offline}
           {Boolean(workHoursStartAt) && (
             <div className="elixirchat-welcome-screen__status-details">
-              Ответим {humanizeUpcomingDate(workHoursStartAt)} {humanizeTimezoneName(workHoursStartAt)}
+              {i18n.status_offline_will_reply_at} {humanizeUpcomingDate(workHoursStartAt)} {humanizeTimezoneName(workHoursStartAt)}
             </div>
           )}
         </Fragment>
@@ -144,7 +142,6 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
   render() {
     const { elixirChatWidget } = this.props;
     const {
-      widgetTitle,
       widgetLogo,
       widgetChannels,
       widgetIsMuted,
@@ -159,9 +156,7 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
     return (
       <div className="elixirchat-welcome-screen__container">
 
-        <Tooltip className="elixirchat-welcome-screen__mute-tooltip" title={widgetIsMuted
-          ? 'Включить звук уведомлений'
-          : 'Выключить звук уведомлений'}>
+        <Tooltip className="elixirchat-welcome-screen__mute-tooltip" title={widgetIsMuted ? i18n.sound_on : i18n.sound_off}>
           <button className="elixirchat-welcome-screen__mute"
             onClick={() => widgetIsMuted ? elixirChatWidget.unmute() : elixirChatWidget.mute()}>
             <i className={widgetIsMuted ? 'icon-speaker-mute' : 'icon-speaker'}/>
@@ -179,7 +174,9 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
           <i className="icon-logo"/>
         </div>
 
-        <h1 className="elixirchat-welcome-screen__title">{widgetTitle}</h1>
+        <h1 className="elixirchat-welcome-screen__title">
+          {i18n.caption_main}
+        </h1>
 
         <div className="elixirchat-welcome-screen__status">
           {this.generateOnlineStatusMessage(onlineStatus)}
@@ -207,7 +204,7 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
 
         <button className="elixirchat-welcome-screen__chat-button"
           onClick={() => elixirChatWidget.navigateTo('chat')}>
-          Написать в чат
+          {i18n.caption_chat_button}
           {Boolean(visibleUnreadMessagesCount) && (
             <span className="elixirchat-welcome-screen__chat-button-counter">
               {visibleUnreadMessagesCount}
@@ -217,7 +214,7 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
 
         {Boolean(widgetChannels.length) && (
           <div className="elixirchat-welcome-screen__channels">
-            <div className="elixirchat-welcome-screen__channels-title">Поддержка в других каналах</div>
+            <div className="elixirchat-welcome-screen__channels-title">{i18n.caption_other_channels}</div>
             <ul className="elixirchat-welcome-screen__channels-list">
               {widgetChannels.map(channel => (
                 <li key={channel.type} className={cn({
