@@ -22,7 +22,7 @@ import { TypingStatusSubscription } from './TypingStatusSubscription';
 import { UpdateMessageSubscription } from './UpdateMessageSubscription';
 import { OnlineStatusSubscription } from './OnlineStatusSubscription';
 import { UnreadCounter, IUnreadCounterData } from './UnreadCounter';
-import { MessageSubscription, ISentMessageSerialized } from './MessageSubscription';
+import { MessageSubscription, ISentMessage } from './MessageSubscription';
 import { GraphQLClientSocket } from './GraphQLClientSocket';
 import {
   GraphQLClient,
@@ -551,7 +551,7 @@ export class ElixirChat {
     return Math.abs(functionCodeHash + callStackHash);
   };
 
-  public sendMessage = (params: ISentMessageSerialized): Promise<IMessage> => {
+  public sendMessage = (params: ISentMessage): Promise<IMessage> => {
     return this.checkIfConnected().then(() => {
       this.typingStatusSubscription.dispatchTypedText(false);
       return this.messageSubscription.sendMessage(params);

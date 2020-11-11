@@ -61,7 +61,7 @@ const elixirChatWidget = new ElixirChatWidget({
 });
 elixirChatWidget.appendWidget({
   container: document.body,
-  iframeStyles: `.your-custom-widget-css-code-here { color: green }`,
+  iframeCSS: `.your-custom-widget-css-code-here { color: green }`,
 });
 ```
 
@@ -646,13 +646,13 @@ elixirChatWidget.onToggleChatVisibility((isVisible) => {
 <br/>
 <a id="widget-appendWidget"></a>
 
-#### `appendWidget({ container, iframeStyles })`
+#### `appendWidget({ container, iframeCSS })`
 Append ElixirChat widget to a container, customize via CSS if needed.
 
 __Argument parameters {...}:__
 
 - `container: HTMLElement` - DOM element the widget would be appended to (at the end of it).
-- `iframeStyles: string` - your custom CSS code applied to ElixirChat Widget _inside the iframe_ so that you can easily change look and feel of the chat window.
+- `iframeCSS: string` - your custom CSS code applied to ElixirChat Widget _inside the iframe_ so that you can easily change look and feel of the chat window.
 
 __Returns:__
 
@@ -663,7 +663,7 @@ __Returns:__
 // Example:
 elixirChatWidget.appendWidget({
   container: document.body,
-  iframeStyles: `
+  iframeCSS: `
     .elixirchat-chat-container { background: #eeeeee }
     .elixirchat-chat-messages__item { background: #53B561 } 
   `,
@@ -675,7 +675,7 @@ elixirChatWidget.appendWidget({
 ### ElixirChatWidget properties:
 
 - <a id="widget-container"></a>`container: HTMLElement` - Same as passed to [`appendWidget()`](#widget-appendWidget)
-- <a id="widget-iframeStyles"></a>`iframeStyles: string` - Same as passed to [`appendWidget()`](#widget-appendWidget)
+- <a id="widget-iframeCSS"></a>`iframeCSS: string` - Same as passed to [`appendWidget()`](#widget-appendWidget)
 - <a id="widget-widgetIsVisible"></a>`widgetIsVisible: boolean` - Flag indicating whether the chat window is currently open
 - <a id="widget-widgetIFrameDocument"></a>`widgetIFrameDocument: Document` - Document of the IFrame element of the Chat window
 - <a id="widget-widgetChatReactComponent"></a>`widgetChatReactComponent: JSX.Element` - Widget React component (rendered inside the IFrame element)

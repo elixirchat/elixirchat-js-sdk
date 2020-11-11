@@ -61,7 +61,7 @@ const elixirChatWidget = new ElixirChatWidget({
 });
 elixirChatWidget.appendWidget({
   container: document.body, // куда присоединить виджет
-  iframeStyles: `.elixirchat-chat-container { color: green }`, // ваш кастомный CSS внутри iframe чата
+  iframeCSS: `.elixirchat-chat-container { color: green }`, // ваш кастомный CSS внутри iframe чата
 });
 ```
 
@@ -84,7 +84,7 @@ elixirChatWidget.appendWidget({
   });
   elixirChatWidget.appendWidget({
     container: document.body, // куда присоединить виджет
-    iframeStyles: `.elixirchat-chat-container { color: green }`, // ваш кастомный CSS внутри iframe чата
+    iframeCSS: `.elixirchat-chat-container { color: green }`, // ваш кастомный CSS внутри iframe чата
   });
 </script>
 ```
@@ -135,7 +135,7 @@ document.querySelector('#send-message-button').addEventListener('click', () => {
 
 
 // Подписаться на новые сообщения в комнате
-elixirChat.onMessage((message) => {
+elixirChat.on('MESSAGES_RECEIVE', (message) => {
   console.log('Новое сообщение:', message.text);
   console.log('От:', message.sender.firstName, message.sender.lastName);
   console.log('Это ответ на:', message.responseToMessage ? message.responseToMessage.text : '—');
@@ -569,6 +569,12 @@ elixirChat.onConnectError((error) => {
 <br/>
 <a id="sdk-properties"></a>
 
+### События ElixirChat:
+
+
+
+
+
 ### Свойства ElixirChat:
 
 - <a id="sdk-apiUrl"></a>`apiUrl: string` - То же, что было в [конфиге](#config-apiUrl)
@@ -601,7 +607,7 @@ if (elixirChat.isConnected) {
   document.getElementById('status').className = 'active';
 }
 
-elixirChat.onConnectSuccess(() => {
+elixirChat.on('JOIN_ROOM_SUCCESS', () => {
   document.getElementById('status').className = 'active';
   console.log('Подключен к ', elixirChat.room, elixirChat.elixirChatRoomId);
 });
@@ -649,13 +655,13 @@ elixirChatWidget.onToggleChatVisibility((isVisible) => {
 <br/>
 <a id="widget-appendWidget"></a>
 
-#### `appendWidget({ container, iframeStyles })`
+#### `appendWidget({ container, iframeCSS })`
 Присоединить виджет ElixirChat в DOM-контейнер, при необходимости кастомизировать с помощью CSS.
 
 __Параметры аргумента {...}:__
 
 - `container: HTMLElement` - Элемент DOM, в конец которого будет присоединен виджет.
-- `iframeStyles: string` - Ваш кастомный CSS-код, примененный к виджету ElixirChat _внутри iframe_, так чтобы можно было легко изменить внешний вид окна чата.
+- `iframeCSS: string` - Ваш кастомный CSS-код, примененный к виджету ElixirChat _внутри iframe_, так чтобы можно было легко изменить внешний вид окна чата.
 
 
 __Возвращает:__
@@ -667,7 +673,7 @@ __Возвращает:__
 // Пример:
 elixirChatWidget.appendWidget({
   container: document.body,
-  iframeStyles: `
+  iframeCSS: `
     .elixirchat-chat-container { background: #eeeeee }
     .elixirchat-chat-messages__item { background: #53B561 } 
   `,
@@ -679,7 +685,7 @@ elixirChatWidget.appendWidget({
 ### Свойства ElixirChatWidget:
 
 - <a id="widget-container"></a>`container: HTMLElement` - То же, что передано в [`appendWidget()`](#widget-appendWidget)
-- <a id="widget-iframeStyles"></a>`iframeStyles: string` - То же, что передано в [`appendWidget()`](#widget-appendWidget)
+- <a id="widget-iframeCSS"></a>`iframeCSS: string` - То же, что передано в [`appendWidget()`](#widget-appendWidget)
 - <a id="widget-widgetIsVisible"></a>`widgetIsVisible: boolean` - Флаг, указывающий, открыто ли в данный момент окно чата
 - <a id="widget-widgetIFrameDocument"></a>`widgetIFrameDocument: Document` - Document IFrame-элемента окна чата
 - <a id="widget-widgetChatReactComponent"></a>`widgetChatReactComponent: JSX.Element` - React-компонент виджета (отрендеренный внутри `<iframe>`)
