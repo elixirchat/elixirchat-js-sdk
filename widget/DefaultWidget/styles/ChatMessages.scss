@@ -105,7 +105,7 @@
 
 .elixirchat-chat-messages__item {
   max-width: 80%;
-  padding-bottom: 10px;
+  padding-bottom: 15px;
 
   &--by-me {
     align-self: flex-end;
@@ -167,7 +167,7 @@
   position: relative;
   color: $color-gray-dark;
   cursor: default;
-  border-left: 3px solid;
+  border-left: 2px solid;
   padding: 3px 0 0 8px;
   line-height: 15px;
   margin: 2px 0 5px 0;
@@ -192,16 +192,19 @@
     margin: 0 1px;
   }
 
+  a {
+    padding: 3px 0;
+  }
+
   .elixirchat-chat-messages__item--by-operator & {
     a {
-      color: $color-blue;
+      color: $color-pink;
     }
   }
 
   .elixirchat-chat-messages__item--by-me & {
     a {
-      color: $color-white;
-      text-decoration: underline;
+      color: $color-pink;
     }
     & + .elixirchat-chat-files {
       padding-top: 8px;

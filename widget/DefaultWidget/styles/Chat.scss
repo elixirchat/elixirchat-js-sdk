@@ -44,10 +44,6 @@ $chat-header-height: 52px;
   margin-top: -3px;
 }
 
-.elixirchat-chat-header__indicator--offline {
-  background: $color-pink;
-}
-
 .elixirchat-chat-header__button {
   height: $chat-header-height;
   color: darken($color-gray-light, 10);

@@ -45,6 +45,7 @@ $color-textarea-bg: #FFF;
   line-height: 6px;
   transition: opacity 200ms;
   outline: none;
+  cursor: pointer;
 
   &:hover {
     opacity: .7;
@@ -170,6 +171,7 @@ $color-textarea-bg: #FFF;
   padding: 6px;
   transition: opacity 200ms;
   outline: none;
+  cursor: pointer;
 
   &:hover {
     opacity: .7;
