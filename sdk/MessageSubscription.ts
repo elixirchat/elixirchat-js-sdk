@@ -119,20 +119,22 @@ export class MessageSubscription {
   };
 
   private retrieveLastMessageCursor(): void {
-    return new Promise(async resolve => {
+    return new Promise(resolve => {
       if (this.lastMessageCursor) {
         resolve(this.lastMessageCursor);
       }
       else if (!this.hasEmptyMessageHistory) {
         const { triggerEvent } = this.elixirChat;
-        const lastMessage = await this.getMessageHistoryByCursor({ limit: 1 }).then(chunk => chunk[0]);
-        const lastMessageCursor = lastMessage?.cursor || null;
-        if (!lastMessageCursor) {
-          this.hasEmptyMessageHistory = true;
-        }
-        triggerEvent(MESSAGES_RETRIEVE_LAST_MESSAGE_CURSOR, lastMessage);
-        this.lastMessageCursor = lastMessageCursor;
-        resolve(lastMessageCursor);
+        this.getMessageHistoryByCursor({ limit: 1 }).then(chunk => {
+          const lastMessage = chunk[0];
+          const lastMessageCursor = lastMessage?.cursor || null;
+          if (!lastMessageCursor) {
+            this.hasEmptyMessageHistory = true;
+          }
+          triggerEvent(MESSAGES_RETRIEVE_LAST_MESSAGE_CURSOR, lastMessage);
+          this.lastMessageCursor = lastMessageCursor;
+          resolve(lastMessageCursor);
+        });
       }
       else {
         resolve(null);
