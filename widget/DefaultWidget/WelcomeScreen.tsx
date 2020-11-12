@@ -3,7 +3,6 @@ import { IJoinRoomChannel } from '../../sdk/ElixirChat';
 import { IOnlineStatusParams } from '../../sdk/OnlineStatusSubscription';
 import { ElixirChatWidget } from '../ElixirChatWidget';
 import { WIDGET_DATA_SET, WIDGET_MUTE_TOGGLE } from '../ElixirChatWidgetEventTypes';
-import { UNREAD_COUNTER_MESSAGES_CHANGE } from '../../sdk/ElixirChatEventTypes';
 import { cn, _last } from '../../utilsCommon';
 import {
   humanizeUpcomingDate,
@@ -22,7 +21,6 @@ export interface IWelcomeScreenState {
   widgetLogo: string;
   widgetChannels: Array<IJoinRoomChannel>;
   widgetIsMuted: boolean;
-  unreadMessagesCount: number;
   employeeAvatars: Array<{ url: string, initials: string }>;
   employeesCount: number;
   onlineStatus: IOnlineStatusParams;
@@ -35,7 +33,6 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
     widgetChannels: [],
     widgetLogo: '',
     widgetIsMuted: false,
-    unreadMessagesCount: 0,
     employeeAvatars: [],
     employeesCount: 0,
     onlineStatus: {
@@ -55,7 +52,6 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
         widgetChannels,
         widgetIsMuted,
         onlineStatus,
-        unreadMessagesCount,
         joinRoomData,
       } = elixirChatWidget;
 
@@ -67,7 +63,6 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
         widgetChannels,
         widgetIsMuted,
         onlineStatus,
-        unreadMessagesCount,
         employeeAvatars,
         employeesCount,
       });
@@ -76,18 +71,7 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
     elixirChatWidget.on(WIDGET_MUTE_TOGGLE, widgetIsMuted => {
       this.setState({ widgetIsMuted });
     });
-
-    elixirChatWidget.on(UNREAD_COUNTER_MESSAGES_CHANGE, this.updateUnreadCount);
   }
-
-  componentWillUnmount(){
-    const { elixirChatWidget } = this.props;
-    elixirChatWidget.off(UNREAD_COUNTER_MESSAGES_CHANGE, this.updateUnreadCount);
-  }
-
-  updateUnreadCount = (unreadMessagesCount) => {
-    this.setState({ unreadMessagesCount });
-  };
 
   generateEmployeeList = ({ employeesCount, employees }) => {
     const displayLimit = Math.min(5, employeesCount);
@@ -118,29 +102,6 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
     return { url, color, initials, employee };
   };
 
-  generateOnlineStatusMessage = (onlineStatus) => {
-    const { isOnline, workHoursStartAt } = onlineStatus;
-    if (isOnline) {
-      return (
-        <Fragment>
-          <i className="elixirchat-welcome-screen__status-online"/> Сейчас в сети
-        </Fragment>
-      );
-    }
-    else {
-      return (
-        <Fragment>
-          <i className="elixirchat-welcome-screen__status-offline"/> Не в сети
-          {Boolean(workHoursStartAt) && (
-            <div className="elixirchat-welcome-screen__status-details">
-              Ответим {humanizeUpcomingDate(workHoursStartAt)} {humanizeTimezoneName(workHoursStartAt)}
-            </div>
-          )}
-        </Fragment>
-      );
-    }
-  };
-
   render() {
     const { elixirChatWidget } = this.props;
     const {
@@ -148,13 +109,10 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
       widgetLogo,
       widgetChannels,
       widgetIsMuted,
-      unreadMessagesCount,
       employeeAvatars,
       employeesCount,
       onlineStatus,
     } = this.state;
-
-    const visibleUnreadMessagesCount = unreadMessagesCount > 99 ? '99+' : unreadMessagesCount;
 
     return (
       <div className="elixirchat-welcome-screen__container">
@@ -182,7 +140,11 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
         <h1 className="elixirchat-welcome-screen__title">{widgetTitle}</h1>
 
         <div className="elixirchat-welcome-screen__status">
-          {this.generateOnlineStatusMessage(onlineStatus)}
+          {onlineStatus.isOnline && (
+            <Fragment>
+              <i className="elixirchat-welcome-screen__status-online"/> Сейчас в сети
+            </Fragment>
+          )}
         </div>
 
         {Boolean(employeeAvatars.length) && (
@@ -208,11 +170,6 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
         <button className="elixirchat-welcome-screen__chat-button"
           onClick={() => elixirChatWidget.navigateTo('chat')}>
           Написать в чат
-          {Boolean(visibleUnreadMessagesCount) && (
-            <span className="elixirchat-welcome-screen__chat-button-counter">
-              {visibleUnreadMessagesCount}
-            </span>
-          )}
         </button>
 
         {Boolean(widgetChannels.length) && (

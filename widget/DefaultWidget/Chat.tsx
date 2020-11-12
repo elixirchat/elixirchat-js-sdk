@@ -75,10 +75,9 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
           <i className="elixirchat-chat-header__back icon-arrow-left"
             onClick={this.onBackButtonClick}/>
 
-          <i className={cn({
-            'elixirchat-chat-header__indicator': true,
-            'elixirchat-chat-header__indicator--offline': !onlineStatus.isOnline,
-          })}/>
+          {onlineStatus.isOnline && (
+            <i className="elixirchat-chat-header__indicator"/>
+          )}
 
           <span className="elixirchat-chat-header__title" title={'Версия ' + process.env.ELIXIRCHAT_VERSION}>
             {widgetTitle}
