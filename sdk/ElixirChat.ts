@@ -183,7 +183,6 @@ export class ElixirChat {
 
   private serializeClient(rawClient: any): IElixirChatUser {
     rawClient = rawClient || {};
-    let localStorageClient: IElixirChatUser = getFromLocalStorage('elixirchat-client') || {};
     let isConfidentAboutFirstName = true;
 
     if (!rawClient.firstName) {
@@ -197,9 +196,9 @@ export class ElixirChat {
       };
     }
 
-    let clientId = (rawClient.id || localStorageClient.id).toString();
-    let clientFirstName = rawClient.firstName || localStorageClient.firstName;
-    let clientLastName = rawClient.lastName || localStorageClient.lastName;
+    let clientId = (rawClient.id || '').toString();
+    let clientFirstName = rawClient.firstName;
+    let clientLastName = rawClient.lastName;
 
     if (!clientFirstName && !clientLastName) {
       const anonymousClientData = this.generateAnonymousClientData();
