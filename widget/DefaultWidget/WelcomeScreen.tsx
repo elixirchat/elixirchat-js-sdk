@@ -147,6 +147,11 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
           )}
         </div>
 
+        <div>
+          🎄<br/>
+          31 декабря, 1, 2 и 3 января у Службы заботы Хантфлоу выходные. С 4 по 8 января мы будем помогать вам, но время ответа может быть увеличено до часа
+        </div>
+
         {Boolean(employeeAvatars.length) && (
           <ul className="elixirchat-welcome-screen__operators">
             {employeeAvatars.map((avatar, i) => (
