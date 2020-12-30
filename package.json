@@ -4,6 +4,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   "version": "4.3.16",
 =======
   "version": "4.4.0",
@@ -17,6 +18,9 @@
 =======
   "version": "4.5.2",
 >>>>>>> 216ae1f... 4.5.2
+=======
+  "version": "4.5.3",
+>>>>>>> a6796ad... 4.5.3
   "description": "JavaScript SDK for https://elixir.chat",
   "scripts": {
     "dev": "./bin/dev.sh",
