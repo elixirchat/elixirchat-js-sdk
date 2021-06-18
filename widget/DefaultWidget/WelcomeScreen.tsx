@@ -147,11 +147,6 @@ export class WelcomeScreen extends Component<IWelcomeScreenProps, IWelcomeScreen
           )}
         </div>
 
-        <div style={{ textAlign: 'center' }}>
-          <br/>
-          31 декабря, 1, 2 и 3 января выходные. С 4 по 8 января мы будем рады помочь вам, но время ответа может быть увеличено до часа
-        </div>
-
         {Boolean(employeeAvatars.length) && (
           <ul className="elixirchat-welcome-screen__operators">
             {employeeAvatars.map((avatar, i) => (
