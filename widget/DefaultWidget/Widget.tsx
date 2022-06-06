@@ -1,5 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import ReactDOM from 'react-dom';
+import { IntlProvider, createIntl, createIntlCache, RawIntlProvider } from 'react-intl';
 import { ElixirChatWidget } from '../ElixirChatWidget';
 import { FontExtractor, generateFontFaceCSS } from '../FontExtractor';
 import { WidgetAssets } from '../WidgetAssets';
@@ -10,6 +11,7 @@ import { WelcomeScreen } from './WelcomeScreen';
 import { FullScreenPreview } from './FullScreenPreview';
 import { exposeComponentToGlobalScope } from '../../utilsWidget';
 import { cn, detectBrowser } from '../../utilsCommon';
+import trl from './trl.json';
 
 import {
   UNREAD_COUNTER_MESSAGES_CHANGE,
@@ -215,9 +217,15 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
 
 
 export function renderWidgetReactComponent(container, elixirChatWidget) {
+  const { client: { locale } } = elixirChatWidget;
+  const messages = Object.fromEntries(
+    Object.entries(trl).map(([key, value]) => [key, value[locale]])
+  );
   let component;
   ReactDOM.render((
-    <Widget ref={(widget) => {component = widget}} elixirChatWidget={elixirChatWidget} />
+    <IntlProvider messages={messages} locale={locale} defaultLocale={locale}>
+      <Widget ref={(widget) => {component = widget}} elixirChatWidget={elixirChatWidget} />
+    </IntlProvider>
   ), container);
   return component;
 }

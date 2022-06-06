@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { injectIntl } from 'react-intl';
 import { ONLINE_STATUS_CHANGE } from '../../sdk/ElixirChatEventTypes';
 import { WIDGET_DATA_SET, WIDGET_MUTE_TOGGLE } from '../ElixirChatWidgetEventTypes';
 import { IOnlineStatusParams } from '../../sdk/OnlineStatusSubscription';
@@ -18,7 +19,7 @@ export interface IDefaultWidgetState {
   onlineStatus: IOnlineStatusParams;
 }
 
-export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
+class ChatComponent extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
 
   state = {
     widgetTitle: '',
@@ -60,6 +61,17 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
     elixirChatWidget.navigateTo('welcome-screen');
   };
 
+  getMuteTooltipMessage = () => {
+    const { widgetIsMuted } = this.state;
+    return widgetIsMuted
+      ? this.props.intl.formatMessage({ id: 'unmute' })
+      : this.props.intl.formatMessage({ id: 'mute' });
+  };
+
+  getVersionStr = () => {
+    return this.props.intl.formatMessage({ id: 'version' }, { version: process.env.ELIXIRCHAT_VERSION });
+  };
+
   render() {
     const { elixirChatWidget, className } = this.props;
     const {
@@ -79,13 +91,11 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
             <i className="elixirchat-chat-header__indicator"/>
           )}
 
-          <span className="elixirchat-chat-header__title" title={'Версия ' + process.env.ELIXIRCHAT_VERSION}>
+          <span className="elixirchat-chat-header__title" title={this.getVersionStr()}>
             {widgetTitle}
           </span>
 
-          <Tooltip className="elixirchat-chat-header__mute-tooltip" title={widgetIsMuted
-            ? 'Включить звук уведомлений'
-            : 'Выключить звук уведомлений'}>
+          <Tooltip className="elixirchat-chat-header__mute-tooltip" title={this.getMuteTooltipMessage()}>
             <button className="elixirchat-chat-header__mute"
               onClick={() => widgetIsMuted ? elixirChatWidget.unmute() : elixirChatWidget.mute()}>
               <i className={widgetIsMuted ? 'icon-speaker-mute' : 'icon-speaker'}/>
@@ -103,3 +113,5 @@ export class Chat extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
     );
   }
 }
+
+export const Chat = injectIntl(ChatComponent);

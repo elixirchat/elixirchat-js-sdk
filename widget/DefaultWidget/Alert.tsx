@@ -1,4 +1,5 @@
 import React, { Component, Fragment } from 'react';
+import { FormattedMessage, injectIntl } from 'react-intl';
 import { ERROR_ALERT } from '../../sdk/ElixirChatEventTypes';
 import { cn, normalizeErrorStack } from '../../utilsCommon';
 import { exposeComponentToGlobalScope } from '../../utilsWidget';
@@ -11,7 +12,7 @@ export interface IDefaultWidgetAlertProps {
 
 export interface IDefaultWidgetAlertState {}
 
-export class Alert extends Component<IDefaultWidgetAlertProps, IDefaultWidgetAlertState> {
+class AlertComponent extends Component<IDefaultWidgetAlertProps, IDefaultWidgetAlertState> {
 
   state = {
     isOpen: false,
@@ -79,13 +80,7 @@ export class Alert extends Component<IDefaultWidgetAlertProps, IDefaultWidgetAle
       'NetworkError when attempting to fetch resource'
     ];
 
-    const networkFailureMessage = this.trimEachRow(`
-      Не удается связаться с сервером.
-      Такое может быть:
-      * при нестабильном интернете
-      * когда ваша сеть блокирует некоторые сайты
-      * когда у вас установлены блокировщики рекламы или похожие расширения
-    `);
+    const networkFailureMessage = this.props.intl.formatMessage({ id: 'could_not_reach_server' });
     for (let i = 0; i < networkFailureKeys.length; i++) {
       if ((error?.message || '').toLowerCase().includes( networkFailureKeys[i].toLowerCase() )) {
         return networkFailureMessage;
@@ -95,39 +90,29 @@ export class Alert extends Component<IDefaultWidgetAlertProps, IDefaultWidgetAle
     return errorDetails.slice(0, maxErrorDetailsLength) + errorDetails.length > maxErrorDetailsLength ? '…' : '';
   };
 
-  trimEachRow = (text) => {
-    return text
-      .trim()
-      .split(/\n/)
-      .map(row => row.trim())
-      .join('\n');
-  };
-
   generateEmailText = (alertData, errorDetails, errorStack) => {
     const { elixirChatWidget } = this.props;
     const { client: { firstName, lastName, id } } = elixirChatWidget;
 
-    return this.trimEachRow(`Чат поддержки не загружается. Появляется сообщение:
-      «${errorDetails}»
-
-      Мои данные:
-      ${firstName} ${lastName} (ID: ${id})
-
-      Технические данные:
-      Error: ${alertData.customMessage || extractErrorMessage(alertData.error)}
-      Timestamp: ${new Date().toString()}
-      User-agent: ${navigator.userAgent}
-      Screen: ${screen.availWidth}x${screen.availHeight}
-      Device pixel ratio: ${devicePixelRatio}
-
-      Трассировка стека:
-      ${errorStack}`);
+    return this.props.intl.formatMessage({ id: 'support_chat_error_info' }, {
+      errorDetails,
+      firstName,
+      lastName,
+      id,
+      error: alertData.customMessage || extractErrorMessage(alertData.error),
+      timestamp: new Date().toString(),
+      userAgent: navigator.userAgent,
+      screenWidth: screen.availWidth,
+      screenHeight: screen.availHeight,
+      devicePixelRatio: window.devicePixelRatio,
+      errorStack
+    });
   };
 
   generateMailToHref = () => {
     const { elixirChatWidget } = this.props;
     const { emailText } = this.state;
-    const subject = 'Ошибка в чате поддержки';
+    const subject = this.props.intl.formatMessage({ id: 'support_chat_error' });
     return `mailto:${elixirChatWidget.widgetSupportEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailText)}`;
   };
 
@@ -175,7 +160,9 @@ export class Alert extends Component<IDefaultWidgetAlertProps, IDefaultWidgetAle
         <div className="elixirchat-alert__block" ref={this.messageBlock}>
           {!isExpanded && (
             <Fragment>
-              <h3 className="elixirchat-alert__header-title">Ошибка</h3>
+              <h3 className="elixirchat-alert__header-title">
+                <FormattedMessage id="error" />
+              </h3>
               <i className="elixirchat-alert__header-icon icon-close-thin"
                 onClick={this.onCloseClick}/>
               <FormattedMarkdown
@@ -183,10 +170,10 @@ export class Alert extends Component<IDefaultWidgetAlertProps, IDefaultWidgetAle
                 markdown={errorDetails}/>
               <div className="elixirchat-alert__button-block">
                 <button className="elixirchat-alert__retry-button" onClick={this.onRetryClick}>
-                  Попробовать еще раз
+                  <FormattedMessage id="try_again" />
                 </button>
                 <span className="elixirchat-alert__expand-link" onClick={this.onExpandToEmailClick}>
-                  Связаться по email
+                  <FormattedMessage id="contact_via_email" />
                 </span>
               </div>
             </Fragment>
@@ -194,7 +181,9 @@ export class Alert extends Component<IDefaultWidgetAlertProps, IDefaultWidgetAle
 
           {isExpanded && (
             <Fragment>
-              <h3 className="elixirchat-alert__header-title">Сообщение об ошибке</h3>
+              <h3 className="elixirchat-alert__header-title">
+                <FormattedMessage id="report_a_problem" />
+              </h3>
               <i className="elixirchat-alert__header-icon icon-close-thin"
                 onClick={this.onCollapseClick}/>
               <textarea className="elixirchat-alert__error-text"
@@ -203,7 +192,7 @@ export class Alert extends Component<IDefaultWidgetAlertProps, IDefaultWidgetAle
               <a className="elixirchat-alert__send-email-button"
                 href={this.generateMailToHref()}
                 target="_blank">
-                Отправить на {elixirChatWidget.widgetSupportEmail}
+                <FormattedMessage id="send_to_email" values={{ email: elixirChatWidget.widgetSupportEmail }} />
               </a>
             </Fragment>
           )}
@@ -212,3 +201,5 @@ export class Alert extends Component<IDefaultWidgetAlertProps, IDefaultWidgetAle
     );
   }
 }
+
+export const Alert = injectIntl(AlertComponent);

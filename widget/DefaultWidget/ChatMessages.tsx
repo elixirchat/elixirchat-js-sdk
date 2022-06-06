@@ -1,7 +1,9 @@
 import React, { Component, Fragment } from 'react';
+import { FormattedMessage, injectIntl } from 'react-intl';
 import dayjs from 'dayjs';
 import dayjsCalendar from 'dayjs/plugin/calendar';
 import 'dayjs/locale/ru';
+import 'dayjs/locale/en';
 import {
   cn,
   _round,
@@ -14,10 +16,8 @@ import {
 } from '../../utilsCommon';
 
 import {
-  inflect,
   humanizeFileSize,
   humanizeUpcomingDate,
-  humanizeTimezoneName,
   generateReplyMessageQuote,
   exposeComponentToGlobalScope,
   fitDimensionsIntoLimits,
@@ -61,7 +61,7 @@ export interface IDefaultWidgetMessagesState {
   currentlyTypingUsers: Array<object>;
 }
 
-export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaultWidgetMessagesState> {
+class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefaultWidgetMessagesState> {
 
   state = {
     isLoading: false,
@@ -87,10 +87,10 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
   initialScrollTimeout = null;
 
   componentDidMount() {
-    const { elixirChatWidget } = this.props;
+    const { elixirChatWidget, intl } = this.props;
     exposeComponentToGlobalScope(this, elixirChatWidget);
 
-    dayjs.locale('ru');
+    dayjs.locale(intl.locale);
     dayjs.extend(dayjsCalendar);
 
     this.setState({
@@ -493,44 +493,55 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
   };
 
   renderKeyShortcut = (keySequence) => {
-    return (
-      <Fragment>
-        {keySequence.split(/\+/).map((key, index) => {
-          return (
-            <Fragment key={index}>
-              {Boolean(index) && '+'}<kbd>{key}</kbd>
-            </Fragment>
-          )
-        })}
-      </Fragment>
-    );
+    if (!keySequence) {
+      return undefined;
+    }
+    return keySequence.split(/\+/).map((key, index) => {
+      return Boolean(index) ? `+<kbd>${key}</kbd>` : `<kbd>${key}</kbd>`;
+    }).join('');
+  };
+
+  getScreenshotShortcutMessage = () => {
+    const { screenshotFallback } = this.state;
+    const pressKey = screenshotFallback?.pressKey;
+    if (!pressKey) {
+      return this.props.intl.formatMessage({ id: 'please_send_screenshot' });
+    }
+    const pressKeySecondary = screenshotFallback.pressKeySecondary;
+    return this.props.intl.formatMessage({ id: 'please_send_screenshot_with_shortcut' }, {
+      hasSecondaryKey: Boolean(pressKeySecondary),
+      primaryKey: this.renderKeyShortcut(pressKey),
+      secondaryKey: this.renderKeyShortcut(pressKeySecondary)
+    });
   };
 
   renderSubmissionErrorMessage = (message) => {
     const { elixirChatWidget } = this.props;
     const defaultMessage = (
       <Fragment>
-        Ошибка отправки
+        <FormattedMessage id="sending_has_failed" />
         <span className="elixirchat-chat-messages__submission-error-link"
           onClick={() => elixirChatWidget.retrySendMessage(message)}>
-          Еще раз
+          <FormattedMessage id="again" />
         </span>
       </Fragment>
     );
     const badConnectionMessage = (
       <Fragment>
-        Не отправлено
+        <FormattedMessage id="sending_has_failed_bad_connection" />
         <span className="elixirchat-chat-messages__submission-error-link"
           onClick={() => elixirChatWidget.retrySendMessage(message)}>
-          Еще раз
+          <FormattedMessage id="again" />
         </span>
       </Fragment>
     );
     const unsupportedFileTypeMessage = (
-      <Fragment>Вложения такого типа<br/> не поддерживаются</Fragment>
+      <FormattedMessage id="attachment_type_is_not_supported" values={{
+        br: () => <br />
+      }} />
     );
     const tooLargeFileMessage = (
-      <Fragment>Поддерживаются файлы до 5Мб</Fragment>
+      <FormattedMessage id="file_size_limit" />
     );
     const messageByErrorCode = {
       '415': unsupportedFileTypeMessage,
@@ -548,6 +559,14 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
       });
       this.messageRefs[message.id] = messageElement;
     }
+  };
+
+  getMentionsStr = (message) => {
+    return message.mentions.map(mention => {
+      return mention.value === 'ALL'
+        ? this.props.intl.formatMessage({ id: 'everyone' })
+        : getUserFullName(mention.client, '\u00A0');
+    }).join(', ');
   };
 
   render() {
@@ -582,15 +601,15 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
               {message.showGroupChatLabel && !elixirChatWidget.room.isPrivate && (
                 <div className="elixirchat-chat-messages__group-chat-label">
-                  Это групповой чат поддержки для всех членов {elixirChatWidget.room.title}
+                  <FormattedMessage id="this_is_a_support_group" values={{title: elixirChatWidget.room.title}} />
                 </div>
               )}
 
               {message.showDateLabel && (
                 <div className="elixirchat-chat-messages__date-title">
                   {dayjs(message.timestamp).calendar(null, {
-                    sameDay: '[Сегодня, ] D MMMM',
-                    lastDay: '[Вчера, ] D MMMM',
+                    sameDay: `[${this.props.intl.formatMessage({ id: 'today' })}, ] D MMMM`,
+                    lastDay: `[${this.props.intl.formatMessage({ id: 'yesterday' })}, ] D MMMM`,
                     lastWeek: 'D MMMM',
                     sameElse: 'D MMMM',
                   })}
@@ -618,9 +637,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                             {Boolean(message.mentions.length) && (
                               <Fragment>
                                 &nbsp;→ @&nbsp;
-                                {message.mentions.map(mention => {
-                                  return mention.value === 'ALL' ? 'Все' : getUserFullName(mention.client, '\u00A0');
-                                }).join(', ')}
+                                {getMentionsStr(message)}
                               </Fragment>
                             )}
                           </div>
@@ -661,7 +678,9 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                                   <a className="elixirchat-chat-files__text-link" href={file.url} target="_blank">{file.name}</a>
                                   <br/>
                                   <span className="elixirchat-chat-files__text-secondary">
-                                    {message.isSubmitting ? 'Загрузка...' : humanizeFileSize(file.bytesSize)}
+                                    {message.isSubmitting
+                                      ? <FormattedMessage id="upload" />
+                                      : humanizeFileSize(file.bytesSize, this.props.intl)}
                                   </span>
                                 </div>
                               </li>
@@ -703,7 +722,8 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                                   e.target.parentNode.classList.add('elixirchat-chat-previews__item-not-found')
                                 }}/>
                               <span className="elixirchat-chat-previews__item-not-found-placeholder">
-                                Файл не найден<br/>{preview.name}
+                                <FormattedMessage id="file_not_found" />
+                                <br/>{preview.name}
                               </span>
                             </a>
                           </li>
@@ -723,7 +743,7 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
                           {!message.isSystem && (
                             <span className="elixirchat-chat-messages__reply-button"
                               onClick={() => this.onReplyButtonClick(message.id)}>
-                            Ответить
+                            <FormattedMessage id="reply" />
                           </span>
                           )}
                           {message.sender.isCurrentClient && dayjs(message.timestamp).format('H:mm')}
@@ -751,22 +771,12 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
                       {message.systemData.type === 'ScreenshotRequestedMessage' && (
                         <Fragment>
-                          <div className="elixirchat-chat-messages__text">
-                            Пожалуйста, пришлите скриншот вашего экрана.
-                            {(Boolean(screenshotFallback) && Boolean(screenshotFallback.pressKey)) && (
-                              <Fragment>
-                                &nbsp;Для этого нажмите {this.renderKeyShortcut(screenshotFallback.pressKey)}
-                                {screenshotFallback.pressKeySecondary && (
-                                  <Fragment>&nbsp;({this.renderKeyShortcut(screenshotFallback.pressKeySecondary)})</Fragment>
-                                )},
-                                а затем вставьте результат в текстовое поле.
-                              </Fragment>
-                            )}
-                          </div>
+                          <div className="elixirchat-chat-messages__text"
+                            dangerouslySetInnerHTML={{ __html: this.getScreenshotShortcutMessage() }} />
                           {!Boolean(screenshotFallback) && (
                             <button className="elixirchat-chat-messages__take-screenshot"
                               onClick={this.onTakeScreenshotClick}>
-                              Сделать скриншот
+                              <FormattedMessage id="take_a_screenshot" />
                             </button>
                           )}
                         </Fragment>
@@ -774,29 +784,25 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
 
                       {message.systemData.type === 'NobodyWorkingMessage' && (
                         <div className="elixirchat-chat-messages__text">
-                          К сожалению, все операторы поддержки сейчас оффлайн
-                          {message.systemData?.workHoursStartAt && (
-                            <Fragment>, но будут снова в сети и ответят на ваш
-                              вопрос {humanizeUpcomingDate(message.systemData?.workHoursStartAt)} {humanizeTimezoneName(message.systemData?.workHoursStartAt)}.
-                            </Fragment>
-                          )}
+                          <FormattedMessage id="specialists_are_offline" values={{
+                            hasDatetime: Boolean(message.systemData?.workHoursStartAt)
+                            datetime: humanizeUpcomingDate(message.systemData?.workHoursStartAt, this.props.intl)
+                          }} />
                         </div>
                       )}
 
                       {message.systemData.type === 'HighLoadMessage' && (
                         <div className="elixirchat-chat-messages__text">
-                          Время ответа может увеличиться из-за большого количества вопросов,
-                          мы обязательно вернёмся к вам, спасибо за ожидание.
+                          <FormattedMessage id="waiting_takes_longer" />
                         </div>
                       )}
 
                       {message.systemData.type === 'NewClientPlaceholderMessage' && (
                         <div className="elixirchat-chat-messages__text">
-                          {elixirChatWidget.client.isConfidentAboutFirstName
-                            ? `Здравствуйте, ${elixirChatWidget.client.firstName}! `
-                            : 'Здравствуйте! '
-                          }
-                          Как мы можем вам помочь?
+                          <FormattedMessage id="hello" values={{
+                            isConfidentAboutFirstName: elixirChatWidget.client.isConfidentAboutFirstName,
+                            name: elixirChatWidget.client.firstName
+                          }} />
                         </div>
                       )}
                     </div>
@@ -819,14 +825,12 @@ export class ChatMessages extends Component<IDefaultWidgetMessagesProps, IDefaul
         })}>
           <Fragment>
             <i className="elixirchat-chat-typing__icon icon-typing"/>
-            {inflect(currentlyTypingUsers.length, [
-              'человек пишет...',
-              'человека пишут...',
-              'человек пишут...',
-            ])}
+            <FormattedMessage id="typing" values={{count: currentlyTypingUsers.length}} />
           </Fragment>
         </div>
       </div>
     );
   }
 }
+
+export const ChatMessages = injectIntl(ChatMessagesComponent);
