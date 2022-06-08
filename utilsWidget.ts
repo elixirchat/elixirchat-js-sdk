@@ -2,28 +2,19 @@ import { Component } from 'react';
 import dayjs from 'dayjs';
 import dayjsCalendar from 'dayjs/plugin/calendar';
 import 'dayjs/locale/ru';
+import 'dayjs/locale/en';
 
 import { ElixirChatWidget } from './widget/ElixirChatWidget';
 import { IMessage } from './sdk/serializers/serializeMessage';
 import { _last, _round, getUserFullName } from './utilsCommon';
 
-dayjs.locale('ru');
 dayjs.extend(dayjsCalendar);
 
-
-export function inflect(number: number, endings: [string], hideNumber?: boolean): string {
-  const cases = [2, 0, 1, 1, 1, 2];
-  const endingIndex = (number % 100 > 4 && number % 100 < 20) ? 2 : cases[ Math.min(number % 10, 5) ];
-  const ending = endings[endingIndex] || endings[0];
-  return hideNumber ? ending : number + ' ' + ending;
-}
-
-
-export function humanizeFileSize(sizeInBytes: number): string {
+export function humanizeFileSize(sizeInBytes: number, intl: any): string {
   const unitsDict = {
-    'kb': 'Кб',
-    'mb': 'Мб',
-    'gb': 'Гб',
+    'kb': intl.formatMessage({ id: 'size_kb' }),
+    'mb': intl.formatMessage({ id: 'size_mb' }),
+    'gb': intl.formatMessage({ id: 'size_gb' }),
   };
   const sizeInKb = sizeInBytes / 1024;
   const sizeInMb = sizeInKb / 1024;
@@ -40,51 +31,55 @@ export function humanizeFileSize(sizeInBytes: number): string {
     primaryUnit = 'mb';
   }
   primarySize = primarySize < 0.1 ? 0.1 : +(primarySize.toFixed(1));
-  return primarySize.toLocaleString('ru-RU') + ' ' + unitsDict[primaryUnit];
+  return primarySize.toLocaleString(intl.locale) + ' ' + unitsDict[primaryUnit];
 }
 
 
-export function humanizeTimezoneName(date: Date): string {
+function humanizeTimezoneName(date: Date, intl: any): string {
+  dayjs.locale(intl.locale);
+
   date = new Date(date);
 
-  const timezoneDict = {
-    Moscow: 'по Москве',
-    Samara: 'по Самаре',
-    Yekaterinburg: 'по Екатеринбургу',
-    Novosibirsk: 'по Новосибирску',
-    Omsk: 'по Омску',
-    Krasnoyarsk: 'по Красноярску',
-    Irkutsk: 'по Иркутску',
-    Yakutsk: 'по Якутску',
-    Vladivostok: 'по Владивостоку',
-    Sakhalin: 'по Южно-Сахалинску',
-    Magadan: 'по Магадану',
-    Kamchat: 'по Петропавловску-Камчатскому',
-    Anadyr: 'по Анадырю',
-    Tajikistan: 'по Душанбе',
-    Turkmenistan: 'по Ашхабаду',
-    Uzbekistan: 'по Ташкенту',
-    Kyrgyzstan: 'по Бишкеку',
-    Azerbaijan: 'по Баку',
-    Armenia: 'по Еревану',
-    'East Kazakhstan': 'по Алматы',
-    'West Kazakhstan': 'по западноказахстанскому времени',
-    'Eastern Europe': `по восточноевропейскому времени (${humanizeTimezoneOffset(date)})`
-  };
+  const timezones = [
+    'Moscow',
+    'Samara',
+    'Yekaterinburg',
+    'Novosibirsk',
+    'Omsk',
+    'Krasnoyarsk',
+    'Irkutsk',
+    'Yakutsk',
+    'Vladivostok',
+    'Sakhalin',
+    'Magadan',
+    'Kamchat',
+    'Anadyr',
+    'Tajikistan',
+    'Turkmenistan',
+    'Uzbekistan',
+    'Kyrgyzstan',
+    'Azerbaijan',
+    'Armenia',
+    'East Kazakhstan',
+    'West Kazakhstan',
+    'Eastern Europe'
+  ];
+
   const timezoneName = date
     .toTimeString()
     .replace(/.*\((.+)\)$/, '$1');
 
-  for (let timezoneKeyword in timezoneDict) {
+  const tz = humanizeTimezoneOffset(date);
+  for (let timezoneKeyword of timezones) {
     if (timezoneName.toLowerCase().includes(timezoneKeyword.toLowerCase())) {
-      return timezoneDict[timezoneKeyword];
+      return intl.formatMessage({ id: `timezone ${timezoneKeyword}` }, { tz });
     }
   }
-  return `по вашему времени (${humanizeTimezoneOffset(date)})`;
+  return intl.formatMessage({ id: `timezone default` }, { tz });
 }
 
 
-export function humanizeTimezoneOffset(date: Date) {
+function humanizeTimezoneOffset(date: Date) {
   date = new Date(date);
   const timezoneOffset = date.getTimezoneOffset() / -60;
   const timezoneSign = timezoneOffset < 0 ? '-' : '+';
@@ -97,24 +92,27 @@ export function humanizeTimezoneOffset(date: Date) {
 }
 
 
-export function humanizeUpcomingDate(date: Date | string): string {
+export function humanizeUpcomingDate(date: Date | string, intl: any): string {
+  dayjs.locale(intl.locale);
+
+  const tz = humanizeTimezoneName(date, intl);
   date = new Date(date);
   const inflectDayDict = {
-    'понедельник': 'в понедельник',
-    'вторник': 'во вторник',
-    'среда': 'в среду',
-    'четверг': 'в четверг',
-    'пятница': 'в пятницу',
-    'суббота': 'в субботу',
-    'воскресенье': 'в воскресенье',
+    [dayjs().day(1)]: intl.formatMessage({ id: 'on_monday' }),
+    [dayjs().day(2)]: intl.formatMessage({ id: 'on_tuesday' }),
+    [dayjs().day(3)]: intl.formatMessage({ id: 'on_wednesday' }),
+    [dayjs().day(4)]: intl.formatMessage({ id: 'on_thursday' }),
+    [dayjs().day(5)]: intl.formatMessage({ id: 'on_friday' }),
+    [dayjs().day(6)]: intl.formatMessage({ id: 'on_saturday' }),
+    [dayjs().day(0)]: intl.formatMessage({ id: 'on_sunday' }),
   };
   let humanizedDate = dayjs(date).calendar(null, {
-    nextWeek: 'dddd [в] H:mm',
-    nextDay: '[завтра в] H:mm',
-    sameDay: '[сегодня в] H:mm',
-    lastDay: 'D MMMM [в] H:mm',
-    lastWeek: 'D MMMM [в] H:mm',
-    sameElse: 'D MMMM [в] H:mm',
+    nextWeek: intl.formatMessage({ id: 'humanized_date_next_week' }, { tz }),
+    nextDay: intl.formatMessage({ id: 'humanized_date_next_day' }, { tz }),
+    sameDay: intl.formatMessage({ id: 'humanized_date_same_day' }, { tz }),
+    lastDay: intl.formatMessage({ id: 'humanized_date' }, { tz }),
+    lastWeek: intl.formatMessage({ id: 'humanized_date' }, { tz }),
+    sameElse: intl.formatMessage({ id: 'humanized_date' }, { tz }),
   });
   for (let nominativeDay in inflectDayDict) {
     humanizedDate = humanizedDate.replace(nominativeDay, inflectDayDict[nominativeDay]);

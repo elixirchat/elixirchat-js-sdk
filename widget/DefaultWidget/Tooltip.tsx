@@ -1,4 +1,6 @@
 import React, { Component } from 'react';
+import ReactDOM from 'react-dom';
+import {injectIntl, FormattedDate} from 'react-intl'
 
 export interface IDefaultWidgetTooltipProps {
   title: string;
@@ -8,7 +10,7 @@ export interface IDefaultWidgetTooltipProps {
 
 export interface IDefaultWidgetTooltipState {}
 
-export class Tooltip extends Component<IDefaultWidgetTooltipProps, IDefaultWidgetTooltipState> {
+class TooltipComponent extends Component<IDefaultWidgetTooltipProps, IDefaultWidgetTooltipState> {
 
   tooltip = null;
   targetRef = React.createRef();
@@ -57,3 +59,5 @@ export class Tooltip extends Component<IDefaultWidgetTooltipProps, IDefaultWidge
     return React.cloneElement(children, passedProps);
   }
 }
+
+export const Tooltip = injectIntl(TooltipComponent);

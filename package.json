@@ -1,6 +1,6 @@
 {
   "name": "elixirchat-js-sdk",
-  "version": "4.5.5",
+  "version": "4.6.0",
   "description": "JavaScript SDK for https://elixir.chat",
   "scripts": {
     "dev": "./bin/dev.sh",
@@ -32,6 +32,7 @@
     "phoenix": "^1.5.4",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
+    "react-intl": "^6.0.3",
     "react-textarea-autosize": "^7.1.0",
     "unique-names-generator": "^3.0.0"
   },
@@ -44,7 +45,7 @@
     "http-server": "^0.12.3",
     "node-sass": "^4.14.1",
     "parcel-bundler": "^1.12.4",
-    "typescript": "^3.9.7",
+    "typescript": "^4.5.5",
     "watch": "^1.0.2"
   }
 }

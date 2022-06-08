@@ -55,6 +55,7 @@ export interface IElixirChatUser {
   lastName?: string;
   fullName?: string;
   isConfidentAboutFirstName: boolean;
+  locale: string;
 }
 
 export interface IElixirChatConfig {
@@ -212,6 +213,7 @@ export class ElixirChat {
       firstName: clientFirstName,
       lastName: clientLastName,
       isConfidentAboutFirstName,
+      locale: rawClient.locale,
     };
   }
 

@@ -1,0 +1,306 @@
+{
+  "online": {
+    "ru": "Сейчас в сети",
+    "en": "Online"
+  },
+  "message_us": {
+    "ru": "Написать в чат",
+    "en": "Message us"
+  },
+  "other_support_channels": {
+    "ru": "Поддержка в других каналах",
+    "en": "Other support channels"
+  },
+  "mute": {
+    "ru": "Выключить звук уведомлений",
+    "en": "Turn off notification sounds"
+  },
+  "unmute": {
+    "ru": "Включить звук уведомлений",
+    "en": "Turn on notification sounds"
+  },
+  "version": {
+    "ru": "Версия {version}",
+    "en": "Version {version}"
+  },
+  "this_is_a_support_group": {
+    "ru": "Это групповой чат поддержки для всех членов {title}",
+    "en": "This is a support group chat for all the members of {title}"
+  },
+  "today": {
+    "ru": "Сегодня",
+    "en": "Today"
+  },
+  "yesterday": {
+    "ru": "Вчера",
+    "en": "Yesterday"
+  },
+  "everyone": {
+    "ru": "Все",
+    "en": "Everyone"
+  },
+  "hello": {
+    "ru": "{isConfidentAboutFirstName, select, true {Здравствуйте, {name}! Как мы можем вам помочь?} other {Здравствуйте! Как мы можем вам помочь?}}",
+    "en": "{isConfidentAboutFirstName, select, true {Hello, {name}! How can we help you?} other {Hello! How can we help you?}}"
+  },
+  "specialists_are_offline": {
+    "ru": "К сожалению, все операторы поддержки сейчас оффлайн{hasDatetime, select, true {, но будут снова в сети и ответят на ваш вопрос {datetime}} other {}}",
+    "en": "Unfortunately, all of our Support Specialists are currently offline.{hasDatetime, select, true { They will get back online and answer your questions {datetime}} other {}}"
+  },
+  "waiting_takes_longer": {
+    "ru": "Время ответа может увеличиться из-за большого количества вопросов, мы обязательно вернёмся к вам, спасибо за ожидание.",
+    "en": "Waiting might take longer that usual due to increased amount of requests. We'll get back to you as soon as possible. Thank you for your patience."
+  },
+  "please_send_screenshot": {
+    "ru": "Пожалуйста, пришлите скриншот вашего экрана.",
+    "en": "Please, take a screenshot of the issue and send it to us."
+  },
+  "please_send_screenshot_with_shortcut": {
+    "ru": "Пожалуйста, пришлите скриншот\u00a0вашего экрана. Для этого нажмите {hasSecondaryKey, select, true {{primaryKey}\u00a0({secondaryKey})} other {{primaryKey}}}, а затем вставьте результат в текстовое поле.",
+    "en": "Please, take a screenshot of the issue and send it to us. To do so, press {hasSecondaryKey, select, true {{primaryKey}\u00a0({secondaryKey})} other {{primaryKey}}} and insert the image to the message field."
+  },
+  "take_a_screenshot": {
+    "ru": "Сделать скриншот",
+    "en": "Take a screenshot"
+  },
+  "reply": {
+    "ru": "Ответить",
+    "en": "Reply"
+  },
+  "attachment_type_is_not_supported": {
+    "ru": "Вложения такого типа<br></br> не поддерживаются",
+    "en": "Attachments of this type<br></br> are not supported"
+  },
+  "file_size_limit": {
+    "ru": "Поддерживаются файлы до 5Мб",
+    "en": "You can upload files up to 5 MB"
+  },
+  "sending_has_failed": {
+    "ru": "Ошибка отправки",
+    "en": "Sending has failed"
+  },
+  "sending_has_failed_bad_connection": {
+    "ru": "Не отправлено",
+    "en": "Sending has failed"
+  },
+  "again": {
+    "ru": "Eще раз",
+    "en": "Try again"
+  },
+  "uploading": {
+    "ru": "Загрузка…",
+    "en": "Uploading..."
+  },
+  "file_not_found": {
+    "ru": "Файл не найден",
+    "en": "File is not found"
+  },
+  "typing": {
+    "ru": "{count, plural, =0 {} one {# человек пишет} few {# человека пишут} many {# человек пишут} other {# человек пишут}}",
+    "en": "{count, plural, =0 {} one {# is typing} other {# are typing}}"
+  },
+  "here_is_the_screenshot": {
+    "ru": "Вот скриншот моего экрана",
+    "en": "Here is the screenshot"
+  },
+  "screenshot": {
+    "ru": "Скриншот экрана",
+    "en": "Screenshot"
+  },
+  "pasted_from_clipboard": {
+    "ru": "Вставлено из буфера",
+    "en": "Pasted from clipboard"
+  },
+  "send_a_message": {
+    "ru": "Напишите сообщение...",
+    "en": "Send a message..."
+  },
+  "attach_files": {
+    "ru": "Прикрепить файлы",
+    "en": "Attach files"
+  },
+  "drop_files": {
+    "ru": "Перетащите файлы для загрузки",
+    "en": "Drop files here to upload"
+  },
+  "could_not_reach_server": {
+    "ru": "Не удается связаться с сервером.\nТакое может быть:\n* при нестабильном интернете\n* когда ваша сеть блокирует некоторые сайты\n* когда у вас установлены блокировщики рекламы или похожие расширения",
+    "en": "We couldn't reach a server. This could happen if:\nYour Internet connection is unstable\nYour network is blocking some sites\nYou're using an ad blocker or similar extensions"
+  },
+  "support_chat_error_info": {
+    "ru": "Чат поддержки не загружается. Появляется сообщение:\n«{errorDetails}»\n\nМои данные:\n{firstName} {lastName} (ID: {id})\n\nТехнические данные:\nError: {error}\nTimestamp: {timestamp}\nUser-agent: {userAgent}\nScreen: {screenWidth}x{screenHeight}\nDevice pixel ratio: {devicePixelRatio}\n\nТрассировка стека:\n{errorStack}",
+    "en": "Message is shown:\n«{errorDetails}»\n\nMy info:\n{firstName} {lastName} (ID: {id})\n\nTechnical data:\nError: {error}\nTimestamp: {timestamp}\nUser-agent: {userAgent}\nScreen: {screenWidth}x{screenHeight}\nDevice pixel ratio: {devicePixelRatio}\n\nStack trace:\n{errorStack}"
+  },
+  "support_chat_error": {
+    "ru": "Ошибка в чате поддержки",
+    "en": "Support chat error"
+  },
+  "error": {
+    "ru": "Ошибка",
+    "en": "Error"
+  },
+  "try_again": {
+    "ru": "Попробовать еще раз",
+    "en": "Try again"
+  },
+  "contact_via_email": {
+    "ru": "Связаться по email",
+    "en": "Contact via email"
+  },
+  "report_a_problem": {
+    "ru": "Сообщение об ошибке",
+    "en": "Report a problem"
+  },
+  "send_to_email": {
+    "ru": "Отправить на { email }",
+    "en": "Send to { email }"
+  },
+  "size_kb": {
+    "ru": "Кб",
+    "en": "KB"
+  },
+  "size_mb": {
+    "ru": "Мб",
+    "en": "MB"
+  },
+  "size_gb": {
+    "ru": "Гб",
+    "en": "GB"
+  },
+  "on_monday": {
+    "ru": "в понедельник",
+    "en": "on Monday"
+  },
+  "on_tuesday": {
+    "ru": "во вторник",
+    "en": "on Tuesday"
+  },
+  "on_wednesday": {
+    "ru": "в среду",
+    "en": "on Wednesday"
+  },
+  "on_thursday": {
+    "ru": "в четверг",
+    "en": "on Thursday"
+  },
+  "on_friday": {
+    "ru": "в пятницу",
+    "en": "on Friday"
+  },
+  "on_saturday": {
+    "ru": "в субботу",
+    "en": "on Saturday"
+  },
+  "on_sunday": {
+    "ru": "в воскресенье",
+    "en": "on Sunday"
+  },
+  "humanized_date_next_week": {
+    "ru": "dddd [в\u00a0]H:mm [{tz}]",
+    "en": "[at\u00a0]H:mm [{tz}] dddd"
+  },
+  "humanized_date_next_day": {
+    "ru": "[завтра в\u00a0]H:mm [{tz}]",
+    "en": "[tomorrow at\u00a0]H:mm [{tz}]"
+  },
+  "humanized_date_same_day": {
+    "ru": "[cегодня в\u00a0]H:mm [{tz}]",
+    "en": "[today at\u00a0]H:mm [{tz}]"
+  },
+  "humanized_date": {
+    "ru": "D[\u00a0]MMMM [в\u00a0]H:mm [{tz}]",
+    "en": "[at\u00a0]H:mm [{tz}] D[\u00a0]MMMM"
+  },
+  "timezone Moscow": {
+    "ru": "по Москве",
+    "en": "Moscow Time"
+  },
+  "timezone Samara": {
+    "ru": "по Самаре",
+    "en": "Samara Time"
+  },
+  "timezone Yekaterinburg": {
+    "ru": "по Екатеринбургу",
+    "en": "Yekaterinburg Time"
+  },
+  "timezone Novosibirsk": {
+    "ru": "по Новосибирску",
+    "en": "Novosibirsk Time"
+  },
+  "timezone Omsk": {
+    "ru": "по Омску",
+    "en": "Omsk Time"
+  },
+  "timezone Krasnoyarsk": {
+    "ru": "по Красноярску",
+    "en": "Krasnoyarsk Time"
+  },
+  "timezone Irkutsk": {
+    "ru": "по Иркутску",
+    "en": "Irkutsk Time"
+  },
+  "timezone Yakutsk": {
+    "ru": "по Якутску",
+    "en": "Yakutsk Time"
+  },
+  "timezone Vladivostok": {
+    "ru": "по Владивостоку",
+    "en": "Vladivostok Time"
+  },
+  "timezone Sakhalin": {
+    "ru": "по Южно-Сахалинску",
+    "en": "Yuzhno-Sakhalinsk Time"
+  },
+  "timezone Magadan": {
+    "ru": "по Магадану",
+    "en": "Magadan Time"
+  },
+  "timezone Kamchat": {
+    "ru": "по Петропавловску-Камчатскому",
+    "en": "Petropavlovsk-Kamchatsk Time"
+  },
+  "timezone Anadyr": {
+    "ru": "по Анадырю",
+    "en": "Anadyr Time"
+  },
+  "timezone Tajikistan": {
+    "ru": "по Душанбе",
+    "en": "Dushanbe Time"
+  },
+  "timezone Turkmenistan": {
+    "ru": "по Ашхабаду",
+    "en": "Ashgabat Time"
+  },
+  "timezone Uzbekistan": {
+    "ru": "по Ташкенту",
+    "en": "Tashkent Time"
+  },
+  "timezone Kyrgyzstan": {
+    "ru": "по Бишкеку",
+    "en": "Bishkek Time"
+  },
+  "timezone Azerbaijan": {
+    "ru": "по Баку",
+    "en": "Baku Time"
+  },
+  "timezone Armenia": {
+    "ru": "по Еревану",
+    "en": "Yerevan Time"
+  },
+  "timezone East Kazakhstan": {
+    "ru": "по Алматы",
+    "en": "Almaty Time"
+  },
+  "timezone West Kazakhstan": {
+    "ru": "по западноказахстанскому времени",
+    "en": "West Kazakhstan Time"
+  },
+  "timezone Eastern Europe": {
+    "ru": "по восточноевропейскому времени ({tz})",
+    "en": "Eastern Europe Time ({tz})"
+  },
+  "timezone default": {
+    "ru": "по вашему времени ({tz})",
+    "en": "in your time zone ({tz})"
+  }
+}
