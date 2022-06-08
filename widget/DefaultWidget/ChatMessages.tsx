@@ -637,7 +637,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
                             {Boolean(message.mentions.length) && (
                               <Fragment>
                                 &nbsp;→ @&nbsp;
-                                {getMentionsStr(message)}
+                                {this.getMentionsStr(message)}
                               </Fragment>
                             )}
                           </div>
