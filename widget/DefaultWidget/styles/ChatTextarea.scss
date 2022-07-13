@@ -3,11 +3,6 @@
 $color-textarea-bg: #FFF;
 
 .elixirchat-chat-textarea {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 3;
   background: $color-textarea-bg;
   box-shadow: 0 -1px 0 rgba($color-black, .13);
   border-radius: 0 0 $iframe-border-radius $iframe-border-radius;

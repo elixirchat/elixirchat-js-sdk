@@ -11,23 +11,27 @@ $chat-header-height: 52px;
   left: 0;
   background: $color-white;
   border-radius: $iframe-border-radius;
+  display: flex;
+  flex-direction: column;
 }
 
 .elixirchat-chat-header {
-  height: $chat-header-height;
   box-sizing: border-box;
-  padding: 19px 72px 0 50px;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 2;
   border-radius: $iframe-border-radius $iframe-border-radius 0 0;
+  padding: 13px 14px 12px 16px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.elixirchat-chat-header__column {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .elixirchat-chat-header__title {
   font-size: 16px;
-  font-weight: bold;
+  font-weight: 500;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -35,59 +39,41 @@ $chat-header-height: 52px;
 
 .elixirchat-chat-header__indicator {
   display: inline-block;
-  width: 9px;
-  height: 9px;
+  width: 10px;
+  height: 10px;
   border-radius: 100%;
   background: $color-green;
-  vertical-align: middle;
-  margin-right: 7px;
-  margin-top: -3px;
+  margin-right: 8px;
+  margin-left: -3px;
 }
 
 .elixirchat-chat-header__button {
-  height: $chat-header-height;
   color: darken($color-gray-light, 10);
-  position: absolute;
-  top: 1px;
   background: none;
   cursor: pointer;
-  padding: 0 18px;
   border: 0;
   transition: opacity 200ms;
   display: flex;
   align-items: center;
   font-size: 13px;
+  width: 28px;
+  height: 28px;
+  position: relative;
 
   &:hover {
     color: $color-gray-dark;
   }
-}
 
-.elixirchat-chat-header__back {
-  @extend .elixirchat-chat-header__button;
-  left: 0;
-  padding-right: 15px;
-  font-size: 19px;
-  padding-left: 25px;
-}
-
-.elixirchat-chat-header__close {
-  @extend .elixirchat-chat-header__button;
-  right: 3px;
-  padding-left: 8px;
-}
-
-.elixirchat-chat-header__mute {
-  @extend .elixirchat-chat-header__button;
-  right: 43px;
-  padding-right: 8px;
+  + .elixirchat-chat-header__button {
+    margin-left: 4px;
+  }
 }
 
 .elixirchat-chat-header__mute-tooltip {
   bottom: auto;
   top: 100%;
   margin-bottom: 0;
-  margin-top: -9px;
+  margin-top: 5px;
   font-size: 14px;
   color: $color-white;
 
@@ -96,5 +82,15 @@ $chat-header-height: 52px;
     top: -4px;
     transform: scaleY(-1);
     margin-right: 14px;
+  }
+}
+
+.elixirchat-chat-header__button-search {
+  font-size: 17px;
+  border-radius: 100%;
+
+  &_active {
+    color: #999999;
+    background-color: #f2f2f2;
   }
 }

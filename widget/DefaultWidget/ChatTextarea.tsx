@@ -20,6 +20,7 @@ import {
 
 export interface IDefaultWidgetTextareaProps {
   elixirChatWidget: ElixirChatWidget;
+  textAreaActiveState: boolean;
 }
 
 export interface IDefaultWidgetTextareaState {
@@ -90,6 +91,14 @@ class ChatTextareaComponent extends Component<IDefaultWidgetTextareaProps, IDefa
 
     window.addEventListener('dragover', this.cancelWidgetPopupDrag);
     window.addEventListener('beforeunload', this.preventLoosingUploadingFiles);
+  }
+
+  componentDidUpdate(prevProps: Readonly<IDefaultWidgetTextareaProps>) {
+    const { textAreaActiveState } = this.props;
+
+    if (textAreaActiveState && !prevProps.textAreaActiveState) {
+      this.focusTextarea();
+    }
   }
 
   componentWillUnmount(){

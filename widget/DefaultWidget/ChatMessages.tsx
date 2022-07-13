@@ -26,6 +26,7 @@ import {
 
 import { ElixirChatWidget } from '../ElixirChatWidget';
 import { FormattedMarkdown } from './FormattedMarkdown';
+import { MessageSearch } from './MessageSearch';
 import { getScreenshotCompatibilityFallback } from '../../sdk/ScreenshotTaker';
 import { serializeMessage } from '../../sdk/serializers/serializeMessage';
 import {
@@ -44,9 +45,17 @@ import {
   WIDGET_POPUP_OPEN,
 } from '../ElixirChatWidgetEventTypes';
 
+type IntlArgId = {
+  id: string
+}
 
 export interface IDefaultWidgetMessagesProps {
   elixirChatWidget: ElixirChatWidget;
+  intl: {
+    formatMessage: (arg: IntlArgId) => string,
+    locale: string
+  };
+  searchFormShow: boolean;
 }
 
 export interface IDefaultWidgetMessagesState {
@@ -59,6 +68,11 @@ export interface IDefaultWidgetMessagesState {
   screenshotFallback: object | null,
   scrollBlockBottomOffset: number | null;
   currentlyTypingUsers: Array<object>;
+
+  searchText: string;
+  selectMessageId: string;
+  searchMessagesIds: Array<string>;
+  showScrollButton: boolean;
 }
 
 class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefaultWidgetMessagesState> {
@@ -73,6 +87,11 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
     screenshotFallback: null,
     scrollBlockBottomOffset: null,
     currentlyTypingUsers: [],
+    // Search
+    searchText: '',
+    searchMessagesIds: [], // id сообщений, которые совпадают с текстом поиска
+    selectMessageId: null, // id сообщения, которое необходимо выделить
+    showScrollButton: false
   };
 
   MAX_THUMBNAIL_SIZE: number = isMobile() ? 208 : 256;
@@ -569,6 +588,41 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
     }).join(', ');
   };
 
+  /**
+   * Search
+   */
+
+  /**
+   * Прокрутка до нужного сообщения
+   * @param messageId
+   * @param direction – с какой стороны «прокручивается» текст
+   */
+  scrollToMessage = (messageId, direction) => {
+    // const scrollBlock = this.scrollBlock.current;
+    // const target = document.getElementById(messageId);
+    // const chatMessages = this.chatMessagesWrapper.current;
+    //
+    // this.setState({selectMessageId: messageId});
+    // if (!target) {
+    //   scrollBlock.scrollTo({top: chatMessages.clientHeight - 20, behavior: 'smooth'});
+    //   return;
+    // }
+    // const gap = scrollBlock.clientHeight / 2 - target.clientHeight / 2;
+    //
+    // if (direction === 'up') {
+    //   scrollBlock.scrollTo({top: chatMessages.clientHeight - 20, behavior: 'auto'});
+    // } else if (direction === 'down') {
+    //   scrollBlock.scrollTo({top: 0, behavior: 'auto'});
+    // }
+    //
+    // scrollBlock.scrollTo({top: target.offsetTop - gap, behavior: 'smooth'});
+  }
+
+  closeSearch = () => {
+    this.setState({selectMessageId: null, searchFormShow: false});
+    // focusChatTextArea();
+  }
+
   render() {
     const { elixirChatWidget, className } = this.props;
     const {
@@ -577,256 +631,271 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
       isLoading,
       isLoadingPrecedingMessageHistory,
       scrollBlockBottomOffset,
-      currentlyTypingUsers,
+      currentlyTypingUsers
     } = this.state;
 
+    const { searchFormShow } = this.props;
+
     return (
-      <div className={cn('elixirchat-chat-scroll', className)}
-        onScroll={e => e.target.scrollTop <= this.LOAD_PRECEDING_MESSAGES_SCROLL_Y_POSITION && this.loadPrecedingMessages()}
-        style={{ bottom: scrollBlockBottomOffset }}
-        ref={this.scrollBlock}>
 
-        <i className={cn({
-          'elixirchat-chat-scroll-progress-bar': true,
-          'elixirchat-chat-scroll-progress-bar--animating': isLoadingPrecedingMessageHistory,
-        })}/>
+      <div className="exlixir-chat__wrapper">
+        <MessageSearch
+          show={searchFormShow}
+          onChangeText={arg => {this.setState({searchText: arg})}}
+          onChangeSearchMessagesIds={arg => {this.setState({searchMessagesIds: arg})}}
+          onScroll={this.scrollToMessage}
+          onClose={this.closeSearch}
+        />
 
-        <div className={cn({
-          'elixirchat-chat-messages': true,
-          'elixirchat-chat-messages--loading': isLoading,
-        })} ref={this.scrollBlockInner}>
+        <div className={cn('elixirchat-chat-scroll', className)}
+          onScroll={e => e.target.scrollTop <= this.LOAD_PRECEDING_MESSAGES_SCROLL_Y_POSITION && this.loadPrecedingMessages()}
+          style={{ bottom: scrollBlockBottomOffset }}
+          ref={this.scrollBlock}>
 
-          {processedMessages.map(message => (
-            <Fragment key={message.id}>
 
-              {message.showGroupChatLabel && !elixirChatWidget.room.isPrivate && (
-                <div className="elixirchat-chat-messages__group-chat-label">
-                  <FormattedMessage id="this_is_a_support_group" values={{title: elixirChatWidget.room.title}} />
-                </div>
-              )}
 
-              {message.showDateLabel && (
-                <div className="elixirchat-chat-messages__date-title">
-                  {dayjs(message.timestamp).calendar(null, {
-                    sameDay: `[${this.props.intl.formatMessage({ id: 'today' })}, ] D MMMM`,
-                    lastDay: `[${this.props.intl.formatMessage({ id: 'yesterday' })}, ] D MMMM`,
-                    lastWeek: 'D MMMM',
-                    sameElse: 'D MMMM',
+          <i className={cn({
+            'elixirchat-chat-scroll-progress-bar': true,
+            'elixirchat-chat-scroll-progress-bar--animating': isLoadingPrecedingMessageHistory,
+          })}/>
+
+          <div className={cn({
+            'elixirchat-chat-messages': true,
+            'elixirchat-chat-messages--loading': isLoading,
+          })} ref={this.scrollBlockInner}>
+
+            {processedMessages.map(message => (
+              <Fragment key={message.id}>
+
+                {message.showGroupChatLabel && !elixirChatWidget.room.isPrivate && (
+                  <div className="elixirchat-chat-messages__group-chat-label">
+                    <FormattedMessage id="this_is_a_support_group" values={{title: elixirChatWidget.room.title}} />
+                  </div>
+                )}
+
+                {message.showDateLabel && (
+                  <div className="elixirchat-chat-messages__date-title">
+                    {dayjs(message.timestamp).calendar(null, {
+                      sameDay: `[${this.props.intl.formatMessage({ id: 'today' })}, ] D MMMM`,
+                      lastDay: `[${this.props.intl.formatMessage({ id: 'yesterday' })}, ] D MMMM`,
+                      lastWeek: 'D MMMM',
+                      sameElse: 'D MMMM',
+                    })}
+                  </div>
+                )}
+
+                {!message.isSystem && !message.isDeleted && (
+                  <div className={cn({
+                    'elixirchat-chat-messages__item': true,
+                    'elixirchat-chat-messages__item--by-me': message.sender.isCurrentClient,
+                    'elixirchat-chat-messages__item--by-operator': message.sender.isOperator,
+                    'elixirchat-chat-messages__item--by-another-client': !message.sender.isOperator && !message.sender.isCurrentClient,
+                    'elixirchat-chat-messages__item--unread': message.isUnread,
                   })}
-                </div>
-              )}
+                    ref={element => this.createMessageRef(element, message)}>
 
-              {!message.isSystem && !message.isDeleted && (
-                <div className={cn({
-                  'elixirchat-chat-messages__item': true,
-                  'elixirchat-chat-messages__item--by-me': message.sender.isCurrentClient,
-                  'elixirchat-chat-messages__item--by-operator': message.sender.isOperator,
-                  'elixirchat-chat-messages__item--by-another-client': !message.sender.isOperator && !message.sender.isCurrentClient,
-                  'elixirchat-chat-messages__item--unread': message.isUnread,
-                })}
-                  ref={element => this.createMessageRef(element, message)}>
+                    <div className="elixirchat-chat-messages__inner">
+                      {!message.hasPreviewsOnly && (
+                        <div className="elixirchat-chat-messages__balloon"
+                          onDoubleClick={() => this.onReplyButtonClick(message.id)}>
 
-                  <div className="elixirchat-chat-messages__inner">
-                    {!message.hasPreviewsOnly && (
-                      <div className="elixirchat-chat-messages__balloon"
-                        onDoubleClick={() => this.onReplyButtonClick(message.id)}>
-
-                        {!message.sender.isCurrentClient && (
-                          <div className="elixirchat-chat-messages__sender">
-                            <b>{getUserFullName(message.sender) || elixirChatWidget.widgetTitle}</b>
-                            {Boolean(message.mentions.length) && (
-                              <Fragment>
-                                &nbsp;→ @&nbsp;
-                                {this.getMentionsStr(message)}
-                              </Fragment>
-                            )}
-                          </div>
-                        )}
-
-                        {Boolean(message.responseToMessage.id) && !message.responseToMessage.isDeleted && (
-                          <div className="elixirchat-chat-messages__reply-message"
-                            onClick={() => this.onReplyOriginalMessageClick(message.responseToMessage.id)}>
-                            {generateReplyMessageQuote(message.responseToMessage, elixirChatWidget)}
-                          </div>
-                        )}
-
-                        {message.text && (
-                          <FormattedMarkdown className="elixirchat-chat-messages__text" markdown={message.text}/>
-                        )}
-
-                        {Boolean(message.files.length) && (
-                          <ul className="elixirchat-chat-files">
-                            {message.files.map(file => (
-                              <li key={file.id} className="elixirchat-chat-files__item">
-                                <a className={cn({
-                                  'elixirchat-chat-files__preview': true,
-                                  'elixirchat-chat-files__preview-image': file.thumbnails[0].url,
-                                  'elixirchat-chat-files__preview-submitting': message.isSubmitting,
-                                })}
-                                  style={{backgroundImage: `url(${file.thumbnails[0].url})`}}
-                                  href={file.url}
-                                  target="_blank">
-
-                                  {(!file.thumbnails[0].url && !message.isSubmitting) && (
-                                    <i className="icon-file"/>
-                                  )}
-                                  {message.isSubmitting && (
-                                    <i className="elixirchat-chat-files__preview-spinner icon-spinner-xs"/>
-                                  )}
-                                </a>
-                                <div className="elixirchat-chat-files__text">
-                                  <a className="elixirchat-chat-files__text-link" href={file.url} target="_blank">{file.name}</a>
-                                  <br/>
-                                  <span className="elixirchat-chat-files__text-secondary">
-                                    {message.isSubmitting
-                                      ? <FormattedMessage id="upload" />
-                                      : humanizeFileSize(file.bytesSize, this.props.intl)}
-                                  </span>
-                                </div>
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </div>
-                    )}
-
-                    {Boolean(message.previews.length) && (
-                      <ul className="elixirchat-chat-previews">
-                        {message.previews.map(preview => (
-                          <li key={preview.id} className="elixirchat-chat-previews__item">
-                            <a className="elixirchat-chat-previews__link"
-                              href={preview.url}
-                              target="_blank"
-                              onClick={e => this.onPreviewClick(e, preview, message.sender)}>
-
-                              {message.isSubmitting && (
-                                <i className="elixirchat-chat-previews__spinner icon-spinner-xs"/>
-                              )}
-                              {preview.previewType === 'video' && (
+                          {!message.sender.isCurrentClient && (
+                            <div className="elixirchat-chat-messages__sender">
+                              <b>{getUserFullName(message.sender) || elixirChatWidget.widgetTitle}</b>
+                              {Boolean(message.mentions.length) && (
                                 <Fragment>
-                                  <span className="elixirchat-chat-previews__video-play">&#x25B6;</span>
-                                  <span className="elixirchat-chat-previews__video-label">
-                                    {this.formatVideoDuration(preview.duration)}
-                                  </span>
+                                  &nbsp;→ @&nbsp;
+                                  {this.getMentionsStr(message)}
                                 </Fragment>
                               )}
-                              <img className={cn({
-                                'elixirchat-chat-previews__img': true,
-                                'elixirchat-chat-previews__img--submitting': message.isSubmitting,
-                              })}
-                                width={_round(preview.thumbnailWidth)}
-                                height={_round(preview.thumbnailHeight)}
-                                src={preview.thumbnails[0].url}
-                                alt={preview.name}
-                                onError={e => {
-                                  e.target.parentNode.classList.add('elixirchat-chat-previews__item-not-found')
-                                }}/>
-                              <span className="elixirchat-chat-previews__item-not-found-placeholder">
-                                <FormattedMessage id="file_not_found" />
-                                <br/>{preview.name}
-                              </span>
-                            </a>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-
-                    <div className="elixirchat-chat-messages__bottom">
-                      {message.submissionErrorCode && (
-                        <span className="elixirchat-chat-messages__submission-error">
-                          {this.renderSubmissionErrorMessage(message)}
-                        </span>
-                      )}
-                      {!message.submissionErrorCode && (
-                        <Fragment>
-                          {!message.sender.isCurrentClient && dayjs(message.timestamp).format('H:mm')}
-                          {!message.isSystem && (
-                            <span className="elixirchat-chat-messages__reply-button"
-                              onClick={() => this.onReplyButtonClick(message.id)}>
-                            <FormattedMessage id="reply" />
-                          </span>
+                            </div>
                           )}
-                          {message.sender.isCurrentClient && dayjs(message.timestamp).format('H:mm')}
-                        </Fragment>
+
+                          {Boolean(message.responseToMessage.id) && !message.responseToMessage.isDeleted && (
+                            <div className="elixirchat-chat-messages__reply-message"
+                              onClick={() => this.onReplyOriginalMessageClick(message.responseToMessage.id)}>
+                              {generateReplyMessageQuote(message.responseToMessage, elixirChatWidget)}
+                            </div>
+                          )}
+
+                          {message.text && (
+                            <FormattedMarkdown className="elixirchat-chat-messages__text" markdown={message.text}/>
+                          )}
+
+                          {Boolean(message.files.length) && (
+                            <ul className="elixirchat-chat-files">
+                              {message.files.map(file => (
+                                <li key={file.id} className="elixirchat-chat-files__item">
+                                  <a className={cn({
+                                    'elixirchat-chat-files__preview': true,
+                                    'elixirchat-chat-files__preview-image': file.thumbnails[0].url,
+                                    'elixirchat-chat-files__preview-submitting': message.isSubmitting,
+                                  })}
+                                    style={{backgroundImage: `url(${file.thumbnails[0].url})`}}
+                                    href={file.url}
+                                    target="_blank">
+
+                                    {(!file.thumbnails[0].url && !message.isSubmitting) && (
+                                      <i className="icon-file"/>
+                                    )}
+                                    {message.isSubmitting && (
+                                      <i className="elixirchat-chat-files__preview-spinner icon-spinner-xs"/>
+                                    )}
+                                  </a>
+                                  <div className="elixirchat-chat-files__text">
+                                    <a className="elixirchat-chat-files__text-link" href={file.url} target="_blank">{file.name}</a>
+                                    <br/>
+                                    <span className="elixirchat-chat-files__text-secondary">
+                                      {message.isSubmitting
+                                        ? <FormattedMessage id="upload" />
+                                        : humanizeFileSize(file.bytesSize, this.props.intl)}
+                                    </span>
+                                  </div>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
                       )}
+
+                      {Boolean(message.previews.length) && (
+                        <ul className="elixirchat-chat-previews">
+                          {message.previews.map(preview => (
+                            <li key={preview.id} className="elixirchat-chat-previews__item">
+                              <a className="elixirchat-chat-previews__link"
+                                href={preview.url}
+                                target="_blank"
+                                onClick={e => this.onPreviewClick(e, preview, message.sender)}>
+
+                                {message.isSubmitting && (
+                                  <i className="elixirchat-chat-previews__spinner icon-spinner-xs"/>
+                                )}
+                                {preview.previewType === 'video' && (
+                                  <Fragment>
+                                    <span className="elixirchat-chat-previews__video-play">&#x25B6;</span>
+                                    <span className="elixirchat-chat-previews__video-label">
+                                      {this.formatVideoDuration(preview.duration)}
+                                    </span>
+                                  </Fragment>
+                                )}
+                                <img className={cn({
+                                  'elixirchat-chat-previews__img': true,
+                                  'elixirchat-chat-previews__img--submitting': message.isSubmitting,
+                                })}
+                                  width={_round(preview.thumbnailWidth)}
+                                  height={_round(preview.thumbnailHeight)}
+                                  src={preview.thumbnails[0].url}
+                                  alt={preview.name}
+                                  onError={e => {
+                                    e.target.parentNode.classList.add('elixirchat-chat-previews__item-not-found')
+                                  }}/>
+                                <span className="elixirchat-chat-previews__item-not-found-placeholder">
+                                  <FormattedMessage id="file_not_found" />
+                                  <br/>{preview.name}
+                                </span>
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+
+                      <div className="elixirchat-chat-messages__bottom">
+                        {message.submissionErrorCode && (
+                          <span className="elixirchat-chat-messages__submission-error">
+                            {this.renderSubmissionErrorMessage(message)}
+                          </span>
+                        )}
+                        {!message.submissionErrorCode && (
+                          <Fragment>
+                            {!message.sender.isCurrentClient && dayjs(message.timestamp).format('H:mm')}
+                            {!message.isSystem && (
+                              <span className="elixirchat-chat-messages__reply-button"
+                                onClick={() => this.onReplyButtonClick(message.id)}>
+                              <FormattedMessage id="reply" />
+                            </span>
+                            )}
+                            {message.sender.isCurrentClient && dayjs(message.timestamp).format('H:mm')}
+                          </Fragment>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {message.isSystem && (
-                <div className={cn({
-                  'elixirchat-chat-messages__item': true,
-                  'elixirchat-chat-messages__item--by-operator': true,
-                  'elixirchat-chat-messages__item--system': true,
-                  'elixirchat-chat-messages__item--unread': message.isUnread,
-                })}
-                  ref={element => this.createMessageRef(element, message)}>
+                {message.isSystem && (
+                  <div className={cn({
+                    'elixirchat-chat-messages__item': true,
+                    'elixirchat-chat-messages__item--by-operator': true,
+                    'elixirchat-chat-messages__item--system': true,
+                    'elixirchat-chat-messages__item--unread': message.isUnread,
+                  })}
+                    ref={element => this.createMessageRef(element, message)}>
 
-                  <div className="elixirchat-chat-messages__inner">
-                    <div className="elixirchat-chat-messages__balloon">
-                      <div className="elixirchat-chat-messages__sender">
-                        <b>{getUserFullName(message.sender) || elixirChatWidget.widgetTitle}</b>
+                    <div className="elixirchat-chat-messages__inner">
+                      <div className="elixirchat-chat-messages__balloon">
+                        <div className="elixirchat-chat-messages__sender">
+                          <b>{getUserFullName(message.sender) || elixirChatWidget.widgetTitle}</b>
+                        </div>
+
+                        {message.systemData.type === 'ScreenshotRequestedMessage' && (
+                          <Fragment>
+                            <div className="elixirchat-chat-messages__text"
+                              dangerouslySetInnerHTML={{ __html: this.getScreenshotShortcutMessage() }} />
+                            {!Boolean(screenshotFallback) && (
+                              <button className="elixirchat-chat-messages__take-screenshot"
+                                onClick={this.onTakeScreenshotClick}>
+                                <FormattedMessage id="take_a_screenshot" />
+                              </button>
+                            )}
+                          </Fragment>
+                        )}
+
+                        {message.systemData.type === 'NobodyWorkingMessage' && (
+                          <div className="elixirchat-chat-messages__text">
+                            <FormattedMessage id="specialists_are_offline" values={{
+                              hasDatetime: Boolean(message.systemData?.workHoursStartAt)
+                              datetime: humanizeUpcomingDate(message.systemData?.workHoursStartAt, this.props.intl)
+                            }} />
+                          </div>
+                        )}
+
+                        {message.systemData.type === 'HighLoadMessage' && (
+                          <div className="elixirchat-chat-messages__text">
+                            <FormattedMessage id="waiting_takes_longer" />
+                          </div>
+                        )}
+
+                        {message.systemData.type === 'NewClientPlaceholderMessage' && (
+                          <div className="elixirchat-chat-messages__text">
+                            <FormattedMessage id="hello" values={{
+                              isConfidentAboutFirstName: elixirChatWidget.client.isConfidentAboutFirstName,
+                              name: elixirChatWidget.client.firstName
+                            }} />
+                          </div>
+                        )}
                       </div>
 
-                      {message.systemData.type === 'ScreenshotRequestedMessage' && (
-                        <Fragment>
-                          <div className="elixirchat-chat-messages__text"
-                            dangerouslySetInnerHTML={{ __html: this.getScreenshotShortcutMessage() }} />
-                          {!Boolean(screenshotFallback) && (
-                            <button className="elixirchat-chat-messages__take-screenshot"
-                              onClick={this.onTakeScreenshotClick}>
-                              <FormattedMessage id="take_a_screenshot" />
-                            </button>
-                          )}
-                        </Fragment>
-                      )}
-
-                      {message.systemData.type === 'NobodyWorkingMessage' && (
-                        <div className="elixirchat-chat-messages__text">
-                          <FormattedMessage id="specialists_are_offline" values={{
-                            hasDatetime: Boolean(message.systemData?.workHoursStartAt)
-                            datetime: humanizeUpcomingDate(message.systemData?.workHoursStartAt, this.props.intl)
-                          }} />
-                        </div>
-                      )}
-
-                      {message.systemData.type === 'HighLoadMessage' && (
-                        <div className="elixirchat-chat-messages__text">
-                          <FormattedMessage id="waiting_takes_longer" />
-                        </div>
-                      )}
-
-                      {message.systemData.type === 'NewClientPlaceholderMessage' && (
-                        <div className="elixirchat-chat-messages__text">
-                          <FormattedMessage id="hello" values={{
-                            isConfidentAboutFirstName: elixirChatWidget.client.isConfidentAboutFirstName,
-                            name: elixirChatWidget.client.firstName
-                          }} />
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="elixirchat-chat-messages__bottom">
-                      {dayjs(message.timestamp).format('H:mm')}
+                      <div className="elixirchat-chat-messages__bottom">
+                        {dayjs(message.timestamp).format('H:mm')}
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
 
+              </Fragment>
+            ))}
+          </div>
+
+
+          <div className={cn({
+            'elixirchat-chat-typing': true,
+            'elixirchat-chat-typing--visible': Boolean(currentlyTypingUsers.length),
+          })}>
+            <Fragment>
+              <i className="elixirchat-chat-typing__icon icon-typing"/>
+              <FormattedMessage id="typing" values={{count: currentlyTypingUsers.length}} />
             </Fragment>
-          ))}
-        </div>
-
-
-        <div className={cn({
-          'elixirchat-chat-typing': true,
-          'elixirchat-chat-typing--visible': Boolean(currentlyTypingUsers.length),
-        })}>
-          <Fragment>
-            <i className="elixirchat-chat-typing__icon icon-typing"/>
-            <FormattedMessage id="typing" values={{count: currentlyTypingUsers.length}} />
-          </Fragment>
+          </div>
         </div>
       </div>
     );

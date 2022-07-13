@@ -1,0 +1,95 @@
+$border: #e3e3e3;
+$buttonColor: #cdcdcd;
+
+.elixirchat-chat__search-wrapper {
+  display: flex;
+  padding: 12px 14px 12px 16px;
+  align-items: center;
+  overflow: hidden;
+  transition: max-height 300ms;
+  max-height: 30px;
+  box-shadow: 0 1px 0 rgba(0,0,0,.1);
+
+  &_close {
+    max-height: 0;
+    padding: 0 16px;
+  }
+}
+
+.elixirchat-chat__search-form {
+  display: flex;
+  border: 1px solid $border;
+  border-radius: 3px;
+  height: 28px;
+  width: 100%;
+}
+
+.elixirchat-chat__search-input {
+  background-color: #F2F2F2;
+  border: 1px solid $border;
+  font-size: 16px;
+  padding-left: 16px;
+  width: 100%;
+  margin: -1px 0 -1px -1px;
+  border-radius: 3px 0 0 3px;
+
+  &:focus {
+    border-color: #0033FF;
+  }
+}
+
+.elixirchat-chat__search__buttons-group {
+  display: flex;
+}
+
+.elixirchat-chat__search-button {
+  width: 30px;
+  border-radius: 0;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  background-color: #fff;
+  cursor: pointer;
+
+  span {
+    font-size: 0;
+  }
+
+  svg {
+    color: #000000;
+  }
+
+  &:disabled {
+    svg {
+      color: $buttonColor;
+    }
+  }
+}
+
+.elixirchat-chat__search-button_prev {
+
+}
+
+.elixirchat-chat__search-button_next {
+
+}
+
+.elixirchat-chat__search-button_close {
+  cursor: pointer;
+  width: 15px;
+  padding: 0;
+  height: 15px;
+  border: 0;
+  background-color: transparent;
+  border-radius: 50%;
+  margin-left: 15px;
+
+  svg {
+    color: $buttonColor;
+  }
+
+  span {
+    font-size: 0;
+  }
+}

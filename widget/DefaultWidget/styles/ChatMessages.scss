@@ -2,12 +2,17 @@
 @import "./mixins";
 @import "./Chat";
 
+.exlixir-chat__wrapper {
+  overflow: hidden;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
 .elixirchat-chat-scroll {
-  position: fixed;
+  flex-grow: 1;
+  height: 100%;
   top: $chat-header-height;
-  left: 0;
-  right: 0;
-  bottom: 52px;
   overflow-x: hidden;
   overflow-y: auto;
 }
