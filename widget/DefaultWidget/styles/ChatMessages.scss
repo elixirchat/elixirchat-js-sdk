@@ -534,3 +534,35 @@
   border-radius: 2px;
   pointer-events: none;
 }
+
+// Search
+
+$selected-color-bg: #fff2f7;
+
+.exlixir-chat__wrapper {
+  mark {
+    background-color: #e5e5e5;
+    transition: background-color .5s;
+  }
+}
+
+.elixirchat-chat-messages__item--selected {
+  animation: messageSelectAnimation 2s;
+
+  mark {
+    background-color: #fd9cc3;
+  }
+}
+
+
+@keyframes messageSelectAnimation {
+  0% {
+    background-color: transparent;
+  }
+  10% {
+    background-color: $selected-color-bg;
+  }
+  60% {
+    background-color: $selected-color-bg;
+  }
+}

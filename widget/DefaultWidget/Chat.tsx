@@ -1,7 +1,11 @@
 import React, { Component } from 'react';
 import { injectIntl } from 'react-intl';
 import { ONLINE_STATUS_CHANGE } from '../../sdk/ElixirChatEventTypes';
-import { WIDGET_DATA_SET, WIDGET_MUTE_TOGGLE } from '../ElixirChatWidgetEventTypes';
+import {
+  WIDGET_DATA_SET,
+  WIDGET_MUTE_TOGGLE,
+  WIDGET_SEARCH_TOGGLE
+} from '../ElixirChatWidgetEventTypes';
 import { IOnlineStatusParams } from '../../sdk/OnlineStatusSubscription';
 import { ChatMessages } from './ChatMessages';
 import { ChatTextarea } from './ChatTextarea';
@@ -29,7 +33,7 @@ export interface IDefaultWidgetState {
   widgetTitle: string;
   widgetIsMuted: boolean;
   onlineStatus: IOnlineStatusParams;
-  searchFormShow: boolean;
+  widgetIsSearchOpen: boolean;
 }
 
 class ChatComponent extends Component<IDefaultWidgetProps, IDefaultWidgetState> {
@@ -42,7 +46,7 @@ class ChatComponent extends Component<IDefaultWidgetProps, IDefaultWidgetState> 
       workHoursStartAt: null,
     },
     // Search
-    searchFormShow: true,
+    widgetIsSearchOpen: false,
   };
 
   chatMessages = React.createRef();
@@ -52,11 +56,12 @@ class ChatComponent extends Component<IDefaultWidgetProps, IDefaultWidgetState> 
     exposeComponentToGlobalScope(this, elixirChatWidget);
 
     elixirChatWidget.on(WIDGET_DATA_SET, () => {
-      const { widgetTitle, widgetIsMuted, onlineStatus } = elixirChatWidget;
+      const { widgetTitle, widgetIsMuted, onlineStatus, widgetIsSearchOpen } = elixirChatWidget;
       this.setState({
         widgetTitle,
         widgetIsMuted,
         onlineStatus,
+        widgetIsSearchOpen,
       });
     });
     elixirChatWidget.on(ONLINE_STATUS_CHANGE, onlineStatus => {
@@ -64,6 +69,9 @@ class ChatComponent extends Component<IDefaultWidgetProps, IDefaultWidgetState> 
     });
     elixirChatWidget.on(WIDGET_MUTE_TOGGLE, widgetIsMuted => {
       this.setState({ widgetIsMuted });
+    });
+    elixirChatWidget.on(WIDGET_SEARCH_TOGGLE, widgetIsSearchOpen => {
+      this.setState({ widgetIsSearchOpen });
     });
   }
 
@@ -92,10 +100,16 @@ class ChatComponent extends Component<IDefaultWidgetProps, IDefaultWidgetState> 
    */
 
   /** Search **/
-  onToggleSearchForm = () => {
-    const state = this.state.searchFormShow;
 
-    this.setState({ searchFormShow: !state })
+  onToggleSearchForm = () => {
+    const state = this.state.widgetIsSearchOpen;
+    const { elixirChatWidget } = this.props;
+
+    if (state) {
+      elixirChatWidget.closeSearch();
+    } else {
+      elixirChatWidget.openSearch();
+    }
   };
 
   render() {
@@ -104,7 +118,7 @@ class ChatComponent extends Component<IDefaultWidgetProps, IDefaultWidgetState> 
       widgetTitle,
       widgetIsMuted,
       onlineStatus,
-      searchFormShow
+      widgetIsSearchOpen
     } = this.state;
 
     return (
@@ -129,21 +143,21 @@ class ChatComponent extends Component<IDefaultWidgetProps, IDefaultWidgetState> 
               className={cn({
                 'elixirchat-chat-header__button': true,
                 'elixirchat-chat-header__button-search': true,
-                'elixirchat-chat-header__button-search_active': searchFormShow,
+                'elixirchat-chat-header__button-search_active': widgetIsSearchOpen,
               })}
               onClick={this.onToggleSearchForm}>
               <i className={cn({
                 'icon-search': true,
-                'elixirchat-widget-icon__header-search_active': searchFormShow,
+                'elixirchat-widget-icon__header-search_active': widgetIsSearchOpen,
               })}/>
             </button>
 
-
+            
               <button className="elixirchat-chat-header__button"
                       onClick={() => widgetIsMuted ? elixirChatWidget.unmute() : elixirChatWidget.mute()}>
                 <Tooltip className="elixirchat-chat-header__mute-tooltip" title={this.getMuteTooltipMessage()}>
-                  <i className={widgetIsMuted ? 'icon-speaker-mute' : 'icon-speaker'}/>
-                </Tooltip>
+                <i className={widgetIsMuted ? 'icon-speaker-mute' : 'icon-speaker'}/>
+                  
               </button>
 
             <button className="elixirchat-chat-header__button" onClick={elixirChatWidget.closePopup}>
@@ -151,8 +165,8 @@ class ChatComponent extends Component<IDefaultWidgetProps, IDefaultWidgetState> 
             </button>
           </div>
         </div>
-        <ChatMessages elixirChatWidget={elixirChatWidget} ref={this.chatMessages} searchFormShow={searchFormShow}/>
-        <ChatTextarea elixirChatWidget={elixirChatWidget} textAreaActiveState={!searchFormShow}/>
+        <ChatMessages elixirChatWidget={elixirChatWidget} ref={this.chatMessages}/>
+        <ChatTextarea elixirChatWidget={elixirChatWidget} textAreaActiveState={!widgetIsSearchOpen}/>
       </div>
     );
   }

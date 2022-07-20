@@ -5,6 +5,7 @@ import {
   MESSAGES_HISTORY_PREPEND,
   MESSAGES_RETRIEVE_LAST_MESSAGE_CURSOR,
   ERROR_ALERT,
+  MESSAGES_SEARCH,
 } from './ElixirChatEventTypes';
 import { IFile } from './serializers/serializeFile';
 import { IMessage, serializeMessage, fragmentMessage } from './serializers/serializeMessage';
@@ -40,6 +41,11 @@ export interface ISentMessageSerialized {
     responseToMessageId: string | null,
   },
   binaries: object,
+}
+
+type searchRequestType = {
+  limit: number;
+  searchTerm: string;
 }
 
 export interface IFetchMessageHistoryParams {
@@ -88,6 +94,21 @@ export class MessageSubscription {
       }
     }
   `, { fragmentMessage });
+
+  protected searchMessageQuery: string = insertGraphQlFragments(gql`
+    query ($searchTerm: String!, $limit: Int!, $afterCursor: String) {
+      searchMessages(query: $searchTerm, first: $limit, after: $afterCursor) {
+        edges {
+          cursor
+          node {
+            id
+            text
+            timestamp
+          }
+        }
+      }
+    }
+  `)
 
   constructor({ elixirChat }: { elixirChat: ElixirChat }) {
     this.elixirChat = elixirChat;
@@ -427,5 +448,22 @@ export class MessageSubscription {
 
     logInfo('MessageSubscription: Unsubscribing...');
     graphQLClientSocket.unsubscribe(this.subscriptionQuery);
+  };
+
+  /**
+   * Получение списка сообщение, в которых есть искомый текст
+   * @param {Object} request
+   * @returns {Promise<*>}
+   */
+  public fetchMessageBySearch = (request: searchRequestType): Array<IMessage> => {
+    const { sendAPIRequest, triggerEvent } = this.elixirChat;
+
+    sendAPIRequest(this.searchMessageQuery, request).then(messages => {
+      const messagesList = messages?.edges || [];
+
+      triggerEvent(MESSAGES_SEARCH, messagesList);
+
+      return messagesList;
+    });
   };
 }

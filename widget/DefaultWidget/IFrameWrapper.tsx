@@ -56,7 +56,7 @@ export class IFrameWrapper extends Component<IIFrameWrapperProps, IIFrameWrapper
     const { isIframeReady } = this.state;
 
     return (
-      <iframe className={className} ref={this.iframe}>
+      <iframe  id='elixirchat-widget-iframe' className={className} ref={this.iframe}>
         {isIframeReady && createPortal(React.Children.only(children), this.iframeContentContainer)}
       </iframe>
     )

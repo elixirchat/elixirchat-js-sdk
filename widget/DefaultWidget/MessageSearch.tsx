@@ -1,17 +1,32 @@
-import React, {Component, Fragment} from 'react';
-import {FormattedMessage, injectIntl} from 'react-intl';
+import React, {Component} from 'react';
+import {injectIntl} from 'react-intl';
 import debounce from 'lodash/debounce';
 import {cn} from '../../utilsCommon';
+import {WIDGET_SEARCH_TOGGLE} from "../ElixirChatWidgetEventTypes";
 
 interface SearchProps {
-  onChangeText: (text?: string) => void;
-  onClose: () => void;
+  onChangeText: (text?: string) => {};
+  onScroll: (text?: string) => {};
   className?: string;
-  show: boolean;
+  elixirChatWidget: any;
   messages: Array<any>,
+  // id сообщений, которые нашли
+  searchMessagesIds: Array<string>,
+  // id сообщений
+  messagesIds: Array<string>,
 }
 
-class MessageSearchComponent extends Component<SearchProps> {
+interface SearchState {
+  searchText: string;
+  searchMessagesIds: Array<any>;
+  messagesIds: Array<any>;
+  showMessageNumber: number;
+  totalMessageCount: number;
+  widgetIsSearchOpen: boolean;
+}
+
+
+class MessageSearchComponent extends Component<SearchProps, SearchState> {
 
   state = {
     searchText: '',
@@ -22,36 +37,49 @@ class MessageSearchComponent extends Component<SearchProps> {
     // номер отображаемого сообщения
     showMessageNumber: 0,
     // всего сообщений
-    totalMessageCount: 0
+    totalMessageCount: 0,
+    widgetIsSearchOpen: false,
   };
 
   input: HTMLInputElement = null;
 
   debouncedTriggerSearch = debounce(this.getEntryTextPoint.bind(this), 400);
 
-  componentDidUpdate(prevProps) {
-    const {messages, show} = this.props;
+  componentDidMount() {
+    const { elixirChatWidget } = this.props;
 
-    if (show && !prevProps.show) {
-      this.input.focus();
-      this.setState({searchText: ''});
-    }
+    elixirChatWidget.on(WIDGET_SEARCH_TOGGLE, widgetIsSearchOpen => {
+      this.setState({ widgetIsSearchOpen });
+      if (widgetIsSearchOpen) {
+        this.input.focus();
+        this.setState({searchText: ''});
+      }
+    });
+  }
 
-    if (messages !== prevProps.messages) {
-      const ids = messages.map(el => el.id);
-      this.setState({messagesIds: ids});
-    }
+  componentDidUpdate(prevProps: Readonly<SearchProps>, prevState: Readonly<SearchState>, snapshot?: any) {
+   if (this.props.searchMessagesIds.length && JSON.stringify(this.props.searchMessagesIds) !== JSON.stringify(prevProps.searchMessagesIds)) {
+     this.loadMessageLogic(this.props.searchMessagesIds[0], 'up');
+     this.setState({
+       totalMessageCount: this.props.searchMessagesIds.length,
+       showMessageNumber: 1
+     })
+   }
   }
 
   /**
    * Получение всех сообщений с текстом запроса
    */
   getEntryTextPoint(value) {
-    console.log(value);
+    const { elixirChatWidget } = this.props;
+
     const normalizedSearchTerm = value.trim();
-    if (this.state.searchText !== normalizedSearchTerm) {
-      this.setState({searchText: normalizedSearchTerm});
+    if (normalizedSearchTerm) {
+      elixirChatWidget.fetchMessageBySearch(normalizedSearchTerm);
+    } else {
+      console.log('load last');
     }
+    this.props.onChangeText(normalizedSearchTerm);
   }
 
   /**
@@ -64,74 +92,97 @@ class MessageSearchComponent extends Component<SearchProps> {
     const escCode = 27;
     const enterCode = 13;
 
-    // if (keyCode === enterCode && this.state.searchMessagesIds[0]) {
-    //     this.props.onScroll(this.state.searchMessagesIds[0]);
-    // }
+    if (keyCode === enterCode && this.props.searchMessagesIds[0]) {
+        this.props.onScroll(this.props.searchMessagesIds[0]);
+    }
 
     if (keyCode === escCode) {
       this.handleCloseSearch();
     }
 
-    // if (!arrowDirection.includes(keyCode)) {
-    //     return;
-    // }
-    // event.preventDefault();
-    //
-    // const {showMessageNumber, totalMessageCount} = this.state;
-    // const disabledPrevBtn = !(totalMessageCount && showMessageNumber < totalMessageCount);
-    // const disabledNextBtn = !(totalMessageCount && showMessageNumber > 1);
-    //
-    // if (keyCode === 38 && !disabledPrevBtn) { // up arrow
-    //     this.showPrevMessage();
-    // } else if (keyCode === 40 && !disabledNextBtn ) { // down arrow
-    //     this.showNextMessage();
-    // }
+    if (!arrowDirection.includes(keyCode)) {
+        return;
+    }
+    event.preventDefault();
+
+    const {showMessageNumber, totalMessageCount} = this.state;
+    const disabledPrevBtn = !(totalMessageCount && showMessageNumber < totalMessageCount);
+    const disabledNextBtn = !(totalMessageCount && showMessageNumber > 1);
+
+    if (keyCode === 38 && !disabledPrevBtn) { // up arrow
+        this.showPrevMessage();
+    } else if (keyCode === 40 && !disabledNextBtn ) { // down arrow
+        this.showNextMessage();
+    }
   }
 
   handleChange = (event) => {
     const {value} = event.target;
     this.setState({searchText: value});
-    if (!value) {
-      // this.props.onChangeText('');
-      // this.props.onChangeSearchMessagesIds([]);
-      // this.clearSearchResult();
-    }
     this.debouncedTriggerSearch(value);
   }
 
-  showPrevMessage = (event) => {
+  /**
+   * Переход к предыдущему сообщению
+   */
+  showPrevMessage = () => {
+    const {showMessageNumber} = this.state;
+    const messageId = this.props.searchMessagesIds[showMessageNumber];
+    this.setState({showMessageNumber: showMessageNumber + 1});
+    this.loadMessageLogic(messageId, 'up');
   }
-  showNextMessage = (event) => {
+
+  /**
+   * Переход к следующему сообщению
+   */
+  showNextMessage = () => {
+    const {showMessageNumber} = this.state;
+    const messageId = this.props.searchMessagesIds[showMessageNumber - 2];
+    this.setState({showMessageNumber: showMessageNumber - 1});
+    this.loadMessageLogic(messageId, 'down');
   }
-  disabledNextBtn = (event) => {
+
+  /**
+   * Проверка на необходимость подгрузки сообщений или переход к существующему
+   * @param messageId
+   * @param direction
+   */
+  loadMessageLogic = (messageId, direction) => {
+    if (this.props.messagesIds.includes(messageId)) {
+      this.props.onScroll(messageId);
+    } else {
+      console.log('load');
+      // this.loadPrevMessages(messageId, direction);
+    }
   }
 
   clearSearchResult = () => {
-    this.setState({showMessageNumber: 0, totalMessageCount: 0, searchMessagesIds: [], searchText: ''});
+    this.setState({showMessageNumber: 0, totalMessageCount: 0, searchText: ''});
     this.props.onChangeText('');
-    // this.props.onChangeSearchMessagesIds([]);
   }
 
   /**
    * Закрытие окна с поиском
    */
   handleCloseSearch = () => {
+    const { elixirChatWidget } = this.props;
+
+    elixirChatWidget.closeSearch();
     this.clearSearchResult();
-    this.props.onClose();
-    this.setState({openState: false});
   }
 
   render() {
-    const {className, show} = this.props;
-    const {searchText} = this.state;
+    const {className} = this.props;
+    const {searchText, widgetIsSearchOpen} = this.state;
 
-    const disabledPrevBtn = true;
-    const disabledNextBtn = true;
+    const {showMessageNumber, totalMessageCount} = this.state;
+    const disabledPrevBtn = !(totalMessageCount && showMessageNumber < totalMessageCount);
+    const disabledNextBtn = !(totalMessageCount && showMessageNumber > 1);
 
     return (
       <div className={cn({
         className: !!className,
-        'elixirchat-chat__search-wrapper_close': !show,
+        'elixirchat-chat__search-wrapper_close': !widgetIsSearchOpen,
         'elixirchat-chat__search-wrapper': true,
       })}>
         <div className="elixirchat-chat__search-form">

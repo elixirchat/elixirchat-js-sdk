@@ -35,7 +35,7 @@ import {
   MESSAGES_HISTORY_CHANGE,
   MESSAGES_HISTORY_PREPEND,
   TYPING_STATUS_CHANGE,
-  ERROR_ALERT,
+  ERROR_ALERT, MESSAGES_SEARCH,
 } from '../../sdk/ElixirChatEventTypes';
 
 import {
@@ -55,7 +55,7 @@ export interface IDefaultWidgetMessagesProps {
     formatMessage: (arg: IntlArgId) => string,
     locale: string
   };
-  searchFormShow: boolean;
+  className?: string;
 }
 
 export interface IDefaultWidgetMessagesState {
@@ -68,11 +68,11 @@ export interface IDefaultWidgetMessagesState {
   screenshotFallback: object | null,
   scrollBlockBottomOffset: number | null;
   currentlyTypingUsers: Array<object>;
-
   searchText: string;
   selectMessageId: string;
   searchMessagesIds: Array<string>;
   showScrollButton: boolean;
+  originalMessages: object;
 }
 
 class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefaultWidgetMessagesState> {
@@ -91,7 +91,9 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
     searchText: '',
     searchMessagesIds: [], // id сообщений, которые совпадают с текстом поиска
     selectMessageId: null, // id сообщения, которое необходимо выделить
-    showScrollButton: false
+    showScrollButton: false,
+    // Лог оригинальных сообщений, которые мы выделяем при поиске
+    originalMessages: {},
   };
 
   MAX_THUMBNAIL_SIZE: number = isMobile() ? 208 : 256;
@@ -101,6 +103,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
 
   scrollBlock: { current: HTMLElement } = React.createRef();
   scrollBlockInner: { current: HTMLElement } = React.createRef();
+  chatMessagesWrapper: { current: HTMLElement } = React.createRef();
   messageVisibilityObserver: IntersectionObserver = null;
   messageRefs: object = {};
   initialScrollTimeout = null;
@@ -126,6 +129,12 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
     elixirChatWidget.on(MESSAGES_RECEIVE, this.onMessageReceive);
     elixirChatWidget.on(MESSAGES_HISTORY_CHANGE, this.onMessageHistoryChange);
     elixirChatWidget.on(MESSAGES_HISTORY_PREPEND, this.onMessageHistoryPrepend);
+    elixirChatWidget.on(MESSAGES_SEARCH, messages => {
+      const ids = messages.map(el => el.node.id);
+      this.setState({ searchMessagesIds: ids });
+
+      this.markedSearchText(this.state.processedMessages, true);
+    });
 
     elixirChatWidget.on(WIDGET_TEXTAREA_RESIZE, scrollBlockBottomOffset => {
       const hasUserScroll = this.hasUserScroll();
@@ -188,6 +197,11 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
       processedMessages = [ ...processedMessages, ...this.state.processedMessages ];
       fullScreenPreviews = [ ...fullScreenPreviews, ...this.state.processedMessages ];
     }
+
+    if (this.state.searchMessagesIds.length) {
+      processedMessages = this.markedSearchText(processedMessages, false);
+    }
+
     this.setState({
       processedMessages,
       fullScreenPreviews,
@@ -588,9 +602,49 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
     }).join(', ');
   };
 
+  onScrollHandler = (event) => {
+    const { scrollTop } = event.target;
+
+    if (scrollTop <= this.LOAD_PRECEDING_MESSAGES_SCROLL_Y_POSITION) {
+      this.loadPrecedingMessages();
+    }
+  }
+
   /**
    * Search
    */
+
+  markedSearchText(processedMessages, updateState = false) {
+    const messages = JSON.parse(JSON.stringify(processedMessages));
+    let { originalMessages, searchText } = this.state;
+    const regExp = new RegExp(searchText, "igm");
+
+    messages.forEach(el => {
+      if (!this.state.searchMessagesIds.includes(el.id)) {
+        return;
+      }
+
+      // сохраняем старое значение сообщение, чтобы вернуть его при новом поиске.
+      if (Object.hasOwnProperty.call(originalMessages, el.id)) {
+        el.text = originalMessages[el.id];
+        delete el.isMarked;
+        delete originalMessages[el.id];
+      }
+      if (!el.isMarked && searchText) {
+        originalMessages[el.id] = el.text;
+        el.isMarked = true;
+        el.text = el.text.replace(regExp, (match) => `★${match}★`);
+      }
+    })
+
+    this.setState({ originalMessages });
+
+    if (updateState) {
+      this.setState({processedMessages: messages})
+    }
+
+    return messages;
+  }
 
   /**
    * Прокрутка до нужного сообщения
@@ -598,29 +652,53 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
    * @param direction – с какой стороны «прокручивается» текст
    */
   scrollToMessage = (messageId, direction) => {
-    // const scrollBlock = this.scrollBlock.current;
-    // const target = document.getElementById(messageId);
-    // const chatMessages = this.chatMessagesWrapper.current;
-    //
-    // this.setState({selectMessageId: messageId});
-    // if (!target) {
-    //   scrollBlock.scrollTo({top: chatMessages.clientHeight - 20, behavior: 'smooth'});
-    //   return;
-    // }
-    // const gap = scrollBlock.clientHeight / 2 - target.clientHeight / 2;
-    //
-    // if (direction === 'up') {
-    //   scrollBlock.scrollTo({top: chatMessages.clientHeight - 20, behavior: 'auto'});
-    // } else if (direction === 'down') {
-    //   scrollBlock.scrollTo({top: 0, behavior: 'auto'});
-    // }
-    //
-    // scrollBlock.scrollTo({top: target.offsetTop - gap, behavior: 'smooth'});
+    const iframe = document.getElementById('elixirchat-widget-iframe');
+    const innerDoc = iframe?.contentDocument || iframe?.contentWindow.document;
+    const chatHeight = 380;
+
+    const scrollBlock = this.scrollBlock.current;
+    const target = innerDoc.getElementById(messageId);
+
+    this.setState({selectMessageId: messageId});
+    if (!target) {
+      scrollBlock.scrollTo({top: chatHeight, behavior: 'smooth'});
+      return;
+    }
+    const gap = scrollBlock.clientHeight / 2 - target.clientHeight / 2;
+
+    if (direction === 'up') {
+      scrollBlock.scrollTo({top: chatHeight, behavior: 'auto'});
+    } else if (direction === 'down') {
+      scrollBlock.scrollTo({top: 0, behavior: 'auto'});
+    }
+
+    scrollBlock.scrollTo({top: target.offsetTop - gap, behavior: 'smooth'});
   }
 
-  closeSearch = () => {
-    this.setState({selectMessageId: null, searchFormShow: false});
-    // focusChatTextArea();
+  changeSearchText = (text) => {
+    this.setState({searchText: text});
+    const { originalMessages, processedMessages } = this.state;
+
+    if (!text) {
+      processedMessages.forEach(el => {
+        if (!this.state.searchMessagesIds.includes(el.id)) {
+          return;
+        }
+
+        if (Object.hasOwnProperty.call(originalMessages, el.id)) {
+          el.text = originalMessages[el.id];
+          delete el.isMarked;
+          delete originalMessages[el.id];
+        }
+      })
+
+      this.setState({
+        originalMessages,
+        searchMessagesIds: [],
+        selectMessageId: ''
+      });
+    }
+
   }
 
   render() {
@@ -631,28 +709,33 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
       isLoading,
       isLoadingPrecedingMessageHistory,
       scrollBlockBottomOffset,
-      currentlyTypingUsers
+      currentlyTypingUsers,
+      searchMessagesIds,
+      searchText,
+      selectMessageId
     } = this.state;
+    let messagesIds = [];
 
-    const { searchFormShow } = this.props;
+    if (searchText) {
+      messagesIds = processedMessages.map(el => el.id);
+    }
 
     return (
 
       <div className="exlixir-chat__wrapper">
         <MessageSearch
-          show={searchFormShow}
-          onChangeText={arg => {this.setState({searchText: arg})}}
+          onChangeText={this.changeSearchText}
           onChangeSearchMessagesIds={arg => {this.setState({searchMessagesIds: arg})}}
           onScroll={this.scrollToMessage}
-          onClose={this.closeSearch}
+          elixirChatWidget={elixirChatWidget}
+          searchMessagesIds={searchMessagesIds}
+          messagesIds={messagesIds}
         />
 
         <div className={cn('elixirchat-chat-scroll', className)}
-          onScroll={e => e.target.scrollTop <= this.LOAD_PRECEDING_MESSAGES_SCROLL_Y_POSITION && this.loadPrecedingMessages()}
+          onScroll={this.onScrollHandler}
           style={{ bottom: scrollBlockBottomOffset }}
           ref={this.scrollBlock}>
-
-
 
           <i className={cn({
             'elixirchat-chat-scroll-progress-bar': true,
@@ -691,8 +774,10 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
                     'elixirchat-chat-messages__item--by-operator': message.sender.isOperator,
                     'elixirchat-chat-messages__item--by-another-client': !message.sender.isOperator && !message.sender.isCurrentClient,
                     'elixirchat-chat-messages__item--unread': message.isUnread,
+                    'elixirchat-chat-messages__item--selected': message.id === selectMessageId,
                   })}
-                    ref={element => this.createMessageRef(element, message)}>
+                    ref={element => this.createMessageRef(element, message)}
+                    id={message.id}>
 
                     <div className="elixirchat-chat-messages__inner">
                       {!message.hasPreviewsOnly && (

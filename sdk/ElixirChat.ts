@@ -678,6 +678,19 @@ export class ElixirChat {
     this.experimentalFeaturesInTesting = _uniq([ ...this.experimentalFeaturesInTesting, featureName.toLowerCase() ]);
     return this.enabledExperimentalFeatures.includes(featureName.toLowerCase());
   };
+
+  /**
+   * Search
+   */
+  public fetchMessageBySearch = (searchText: string): Promise<[IMessage]> => {
+    return this.checkIfConnected().then(() => {
+      let requestParams = {
+        limit: 1000,
+        searchTerm: searchText
+      };
+      return this.messageSubscription.fetchMessageBySearch(requestParams);
+    });
+  };
 }
 
 
