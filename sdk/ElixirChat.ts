@@ -691,6 +691,17 @@ export class ElixirChat {
       return this.messageSubscription.fetchMessageBySearch(requestParams);
     });
   };
+
+  /**
+   * Загрузка истории сообщения, при переходе между сообщениями
+   * @param cursor
+   */
+  public loadHistoryMessageBySearch = (cursor: string): Promise<[IMessage]> => {
+    return this.checkIfConnected().then(() => {
+      return this.messageSubscription.fetchHistoryMessageBySearch(cursor);
+    });
+  };
+
 }
 
 

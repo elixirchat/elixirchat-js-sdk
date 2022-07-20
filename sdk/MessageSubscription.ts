@@ -466,4 +466,21 @@ export class MessageSubscription {
       return messagesList;
     });
   };
+  public fetchHistoryMessageBySearch = (messageId: string): Promise<[IMessage] | any> => {
+    const { logError, triggerEvent } = this.elixirChat;
+
+
+    return this
+      .getMessageHistoryByCursor({ limit: 20, beforeCursor: messageId })
+      .then(precedingMessageHistory => {
+        this
+          .getMessageHistoryByCursor({ limit: 20, afterCursor: messageId })
+          .then(nextMessageHistory => {
+            this.messageHistory = _uniqBy([ ...precedingMessageHistory, ...nextMessageHistory ], 'id');
+            triggerEvent(MESSAGES_HISTORY_CHANGE, precedingMessageHistory);
+
+            return precedingMessageHistory;
+          })
+      });
+  };
 }

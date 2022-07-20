@@ -14,6 +14,7 @@ interface SearchProps {
   searchMessagesIds: Array<string>,
   // id сообщений
   messagesIds: Array<string>,
+  searchMessagesCursors: object,
 }
 
 interface SearchState {
@@ -76,8 +77,6 @@ class MessageSearchComponent extends Component<SearchProps, SearchState> {
     const normalizedSearchTerm = value.trim();
     if (normalizedSearchTerm) {
       elixirChatWidget.fetchMessageBySearch(normalizedSearchTerm);
-    } else {
-      console.log('load last');
     }
     this.props.onChangeText(normalizedSearchTerm);
   }
@@ -151,7 +150,9 @@ class MessageSearchComponent extends Component<SearchProps, SearchState> {
     if (this.props.messagesIds.includes(messageId)) {
       this.props.onScroll(messageId);
     } else {
-      console.log('load');
+      const { elixirChatWidget, searchMessagesCursors } = this.props;
+      elixirChatWidget.loadHistoryMessageBySearch(searchMessagesCursors[messageId]);
+
       // this.loadPrevMessages(messageId, direction);
     }
   }

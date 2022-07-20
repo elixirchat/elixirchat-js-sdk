@@ -71,6 +71,7 @@ export interface IDefaultWidgetMessagesState {
   searchText: string;
   selectMessageId: string;
   searchMessagesIds: Array<string>;
+  searchMessagesCursors: object;
   showScrollButton: boolean;
   originalMessages: object;
 }
@@ -90,6 +91,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
     // Search
     searchText: '',
     searchMessagesIds: [], // id сообщений, которые совпадают с текстом поиска
+    searchMessagesCursors: {}, // пары — id: cursor для получения списка сообщений при переходе в результатах поиска
     selectMessageId: null, // id сообщения, которое необходимо выделить
     showScrollButton: false,
     // Лог оригинальных сообщений, которые мы выделяем при поиске
@@ -103,7 +105,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
 
   scrollBlock: { current: HTMLElement } = React.createRef();
   scrollBlockInner: { current: HTMLElement } = React.createRef();
-  chatMessagesWrapper: { current: HTMLElement } = React.createRef();
+  iframe = document.getElementById('elixirchat-widget-iframe');
   messageVisibilityObserver: IntersectionObserver = null;
   messageRefs: object = {};
   initialScrollTimeout = null;
@@ -130,8 +132,14 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
     elixirChatWidget.on(MESSAGES_HISTORY_CHANGE, this.onMessageHistoryChange);
     elixirChatWidget.on(MESSAGES_HISTORY_PREPEND, this.onMessageHistoryPrepend);
     elixirChatWidget.on(MESSAGES_SEARCH, messages => {
-      const ids = messages.map(el => el.node.id);
+      const ids = [];
+      const cursors = {};
+      messages.forEach(el => {
+        ids.push(el.node.id);
+        cursors[el.node.id] = el.cursor;
+      })
       this.setState({ searchMessagesIds: ids });
+      this.setState({ searchMessagesCursors: cursors });
 
       this.markedSearchText(this.state.processedMessages, true);
     });
@@ -652,8 +660,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
    * @param direction – с какой стороны «прокручивается» текст
    */
   scrollToMessage = (messageId, direction) => {
-    const iframe = document.getElementById('elixirchat-widget-iframe');
-    const innerDoc = iframe?.contentDocument || iframe?.contentWindow.document;
+    const innerDoc = this.iframe?.contentDocument || this.iframe?.contentWindow.document;
     const chatHeight = 380;
 
     const scrollBlock = this.scrollBlock.current;
@@ -695,7 +702,8 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
       this.setState({
         originalMessages,
         searchMessagesIds: [],
-        selectMessageId: ''
+        searchMessagesCursors: {},
+        selectMessageId: '',
       });
     }
 
@@ -711,6 +719,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
       scrollBlockBottomOffset,
       currentlyTypingUsers,
       searchMessagesIds,
+      searchMessagesCursors,
       searchText,
       selectMessageId
     } = this.state;
@@ -725,10 +734,10 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
       <div className="exlixir-chat__wrapper">
         <MessageSearch
           onChangeText={this.changeSearchText}
-          onChangeSearchMessagesIds={arg => {this.setState({searchMessagesIds: arg})}}
           onScroll={this.scrollToMessage}
           elixirChatWidget={elixirChatWidget}
           searchMessagesIds={searchMessagesIds}
+          searchMessagesCursors={searchMessagesCursors}
           messagesIds={messagesIds}
         />
 
