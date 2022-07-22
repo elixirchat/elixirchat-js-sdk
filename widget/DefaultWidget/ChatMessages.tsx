@@ -35,7 +35,8 @@ import {
   MESSAGES_HISTORY_CHANGE,
   MESSAGES_HISTORY_PREPEND,
   TYPING_STATUS_CHANGE,
-  ERROR_ALERT, MESSAGES_SEARCH,
+  ERROR_ALERT,
+  MESSAGES_SEARCH_IDS,
 } from '../../sdk/ElixirChatEventTypes';
 
 import {
@@ -131,16 +132,8 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
     elixirChatWidget.on(MESSAGES_RECEIVE, this.onMessageReceive);
     elixirChatWidget.on(MESSAGES_HISTORY_CHANGE, this.onMessageHistoryChange);
     elixirChatWidget.on(MESSAGES_HISTORY_PREPEND, this.onMessageHistoryPrepend);
-    elixirChatWidget.on(MESSAGES_SEARCH, messages => {
-      const ids = [];
-      const cursors = {};
-      messages.forEach(el => {
-        ids.push(el.node.id);
-        cursors[el.node.id] = el.cursor;
-      })
+    elixirChatWidget.on(MESSAGES_SEARCH_IDS, ids => {
       this.setState({ searchMessagesIds: ids });
-      this.setState({ searchMessagesCursors: cursors });
-
       this.markedSearchText(this.state.processedMessages, true);
     });
 
@@ -628,16 +621,17 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
     const regExp = new RegExp(searchText, "igm");
 
     messages.forEach(el => {
-      if (!this.state.searchMessagesIds.includes(el.id)) {
-        return;
-      }
-
       // сохраняем старое значение сообщение, чтобы вернуть его при новом поиске.
-      if (Object.hasOwnProperty.call(originalMessages, el.id)) {
+      if (Object.hasOwnProperty.call(originalMessages, el.id) && el.isMarked) {
         el.text = originalMessages[el.id];
         delete el.isMarked;
         delete originalMessages[el.id];
       }
+
+      if (!this.state.searchMessagesIds.includes(el.id)) {
+        return;
+      }
+
       if (!el.isMarked && searchText) {
         originalMessages[el.id] = el.text;
         el.isMarked = true;
@@ -701,7 +695,6 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
 
       this.setState({
         originalMessages,
-        searchMessagesIds: [],
         searchMessagesCursors: {},
         selectMessageId: '',
       });
@@ -718,7 +711,6 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
       isLoadingPrecedingMessageHistory,
       scrollBlockBottomOffset,
       currentlyTypingUsers,
-      searchMessagesIds,
       searchMessagesCursors,
       searchText,
       selectMessageId
@@ -736,7 +728,6 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
           onChangeText={this.changeSearchText}
           onScroll={this.scrollToMessage}
           elixirChatWidget={elixirChatWidget}
-          searchMessagesIds={searchMessagesIds}
           searchMessagesCursors={searchMessagesCursors}
           messagesIds={messagesIds}
         />

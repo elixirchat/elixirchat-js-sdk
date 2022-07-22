@@ -38,7 +38,7 @@ import {
   JOIN_ROOM_ERROR,
   UNREAD_COUNTER_LAST_READ_MESSAGE_CHANGE,
   UPDATE_MESSAGE_SUBSCRIPTION_CHANGE_MESSAGE,
-  ERROR_ALERT,
+  ERROR_ALERT, MESSAGES_SEARCH_IDS,
 } from './ElixirChatEventTypes';
 
 
@@ -682,14 +682,19 @@ export class ElixirChat {
   /**
    * Search
    */
-  public fetchMessageBySearch = (searchText: string): Promise<[IMessage]> => {
-    return this.checkIfConnected().then(() => {
-      let requestParams = {
-        limit: 1000,
-        searchTerm: searchText
-      };
-      return this.messageSubscription.fetchMessageBySearch(requestParams);
-    });
+  public fetchMessageBySearch = (searchText: string): Promise<[IMessage]> | any => {
+    if (searchText) {
+      return this.checkIfConnected().then(() => {
+        let requestParams = {
+          limit: 1000,
+          searchTerm: searchText
+        };
+        return this.messageSubscription.fetchMessageBySearch(requestParams);
+      });
+    }
+    this.triggerEvent(MESSAGES_SEARCH_IDS, []);
+
+    return [];
   };
 
   /**

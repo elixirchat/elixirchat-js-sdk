@@ -3,27 +3,25 @@ import {injectIntl} from 'react-intl';
 import debounce from 'lodash/debounce';
 import {cn} from '../../utilsCommon';
 import {WIDGET_SEARCH_TOGGLE} from "../ElixirChatWidgetEventTypes";
+import {MESSAGES_SEARCH_IDS} from "../../sdk/ElixirChatEventTypes";
 
 interface SearchProps {
   onChangeText: (text?: string) => {};
-  onScroll: (text?: string) => {};
+  onScroll: (text?: string, direction?: string) => {};
   className?: string;
   elixirChatWidget: any;
-  messages: Array<any>,
-  // id сообщений, которые нашли
-  searchMessagesIds: Array<string>,
+  messages: Array<any>;
   // id сообщений
-  messagesIds: Array<string>,
-  searchMessagesCursors: object,
+  messagesIds: Array<string>;
 }
 
 interface SearchState {
   searchText: string;
-  searchMessagesIds: Array<any>;
   messagesIds: Array<any>;
   showMessageNumber: number;
   totalMessageCount: number;
   widgetIsSearchOpen: boolean;
+  searchMessagesIds: Array<string>;
 }
 
 
@@ -56,16 +54,17 @@ class MessageSearchComponent extends Component<SearchProps, SearchState> {
         this.setState({searchText: ''});
       }
     });
-  }
 
-  componentDidUpdate(prevProps: Readonly<SearchProps>, prevState: Readonly<SearchState>, snapshot?: any) {
-   if (this.props.searchMessagesIds.length && JSON.stringify(this.props.searchMessagesIds) !== JSON.stringify(prevProps.searchMessagesIds)) {
-     this.loadMessageLogic(this.props.searchMessagesIds[0], 'up');
-     this.setState({
-       totalMessageCount: this.props.searchMessagesIds.length,
-       showMessageNumber: 1
-     })
-   }
+    elixirChatWidget.on(MESSAGES_SEARCH_IDS, ids => {
+      this.setState({
+        searchMessagesIds: ids,
+        totalMessageCount: ids.length,
+        showMessageNumber: 1
+      });
+      if (this.state.searchMessagesIds[0]) {
+        this.loadMessageLogic(this.state.searchMessagesIds[0], 'up');
+      }
+    });
   }
 
   /**
@@ -73,11 +72,9 @@ class MessageSearchComponent extends Component<SearchProps, SearchState> {
    */
   getEntryTextPoint(value) {
     const { elixirChatWidget } = this.props;
-
     const normalizedSearchTerm = value.trim();
-    if (normalizedSearchTerm) {
-      elixirChatWidget.fetchMessageBySearch(normalizedSearchTerm);
-    }
+
+    elixirChatWidget.fetchMessageBySearch(normalizedSearchTerm);
     this.props.onChangeText(normalizedSearchTerm);
   }
 
@@ -91,8 +88,8 @@ class MessageSearchComponent extends Component<SearchProps, SearchState> {
     const escCode = 27;
     const enterCode = 13;
 
-    if (keyCode === enterCode && this.props.searchMessagesIds[0]) {
-        this.props.onScroll(this.props.searchMessagesIds[0]);
+    if (keyCode === enterCode && this.state.searchMessagesIds[0]) {
+        this.props.onScroll(this.state.searchMessagesIds[0]);
     }
 
     if (keyCode === escCode) {
@@ -126,7 +123,7 @@ class MessageSearchComponent extends Component<SearchProps, SearchState> {
    */
   showPrevMessage = () => {
     const {showMessageNumber} = this.state;
-    const messageId = this.props.searchMessagesIds[showMessageNumber];
+    const messageId = this.state.searchMessagesIds[showMessageNumber];
     this.setState({showMessageNumber: showMessageNumber + 1});
     this.loadMessageLogic(messageId, 'up');
   }
@@ -136,7 +133,7 @@ class MessageSearchComponent extends Component<SearchProps, SearchState> {
    */
   showNextMessage = () => {
     const {showMessageNumber} = this.state;
-    const messageId = this.props.searchMessagesIds[showMessageNumber - 2];
+    const messageId = this.state.searchMessagesIds[showMessageNumber - 2];
     this.setState({showMessageNumber: showMessageNumber - 1});
     this.loadMessageLogic(messageId, 'down');
   }
@@ -150,10 +147,10 @@ class MessageSearchComponent extends Component<SearchProps, SearchState> {
     if (this.props.messagesIds.includes(messageId)) {
       this.props.onScroll(messageId);
     } else {
-      const { elixirChatWidget, searchMessagesCursors } = this.props;
-      elixirChatWidget.loadHistoryMessageBySearch(searchMessagesCursors[messageId]);
-
-      // this.loadPrevMessages(messageId, direction);
+      const { elixirChatWidget } = this.props;
+      elixirChatWidget.loadHistoryMessageBySearch(messageId).then(res => {
+        this.props.onScroll(messageId, direction);
+      });
     }
   }
 

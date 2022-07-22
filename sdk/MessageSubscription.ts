@@ -6,6 +6,7 @@ import {
   MESSAGES_RETRIEVE_LAST_MESSAGE_CURSOR,
   ERROR_ALERT,
   MESSAGES_SEARCH,
+  MESSAGES_SEARCH_IDS,
 } from './ElixirChatEventTypes';
 import { IFile } from './serializers/serializeFile';
 import { IMessage, serializeMessage, fragmentMessage } from './serializers/serializeMessage';
@@ -109,6 +110,26 @@ export class MessageSubscription {
       }
     }
   `)
+
+  protected messageHistorySearchQuery: string = insertGraphQlFragments(gql`
+    query($messageId: ID!, $beforeAmount: Int, $afterAmount: Int) {
+      message_with_page(
+      message_id: $messageId,
+      before_amount: $beforeAmount,
+      after_amount: $afterAmount ) {
+        edges {
+          cursor
+          node {
+            ...fragmentMessage
+          }
+        }
+        pageInfo {
+          hasNextPage
+          hasPreviousPage
+        }
+      }
+    }
+  `, { fragmentMessage });
 
   constructor({ elixirChat }: { elixirChat: ElixirChat }) {
     this.elixirChat = elixirChat;
@@ -460,27 +481,46 @@ export class MessageSubscription {
 
     sendAPIRequest(this.searchMessageQuery, request).then(messages => {
       const messagesList = messages?.edges || [];
+      const ids = messagesList.map(el => el?.node?.id);
 
       triggerEvent(MESSAGES_SEARCH, messagesList);
+      triggerEvent(MESSAGES_SEARCH_IDS, ids);
 
       return messagesList;
     });
   };
-  public fetchHistoryMessageBySearch = (messageId: string): Promise<[IMessage] | any> => {
-    const { logError, triggerEvent } = this.elixirChat;
 
 
-    return this
-      .getMessageHistoryByCursor({ limit: 20, beforeCursor: messageId })
-      .then(precedingMessageHistory => {
-        this
-          .getMessageHistoryByCursor({ limit: 20, afterCursor: messageId })
-          .then(nextMessageHistory => {
-            this.messageHistory = _uniqBy([ ...precedingMessageHistory, ...nextMessageHistory ], 'id');
-            triggerEvent(MESSAGES_HISTORY_CHANGE, precedingMessageHistory);
+  /**
+   * Получение части лога с предыдущим результатом поиска
+   * @param messageId
+   * @returns {Promise<*>}
+   */
 
-            return precedingMessageHistory;
-          })
+  private getHistoryMessageBySearch = (messageId: string): Promise<[IMessage] | any> => {
+    const { sendAPIRequest } = this.elixirChat;
+
+    let requestParams = {
+      afterAmount: 10,
+      beforeAmount: 10,
+      messageId
+    };
+
+    return sendAPIRequest(this.messageHistorySearchQuery, requestParams).then(messages => {
+      return <[IMessage]>simplifyGraphQLJSON(messages).map(message => {
+        return serializeMessage(message, this.elixirChat);
       });
+    });
+  }
+
+  public fetchHistoryMessageBySearch = (messageId: string): Promise<[IMessage] | any> => {
+    const { triggerEvent } = this.elixirChat;
+
+    return this.getHistoryMessageBySearch(messageId ).then(messageHistory => {
+      triggerEvent(MESSAGES_HISTORY_CHANGE, messageHistory);
+      this.messageHistory = messageHistory;
+      this.lastMessageCursor = _last(messageHistory)?.cursor || null;
+      return messageHistory;
+    });
   };
 }
