@@ -26,12 +26,12 @@ $buttonColor: #cdcdcd;
 
 .elixirchat-chat__search-input {
   background-color: #F2F2F2;
-  border: 1px solid $border;
   font-size: 16px;
   padding-left: 16px;
+  border: none;
   width: 100%;
-  margin: -1px 0 -1px -1px;
-  border-radius: 3px 0 0 3px;
+  height: 100%;
+  padding-right: 30px;
 
   &:focus {
     border-color: #0033FF;
@@ -91,5 +91,44 @@ $buttonColor: #cdcdcd;
 
   span {
     font-size: 0;
+  }
+}
+
+.elixirchat-chat__search-input-wrapper {
+  position: relative;
+  width: 100%;
+  margin: -1px 0 -1px -1px;
+  border-radius: 3px 0 0 3px;
+  border: 1px solid $border;
+
+  &:after {
+    width: 17px;
+    height: 17px;
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background-image: url("data:image/svg+xml,%3Csvg width='17' height='17' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M8.5 1a7.5 7.5 0 1 0 5.6 2.5' stroke='%23999'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: 50% 50%;
+    border-radius: 50%;
+  }
+}
+
+.elixirchat-chat__search-input-wrapper_loading {
+  &:after {
+    content: '';
+    animation-name: loading;
+    animation-duration: .75s;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+  }
+}
+
+@keyframes loading {
+  from {
+    transform:rotate(0deg);
+  }
+  to {
+    transform:rotate(360deg);
   }
 }

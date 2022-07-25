@@ -106,7 +106,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
     showScrollButton: false,
     // Лог оригинальных сообщений, которые мы выделяем при поиске
     originalMessages: {},
-    lastMessageId: ''
+    lastMessageId: '',
   };
 
   MAX_THUMBNAIL_SIZE: number = isMobile() ? 208 : 256;
@@ -704,9 +704,9 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
     const gap = scrollBlock.clientHeight / 2 - target.clientHeight / 2;
 
     if (direction === 'up') {
-      scrollBlock.scrollTo({top: chatHeight, behavior: 'auto'});
+      scrollBlock.scrollTo({top: target.offsetTop - target.clientHeight / 2, behavior: 'auto'});
     } else if (direction === 'down') {
-      scrollBlock.scrollTo({top: 0, behavior: 'auto'});
+      scrollBlock.scrollTo({top: gap, behavior: 'auto'});
     }
 
     scrollBlock.scrollTo({top: target.offsetTop - gap, behavior: 'smooth'});
@@ -745,8 +745,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
 
     if (!isLoading && hasNextPage) {
       const { elixirChatWidget } = this.props;
-      elixirChatWidget.loadHistoryMessageNewer(lastMessageId).finally(() => {
-      });
+      elixirChatWidget.loadHistoryMessageNewer(lastMessageId);
     }
   };
 

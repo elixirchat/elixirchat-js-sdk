@@ -22,6 +22,7 @@ interface SearchState {
   totalMessageCount: number;
   widgetIsSearchOpen: boolean;
   searchMessagesIds: Array<string>;
+  isSearchActive: boolean;
 }
 
 
@@ -38,6 +39,7 @@ class MessageSearchComponent extends Component<SearchProps, SearchState> {
     // всего сообщений
     totalMessageCount: 0,
     widgetIsSearchOpen: false,
+    isSearchActive: false,
   };
 
   input: HTMLInputElement = null;
@@ -148,9 +150,16 @@ class MessageSearchComponent extends Component<SearchProps, SearchState> {
       this.props.onScroll(messageId);
     } else {
       const { elixirChatWidget } = this.props;
-      elixirChatWidget.loadHistoryMessageBySearch(messageId).then(res => {
-        this.props.onScroll(messageId, direction);
-      });
+      this.setState({ isSearchActive: true });
+      elixirChatWidget.loadHistoryMessageBySearch(messageId)
+        .then(res => {
+          this.props.onScroll(messageId, direction);
+        })
+        .finally(() => {
+          setTimeout(() => {
+            this.setState({ isSearchActive: false });
+          }, 650)
+        });
     }
   }
 
@@ -171,7 +180,7 @@ class MessageSearchComponent extends Component<SearchProps, SearchState> {
 
   render() {
     const {className} = this.props;
-    const {searchText, widgetIsSearchOpen} = this.state;
+    const {searchText, widgetIsSearchOpen, isSearchActive} = this.state;
 
     const {showMessageNumber, totalMessageCount} = this.state;
     const disabledPrevBtn = !(totalMessageCount && showMessageNumber < totalMessageCount);
@@ -184,16 +193,21 @@ class MessageSearchComponent extends Component<SearchProps, SearchState> {
         'elixirchat-chat__search-wrapper': true,
       })}>
         <div className="elixirchat-chat__search-form">
-          <input
-            ref={tag => {
-              this.input = tag;
-            }}
-            type="text"
-            className="elixirchat-chat__search-input"
-            value={searchText}
-            placeholder="Поиск"
-            onKeyDown={this.keyPress}
-            onChange={this.handleChange}/>
+          <div className={cn({
+            'elixirchat-chat__search-input-wrapper': true,
+            'elixirchat-chat__search-input-wrapper_loading': isSearchActive,
+          })}>
+            <input
+              ref={tag => {
+                this.input = tag;
+              }}
+              type="text"
+              className="elixirchat-chat__search-input"
+              value={searchText}
+              placeholder="Поиск"
+              onKeyDown={this.keyPress}
+              onChange={this.handleChange}/>
+          </div>
           <div className="elixirchat-chat__search__buttons-group">
             <button
               className="elixirchat-chat__search-button elixirchat-chat__search-button_prev"
