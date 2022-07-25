@@ -76,6 +76,7 @@ export class ElixirChatWidget extends ElixirChat {
   public widgetSupportEmail: string;
   public widgetChannels: Array<IJoinRoomChannel>;
   public widgetChatScrollY: number | null;
+  public messageHistory: Array<any>;
 
   public widgetDefaultParams = {
     isMuted: false,

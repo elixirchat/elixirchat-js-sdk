@@ -1,5 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import { FormattedMessage, injectIntl } from 'react-intl';
+import debounce from 'lodash/debounce';
+import uniqBy from 'lodash/uniqBy';
 import dayjs from 'dayjs';
 import dayjsCalendar from 'dayjs/plugin/calendar';
 import 'dayjs/locale/ru';
@@ -37,6 +39,8 @@ import {
   TYPING_STATUS_CHANGE,
   ERROR_ALERT,
   MESSAGES_SEARCH_IDS,
+  MESSAGES_PAGINATION,
+  MESSAGES_LAST_MESSAGE_ID, MESSAGES_HISTORY_APPEND,
 } from '../../sdk/ElixirChatEventTypes';
 
 import {
@@ -62,7 +66,8 @@ export interface IDefaultWidgetMessagesProps {
 export interface IDefaultWidgetMessagesState {
   isLoading: boolean;
   isLoadingPrecedingMessageHistory: boolean;
-  hasReachedBeginningOfMessageHistory: boolean;
+  hasPreviousPage: boolean;
+  hasNextPage: boolean;
   hasInitiallyScrolledToAppropriatePosition: boolean;
   processedMessages: Array<object>,
   fullScreenPreviews: Array<object>,
@@ -75,6 +80,7 @@ export interface IDefaultWidgetMessagesState {
   searchMessagesCursors: object;
   showScrollButton: boolean;
   originalMessages: object;
+  lastMessageId: string;
 }
 
 class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefaultWidgetMessagesState> {
@@ -82,7 +88,10 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
   state = {
     isLoading: false,
     isLoadingPrecedingMessageHistory: false,
-    hasReachedBeginningOfMessageHistory: false,
+    // есть ли старые сообщения
+    hasPreviousPage: false,
+    // есть ли новые сообщения
+    hasNextPage: false,
     hasInitiallyScrolledToAppropriatePosition: false,
     processedMessages: [],
     fullScreenPreviews: [],
@@ -97,6 +106,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
     showScrollButton: false,
     // Лог оригинальных сообщений, которые мы выделяем при поиске
     originalMessages: {},
+    lastMessageId: ''
   };
 
   MAX_THUMBNAIL_SIZE: number = isMobile() ? 208 : 256;
@@ -132,6 +142,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
     elixirChatWidget.on(MESSAGES_RECEIVE, this.onMessageReceive);
     elixirChatWidget.on(MESSAGES_HISTORY_CHANGE, this.onMessageHistoryChange);
     elixirChatWidget.on(MESSAGES_HISTORY_PREPEND, this.onMessageHistoryPrepend);
+    elixirChatWidget.on(MESSAGES_HISTORY_APPEND, this.onMessageHistoryAppend);
     elixirChatWidget.on(MESSAGES_SEARCH_IDS, ids => {
       this.setState({ searchMessagesIds: ids });
       this.markedSearchText(this.state.processedMessages, true);
@@ -148,6 +159,16 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
     elixirChatWidget.on(TYPING_STATUS_CHANGE, currentlyTypingUsers => {
       this.setState({ currentlyTypingUsers });
     });
+    elixirChatWidget.on(MESSAGES_LAST_MESSAGE_ID, id => {
+      this.setState({lastMessageId: id});
+    });
+
+    elixirChatWidget.on(MESSAGES_PAGINATION, pageInfo => {
+      this.setState({
+        hasPreviousPage: pageInfo.hasPreviousPage,
+        hasNextPage: pageInfo.hasNextPage
+      })
+    });
 
     requestAnimationFrame(this.initializeMessagesIntersectionObserver);
   }
@@ -157,6 +178,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
     elixirChatWidget.off(MESSAGES_RECEIVE, this.onMessageReceive);
     elixirChatWidget.off(MESSAGES_HISTORY_CHANGE, this.onMessageHistoryChange);
     elixirChatWidget.off(MESSAGES_HISTORY_PREPEND, this.onMessageHistoryPrepend);
+    elixirChatWidget.off(MESSAGES_HISTORY_APPEND, this.onMessageHistoryAppend);
 
     if (this.messageVisibilityObserver) {
       this.messageVisibilityObserver.disconnect();
@@ -184,19 +206,23 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
     this.updateMessageHistory({ chunk, prepend: true }, this.reAttachIntersectionObserverToMessages);
   };
 
+  onMessageHistoryAppend = (chunk) => {
+    this.updateMessageHistory({ chunk, append: true }, this.reAttachIntersectionObserverToMessages);
+  };
+
   updateMessageHistory = (params, callback) => {
     const { chunk, prepend, append } = params;
-    const hasReachedBeginningOfMessageHistory = !append && chunk.length < this.MESSAGE_CHUNK_SIZE;
-    let processedMessages = this.processMessages(chunk, hasReachedBeginningOfMessageHistory);
+    const { hasPreviousPage } = this.state;
+    let processedMessages = this.processMessages(chunk, !hasPreviousPage);
     let fullScreenPreviews = this.extractFullScreenPreviews(chunk);
 
     if (append) {
-      processedMessages = [ ...this.state.processedMessages, ...processedMessages ];
-      fullScreenPreviews = [ ...this.state.fullScreenPreviews, ...fullScreenPreviews ];
+      processedMessages = uniqBy([...this.state.processedMessages, ...processedMessages], 'id');
+      fullScreenPreviews = uniqBy([ ...this.state.fullScreenPreviews, ...fullScreenPreviews ], 'id');
     }
     else if (prepend) {
-      processedMessages = [ ...processedMessages, ...this.state.processedMessages ];
-      fullScreenPreviews = [ ...fullScreenPreviews, ...this.state.processedMessages ];
+      processedMessages = uniqBy([ ...processedMessages, ...this.state.processedMessages ], 'id');
+      fullScreenPreviews = uniqBy([ ...fullScreenPreviews, ...this.state.processedMessages ], 'id');
     }
 
     if (this.state.searchMessagesIds.length) {
@@ -206,7 +232,6 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
     this.setState({
       processedMessages,
       fullScreenPreviews,
-      hasReachedBeginningOfMessageHistory,
     }, callback);
   };
 
@@ -242,7 +267,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
     const {
       isLoading,
       isLoadingPrecedingMessageHistory,
-      hasReachedBeginningOfMessageHistory,
+      hasPreviousPage,
       hasInitiallyScrolledToAppropriatePosition,
     } = this.state;
 
@@ -250,7 +275,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
     const initialScrollHeight = scrollBlock.scrollHeight;
     const shouldLoadPreviousMessages = !isLoading
       && !isLoadingPrecedingMessageHistory
-      && !hasReachedBeginningOfMessageHistory
+      && hasPreviousPage
       && hasInitiallyScrolledToAppropriatePosition;
 
     if (shouldLoadPreviousMessages) {
@@ -272,7 +297,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
     }
   };
 
-  processMessages = (messages, hasReachedBeginningOfMessageHistory) => {
+  processMessages = (messages, hasPreviousPage) => {
     let processedMessages = messages.map((message, i) => {
       let { previews, files } = this.processMessageAttachments(message);
       let showDateLabel = false;
@@ -299,8 +324,8 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
       };
     });
 
-    let firstEverMessageInHistory = hasReachedBeginningOfMessageHistory ? messages[0] : null;
-    if (hasReachedBeginningOfMessageHistory && (firstEverMessageInHistory?.sender?.isClient || !firstEverMessageInHistory)) {
+    let firstEverMessageInHistory = hasPreviousPage ? messages[0] : null;
+    if (hasPreviousPage && (firstEverMessageInHistory?.sender?.isClient || !firstEverMessageInHistory)) {
       processedMessages = [
         this.generateNewClientPlaceholderMessage(firstEverMessageInHistory),
         ...processedMessages,
@@ -603,13 +628,24 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
     }).join(', ');
   };
 
-  onScrollHandler = (event) => {
-    const { scrollTop } = event.target;
-
+  scrollPosition = (scrollTop) => {
     if (scrollTop <= this.LOAD_PRECEDING_MESSAGES_SCROLL_Y_POSITION) {
       this.loadPrecedingMessages();
+    } else {
+      const scrollBlock = this.scrollBlock.current;
+      const scrollBottom = scrollBlock.scrollHeight - scrollBlock.scrollTop - scrollBlock.clientHeight;
+      if (scrollBottom < 15) {
+        this.loadNextMessages();
+      }
     }
   }
+
+  onScrollHandler = (event) => {
+    const { scrollTop } = event.target;
+    this.debouncedTriggerScroll(scrollTop);
+  }
+
+  debouncedTriggerScroll = debounce(this.scrollPosition.bind(this), 400);
 
   /**
    * Search
@@ -699,8 +735,20 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
         selectMessageId: '',
       });
     }
-
   }
+
+  /**
+   * Загрузка новых сообщений
+   */
+  loadNextMessages = () => {
+    const { isLoading, hasNextPage, lastMessageId } = this.state;
+
+    if (!isLoading && hasNextPage) {
+      const { elixirChatWidget } = this.props;
+      elixirChatWidget.loadHistoryMessageNewer(lastMessageId).finally(() => {
+      });
+    }
+  };
 
   render() {
     const { elixirChatWidget, className } = this.props;

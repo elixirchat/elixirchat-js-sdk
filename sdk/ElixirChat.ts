@@ -707,6 +707,16 @@ export class ElixirChat {
     });
   };
 
+  /**
+   * Загрузка истории сообщения, от выбранного сообщения и новее
+   * @param cursor
+   */
+  public loadHistoryMessageNewer = (cursor: string): Promise<[IMessage]> => {
+    return this.checkIfConnected().then(() => {
+      return this.messageSubscription.fetchHistoryMessagePrepend(cursor);
+    });
+  };
+
 }
 
 
