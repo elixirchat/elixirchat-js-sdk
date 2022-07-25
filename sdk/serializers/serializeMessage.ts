@@ -62,7 +62,7 @@ export interface IMessage {
   mentions: Array<{value: string, client: IUser}>,
   systemType: string | null;
   systemWorkHoursStartAt: string | null;
-  attachments: Array<IFile>,
+  attachments?: Array<IFile>,
   isSubmitting: boolean,
   submissionErrorCode: number | null,
 }

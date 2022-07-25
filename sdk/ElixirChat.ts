@@ -589,15 +589,15 @@ export class ElixirChat {
     return this.screenshotTaker.takeScreenshot();
   };
 
-  public logEvent = (text: string, data: any): void => {
+  public logEvent = (text: string, data?: any): void => {
     return this.logger.logEvent(text, data);
   };
 
-  public logInfo = (text: string, data: any): void => {
+  public logInfo = (text: string, data?: any): void => {
     return this.logger.logInfo(text, data);
   };
 
-  public logError = (text: string, data: any): void => {
+  public logError = (text: string, data?: any): void => {
     return this.logger.logError(text, data);
   };
 

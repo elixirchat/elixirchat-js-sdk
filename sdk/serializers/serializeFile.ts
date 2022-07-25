@@ -31,7 +31,7 @@ export interface IFile {
   bytesSize: number;
   height: number;
   width: number;
-  duration: number,
+  duration?: number,
   contentType: string | null;
   isScreenshot: boolean;
   thumbnails?: Array<IFile>;
