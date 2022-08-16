@@ -109,11 +109,17 @@
 }
 
 .elixirchat-chat-messages__item {
-  max-width: 80%;
-  padding-bottom: 15px;
+  width: 100%;
+  margin-bottom: 15px;
+  display: flex;
+
+  &--inner {
+    max-width: 80%;
+  }
 
   &--by-me {
-    align-self: flex-end;
+    display: flex;
+    justify-content: end;
   }
 
   &--by-operator {
@@ -548,7 +554,9 @@ $selected-color-bg: #fff2f7;
 
 .elixirchat-chat-messages__item--selected {
   animation: messageSelectAnimation 2s;
+}
 
+.elixirchat-chat-messages__item--by-me {
   mark {
     background-color: #fd9cc3;
   }
