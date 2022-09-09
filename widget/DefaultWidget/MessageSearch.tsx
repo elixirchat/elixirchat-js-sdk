@@ -236,7 +236,7 @@ class MessageSearchComponent extends Component<SearchProps, SearchState> {
           </div>
         </div>
         <button className="elixirchat-chat__search-button_close" onClick={this.handleCloseSearch}>
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
               d="M10 20a10 10 0 0 0 9.2-13.9A10.2 10.2 0 0 0 10 0a9.6 9.6 0 0 0-7 3C2 3.9 1.2 5 .7 6a9.7 9.7 0 0 0 2.2 11 10.2 10.2 0 0 0 7 2.9Zm0-1.3a8.5 8.5 0 0 1-6.2-2.5A8.8 8.8 0 0 1 1.3 10a8.6 8.6 0 0 1 2.5-6.2A8.6 8.6 0 0 1 10 1.3a8.5 8.5 0 0 1 6.2 2.5 8.7 8.7 0 0 1-6.2 15Zm-3.5-4.6c.2 0 .4 0 .5-.2l3-3 3 3a.6.6 0 0 0 1 0l.1-.4c0-.2 0-.3-.2-.5l-3-3 3-3 .2-.5c0-.2 0-.3-.2-.4a.6.6 0 0 0-.4-.2c-.2 0-.3 0-.5.2l-3 3-3-3a.6.6 0 0 0-.5-.2c-.2 0-.3 0-.4.2l-.2.4c0 .2 0 .3.2.5l3 3-3 3-.2.5c0 .2 0 .3.2.4.1.2.2.2.4.2Z"
               fill="currentColor"/>

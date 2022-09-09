@@ -111,7 +111,7 @@
 }
 
 .elixirchat-chat-messages__item {
-  width: 100%;
+  width: 250px;
   margin-bottom: 15px;
 
   &--inner {
@@ -119,18 +119,15 @@
   }
 
   &--by-me {
-    display: flex;
-    justify-content: end;
+    align-self: end;
   }
 
   &--by-operator {
-    padding-right: 20%;
-    width: 100%;
+    width: 80%;
   }
 
   &--by-another-client {
     padding-right: 20%;
-    width: 100%;
   }
 
   &--by-operator,
