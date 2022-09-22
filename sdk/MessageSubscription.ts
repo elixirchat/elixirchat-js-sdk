@@ -1,10 +1,16 @@
 import { ElixirChat } from './ElixirChat';
+import cloneDeep from 'lodash/cloneDeep';
 import {
   MESSAGES_RECEIVE,
   MESSAGES_HISTORY_CHANGE,
   MESSAGES_HISTORY_PREPEND,
   MESSAGES_RETRIEVE_LAST_MESSAGE_CURSOR,
   ERROR_ALERT,
+  MESSAGES_SEARCH,
+  MESSAGES_SEARCH_IDS,
+  MESSAGES_PAGINATION,
+  MESSAGES_LAST_MESSAGE_ID,
+  MESSAGES_HISTORY_APPEND,
 } from './ElixirChatEventTypes';
 import { IFile } from './serializers/serializeFile';
 import { IMessage, serializeMessage, fragmentMessage } from './serializers/serializeMessage';
@@ -41,6 +47,17 @@ export interface ISentMessageSerialized {
   },
   binaries: object,
 }
+
+type searchRequestType = {
+  limit: number;
+  searchTerm: string;
+}
+
+type requestLoadHistoryParams = {
+  afterAmount: number;
+  beforeAmount?: number;
+  messageId: string;
+};
 
 export interface IFetchMessageHistoryParams {
   limit: number;
@@ -85,6 +102,45 @@ export class MessageSubscription {
             ...fragmentMessage
           }
         }
+        pageInfo {
+          hasNextPage
+          hasPreviousPage
+        }
+      }
+    }
+  `, { fragmentMessage });
+
+  protected searchMessageQuery: string = insertGraphQlFragments(gql`
+    query ($searchTerm: String!, $limit: Int!, $afterCursor: String) {
+      searchMessages(query: $searchTerm, first: $limit, after: $afterCursor) {
+        edges {
+          cursor
+          node {
+            id
+            text
+            timestamp
+          }
+        }
+      }
+    }
+  `)
+
+  protected messageHistorySearchQuery: string = insertGraphQlFragments(gql`
+    query($messageId: ID!, $beforeAmount: Int, $afterAmount: Int) {
+      message_with_page(
+      message_id: $messageId,
+      before_amount: $beforeAmount,
+      after_amount: $afterAmount ) {
+        edges {
+          cursor
+          node {
+            ...fragmentMessage
+          }
+        }
+        pageInfo {
+          hasNextPage
+          hasPreviousPage
+        }
       }
     }
   `, { fragmentMessage });
@@ -118,7 +174,7 @@ export class MessageSubscription {
     });
   };
 
-  private retrieveLastMessageCursor(): void {
+  private retrieveLastMessageCursor(): Promise<any> {
     return new Promise(async resolve => {
       if (this.lastMessageCursor) {
         resolve(this.lastMessageCursor);
@@ -351,7 +407,7 @@ export class MessageSubscription {
   };
 
   private getMessageHistoryByCursor(params: IFetchMessageHistoryParams): Promise<[IMessage]> {
-    const { sendAPIRequest } = this.elixirChat;
+    const { sendAPIRequest, triggerEvent } = this.elixirChat;
     const { limit, beforeCursor, afterCursor } = params;
     let variables;
 
@@ -373,6 +429,7 @@ export class MessageSubscription {
       }
     }
     return sendAPIRequest(this.messageHistoryQuery, variables).then(messages => {
+      triggerEvent(MESSAGES_PAGINATION, messages.pageInfo);
       return <[IMessage]>simplifyGraphQLJSON(messages).map(message => {
         return serializeMessage(message, this.elixirChat);
       });
@@ -427,5 +484,87 @@ export class MessageSubscription {
 
     logInfo('MessageSubscription: Unsubscribing...');
     graphQLClientSocket.unsubscribe(this.subscriptionQuery);
+  };
+
+  /**
+   * Получение списка сообщение, в которых есть искомый текст
+   * @param {Object} request
+   * @returns {Promise<*>}
+   */
+  public fetchMessageBySearch = (request: searchRequestType): Array<IMessage> => {
+    const { sendAPIRequest, triggerEvent } = this.elixirChat;
+
+    sendAPIRequest(this.searchMessageQuery, request).then(messages => {
+      const messagesList = messages?.edges || [];
+      const ids = messagesList.map(el => el?.node?.id);
+
+      triggerEvent(MESSAGES_SEARCH, messagesList);
+      triggerEvent(MESSAGES_SEARCH_IDS, ids);
+
+      return messagesList;
+    });
+  };
+
+  /**
+   * Получение части лога с определенным сообщением
+   * @param messageId
+   * @param full Boolean - историю вокруг сообщения, или только после него
+   * @returns {Promise<*>}
+   */
+  private getHistoryToMessage = (messageId: string, full?: boolean): Promise<[IMessage] | any> => {
+    const { sendAPIRequest, triggerEvent } = this.elixirChat;
+    let requestParams:requestLoadHistoryParams = {
+      afterAmount: 10,
+      messageId
+    };
+
+    if (full) {
+      requestParams.beforeAmount = 10;
+    }
+
+    return sendAPIRequest(this.messageHistorySearchQuery, requestParams).then(messages => {
+      triggerEvent(MESSAGES_PAGINATION, messages.pageInfo);
+      return <[IMessage]>simplifyGraphQLJSON(messages).map(message => {
+        return serializeMessage(message, this.elixirChat);
+      });
+    });
+  }
+
+  /**
+   * Загрузка сообщений лога для результата поиска
+   * @param messageId
+   */
+  public fetchHistoryMessageBySearch = (messageId: string): Promise<[IMessage] | any> => {
+    const { triggerEvent } = this.elixirChat;
+
+    return this.getHistoryToMessage(messageId, true).then(messageHistory => {
+      triggerEvent(MESSAGES_HISTORY_CHANGE, messageHistory);
+      const lastMessage = _last(messageHistory) || {};
+      this.messageHistory = messageHistory;
+      this.lastMessageCursor = lastMessage?.cursor || null;
+      triggerEvent(MESSAGES_LAST_MESSAGE_ID, lastMessage?.id);
+      return messageHistory;
+    });
+  };
+
+  /**
+   * Загрузка новой истории от выбранного сообщения
+   * @param messageId
+   */
+  public fetchHistoryMessagePrepend = (messageId: string): Promise<[IMessage] | any> => {
+    const { triggerEvent } = this.elixirChat;
+
+    return this.getHistoryToMessage(messageId).then(messageHistory => {
+      this.retrieveLastMessageCursor().then(() => {
+        const messages = cloneDeep(messageHistory);
+        messages.shift();
+        triggerEvent(MESSAGES_HISTORY_APPEND, messages);
+        const lastMessage = _last(messages) || {};
+        this.messageHistory = messages;
+        this.lastMessageCursor = lastMessage?.cursor || null;
+        triggerEvent(MESSAGES_LAST_MESSAGE_ID, lastMessage?.id);
+        return messages;
+      })
+    });
   };
 }

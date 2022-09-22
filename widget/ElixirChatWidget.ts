@@ -18,6 +18,7 @@ import {
   WIDGET_POPUP_TOGGLE,
   WIDGET_POPUP_OPEN,
   WIDGET_POPUP_CLOSE,
+  WIDGET_SEARCH_TOGGLE,
 } from './ElixirChatWidgetEventTypes';
 
 
@@ -67,6 +68,7 @@ export class ElixirChatWidget extends ElixirChat {
   public widgetConfig: IElixirChatWidgetConfig = {};
   public widgetIsMuted: boolean;
   public widgetIsPopupOpen: boolean;
+  public widgetIsSearchOpen: boolean;
   public widgetIsButtonHidden: boolean;
   public widgetView: string;
   public widgetTitle: string;
@@ -74,11 +76,13 @@ export class ElixirChatWidget extends ElixirChat {
   public widgetSupportEmail: string;
   public widgetChannels: Array<IJoinRoomChannel>;
   public widgetChatScrollY: number | null;
+  public messageHistory: Array<any>;
 
   public widgetDefaultParams = {
     isMuted: false,
     isPopupOpen: false,
     isButtonHidden: false,
+    widgetIsSearchOpen: false,
     title: 'Служба поддержки',
     supportEmail: 'support@elixir.chat',
   };
@@ -148,6 +152,7 @@ export class ElixirChatWidget extends ElixirChat {
     this.widgetIsButtonHidden = this.widgetConfig.hideDefaultButton || isButtonHidden;
     this.widgetSupportEmail = this.widgetConfig.supportEmail || supportEmail;
     this.widgetChatScrollY = 0;
+    this.widgetIsSearchOpen = false;
 
     this.widgetChannels = (this.widgetConfig.enabledChannels || [])
       .map(channelType => {
@@ -177,6 +182,16 @@ export class ElixirChatWidget extends ElixirChat {
 
   public closePopup = (): void => {
     this.togglePopup({ isOpen: false });
+  };
+
+  public closeSearch = (): void => {
+    this.triggerEvent(WIDGET_SEARCH_TOGGLE, false);
+    this.widgetIsSearchOpen = false;
+  };
+
+  public openSearch = (): void => {
+    this.triggerEvent(WIDGET_SEARCH_TOGGLE, true);
+    this.widgetIsSearchOpen = true;
   };
 
   private toggleMute(isMuted: boolean): void {

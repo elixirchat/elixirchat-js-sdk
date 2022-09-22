@@ -39,6 +39,7 @@ export interface IWidgetState {
   widgetIsPopupOpen: boolean;
   widgetIsPopupOpeningAnimation: boolean;
   widgetIsButtonHidden: boolean;
+  searchFormShow: boolean;
 }
 
 export class Widget extends Component<IWidgetProps, IWidgetState> {
@@ -53,6 +54,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
     widgetIsPopupOpen: false,
     widgetIsPopupOpeningAnimation: false,
     widgetIsButtonHidden: true,
+    searchFormShow: true,
   };
 
   fontExtractor: FontExtractor;

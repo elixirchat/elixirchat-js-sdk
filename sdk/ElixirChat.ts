@@ -38,7 +38,7 @@ import {
   JOIN_ROOM_ERROR,
   UNREAD_COUNTER_LAST_READ_MESSAGE_CHANGE,
   UPDATE_MESSAGE_SUBSCRIPTION_CHANGE_MESSAGE,
-  ERROR_ALERT,
+  ERROR_ALERT, MESSAGES_SEARCH_IDS,
 } from './ElixirChatEventTypes';
 
 
@@ -589,15 +589,15 @@ export class ElixirChat {
     return this.screenshotTaker.takeScreenshot();
   };
 
-  public logEvent = (text: string, data: any): void => {
+  public logEvent = (text: string, data?: any): void => {
     return this.logger.logEvent(text, data);
   };
 
-  public logInfo = (text: string, data: any): void => {
+  public logInfo = (text: string, data?: any): void => {
     return this.logger.logInfo(text, data);
   };
 
-  public logError = (text: string, data: any): void => {
+  public logError = (text: string, data?: any): void => {
     return this.logger.logError(text, data);
   };
 
@@ -678,6 +678,45 @@ export class ElixirChat {
     this.experimentalFeaturesInTesting = _uniq([ ...this.experimentalFeaturesInTesting, featureName.toLowerCase() ]);
     return this.enabledExperimentalFeatures.includes(featureName.toLowerCase());
   };
+
+  /**
+   * Search
+   */
+  public fetchMessageBySearch = (searchText: string): Promise<[IMessage]> | any => {
+    if (searchText) {
+      return this.checkIfConnected().then(() => {
+        let requestParams = {
+          limit: 1000,
+          searchTerm: searchText
+        };
+        return this.messageSubscription.fetchMessageBySearch(requestParams);
+      });
+    }
+    this.triggerEvent(MESSAGES_SEARCH_IDS, []);
+
+    return [];
+  };
+
+  /**
+   * Загрузка истории сообщения, при переходе между сообщениями
+   * @param cursor
+   */
+  public loadHistoryMessageBySearch = (cursor: string): Promise<[IMessage]> => {
+    return this.checkIfConnected().then(() => {
+      return this.messageSubscription.fetchHistoryMessageBySearch(cursor);
+    });
+  };
+
+  /**
+   * Загрузка истории сообщения, от выбранного сообщения и новее
+   * @param cursor
+   */
+  public loadHistoryMessageNewer = (cursor: string): Promise<[IMessage]> => {
+    return this.checkIfConnected().then(() => {
+      return this.messageSubscription.fetchHistoryMessagePrepend(cursor);
+    });
+  };
+
 }
 
 

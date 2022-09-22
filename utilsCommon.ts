@@ -41,7 +41,7 @@ export function _flatten(arr: Array): Array {
 
 
 // Lodash-like _.find
-export function _find(arr: Array, validation: Function | object, returnIndex: boolean): any {
+export function _find(arr: Array, validation: Function | object, returnIndex?: boolean): any {
   if (!arr?.length || !validation) {
     return [];
   }

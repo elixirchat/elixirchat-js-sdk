@@ -2,18 +2,25 @@
 @import "./mixins";
 @import "./Chat";
 
+.exlixir-chat__wrapper {
+  overflow: hidden;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
 .elixirchat-chat-scroll {
-  position: fixed;
+  flex-grow: 1;
+  height: 100%;
   top: $chat-header-height;
-  left: 0;
-  right: 0;
-  bottom: 52px;
   overflow-x: hidden;
   overflow-y: auto;
 }
 
 .elixirchat-chat-header {
   box-shadow: 0 1px 0 rgba(0,0,0,.1);
+  z-index: 1;
 }
 
 .elixirchat-chat-scroll-progress-bar {
@@ -104,21 +111,23 @@
 }
 
 .elixirchat-chat-messages__item {
-  max-width: 80%;
-  padding-bottom: 15px;
+  width: 250px;
+  margin-bottom: 15px;
+
+  &--inner {
+    max-width: 80%;
+  }
 
   &--by-me {
-    align-self: flex-end;
+    align-self: end;
   }
 
   &--by-operator {
-    padding-right: 20%;
-    width: 100%;
+    width: 80%;
   }
 
   &--by-another-client {
     padding-right: 20%;
-    width: 100%;
   }
 
   &--by-operator,
@@ -528,4 +537,38 @@
   padding: 0 4px;
   border-radius: 2px;
   pointer-events: none;
+}
+
+// Search
+
+$selected-color-bg: #fff2f7;
+
+.exlixir-chat__wrapper {
+  mark {
+    background-color: #e5e5e5;
+    transition: background-color .5s;
+  }
+}
+
+.elixirchat-chat-messages__item--selected {
+  animation: messageSelectAnimation 2s;
+}
+
+.elixirchat-chat-messages__item--by-me {
+  mark {
+    background-color: #fd9cc3;
+  }
+}
+
+
+@keyframes messageSelectAnimation {
+  0% {
+    background-color: transparent;
+  }
+  10% {
+    background-color: $selected-color-bg;
+  }
+  60% {
+    background-color: $selected-color-bg;
+  }
 }

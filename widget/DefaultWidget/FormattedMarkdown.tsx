@@ -81,6 +81,9 @@ export class FormattedMarkdown extends Component {
     // Temporarily replace all HTML (e.g. links) with placeholders surrounded by '◆◆◆'
       .replace(/<[a-z]+[^>]*>[^<]*<\/[a-z]+>/igm, match => this.handleHtmlReplacement(match))
 
+      // Замена спецсимвола, которым мы окружаем найденный текст
+      .replace(/\★(?=[^ ])([^\★\n]+)(?=[^ ])\★/igm, '<mark>$1</mark>')
+
       // Font formatting <b> & <i>
       .replace(/_(?=[^ ])([^_\n]+)(?=[^ ])_/igm, '<i>$1</i>')
       .replace(/\*(?=[^ ])([^\*\n]+)(?=[^ ])\*/igm, '<b>$1</b>')
