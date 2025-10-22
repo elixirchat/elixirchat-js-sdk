@@ -98,8 +98,8 @@ export class FormattedMarkdown extends Component {
       .replace(/<\/li>([^<])/gm, '</li></ul>$1')
 
       // Ordered list <ol>
-      .replace(/^(\d+)\.\s+([^\n]+)\n/gm, '<li data-markdown-counter="$1">$2</li>')
-      .replace(/([^>])<li data-markdown-counter="(\d+)">/gm, '$1<ol><li data-markdown-counter="$2">')
+      .replace(/^(\d{1,2})\.\s+([^\n]+)\n/gm, '<li data-markdown-counter="$1">$2</li>')
+      .replace(/([^>])<li data-markdown-counter="(\d{1,2})">/gm, '$1<ol><li data-markdown-counter="$2">')
       .replace(/<\/li>([^<])/gm, '</li></ol>$1')
 
       // Paragraph <p>
