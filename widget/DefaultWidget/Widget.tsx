@@ -126,6 +126,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
    */
   unlockNotificationSoundAutoplay = (e) => {
     const notification = new Audio(this.widgetAssets.assets.mp3.notificationSound);
+    notification.volume = 0;
     notification.play().then(() => {
       notification.pause();
       notification.currentTime = 0;
