@@ -302,5 +302,161 @@
   "timezone default": {
     "ru": "по вашему времени ({tz})",
     "en": "in your time zone ({tz})"
+  },
+  "from.huntflow": {
+    "ru": " из Хантфлоу",
+    "en": " from Huntflow"
+  },
+  "elixir.employee.RW1wbG95ZWU6YjcyOTZlODUtNDMzZi00MjFjLTgzMmYtMmM1OWNlNDYxYTBk": {
+    "ru": "Женя",
+    "en": "Zhenya"
+  },
+  "elixir.employee.RW1wbG95ZWU6NmU3ZjRkNGMtZDcwOC00MDRhLThkZWQtNDg0NzI2NzcwNWVi": {
+    "ru": "Александр",
+    "en": "Alexander"
+  },
+  "elixir.employee.RW1wbG95ZWU6MDMxY2Q2NmEtNDFjZi00NDY5LTgwODQtOTg3N2I5OWY0OGYw": {
+    "ru": "Александра",
+    "en": "Alexandra"
+  },
+  "elixir.employee.RW1wbG95ZWU6ZmYxNWU5ZWYtNTI4Yi00ODQ0LWJkMGEtMTQzZjQ2M2FiNTUx": {
+    "ru": "Алина",
+    "en": "Alina"
+  },
+  "elixir.employee.RW1wbG95ZWU6NmM2MDI1YzctMjk5MC00NmM4LWJkNTktM2E0YWQwYjQ4MWE1": {
+    "ru": "Альбина",
+    "en": "Albina"
+  },
+  "elixir.employee.RW1wbG95ZWU6OGQ3ZDM5MzktNWViNC00MDcxLTgyZmItYjA0ODI5ZjQxMjU2": {
+    "ru": "Анастасия",
+    "en": "Anastasia"
+  },
+  "elixir.employee.RW1wbG95ZWU6Mzk0NDgxNWYtNmVlNy00OWU0LWI4ZmYtZmQ0MjAyNWEwYjIx": {
+    "ru": "Анна",
+    "en": "Anna"
+  },
+  "elixir.employee.RW1wbG95ZWU6Yjg1ZGRlYjMtYmIzZi00NTIxLTk1M2YtZTUzZjQxM2FkOTg5": {
+    "ru": "Антон",
+    "en": "Anton"
+  },
+  "elixir.employee.RW1wbG95ZWU6ZDczNWNjN2MtNjNhNS00NTJhLWE5ZDQtMDAyODI3ZDQyYTBl": {
+    "ru": "Антон",
+    "en": "Anton"
+  },
+  "elixir.employee.RW1wbG95ZWU6NDA2ZDdmY2ItZjBmZi00MWM3LTk2MDEtYzM5MWQzYWE4Mjlm": {
+    "ru": "Артем",
+    "en": "Artem"
+  },
+  "elixir.employee.RW1wbG95ZWU6NzU4ZDBhMWUtMzMyMC00NTA3LWIyZTAtNmU1MWIyN2E4ZTE2": {
+    "ru": "Артем",
+    "en": "Artem"
+  },
+  "elixir.employee.RW1wbG95ZWU6NzZjY2I4NzAtMzRhMC00M2I2LTkzODgtYjJiZTJmYzczNzhh": {
+    "ru": "Борис",
+    "en": "Boris"
+  },
+  "elixir.employee.RW1wbG95ZWU6OWVmNDUwYjEtMzQ3Yi00MjdhLWI2ZjEtNTBkZDQxZTBhMzk3": {
+    "ru": "Валерия",
+    "en": "Valeria"
+  },
+  "elixir.employee.RW1wbG95ZWU6OGQ4ZWNhMjgtMmU4OS00Y2FiLWExYWItMGFmMWVlZjJkMWE4": {
+    "ru": "Вася",
+    "en": "Vasya"
+  },
+  "elixir.employee.RW1wbG95ZWU6ZWFkODJlNjItOThmOC00YmM0LWFjOWUtMjMxMDFkYWJjNzBl": {
+    "ru": "Вероника",
+    "en": "Veronika"
+  },
+  "elixir.employee.RW1wbG95ZWU6YTQ3ODYzYTMtZTE3NS00YTJjLTg0YmEtYzZjNzg3ZjkyYWY0": {
+    "ru": "Виталий",
+    "en": "Vitaly"
+  },
+  "elixir.employee.RW1wbG95ZWU6OTQxMTNkYTctZWU4ZS00YWIyLWI0ZWQtYmVmMmExYjUxNTU4": {
+    "ru": "Вячеслав",
+    "en": "Vyacheslav"
+  },
+  "elixir.employee.RW1wbG95ZWU6YWU1OGYwYzMtNzYwNS00NTZkLTg5ZGUtN2MyMDg2NGYzOTlm": {
+    "ru": "Дарья",
+    "en": "Daria"
+  },
+  "elixir.employee.RW1wbG95ZWU6ZThmMTg3ZWEtYTlmOS00OGU4LWFhZDAtOWU4ZDc4ODZhMDY1": {
+    "ru": "Денис",
+    "en": "Denis"
+  },
+  "elixir.employee.RW1wbG95ZWU6ODBiOTA0NjctYjQ2YS00NjI1LTliYzItMDgyZjU2ODg3OWUy": {
+    "ru": "Елена",
+    "en": "Elena"
+  },
+  "elixir.employee.RW1wbG95ZWU6ZTZkN2RhZjgtMDE5NC00NDNlLWIxOTAtYzBkN2VkNTdmY2Mw": {
+    "ru": "Иван",
+    "en": "Ivan"
+  },
+  "elixir.employee.RW1wbG95ZWU6NzRhNzkyNjktYWU5NS00NmE0LThiNmQtZWI2YTU1ZDdmN2Jk": {
+    "ru": "Игорь",
+    "en": "Igor"
+  },
+  "elixir.employee.RW1wbG95ZWU6ODE2Mjk3NmItYjk5OS00MGFjLThmNzEtMjBlMzY0NGFiZTNm": {
+    "ru": "Игорь",
+    "en": "Igor"
+  },
+  "elixir.employee.RW1wbG95ZWU6Y2VlZTBlYmEtMWQ2Ni00YTE5LWJlMDAtMjJkMmU5YjQwZGY1": {
+    "ru": "Марина",
+    "en": "Marina"
+  },
+  "elixir.employee.RW1wbG95ZWU6NTBiZTQxYjctYjY1YS00ZWEzLWI4YzAtNjEyZDA2ZWRjMDcw": {
+    "ru": "Мария",
+    "en": "Maria"
+  },
+  "elixir.employee.RW1wbG95ZWU6OTIyMGMyMGUtNzA5NC00MDkyLTllMDItZWE3N2Q3NjE4YjAx": {
+    "ru": "Мария",
+    "en": "Maria"
+  },
+  "elixir.employee.RW1wbG95ZWU6YjA1MDI1NWQtZjdlYy00ZTcwLTg2M2EtMGViZmUyM2ZkYzQz": {
+    "ru": "Мария",
+    "en": "Maria"
+  },
+  "elixir.employee.RW1wbG95ZWU6MzIxYWE2MjAtZDVlYy00YzZhLWFmYTItYWM0MDcwMjQ4ZmIx": {
+    "ru": "Михаил",
+    "en": "Mikhail"
+  },
+  "elixir.employee.RW1wbG95ZWU6MTRkMjBmZTUtZGM4Yy00MjUzLWEwYmQtMjQ2MjkwYjVkYzQz": {
+    "ru": "Настя",
+    "en": "Nastya"
+  },
+  "elixir.employee.RW1wbG95ZWU6YWE3MGM4MjktZGYwOC00MTg1LWFmY2QtMmE4ZmZiZDkwZGUz": {
+    "ru": "Ника",
+    "en": "Nika"
+  },
+  "elixir.employee.RW1wbG95ZWU6OGQ2N2MwZjItMWI2MC00ZjRhLTg5ODAtNGJmOTU3Y2M4ZmQ2": {
+    "ru": "Олег",
+    "en": "Oleg"
+  },
+  "elixir.employee.RW1wbG95ZWU6NmQ4ZGMyNWEtMjEzNC00MTBmLThkZWYtZDk0MzEyZDI0OTEy": {
+    "ru": "Поддержка",
+    "en": "Support"
+  },
+  "elixir.employee.RW1wbG95ZWU6MzZkYjE3ZWYtZDU2Yy00ZTg0LWI1YTAtNzBmMjUyNzI0OGYz": {
+    "ru": "Полина",
+    "en": "Polina"
+  },
+  "elixir.employee.RW1wbG95ZWU6ODVmMTQ4NWMtYTFlOC00MGZiLWJhMGItNjg0ZmIzMmNjOTI5": {
+    "ru": "Сергей",
+    "en": "Sergey"
+  },
+  "elixir.employee.RW1wbG95ZWU6NGNhMGNjZDItNjNhZC00ODdmLWIyZjctYmYyMDQyYzFlOWYz": {
+    "ru": "Сергей",
+    "en": "Sergey"
+  },
+  "elixir.employee.RW1wbG95ZWU6MjhkMzcwYTQtOTBiMC00OGRhLWE4OWMtYmFlMzJjMGM2ODRk": {
+    "ru": "Софья",
+    "en": "Sofia"
+  },
+  "elixir.employee.RW1wbG95ZWU6YjE5NWNlMmYtNzJjMC00NGViLWI3ZTAtZTVkMjAxZDQzMjYz": {
+    "ru": "Эллина",
+    "en": "Ellina"
+  },
+  "elixir.employee.RW1wbG95ZWU6YzE2NGE4MDEtZGMyOS00ZDUwLWI1MGMtZWUyMDcyYzMzMzBm": {
+    "ru": "Яна",
+    "en": "Yana"
   }
 }

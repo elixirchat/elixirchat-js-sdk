@@ -169,6 +169,15 @@ export function getUserFullName(user: IUser, separator: string = ' ') :string {
   return [firstName, lastName].filter(word => word).join(separator);
 }
 
+export function getOperatorName(sender, intl, defaultMessage) :string {
+  if (sender.isOperator) {
+    let name = intl.formatMessage({ id: `elixir.employee.${sender.id}`, defaultMessage  });
+    name = name === defaultMessage ? name : name + intl.formatMessage({ id: 'from.huntflow' });
+    return name;
+  }
+  return defaultMessage;
+}
+
 
 export function parseFullName(fullName: string): { firstName: string, lastName: string } {
   const [ firstName, lastName ] = (fullName || '').trim().replace(/\s+/, '◆◆◆').split('◆◆◆');
