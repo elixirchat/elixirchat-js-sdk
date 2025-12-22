@@ -172,8 +172,10 @@ export function getUserFullName(user: IUser, separator: string = ' ') :string {
 export function getOperatorName(sender, intl, defaultMessage) :string {
   if (sender.isOperator) {
     let name = intl.formatMessage({ id: `elixir.employee.${sender.id}`, defaultMessage  });
-    name = name === defaultMessage ? name : name + intl.formatMessage({ id: 'from.huntflow' });
-    return name;
+    if (name === defaultMessage) {
+      return name;
+    }
+    return name + intl.formatMessage({ id: 'from.huntflow' });
   }
   return defaultMessage;
 }
