@@ -61,6 +61,7 @@ export interface IElixirChatWidgetConfig {
   enabledChannels?: Array<string>;
   hideDefaultButton?: boolean;
   iframeCSS?: string;
+  customEmployerName?: any
 }
 
 export class ElixirChatWidget extends ElixirChat {
@@ -77,6 +78,7 @@ export class ElixirChatWidget extends ElixirChat {
   public widgetChannels: Array<IJoinRoomChannel>;
   public widgetChatScrollY: number | null;
   public messageHistory: Array<any>;
+  public widgetCustomEmployerName?: any
 
   public widgetDefaultParams = {
     isMuted: false,
@@ -153,6 +155,7 @@ export class ElixirChatWidget extends ElixirChat {
     this.widgetSupportEmail = this.widgetConfig.supportEmail || supportEmail;
     this.widgetChatScrollY = 0;
     this.widgetIsSearchOpen = false;
+    this.widgetCustomEmployerName = this.widgetConfig.customEmployerName || null;
 
     this.widgetChannels = (this.widgetConfig.enabledChannels || [])
       .map(channelType => {

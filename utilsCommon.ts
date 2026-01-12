@@ -169,15 +169,12 @@ export function getUserFullName(user: IUser, separator: string = ' ') :string {
   return [firstName, lastName].filter(word => word).join(separator);
 }
 
-export function getOperatorName(sender, intl, defaultMessage) :string {
-  if (sender.isOperator) {
-    let name = intl.formatMessage({ id: `elixir.employee.${sender.id}`, defaultMessage  });
-    if (name === defaultMessage) {
-      return name;
-    }
-    return name + intl.formatMessage({ id: 'from.huntflow' });
+export function getOperatorName(sender, callback, defaultTitle) :string {
+
+  if (!callback) {
+    return defaultTitle;
   }
-  return defaultMessage;
+  return (callback(sender.id));
 }
 
 
