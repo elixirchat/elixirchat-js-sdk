@@ -174,7 +174,7 @@ export function getOperatorName(sender, callback, defaultTitle) :string {
   if (!callback) {
     return defaultTitle;
   }
-  return (callback(sender.id));
+  return (callback(sender));
 }
 
 
