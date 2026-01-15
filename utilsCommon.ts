@@ -169,6 +169,14 @@ export function getUserFullName(user: IUser, separator: string = ' ') :string {
   return [firstName, lastName].filter(word => word).join(separator);
 }
 
+export function getOperatorName(sender, callback, defaultTitle) :string {
+
+  if (!callback) {
+    return defaultTitle;
+  }
+  return (callback(sender));
+}
+
 
 export function parseFullName(fullName: string): { firstName: string, lastName: string } {
   const [ firstName, lastName ] = (fullName || '').trim().replace(/\s+/, '◆◆◆').split('◆◆◆');

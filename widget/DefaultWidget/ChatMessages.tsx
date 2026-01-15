@@ -14,6 +14,7 @@ import {
   getMediaType,
   detectBrowser,
   getUserFullName,
+  getOperatorName,
   randomDigitStringId,
 } from '../../utilsCommon';
 
@@ -263,6 +264,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
   };
 
   loadPrecedingMessages = () => {
+
     const { elixirChatWidget } = this.props;
     const {
       isLoading,
@@ -833,7 +835,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
 
                           {!message.sender.isCurrentClient && (
                             <div className="elixirchat-chat-messages__sender">
-                              <b>{getUserFullName(message.sender) || elixirChatWidget.widgetTitle}</b>
+                              <b>{getUserFullName(message.sender) || getOperatorName(message.sender, elixirChatWidget.widgetCustomEmployerName, elixirChatWidget.widgetTitle)}</b>
                               {Boolean(message.mentions.length) && (
                                 <Fragment>
                                   &nbsp;→ @&nbsp;
@@ -966,7 +968,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
                     <div className="elixirchat-chat-messages__inner">
                       <div className="elixirchat-chat-messages__balloon">
                         <div className="elixirchat-chat-messages__sender">
-                          <b>{getUserFullName(message.sender) || elixirChatWidget.widgetTitle}</b>
+                          <b>{getUserFullName(message.sender) || getOperatorName(message.sender, elixirChatWidget.widgetCustomEmployerName, elixirChatWidget.widgetTitle)}</b>
                         </div>
 
                         {message.systemData.type === 'ScreenshotRequestedMessage' && (
