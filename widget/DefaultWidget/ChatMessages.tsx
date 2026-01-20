@@ -824,6 +824,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
                   <div className={cn({
                     'elixirchat-chat-messages__item': true,
                     'elixirchat-chat-messages__item--by-me': message.sender.isCurrentClient,
+                    'elixirchat-chat-messages__item--by-client': message.sender.isClient,
                     'elixirchat-chat-messages__item--by-operator': message.sender.isOperator,
                     'elixirchat-chat-messages__item--by-another-client': !message.sender.isOperator && !message.sender.isCurrentClient,
                     'elixirchat-chat-messages__item--unread': message.isUnread,
