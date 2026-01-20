@@ -102,7 +102,7 @@
 .elixirchat-chat-messages__date-title {
   text-transform: uppercase;
   font-size: 12px;
-  font-weight: bold;
+  font-weight: 500;
   border-bottom: 1px solid $color-black;
   line-height: 21px;
   margin-bottom: 15px;
@@ -132,6 +132,7 @@
 
   &--by-operator,
   &--by-another-client {
+    padding-left: 35px;
     &.elixirchat-chat-messages__item--unread {
       .elixirchat-chat-messages__inner {
         background: rgba($color-pink, .05);
@@ -144,9 +145,20 @@
   transition: background-color 2000ms;
 }
 
+.elixirchat-chat-messages__item--system {
+  .elixirchat-chat-messages__sender {
+    margin-bottom: 0;
+  }
+}
+
 .elixirchat-chat-messages__sender {
   color: $color-blue;
   padding-bottom: 1px;
+  display: flex;
+  flex-direction: row;
+  gap: 7px;
+  margin-left: -35px;
+  margin-bottom: -8px;
 
   .elixirchat-chat-messages__item--by-me & {
     color: $color-white;
@@ -154,6 +166,10 @@
 
   .elixirchat-chat-messages__item--by-operator & {
     color: $color-pink !important;
+  }
+
+  b {
+    font-weight: 500;
   }
 }
 
@@ -163,7 +179,7 @@
   }
   .elixirchat-chat-messages__item--by-me & {
     padding: 9px 10px 7px 10px;
-    border-radius: 3px;
+    border-radius: 4px;
     background: $color-blue;
     color: $color-white;
   }
@@ -189,6 +205,7 @@
 
 .elixirchat-chat-messages__text {
   line-height: 20px;
+  display: block;
 
   kbd {
     font: 13px/17px $font-family-text;
@@ -558,6 +575,31 @@ $selected-color-bg: #fff2f7;
   mark {
     background-color: #fd9cc3;
   }
+
+  .elixirchat-chat-messages__text {
+    margin: 0;
+  }
+}
+
+.elixirchat-chat-avatar {
+  width: 28px;
+  height: 28px;
+  display: block;
+  border-radius: 50%;
+}
+
+.elixirchat-chat-avatar__empty {
+  background-image: url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11.3731 12.2451C8.04067 11.4614 7.47001 7.04127 10.5054 5.5244C11.4539 5.05047 12.6607 5.02109 13.5811 5.44961C15.802 6.48374 16.3914 9.29209 14.7734 11.1304C13.9547 12.0605 12.5483 12.5215 11.3731 12.2451Z' fill='%23D7D7D7'/%3E%3Cpath d='M7.06146 14.4533C7.36479 13.8666 8.78017 13.2895 10.4265 13.081C12.0578 12.8746 13.8883 12.9839 15.2382 13.3686C17.2103 13.9304 17.7187 14.6903 17.0375 16.0575C16.2941 17.5493 13.9853 18.8659 12.1058 18.8699C10.2126 18.874 7.85172 17.5174 7.15739 16.0265C6.84163 15.3485 6.81597 14.9279 7.06146 14.4533Z' fill='%23D7D7D7'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: 50% 50%;
+  background-color: rgba(245, 245, 245, 1);
+}
+
+.elixirchat-chat-avatar__system {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' fill='none' viewBox='0 0 28 28'%3E%3Cg clip-path='url(%23a)'%3E%3Cpath fill='%2303f' d='M0 14C0 6.268 6.268 0 14 0s14 6.268 14 14-6.268 14-14 14S0 21.732 0 14'/%3E%3Cpath fill='%23fff' d='M16.218 22.007a.44.44 0 0 1-.333-.14l-3.042-3.093H8.106A1.61 1.61 0 0 1 6.5 17.17V9.583A1.58 1.58 0 0 1 8.084 8H19.79a1.71 1.71 0 0 1 1.71 1.709v7.503a1.56 1.56 0 0 1-1.562 1.562h-2.439a.474.474 0 0 1-.471-.471c0-.258.213-.472.471-.472h2.439a.62.62 0 0 0 .619-.618V9.708a.766.766 0 0 0-.767-.766H8.077a.64.64 0 0 0-.641.64v7.58c0 .367.302.67.67.67h5.135l3.315 3.372a.467.467 0 0 1-.007.663.48.48 0 0 1-.331.14'/%3E%3C/g%3E%3Cdefs%3E%3CclipPath id='a'%3E%3Cpath fill='%23fff' d='M0 0h28v28H0z'/%3E%3C/clipPath%3E%3C/defs%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: 50% 50%;
+  background-color: rgba(245, 245, 245, 1);
 }
 
 

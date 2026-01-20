@@ -751,6 +751,10 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
     }
   };
 
+  processedAvatar = (message) => {
+    return message.sender.avatar.url;
+  }
+
   render() {
     const { elixirChatWidget, className } = this.props;
     const {
@@ -835,6 +839,14 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
 
                           {!message.sender.isCurrentClient && (
                             <div className="elixirchat-chat-messages__sender">
+                              <div>
+                                {this.processedAvatar(message) && (
+                                  <img className="elixirchat-chat-avatar" src={this.processedAvatar(message)} />
+                                )}
+                                {!this.processedAvatar(message) && (
+                                  <div className="elixirchat-chat-avatar elixirchat-chat-avatar__empty" />
+                                )}
+                              </div>
                               <b>{getUserFullName(message.sender) || getOperatorName(message.sender, elixirChatWidget.widgetCustomEmployerName, elixirChatWidget.widgetTitle)}</b>
                               {Boolean(message.mentions.length) && (
                                 <Fragment>
@@ -968,6 +980,9 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
                     <div className="elixirchat-chat-messages__inner">
                       <div className="elixirchat-chat-messages__balloon">
                         <div className="elixirchat-chat-messages__sender">
+                          <div>
+                            <div className="elixirchat-chat-avatar elixirchat-chat-avatar__system" />
+                          </div>
                           <b>{getUserFullName(message.sender) || getOperatorName(message.sender, elixirChatWidget.widgetCustomEmployerName, elixirChatWidget.widgetTitle)}</b>
                         </div>
 
