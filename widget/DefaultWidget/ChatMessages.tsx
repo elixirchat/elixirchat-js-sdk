@@ -31,6 +31,7 @@ import { ElixirChatWidget } from '../ElixirChatWidget';
 import { FormattedMarkdown } from './FormattedMarkdown';
 import { MessageSearch } from './MessageSearch';
 import { RatingButton } from './RatingButton';
+import { RatingCommentModal } from './RatingCommentModal';
 import { getScreenshotCompatibilityFallback } from '../../sdk/ScreenshotTaker';
 import { serializeMessage } from '../../sdk/serializers/serializeMessage';
 import {
@@ -54,61 +55,6 @@ import {
 
 type IntlArgId = {
   id: string
-}
-
-interface IRatingCommentModalProps {
-  intl: any;
-  onSubmit: (comment: string) => void;
-  onSkip: () => void;
-}
-
-class RatingCommentModal extends Component<IRatingCommentModalProps, { comment: string }> {
-  constructor(props) {
-    super(props);
-    this.state = { comment: '' };
-  }
-
-  handleSubmit = () => {
-    if (this.state.comment.trim()) {
-      this.props.onSubmit(this.state.comment);
-    } else {
-      this.props.onSkip();
-    }
-  };
-
-  render() {
-    const { intl, onSkip } = this.props;
-    return (
-      <div className="elixirchat-rating-comment-modal">
-        <div className="elixirchat-rating-comment-modal__overlay" onClick={onSkip} />
-        <div className="elixirchat-rating-comment-modal__content">
-          <h3 className="elixirchat-rating-comment-modal__title">
-            <FormattedMessage id="rate_message_comment_title" />
-          </h3>
-          <textarea
-            className="elixirchat-rating-comment-modal__textarea"
-            placeholder={intl.formatMessage({ id: 'rate_message_comment_placeholder' })}
-            value={this.state.comment}
-            onChange={(e) => this.setState({ comment: e.target.value })}
-            rows={4}
-          />
-          <div className="elixirchat-rating-comment-modal__actions">
-            <button
-              className="elixirchat-rating-comment-modal__button elixirchat-rating-comment-modal__button--skip"
-              onClick={onSkip}>
-              <FormattedMessage id="rate_message_comment_skip" />
-            </button>
-            <button
-              className="elixirchat-rating-comment-modal__button elixirchat-rating-comment-modal__button--submit"
-              onClick={this.handleSubmit}
-              disabled={!this.state.comment.trim()}>
-              <FormattedMessage id="rate_message_comment_submit" />
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
 }
 
 export interface IDefaultWidgetMessagesProps {
@@ -1192,13 +1138,14 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
           </div>
         </div>
 
-        {this.state.ratingCommentModal.isOpen && (
+        {/* {this.state.ratingCommentModal.isOpen && ( */}
           <RatingCommentModal
             intl={this.props.intl}
             onSubmit={this.onRatingCommentSubmit}
             onSkip={this.closeRatingCommentModal}
+            elixirChatWidget={elixirChatWidget}
           />
-        )}
+        {/* )} */}
       </div>
     );
   }

@@ -37,6 +37,7 @@ export class WidgetAssets {
       styles.MessageSearch,
       styles.WelcomeScreen,
       styles.FormattedMarkdown,
+      styles.RatingCommentModal,
       styles.WidgetInsideIFrame,
     ].join('\n');
   }
@@ -62,6 +63,7 @@ export class WidgetAssets {
       WelcomeScreen:        fs.readFileSync(__dirname + '../../dist/styles/WelcomeScreen.css', 'utf8'),
       FormattedMarkdown:    fs.readFileSync(__dirname + '../../dist/styles/FormattedMarkdown.css', 'utf8'),
       FullScreenPreview:    fs.readFileSync(__dirname + '../../dist/styles/FullScreenPreview.css', 'utf8'),
+      RatingCommentModal:   fs.readFileSync(__dirname + '../../dist/styles/RatingCommentModal.css', 'utf8'),
       WidgetOutsideIFrame:  fs.readFileSync(__dirname + '../../dist/styles/WidgetOutsideIFrame.css', 'utf8'),
       WidgetInsideIFrame:   fs.readFileSync(__dirname + '../../dist/styles/WidgetInsideIFrame.css', 'utf8'),
     };
@@ -88,6 +90,8 @@ export class WidgetAssets {
       facebook:             fs.readFileSync(__dirname + '/DefaultWidget/assets/images/channel-facebook.svg', { encoding: 'base64' }),
       viber:                fs.readFileSync(__dirname + '/DefaultWidget/assets/images/channel-viber.svg', { encoding: 'base64' }),
       vkontakte:            fs.readFileSync(__dirname + '/DefaultWidget/assets/images/channel-vk.svg', { encoding: 'base64' }),
+      modalDislikeIcon:    fs.readFileSync(__dirname + '/DefaultWidget/assets/images/modal-dislike-icon.svg', { encoding: 'base64' }),
+      modalHeartIcon:      fs.readFileSync(__dirname + '/DefaultWidget/assets/images/modal-heart-icon.svg', { encoding: 'base64' }),
     };
     const base64Mp3Data = {
       notificationSound:    fs.readFileSync(__dirname + '/DefaultWidget/assets/audio/notification.mp3', { encoding: 'base64' }),

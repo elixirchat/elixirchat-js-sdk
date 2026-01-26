@@ -71,6 +71,7 @@ export class ElixirChatWidget extends ElixirChat {
   }
 
   public widgetConfig: IElixirChatWidgetConfig = {};
+  public widgetAssets: any;
   public widgetIsMuted: boolean;
   public widgetIsPopupOpen: boolean;
   public widgetIsSearchOpen: boolean;

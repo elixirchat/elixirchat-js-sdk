@@ -331,6 +331,10 @@
     "ru": "Пропустить",
     "en": "Skip"
   },
+  "rate_message_thank_you": {
+    "ru": "Спасибо за ваш отзыв!",
+    "en": "Thank you for your feedback!"
+  },
   "rate_message_already_rated": {
     "ru": "Вы уже оценили это сообщение",
     "en": "You have already rated this message"
