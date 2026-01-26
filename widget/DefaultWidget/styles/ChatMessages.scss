@@ -285,12 +285,28 @@
   padding: 0;
   cursor: pointer;
   border: unset;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+
+  i {
+    font-size: 20px;
+    line-height: 1;
+    color: #B4B4B4;
+    transition: color 0.2s ease;
+  }
 
   path {
     transition: 0.2s ease;
   }
 
   &:hover {
+    i {
+      color: #050505;
+    }
+
     path {
       fill: #050505;
     }
