@@ -13,19 +13,15 @@ interface IRatingButtonProps {
 
 export const RatingButton = ({ type, message, onRate, intl }: IRatingButtonProps) => {
   const isPositive = type === 'POSITIVE';
-  const isRated = Boolean(message.rating);
+  const isRated = !!(message.rating && (message.rating.id || message.rating.rating));
   const isActive = message.rating?.rating === type;
   const iconRef = useRef<HTMLElement>(null);
 
-
-  const className = cn(
-    'elixirchat-chat-messages__rating-button',
-    `elixirchat-chat-messages__rating-button--${isPositive ? 'positive' : 'negative'}`,
-    {
-      'elixirchat-chat-messages__rating-button--rated': isRated,
-      'elixirchat-chat-messages__rating-button--active': isActive,
-    }
-  );
+  const className = cn({
+    'elixirchat-chat-messages__rating-button': true,
+    [`elixirchat-chat-messages__rating-button--${isPositive ? 'positive' : 'negative'}`]: true,
+    'elixirchat-chat-messages__rating-button--rated': isRated
+  });
 
   const icon = isPositive
     ? isActive ? 'icon-like-active' : 'icon-like'

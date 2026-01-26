@@ -57,7 +57,9 @@ class TooltipComponent extends Component<IDefaultWidgetTooltipProps, IDefaultWid
     const {
       title,
       className,
+      center,
       children,
+      intl,
       ...otherProps
     } = this.props;
 
