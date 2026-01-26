@@ -302,5 +302,37 @@
   "timezone default": {
     "ru": "по вашему времени ({tz})",
     "en": "in your time zone ({tz})"
+  },
+  "rate_message": {
+    "ru": "Оценить ответ",
+    "en": "Rate message"
+  },
+  "rate_positive": {
+    "ru": "👍 Хорошо",
+    "en": "👍 Good"
+  },
+  "rate_negative": {
+    "ru": "👎 Плохо",
+    "en": "👎 Bad"
+  },
+  "rate_message_comment_title": {
+    "ru": "Пожалуйста, оставьте комментарий",
+    "en": "Please leave a comment"
+  },
+  "rate_message_comment_placeholder": {
+    "ru": "Расскажите, что можно улучшить...",
+    "en": "Tell us what can be improved..."
+  },
+  "rate_message_comment_submit": {
+    "ru": "Отправить",
+    "en": "Submit"
+  },
+  "rate_message_comment_skip": {
+    "ru": "Пропустить",
+    "en": "Skip"
+  },
+  "rate_message_already_rated": {
+    "ru": "Вы уже оценили это сообщение",
+    "en": "You have already rated this message"
   }
 }

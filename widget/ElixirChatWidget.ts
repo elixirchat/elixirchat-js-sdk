@@ -2,7 +2,7 @@ import 'babel-polyfill';
 import { _find, getFromLocalStorage, logEvent, setToLocalStorage } from '../utilsCommon';
 import { renderWidgetReactComponent } from './DefaultWidget/Widget';
 import { IFontRule } from './FontExtractor';
-import { IJoinRoomChannel, IJoinRoomData } from '../sdk/ElixirChat';
+import { IJoinRoomChannel, IJoinRoomData, IElixirChatConfig } from '../sdk/ElixirChat';
 import {
   JOIN_ROOM_ERROR,
   JOIN_ROOM_SUCCESS,
@@ -65,6 +65,10 @@ export interface IElixirChatWidgetConfig {
 }
 
 export class ElixirChatWidget extends ElixirChat {
+
+  constructor(config: IElixirChatConfig) {
+    super(config);
+  }
 
   public widgetConfig: IElixirChatWidgetConfig = {};
   public widgetIsMuted: boolean;

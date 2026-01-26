@@ -589,6 +589,37 @@ export class ElixirChat {
     return this.screenshotTaker.takeScreenshot();
   };
 
+  public rateMessage = (messageId: string, rating: 'POSITIVE' | 'NEGATIVE'): Promise<any> => {
+    return this.checkIfConnected().then(() => {
+      const query = gql`
+        mutation ($messageId: ID!, $rating: Rating!) {
+          rateMessage(messageId: $messageId, rating: $rating) {
+            id
+            rating
+            message_id
+          }
+        }
+      `;
+      return this.sendAPIRequest(query, { messageId, rating });
+    });
+  };
+
+  public addRatingComment = (ratingId: string, comment: string): Promise<any> => {
+    return this.checkIfConnected().then(() => {
+      const query = gql`
+        mutation ($ratingId: ID!, $comment: String!) {
+          addRatingComment(ratingId: $ratingId, comment: $comment) {
+            id
+            rating
+            comment
+            message_id
+          }
+        }
+      `;
+      return this.sendAPIRequest(query, { ratingId, comment });
+    });
+  };
+
   public logEvent = (text: string, data?: any): void => {
     return this.logger.logEvent(text, data);
   };

@@ -163,7 +163,7 @@
   }
   .elixirchat-chat-messages__item--by-me & {
     padding: 9px 10px 7px 10px;
-    border-radius: 3px;
+    border-radius: 8px;
     background: $color-blue;
     color: $color-white;
   }
@@ -261,6 +261,154 @@
   .elixirchat-chat-messages__item--by-me & {
     margin-left: 0;
     margin-right: 10px;
+  }
+}
+
+.elixirchat-chat-messages__rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  &--rated {
+    opacity: 0.7;
+  }
+}
+
+.elixirchat-chat-messages__rating-label {
+  font-size: 12px;
+  color: $color-gray-dark;
+  margin-right: 4px;
+}
+
+.elixirchat-chat-messages__rating-button {
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  border: unset;
+
+  path {
+    transition: 0.2s ease;
+  }
+
+  &:hover {
+    path {
+      fill: #050505;
+    }
+  }
+
+  // &--positive:hover {
+  //   background: rgba(76, 175, 80, 0.1);
+  //   border-color: rgba(76, 175, 80, 0.3);
+  // }
+
+  // &--negative:hover {
+  //   background: rgba(244, 67, 54, 0.1);
+  //   border-color: rgba(244, 67, 54, 0.3);
+  // }
+}
+
+.elixirchat-chat-messages__rating-icon {
+  font-size: 16px;
+  margin-right: 8px;
+}
+
+.elixirchat-chat-messages__rating-comment {
+  font-size: 12px;
+  color: $color-gray-dark;
+  font-style: italic;
+}
+
+.elixirchat-rating-comment-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.elixirchat-rating-comment-modal__overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.elixirchat-rating-comment-modal__content {
+  position: relative;
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.elixirchat-rating-comment-modal__title {
+  margin: 0 0 16px 0;
+  font-size: 18px;
+  font-weight: 500;
+  color: $color-black;
+}
+
+.elixirchat-rating-comment-modal__textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  margin-bottom: 16px;
+
+  &:focus {
+    outline: none;
+    border-color: $color-pink;
+  }
+}
+
+.elixirchat-rating-comment-modal__actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.elixirchat-rating-comment-modal__button {
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+
+  &--skip {
+    background: transparent;
+    color: $color-gray-dark;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.05);
+    }
+  }
+
+  &--submit {
+    background: $color-pink;
+    color: white;
+
+    &:hover:not(:disabled) {
+      background: darken($color-pink, 10%);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
   }
 }
 
