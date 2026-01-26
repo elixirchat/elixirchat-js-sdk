@@ -295,7 +295,7 @@
     font-size: 20px;
     line-height: 1;
     color: #B4B4B4;
-    transition: color 0.2s ease;
+    transition: all 0.2s ease;
   }
 
   path {
@@ -305,22 +305,9 @@
   &:hover {
     i {
       color: #050505;
-    }
-
-    path {
-      fill: #050505;
+      transform: scale(1.2);
     }
   }
-
-  // &--positive:hover {
-  //   background: rgba(76, 175, 80, 0.1);
-  //   border-color: rgba(76, 175, 80, 0.3);
-  // }
-
-  // &--negative:hover {
-  //   background: rgba(244, 67, 54, 0.1);
-  //   border-color: rgba(244, 67, 54, 0.3);
-  // }
 }
 
 .elixirchat-chat-messages__rating-icon {
