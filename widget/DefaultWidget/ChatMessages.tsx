@@ -580,7 +580,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
     try {
       const result = await elixirChatWidget.rateMessage(messageId, rating);
       
-      // Обновляем сообщение через changeMessageBy
+      // Обновляем сообщение с рейтингом
       elixirChatWidget.messageSubscription.changeMessageBy(
         { id: messageId },
         {
@@ -591,6 +591,17 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
           },
         }
       );
+
+      // Открываем модальное окно для комментария только при дизлайке
+      if (rating === 'NEGATIVE') {
+        this.setState({
+          ratingCommentModal: {
+            isOpen: true,
+            ratingId: result.id,
+            messageId: messageId,
+          },
+        });
+      }
     } catch (error) {
       elixirChatWidget.logError('Failed to rate message', error);
     }
@@ -603,33 +614,25 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
     try {
       const result = await elixirChatWidget.addRatingComment(ratingCommentModal.ratingId, comment);
       
-      // Обновляем сообщение через changeMessageBy
-      const currentMessage = elixirChatWidget.messageHistory.find(m => m.id === ratingCommentModal.messageId);
-      if (currentMessage && currentMessage.rating) {
-        elixirChatWidget.messageSubscription.changeMessageBy(
-          { id: ratingCommentModal.messageId },
-          {
-            rating: {
-              ...currentMessage.rating,
-              comment: result.comment,
-            },
-          }
-        );
-      }
+      // Обновляем сообщение с комментарием
+      elixirChatWidget.messageSubscription.changeMessageBy(
+        { id: ratingCommentModal.messageId },
+        {
+          rating: {
+            id: ratingCommentModal.ratingId,
+            rating: result.rating,
+            comment: result.comment,
+          },
+        }
+      );
 
-      this.setState({
-        ratingCommentModal: {
-          isOpen: false,
-          ratingId: null,
-          messageId: null,
-        },
-      });
+      this.closeRatingCommentModal();
     } catch (error) {
       elixirChatWidget.logError('Failed to add rating comment', error);
     }
   };
 
-  onRatingCommentSkip = () => {
+  closeRatingCommentModal = () => {
     this.setState({
       ratingCommentModal: {
         isOpen: false,
@@ -1073,13 +1076,17 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
                               <FormattedMessage id="reply" />
                             </span>
                             )}
-                            {!message.sender.isCurrentClient && !message.isSystem && !message.rating && (
+                            {!message.sender.isCurrentClient && !message.isSystem && (
                               <div className="elixirchat-chat-messages__rating">
                                 <button
-                                  className="elixirchat-chat-messages__rating-button elixirchat-chat-messages__rating-button--positive"
+                                  className={cn({
+                                    'elixirchat-chat-messages__rating-button': true,
+                                    'elixirchat-chat-messages__rating-button--positive': true,
+                                    'elixirchat-chat-messages__rating-button--active': message.rating?.rating === 'POSITIVE',
+                                  })}
                                   onClick={() => this.onRateMessage(message.id, 'POSITIVE')}
                                   title={intl.formatMessage({ id: 'rate_positive' })}>
-                                    <i className="icon-like"/>
+                                  <i className={message.rating?.rating === 'POSITIVE' ? 'icon-like-active' : 'icon-like'}/>
                                 </button>
                                 <button
                                   className="elixirchat-chat-messages__rating-button elixirchat-chat-messages__rating-button--negative"
@@ -1087,14 +1094,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
                                   title={intl.formatMessage({ id: 'rate_negative' })}>
                                   <i className="icon-dislike"/>
                                 </button>
-                              </div>
-                            )}
-                            {message.rating && (
-                              <div className="elixirchat-chat-messages__rating elixirchat-chat-messages__rating--rated">
-                                <span className="elixirchat-chat-messages__rating-icon">
-                                  {message.rating.rating === 'POSITIVE' ? '👍' : '👎'}
-                                </span>
-                                {message.rating.comment && (
+                                {message.rating?.comment && (
                                   <span className="elixirchat-chat-messages__rating-comment">
                                     {message.rating.comment}
                                   </span>
@@ -1189,7 +1189,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
           <RatingCommentModal
             intl={this.props.intl}
             onSubmit={this.onRatingCommentSubmit}
-            onSkip={this.onRatingCommentSkip}
+            onSkip={this.closeRatingCommentModal}
           />
         )}
       </div>

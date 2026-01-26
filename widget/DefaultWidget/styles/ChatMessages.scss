@@ -269,9 +269,9 @@
   align-items: center;
   gap: 4px;
 
-  &--rated {
-    opacity: 0.7;
-  }
+  // &--rated {
+  //   opacity: 0.7;
+  // }
 }
 
 .elixirchat-chat-messages__rating-label {
@@ -308,11 +308,37 @@
       transform: scale(1.2);
     }
   }
+
+  &--active {
+    i.icon-like-active {
+      color: #00D89D;
+      animation: likeAnimation 0.4s ease-out forwards;
+    }
+  }
 }
 
-.elixirchat-chat-messages__rating-icon {
-  font-size: 16px;
-  margin-right: 8px;
+@keyframes likeAnimation {
+  0% {
+    transform: scale(1.2) translateY(0);
+  }
+  33% {
+    transform: scale(1.2) translateY(-6px);
+  }
+  66% {
+    transform: scale(1.2) translateY(0);
+  }
+  100% {
+    transform: scale(1) translateY(0);
+  }
+}
+
+.elixirchat-chat-messages__rating--rated {
+  i {
+    font-size: 20px;
+    line-height: 1;
+    color: #B4B4B4;
+    margin-right: 4px;
+  }
 }
 
 .elixirchat-chat-messages__rating-comment {

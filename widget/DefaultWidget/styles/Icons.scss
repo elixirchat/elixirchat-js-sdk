@@ -44,30 +44,33 @@
 .icon-file:before {
     content: "\f106";
 }
-.icon-like:before {
+.icon-like-active:before {
     content: "\f107";
 }
-.icon-logo:before {
+.icon-like:before {
     content: "\f108";
 }
-.icon-reply-right:before {
+.icon-logo:before {
     content: "\f109";
 }
-.icon-screenshot:before {
+.icon-reply-right:before {
     content: "\f10a";
 }
-.icon-search:before {
+.icon-screenshot:before {
     content: "\f10b";
 }
-.icon-speaker-mute:before {
+.icon-search:before {
     content: "\f10c";
 }
-.icon-speaker:before {
+.icon-speaker-mute:before {
     content: "\f10d";
 }
-.icon-spinner-xs:before {
+.icon-speaker:before {
     content: "\f10e";
 }
-.icon-typing:before {
+.icon-spinner-xs:before {
     content: "\f10f";
+}
+.icon-typing:before {
+    content: "\f110";
 }
