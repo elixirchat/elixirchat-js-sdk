@@ -591,15 +591,6 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
           },
         }
       );
-
-      // Показываем модальное окно для комментария
-      this.setState({
-        ratingCommentModal: {
-          isOpen: true,
-          ratingId: result.id,
-          messageId: messageId,
-        },
-      });
     } catch (error) {
       elixirChatWidget.logError('Failed to rate message', error);
     }
