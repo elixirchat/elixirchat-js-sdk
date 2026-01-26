@@ -6,6 +6,7 @@ export interface IDefaultWidgetTooltipProps {
   title: string;
   placement?: string;
   className?: string;
+  center?: boolean;
 }
 
 export interface IDefaultWidgetTooltipState {}
@@ -26,17 +27,27 @@ class TooltipComponent extends Component<IDefaultWidgetTooltipProps, IDefaultWid
     if (!this.tooltip) {
       this.tooltip = this.createTooltip();
     }
-    this.tooltip.hidden = false;
+    if (this.tooltip) {
+      this.tooltip.hidden = false;
+    }
   };
 
   onTargetMouseLeave = () => {
-    this.tooltip.hidden = true;
+    if (this.tooltip) {
+      this.tooltip.hidden = true;
+    }
   };
 
   createTooltip = () => {
-    const { title, className } = this.props;
+    if (!this.targetRef.current) {
+      return null;
+    }
+    const { title, className, center } = this.props;
     const tooltip = document.createElement('div');
     tooltip.classList.add('elixirchat-tooltip', className);
+    if (center) {
+      tooltip.classList.add('elixirchat-tooltip--center');
+    }
     tooltip.innerText = title;
     this.targetRef.current.appendChild(tooltip);
     return tooltip;

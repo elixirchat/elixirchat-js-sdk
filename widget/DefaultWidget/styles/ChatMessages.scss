@@ -222,6 +222,9 @@
 }
 
 .elixirchat-chat-messages__bottom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   color: $color-gray-dark;
   padding-top: 2px;
   white-space: nowrap;
@@ -251,7 +254,6 @@
 }
 
 .elixirchat-chat-messages__reply-button {
-  margin-left: 10px;
   cursor: pointer;
 
   &:hover {
@@ -290,6 +292,7 @@
   justify-content: center;
   width: 20px;
   height: 20px;
+  position: relative;
 
   i {
     font-size: 20px;
@@ -309,10 +312,20 @@
     }
   }
 
-  &--active {
-    i.icon-like-active {
-      color: #00D89D;
-      animation: likeAnimation 0.4s ease-out forwards;
+  i.icon-like-active {
+    color: #00D89D;
+    animation: likeAnimation 0.4s ease-out forwards;
+  }
+
+  &--rated {
+    &:hover {
+      i {
+        transform: none;
+      }
+
+      .icon-dislike {
+        color: #B4B4B4;
+      }
     }
   }
 }

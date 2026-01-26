@@ -30,6 +30,7 @@ import {
 import { ElixirChatWidget } from '../ElixirChatWidget';
 import { FormattedMarkdown } from './FormattedMarkdown';
 import { MessageSearch } from './MessageSearch';
+import { RatingButton } from './RatingButton';
 import { getScreenshotCompatibilityFallback } from '../../sdk/ScreenshotTaker';
 import { serializeMessage } from '../../sdk/serializers/serializeMessage';
 import {
@@ -577,6 +578,14 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
 
   onRateMessage = async (messageId: string, rating: 'POSITIVE' | 'NEGATIVE') => {
     const { elixirChatWidget } = this.props;
+    const { processedMessages } = this.state;
+    const message = processedMessages.find(m => m.id === messageId);
+    
+    // Предотвращаем повторную оценку
+    if (message?.rating) {
+      return;
+    }
+    
     try {
       const result = await elixirChatWidget.rateMessage(messageId, rating);
       
@@ -1069,31 +1078,29 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
                         )}
                         {!message.submissionErrorCode && (
                           <Fragment>
-                            {!message.sender.isCurrentClient && dayjs(message.timestamp).format('H:mm')}
                             {!message.isSystem && (
                               <span className="elixirchat-chat-messages__reply-button"
                                 onClick={() => this.onReplyButtonClick(message.id)}>
                               <FormattedMessage id="reply" />
                             </span>
                             )}
+                            <span>·</span>
                             {!message.sender.isCurrentClient && !message.isSystem && (
                               <div className="elixirchat-chat-messages__rating">
-                                <button
-                                  className={cn({
-                                    'elixirchat-chat-messages__rating-button': true,
-                                    'elixirchat-chat-messages__rating-button--positive': true,
-                                    'elixirchat-chat-messages__rating-button--active': message.rating?.rating === 'POSITIVE',
-                                  })}
-                                  onClick={() => this.onRateMessage(message.id, 'POSITIVE')}
-                                  title={intl.formatMessage({ id: 'rate_positive' })}>
-                                  <i className={message.rating?.rating === 'POSITIVE' ? 'icon-like-active' : 'icon-like'}/>
-                                </button>
-                                <button
-                                  className="elixirchat-chat-messages__rating-button elixirchat-chat-messages__rating-button--negative"
-                                  onClick={() => this.onRateMessage(message.id, 'NEGATIVE')}
-                                  title={intl.formatMessage({ id: 'rate_negative' })}>
-                                  <i className="icon-dislike"/>
-                                </button>
+                                <RatingButton
+                                  key={`${message.id}-positive-${message.rating?.id || 'none'}`}
+                                  type="POSITIVE"
+                                  message={message}
+                                  onRate={this.onRateMessage}
+                                  intl={intl}
+                                />
+                                <RatingButton
+                                  key={`${message.id}-negative-${message.rating?.id || 'none'}`}
+                                  type="NEGATIVE"
+                                  message={message}
+                                  onRate={this.onRateMessage}
+                                  intl={intl}
+                                />
                                 {message.rating?.comment && (
                                   <span className="elixirchat-chat-messages__rating-comment">
                                     {message.rating.comment}
