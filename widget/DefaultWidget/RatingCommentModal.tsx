@@ -7,6 +7,7 @@ interface IRatingCommentModalProps {
   onSubmit: (comment: string) => void;
   onSkip: () => void;
   elixirChatWidget?: any;
+  isSubmitted?: boolean;
 }
 
 interface IRatingCommentModalState {
@@ -16,9 +17,10 @@ interface IRatingCommentModalState {
 }
 
 class RatingCommentModalComponent extends Component<IRatingCommentModalProps, IRatingCommentModalState> {
-  private thankYouTimeout: number | null = null;
+  private hideAnimationTimeout: ReturnType<typeof setTimeout> | null = null;
+  private thankYouTimeout: ReturnType<typeof setTimeout> | null = null;
 
-  constructor(props) {
+  constructor(props: IRatingCommentModalProps) {
     super(props);
     this.state = { 
       comment: '',
@@ -27,40 +29,54 @@ class RatingCommentModalComponent extends Component<IRatingCommentModalProps, IR
     };
   }
 
+  componentDidUpdate(prevProps: IRatingCommentModalProps) {
+    if (!prevProps.isSubmitted && this.props.isSubmitted) {
+      this.startThankYouFlow();
+    }
+  }
+
   componentWillUnmount() {
+    if (this.hideAnimationTimeout) {
+      clearTimeout(this.hideAnimationTimeout);
+    }
     if (this.thankYouTimeout) {
       clearTimeout(this.thankYouTimeout);
     }
   }
 
-  handleSubmit = async () => {
-    const { comment } = this.state;
-    if (comment.trim()) {
-      this.setState({ isSubmitting: true });
+  startThankYouFlow = () => {
+    this.hideAnimationTimeout = setTimeout(() => {
+      this.setState({ showThankYou: true });
       
-      // Запускаем анимацию скрытия формы
-      setTimeout(() => {
-        this.setState({ showThankYou: true });
-        
-        // Через 1500ms скрываем модальное окно
-        this.thankYouTimeout = setTimeout(() => {
-          this.props.onSubmit(comment);
-        }, 1500);
-      }, 300); // Небольшая задержка для анимации скрытия
-    } else {
-      this.props.onSkip();
+      this.thankYouTimeout = setTimeout(() => {
+        this.props.onSkip();
+      }, 1500);
+    }, 300);
+  };
+
+  handleSubmit = () => {
+    const comment = this.state.comment.trim();
+    
+    if (!comment || this.state.isSubmitting) {
+      return;
     }
+
+    this.setState({ isSubmitting: true });
+    this.props.onSubmit(comment);
   };
 
   render() {
-    const { intl, onSkip, elixirChatWidget } = this.props;
+    const { onSkip, elixirChatWidget } = this.props;
     const { comment, isSubmitting, showThankYou } = this.state;
     const modalDislikeIcon = elixirChatWidget?.widgetAssets?.assets?.svg?.modalDislikeIcon;
     const modalHeartIcon = elixirChatWidget?.widgetAssets?.assets?.svg?.modalHeartIcon;
     
     return (
       <div className="elixirchat-rating-comment-modal">
-        <div className="elixirchat-rating-comment-modal__overlay" onClick={onSkip} />
+        <div 
+          className="elixirchat-rating-comment-modal__overlay" 
+          onClick={isSubmitting ? () => {} : onSkip} 
+        />
         <div className={cn({
           'elixirchat-rating-comment-modal__content': true,
           'elixirchat-rating-comment-modal__content--hiding': isSubmitting && !showThankYou,
@@ -84,6 +100,7 @@ class RatingCommentModalComponent extends Component<IRatingCommentModalProps, IR
                 onChange={(e) => this.setState({ comment: e.target.value })}
                 rows={4}
                 disabled={isSubmitting}
+                maxLength={1000}
               />
               <div className="elixirchat-rating-comment-modal__actions">
                 <button

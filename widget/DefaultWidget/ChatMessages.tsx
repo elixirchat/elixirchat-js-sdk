@@ -115,6 +115,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
       isOpen: false,
       ratingId: null,
       messageId: null,
+      isSubmitted: false,
     },
   };
 
@@ -554,6 +555,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
             isOpen: true,
             ratingId: result.id,
             messageId: messageId,
+            isSubmitted: false,
           },
         });
       }
@@ -581,9 +583,14 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
         }
       );
 
-      this.closeRatingCommentModal();
+      this.setState({
+        ratingCommentModal: {
+          ...ratingCommentModal,
+          isSubmitted: true,
+        },
+      });
     } catch (error) {
-      elixirChatWidget.logError('Failed to add rating comment', error);
+      this.closeRatingCommentModal();
     }
   };
 
@@ -593,6 +600,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
         isOpen: false,
         ratingId: null,
         messageId: null,
+        isSubmitted: false,
       },
     });
   };
@@ -1143,6 +1151,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
     onSubmit={this.onRatingCommentSubmit}
     onSkip={this.closeRatingCommentModal}
     elixirChatWidget={elixirChatWidget}
+    isSubmitted={this.state.ratingCommentModal.isSubmitted}
   />
 )}
 
