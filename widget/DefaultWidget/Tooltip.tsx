@@ -63,6 +63,10 @@ class TooltipComponent extends Component<IDefaultWidgetTooltipProps, IDefaultWid
       ...otherProps
     } = this.props;
 
+    if (!title) {
+      return children;
+    }
+
     const passedProps = {
       ...otherProps,
       ref: this.targetRef,

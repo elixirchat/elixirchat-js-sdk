@@ -15,6 +15,7 @@ export const RatingButton = ({ type, message, onRate, intl }: IRatingButtonProps
   const isPositive = type === 'POSITIVE';
   const isRated = !!(message.rating && (message.rating.id || message.rating.rating));
   const isActive = message.rating?.rating === type;
+  const isOptimisticRated = Boolean(message.rating?.rating) && !message.rating?.id;
   const iconRef = useRef<HTMLElement>(null);
 
   const className = cn({
@@ -29,7 +30,7 @@ export const RatingButton = ({ type, message, onRate, intl }: IRatingButtonProps
 
   if (isRated) {
     return (
-      <Tooltip title={intl.formatMessage({ id: 'rate_message_already_rated' })} center>
+      <Tooltip title={isOptimisticRated ? '' : intl.formatMessage({ id: 'rate_message_already_rated' })} center>
         <button className={className} onClick={(e) => e.preventDefault()}>
           <i ref={iconRef} className={icon}/>
         </button>

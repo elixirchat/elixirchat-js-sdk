@@ -528,39 +528,60 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
     const { processedMessages } = this.state;
     const message = processedMessages.find(m => m.id === messageId);
     
-    // Предотвращаем повторную оценку
     if (message?.rating) {
       return;
     }
-    
+
+    const previousRating = message?.rating || null;
+    elixirChatWidget.messageSubscription.changeMessageBy(
+      { id: messageId },
+      {
+        rating: {
+          rating,
+          comment: null,
+        },
+      }
+    );
+
+    if (rating === 'NEGATIVE') {
+      this.setState({
+        ratingCommentModal: {
+          isOpen: true,
+          ratingId: null,
+          messageId,
+          isSubmitted: false,
+        },
+      });
+    }
+
     try {
       const result = await elixirChatWidget.rateMessage(messageId, rating);
-      
-      // Обновляем сообщение с рейтингом
-      elixirChatWidget.messageSubscription.changeMessageBy(
-        { id: messageId },
-        {
-          rating: {
-            id: result.id,
-            rating: result.rating,
-            comment: null,
-          },
-        }
-      );
 
-      // Открываем модальное окно для комментария только при дизлайке
       if (rating === 'NEGATIVE') {
-        this.setState({
-          ratingCommentModal: {
-            isOpen: true,
-            ratingId: result.id,
-            messageId: messageId,
-            isSubmitted: false,
-          },
+        this.setState(prevState => {
+          const modal = prevState.ratingCommentModal;
+          if (!modal?.isOpen || modal.messageId !== messageId) {
+            return null;
+          }
+          return {
+            ratingCommentModal: {
+              ...modal,
+              ratingId: result.id,
+            },
+          };
         });
       }
     } catch (error) {
       elixirChatWidget.logError('Failed to rate message', error);
+
+      elixirChatWidget.messageSubscription.changeMessageBy(
+        { id: messageId },
+        { rating: previousRating }
+      );
+
+      if (rating === 'NEGATIVE') {
+        this.closeRatingCommentModal();
+      }
     }
   };
 
@@ -568,6 +589,10 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
     const { elixirChatWidget } = this.props;
     const { ratingCommentModal } = this.state;
     
+    if (!ratingCommentModal.ratingId) {
+      return;
+    }
+
     try {
       const result = await elixirChatWidget.addRatingComment(ratingCommentModal.ratingId, comment);
       
@@ -1042,24 +1067,19 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
                             {!message.sender.isCurrentClient && !message.isSystem && (
                               <div className="elixirchat-chat-messages__rating">
                                 <RatingButton
-                                  key={`${message.id}-positive-${message.rating?.id || 'none'}`}
+                                  key={`${message.id}-positive`}
                                   type="POSITIVE"
                                   message={message}
                                   onRate={this.onRateMessage}
                                   intl={intl}
                                 />
                                 <RatingButton
-                                  key={`${message.id}-negative-${message.rating?.id || 'none'}`}
+                                  key={`${message.id}-negative`}
                                   type="NEGATIVE"
                                   message={message}
                                   onRate={this.onRateMessage}
                                   intl={intl}
                                 />
-                                {message.rating?.comment && (
-                                  <span className="elixirchat-chat-messages__rating-comment">
-                                    {message.rating.comment}
-                                  </span>
-                                )}
                               </div>
                             )}
                             {message.sender.isCurrentClient && dayjs(message.timestamp).format('H:mm')}
@@ -1152,6 +1172,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
     onSkip={this.closeRatingCommentModal}
     elixirChatWidget={elixirChatWidget}
     isSubmitted={this.state.ratingCommentModal.isSubmitted}
+    isReady={Boolean(this.state.ratingCommentModal.ratingId)}
   />
 )}
 

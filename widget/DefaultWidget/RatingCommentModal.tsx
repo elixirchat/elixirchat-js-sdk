@@ -8,6 +8,7 @@ interface IRatingCommentModalProps {
   onSkip: () => void;
   elixirChatWidget?: any;
   isSubmitted?: boolean;
+  isReady?: boolean;
 }
 
 interface IRatingCommentModalState {
@@ -57,7 +58,7 @@ class RatingCommentModalComponent extends Component<IRatingCommentModalProps, IR
   handleSubmit = () => {
     const comment = this.state.comment.trim();
     
-    if (!comment || this.state.isSubmitting) {
+    if (!this.props.isReady || !comment || this.state.isSubmitting) {
       return;
     }
 
@@ -66,7 +67,7 @@ class RatingCommentModalComponent extends Component<IRatingCommentModalProps, IR
   };
 
   render() {
-    const { onSkip, elixirChatWidget } = this.props;
+    const { onSkip, elixirChatWidget, isReady = true } = this.props;
     const { comment, isSubmitting, showThankYou } = this.state;
     const modalDislikeIcon = elixirChatWidget?.widgetAssets?.assets?.svg?.modalDislikeIcon;
     const modalHeartIcon = elixirChatWidget?.widgetAssets?.assets?.svg?.modalHeartIcon;
@@ -106,7 +107,7 @@ class RatingCommentModalComponent extends Component<IRatingCommentModalProps, IR
                 <button
                   className="elixirchat-rating-comment-modal__button"
                   onClick={this.handleSubmit}
-                  disabled={!comment.trim()}>
+                  disabled={!isReady || !comment.trim() || isSubmitting}>
                   <FormattedMessage id="rate_message_comment_submit" />
                 </button>
                 <button
