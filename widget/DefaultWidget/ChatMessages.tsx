@@ -555,18 +555,6 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
 
       const result = await elixirChatWidget.rateMessage(messageId, rating);
 
-      // Обновляем сообщение с рейтингом
-      elixirChatWidget.messageSubscription.changeMessageBy(
-        { id: messageId },
-        {
-          rating: {
-            id: result.id,
-            rating: result.rating,
-            comment: null,
-          },
-        }
-      );
-
       if (rating === 'NEGATIVE') {
         this.setState(prevState => {
           const modal = prevState.ratingCommentModal;
