@@ -87,7 +87,7 @@ class RatingCommentModalComponent extends Component<IRatingCommentModalProps, IR
               />
               <div className="elixirchat-rating-comment-modal__actions">
                 <button
-                  className="elixirchat-rating-comment-modal__button elixirchat-rating-comment-modal__button--submit"
+                  className="elixirchat-rating-comment-modal__button"
                   onClick={this.handleSubmit}
                   disabled={!comment.trim() || isSubmitting}>
                   <FormattedMessage id="rate_message_comment_submit" />

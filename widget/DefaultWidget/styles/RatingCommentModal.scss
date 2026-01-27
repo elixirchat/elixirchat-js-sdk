@@ -21,6 +21,7 @@
 }
 
 .elixirchat-rating-comment-modal__content {
+  box-sizing: border-box;
   position: relative;
   background: #fff;
   border-radius: 12px 12px 0 0;
@@ -37,27 +38,41 @@
   }
 
   &--thank-you {
-    padding: 32px 24px;
+    height: 307px;
+    padding: 26px 30px;
     text-align: center;
-    animation: thankYouFadeIn 0.3s ease;
+    animation: thankYouFadeIn 2s ease forwards;
+    width: 320px;
+    box-sizing: border-box;
   }
 }
 
 .elixirchat-rating-comment-modal__thank-you {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 500;
-  color: $color-black;
-  animation: thankYouFadeOut 0.3s ease 1.2s forwards;
+  color: #050505;
+  margin-top: 45px;
 }
 
 @keyframes thankYouFadeIn {
-  from {
+  0% {
     opacity: 0;
     transform: translateY(10px);
   }
-  to {
+
+  33% { 
     opacity: 1;
     transform: translateY(0);
+  }
+
+  66% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(10px);
   }
 }
 
@@ -108,38 +123,31 @@
 .elixirchat-rating-comment-modal__actions {
   display: flex;
   gap: 8px;
-  justify-content: flex-end;
 }
 
 .elixirchat-rating-comment-modal__button {
-  padding: 8px 16px;
-  border-radius: 4px;
-  border: none;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 7px;
+  border: 1px solid #03F;
   cursor: pointer;
+  background-color: #03F;
   font-size: 14px;
-  font-weight: 500;
+  line-height: 18px;
+  font-weight: 400;
   transition: all 0.2s;
 
+  &:hover {
+    background-color: #0029cc;
+  }
+
   &--skip {
+    color: #999;
     background: transparent;
-    color: $color-gray-dark;
+    border: unset;
 
     &:hover {
       background: rgba(0, 0, 0, 0.05);
-    }
-  }
-
-  &--submit {
-    background: $color-pink;
-    color: white;
-
-    &:hover:not(:disabled) {
-      background: darken($color-pink, 10%);
-    }
-
-    &:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
     }
   }
 }
