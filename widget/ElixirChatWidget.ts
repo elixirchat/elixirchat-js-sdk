@@ -65,13 +65,7 @@ export interface IElixirChatWidgetConfig {
 }
 
 export class ElixirChatWidget extends ElixirChat {
-
-  constructor(config: IElixirChatConfig) {
-    super(config);
-  }
-
   public widgetConfig: IElixirChatWidgetConfig = {};
-  public widgetAssets: any;
   public widgetIsMuted: boolean;
   public widgetIsPopupOpen: boolean;
   public widgetIsSearchOpen: boolean;
