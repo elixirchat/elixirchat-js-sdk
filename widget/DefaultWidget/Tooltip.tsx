@@ -44,7 +44,10 @@ class TooltipComponent extends Component<IDefaultWidgetTooltipProps, IDefaultWid
     }
     const { title, className, center } = this.props;
     const tooltip = document.createElement('div');
-    tooltip.classList.add('elixirchat-tooltip', className);
+    tooltip.classList.add('elixirchat-tooltip');
+    if (className) {
+      tooltip.classList.add(className);
+    }
     if (center) {
       tooltip.classList.add('elixirchat-tooltip--center');
     }

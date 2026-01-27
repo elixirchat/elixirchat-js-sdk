@@ -84,6 +84,12 @@ export interface IDefaultWidgetMessagesState {
   showScrollButton: boolean;
   originalMessages: object;
   lastMessageId: string;
+  ratingCommentModal?: {
+    isOpen: boolean;
+    ratingId: string | null;
+    messageId: string | null;
+    isSubmitted: boolean;
+  };
 }
 
 class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefaultWidgetMessagesState> {
@@ -528,60 +534,38 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
     const { processedMessages } = this.state;
     const message = processedMessages.find(m => m.id === messageId);
     
+    // Предотвращаем повторную оценку
     if (message?.rating) {
       return;
-    }
-
-    const previousRating = message?.rating || null;
-    elixirChatWidget.messageSubscription.changeMessageBy(
-      { id: messageId },
-      {
-        rating: {
-          rating,
-          comment: null,
-        },
-      }
-    );
-
-    if (rating === 'NEGATIVE') {
-      this.setState({
-        ratingCommentModal: {
-          isOpen: true,
-          ratingId: null,
-          messageId,
-          isSubmitted: false,
-        },
-      });
     }
 
     try {
       const result = await elixirChatWidget.rateMessage(messageId, rating);
 
+      // Обновляем сообщение с рейтингом
+      elixirChatWidget.messageSubscription.changeMessageBy(
+        { id: messageId },
+        {
+          rating: {
+            id: result.id,
+            rating: result.rating,
+            comment: null,
+          },
+        }
+      );
+
       if (rating === 'NEGATIVE') {
-        this.setState(prevState => {
-          const modal = prevState.ratingCommentModal;
-          if (!modal?.isOpen || modal.messageId !== messageId) {
-            return null;
-          }
-          return {
-            ratingCommentModal: {
-              ...modal,
-              ratingId: result.id,
-            },
-          };
+        this.setState({
+          ratingCommentModal: {
+            isOpen: true,
+            ratingId: result.id,
+            messageId,
+            isSubmitted: false,
+          },
         });
       }
     } catch (error) {
       elixirChatWidget.logError('Failed to rate message', error);
-
-      elixirChatWidget.messageSubscription.changeMessageBy(
-        { id: messageId },
-        { rating: previousRating }
-      );
-
-      if (rating === 'NEGATIVE') {
-        this.closeRatingCommentModal();
-      }
     }
   };
 
@@ -594,20 +578,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
     }
 
     try {
-      const result = await elixirChatWidget.addRatingComment(ratingCommentModal.ratingId, comment);
-      
-      // Обновляем сообщение с комментарием
-      elixirChatWidget.messageSubscription.changeMessageBy(
-        { id: ratingCommentModal.messageId },
-        {
-          rating: {
-            id: ratingCommentModal.ratingId,
-            rating: result.rating,
-            comment: result.comment,
-          },
-        }
-      );
-
+      await elixirChatWidget.addRatingComment(ratingCommentModal.ratingId, comment);
       this.setState({
         ratingCommentModal: {
           ...ratingCommentModal,
@@ -1123,7 +1094,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
                         {message.systemData.type === 'NobodyWorkingMessage' && (
                           <div className="elixirchat-chat-messages__text">
                             <FormattedMessage id="specialists_are_offline" values={{
-                              hasDatetime: Boolean(message.systemData?.workHoursStartAt)
+                              hasDatetime: Boolean(message.systemData?.workHoursStartAt),
                               datetime: humanizeUpcomingDate(message.systemData?.workHoursStartAt, this.props.intl)
                             }} />
                           </div>

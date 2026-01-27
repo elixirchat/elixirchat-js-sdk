@@ -46,13 +46,11 @@ class RatingCommentModalComponent extends Component<IRatingCommentModalProps, IR
   }
 
   startThankYouFlow = () => {
-    this.hideAnimationTimeout = setTimeout(() => {
-      this.setState({ showThankYou: true });
-      
-      this.thankYouTimeout = setTimeout(() => {
-        this.props.onSkip();
-      }, 1500);
-    }, 300);
+    this.setState({ showThankYou: true });
+    
+    this.thankYouTimeout = setTimeout(() => {
+      this.props.onSkip();
+    }, 1500);
   };
 
   handleSubmit = () => {
