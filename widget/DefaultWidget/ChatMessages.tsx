@@ -1137,15 +1137,15 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
             </Fragment>
           </div>
         </div>
+{this.state.ratingCommentModal.isOpen && (
+  <RatingCommentModal
+    intl={this.props.intl}
+    onSubmit={this.onRatingCommentSubmit}
+    onSkip={this.closeRatingCommentModal}
+    elixirChatWidget={elixirChatWidget}
+  />
+)}
 
-        {/* {this.state.ratingCommentModal.isOpen && ( */}
-          <RatingCommentModal
-            intl={this.props.intl}
-            onSubmit={this.onRatingCommentSubmit}
-            onSkip={this.closeRatingCommentModal}
-            elixirChatWidget={elixirChatWidget}
-          />
-        {/* )} */}
       </div>
     );
   }

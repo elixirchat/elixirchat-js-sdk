@@ -28,13 +28,10 @@
   padding: 22px 16px 16px;
   width: 320px;
   box-shadow: 0 0 40px 0 rgba(5, 5, 5, 0.16);
-  transition: all 0.3s ease;
-  transform: translateY(0);
-  opacity: 1;
+  animation: modalAppear 0.3s ease forwards;
 
   &--hiding {
-    transform: translateY(20px);
-    opacity: 0;
+    animation: modalDisappear 0.3s ease forwards;
   }
 
   &--thank-you {
@@ -52,6 +49,28 @@
   font-weight: 500;
   color: #050505;
   margin-top: 45px;
+}
+
+@keyframes modalAppear {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes modalDisappear {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(20px);
+    opacity: 0;
+  }
 }
 
 @keyframes thankYouFadeIn {
@@ -137,7 +156,11 @@
   font-weight: 400;
   transition: all 0.2s;
 
-  &:hover {
+  &:disabled {
+    opacity: 0.5;
+  }
+
+  &:hover:not([disabled]) {
     background-color: #0029cc;
   }
 
@@ -146,7 +169,7 @@
     background: transparent;
     border: unset;
 
-    &:hover {
+    &:hover:not([disabled]) {
       background: rgba(0, 0, 0, 0.05);
     }
   }

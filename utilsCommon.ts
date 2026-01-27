@@ -221,19 +221,24 @@ export function hashCode(str: string): string {
 
 
 // Same as https://www.npmjs.com/package/classnames but lightweight
-export function cn(...args){
-  if (typeof args[0] === 'object') {
-    const classNameArr = [];
-    for (let className in args[0]) {
-      if ( args[0][className] ) {
-        classNameArr.push(className);
+export function cn(...args: any[]): string {
+  const classNames: string[] = [];
+
+  args.forEach(arg => {
+    if (!arg) {
+      return
+    }; 
+
+    if (typeof arg === 'string') {
+      classNames.push(arg);
+    } else if (typeof arg === 'object') {
+      for (let key in arg) {
+        if (arg[key]) classNames.push(key);
       }
     }
-    return classNameArr.join(' ');
-  }
-  else {
-    return args.join(' ');
-  }
+  });
+
+  return classNames.join(' ');
 }
 
 

@@ -16,7 +16,7 @@ interface IRatingCommentModalState {
 }
 
 class RatingCommentModalComponent extends Component<IRatingCommentModalProps, IRatingCommentModalState> {
-  private thankYouTimeout: NodeJS.Timeout | null = null;
+  private thankYouTimeout: number | null = null;
 
   constructor(props) {
     super(props);
@@ -89,7 +89,7 @@ class RatingCommentModalComponent extends Component<IRatingCommentModalProps, IR
                 <button
                   className="elixirchat-rating-comment-modal__button"
                   onClick={this.handleSubmit}
-                  disabled={!comment.trim() || isSubmitting}>
+                  disabled={!comment.trim()}>
                   <FormattedMessage id="rate_message_comment_submit" />
                 </button>
                 <button
@@ -109,7 +109,7 @@ class RatingCommentModalComponent extends Component<IRatingCommentModalProps, IR
                   className="elixirchat-rating-comment-modal__icon elixirchat-rating-comment-modal__icon--heart"
                 />
               )}
-              <FormattedMessage id="rate_message_thank_you" defaultMessage="Спасибо за ваш отзыв!" />
+              <FormattedMessage id="rate_message_thank_you" />
             </div>
           )}
         </div>
