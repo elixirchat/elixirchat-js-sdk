@@ -94,6 +94,19 @@ export interface IJoinRoomChannel {
   omnichannelCode?: string;
 }
 
+export interface IRateMessageResponse {
+  id: string;
+  rating: 'POSITIVE' | 'NEGATIVE';
+  message_id: string;
+}
+
+export interface IAddRatingCommentResponse {
+  id: string;
+  rating: 'POSITIVE' | 'NEGATIVE';
+  comment: string;
+  message_id: string;
+}
+
 export class ElixirChat {
 
   public version: string = process.env.ELIXIRCHAT_VERSION;
@@ -589,7 +602,10 @@ export class ElixirChat {
     return this.screenshotTaker.takeScreenshot();
   };
 
-  public rateMessage = (messageId: string, rating: 'POSITIVE' | 'NEGATIVE'): Promise<any> => {
+  public rateMessage = (
+    messageId: string,
+    rating: 'POSITIVE' | 'NEGATIVE'
+  ): Promise<IRateMessageResponse> => {
     return this.checkIfConnected().then(() => {
       const query = gql`
         mutation ($messageId: ID!, $rating: Rating!) {
@@ -604,7 +620,10 @@ export class ElixirChat {
     });
   };
 
-  public addRatingComment = (ratingId: string, comment: string): Promise<any> => {
+  public addRatingComment = (
+    ratingId: string,
+    comment: string
+  ): Promise<IAddRatingCommentResponse> => {
     return this.checkIfConnected().then(() => {
       const query = gql`
         mutation ($ratingId: ID!, $comment: String!) {
