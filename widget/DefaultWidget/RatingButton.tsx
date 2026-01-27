@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { cn } from '../../utilsCommon';
 import { Tooltip } from './Tooltip';
 
@@ -13,8 +13,11 @@ interface IRatingButtonProps {
 
 export const RatingButton = ({ type, message, onRate, intl }: IRatingButtonProps) => {
   const isPositive = type === 'POSITIVE';
+  const [optimisticRating, setOptimisticRating] = useState<'POSITIVE' | 'NEGATIVE' | null>(null);
+
   const isRated = !!(message.rating && (message.rating.id || message.rating.rating));
-  const isActive = message.rating?.rating === type;
+  const effectiveRating = message.rating?.rating ?? optimisticRating;
+  const isActive = effectiveRating === type;
   const iconRef = useRef<HTMLElement>(null);
 
   const className = cn({
@@ -27,23 +30,37 @@ export const RatingButton = ({ type, message, onRate, intl }: IRatingButtonProps
     ? isActive ? 'icon-like-active' : 'icon-like'
     : isActive ? 'icon-dislike-active' : 'icon-dislike';
 
-  if (isRated) {
-    return (
-      <Tooltip title={intl.formatMessage({ id: 'rate_message_already_rated' })} center>
-        <button className={className} onClick={(e) => e.preventDefault()}>
-          <i ref={iconRef} className={icon}/>
-        </button>
-      </Tooltip>
-    );
-  }
+  // Как только сервер/WS принёс реальный рейтинг — сбрасываем локальный optimistic.
+  useEffect(() => {
+    if (isRated && optimisticRating) {
+      setOptimisticRating(null);
+    }
+  }, [isRated, optimisticRating]);
+
+  // Тултип нужен только для "уже оценено" (после подтверждения), и не нужен сразу после клика.
+  const tooltipTitle = isRated
+    ? intl.formatMessage({ id: 'rate_message_already_rated' })
+    : '';
 
   return (
-    <button
-      className={className}
-      onClick={() => onRate(message.id, type)}
-      title={intl.formatMessage({ id: isPositive ? 'rate_positive' : 'rate_negative' })}
-    >
-      <i ref={iconRef} className={icon}/>
-    </button>
+    <Tooltip title={tooltipTitle} center>
+      <button
+        className={className}
+        onClick={(e) => {
+          if (isRated) {
+            e.preventDefault();
+            return;
+          }
+          // Локальный optimistic: фиксируем активную иконку до WS-апдейта,
+          // без хранения состояния наверху.
+          if (!optimisticRating) {
+            setOptimisticRating(type);
+          }
+          onRate(message.id, type);
+        }}
+      >
+        <i ref={iconRef} className={icon}/>
+      </button>
+    </Tooltip>
   );
 };

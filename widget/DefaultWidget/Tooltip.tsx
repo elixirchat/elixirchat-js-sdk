@@ -66,15 +66,11 @@ class TooltipComponent extends Component<IDefaultWidgetTooltipProps, IDefaultWid
       ...otherProps
     } = this.props;
 
-    if (!title) {
-      return children;
-    }
-
     const passedProps = {
       ...otherProps,
       ref: this.targetRef,
-      onMouseEnter: this.onTargetMouseEnter,
-      onMouseLeave: this.onTargetMouseLeave,
+      onMouseEnter: title ? this.onTargetMouseEnter : undefined,
+      onMouseLeave: title ? this.onTargetMouseLeave : undefined,
     };
     return React.cloneElement(children, passedProps);
   }

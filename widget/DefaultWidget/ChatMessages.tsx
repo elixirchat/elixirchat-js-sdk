@@ -540,6 +540,19 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
     }
 
     try {
+      // Для дизлайка показываем модалку сразу, не дожидаясь ответа API
+      // (ratingId проставим после успешного rateMessage)
+      if (rating === 'NEGATIVE') {
+        this.setState({
+          ratingCommentModal: {
+            isOpen: true,
+            ratingId: null,
+            messageId,
+            isSubmitted: false,
+          },
+        });
+      }
+
       const result = await elixirChatWidget.rateMessage(messageId, rating);
 
       // Обновляем сообщение с рейтингом
@@ -555,13 +568,17 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
       );
 
       if (rating === 'NEGATIVE') {
-        this.setState({
-          ratingCommentModal: {
-            isOpen: true,
-            ratingId: result.id,
-            messageId,
-            isSubmitted: false,
-          },
+        this.setState(prevState => {
+          const modal = prevState.ratingCommentModal;
+          if (!modal?.isOpen || modal.messageId !== messageId) {
+            return null;
+          }
+          return {
+            ratingCommentModal: {
+              ...modal,
+              ratingId: result.id,
+            },
+          };
         });
       }
     } catch (error) {
