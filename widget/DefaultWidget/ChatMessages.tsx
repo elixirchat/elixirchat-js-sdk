@@ -84,6 +84,7 @@ export interface IDefaultWidgetMessagesState {
   showScrollButton: boolean;
   originalMessages: object;
   lastMessageId: string;
+  ratingLocksByMessageId: Record<string, boolean>;
   ratingCommentModal?: {
     isOpen: boolean;
     ratingId: string | null;
@@ -117,6 +118,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
     originalMessages: {},
     lastMessageId: '',
     // Rating
+    ratingLocksByMessageId: {},
     ratingCommentModal: {
       isOpen: false,
       ratingId: null,
@@ -531,15 +533,20 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
 
   onRateMessage = async (messageId: string, rating: 'POSITIVE' | 'NEGATIVE') => {
     const { elixirChatWidget } = this.props;
-    const { processedMessages } = this.state;
+    const { processedMessages, ratingLocksByMessageId } = this.state;
     const message = processedMessages.find(m => m.id === messageId);
     
     // Предотвращаем повторную оценку
-    if (message?.rating) {
+    if (ratingLocksByMessageId?.[messageId] || (message?.rating && (message.rating.id || message.rating.rating))) {
       return;
     }
 
     try {
+      // Лочим повторные клики сразу (без изменений messageHistory/processedMessages)
+      this.setState(prevState => ({
+        ratingLocksByMessageId: { ...(prevState.ratingLocksByMessageId || {}), [messageId]: true },
+      }));
+
       // Для дизлайка показываем модалку сразу, не дожидаясь ответа API
       // (ratingId проставим после успешного rateMessage)
       if (rating === 'NEGATIVE') {
@@ -1048,6 +1055,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
                                   key={`${message.id}-positive`}
                                   type="POSITIVE"
                                   message={message}
+                                  isLocked={!!this.state.ratingLocksByMessageId?.[message.id]}
                                   onRate={this.onRateMessage}
                                   intl={intl}
                                 />
@@ -1055,6 +1063,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
                                   key={`${message.id}-negative`}
                                   type="NEGATIVE"
                                   message={message}
+                                  isLocked={!!this.state.ratingLocksByMessageId?.[message.id]}
                                   onRate={this.onRateMessage}
                                   intl={intl}
                                 />

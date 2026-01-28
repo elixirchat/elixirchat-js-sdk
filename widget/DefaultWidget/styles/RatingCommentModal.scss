@@ -18,6 +18,14 @@
   inset: 0;
   background: rgba(255, 255, 255, 0.4);
   backdrop-filter: blur(4px);
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+.elixirchat-rating-comment-modal--closing {
+  .elixirchat-rating-comment-modal__overlay {
+    opacity: 0;
+  }
 }
 
 .elixirchat-rating-comment-modal__content {

@@ -5,13 +5,14 @@ import { Tooltip } from './Tooltip';
 interface IRatingButtonProps {
   type: 'POSITIVE' | 'NEGATIVE';
   message: any;
+  isLocked?: boolean;
   onRate: (messageId: string, rating: 'POSITIVE' | 'NEGATIVE') => void;
   intl: {
     formatMessage: (arg: { id: string }) => string;
   };
 }
 
-export const RatingButton = ({ type, message, onRate, intl }: IRatingButtonProps) => {
+export const RatingButton = ({ type, message, isLocked = false, onRate, intl }: IRatingButtonProps) => {
   const isPositive = type === 'POSITIVE';
   const [optimisticRating, setOptimisticRating] = useState<'POSITIVE' | 'NEGATIVE' | null>(null);
 
@@ -23,7 +24,7 @@ export const RatingButton = ({ type, message, onRate, intl }: IRatingButtonProps
   const className = cn({
     'elixirchat-chat-messages__rating-button': true,
     [`elixirchat-chat-messages__rating-button--${isPositive ? 'positive' : 'negative'}`]: true,
-    'elixirchat-chat-messages__rating-button--rated': isRated
+    'elixirchat-chat-messages__rating-button--rated': isRated || isLocked
   });
 
   const icon = isPositive
@@ -37,22 +38,27 @@ export const RatingButton = ({ type, message, onRate, intl }: IRatingButtonProps
     }
   }, [isRated, optimisticRating]);
 
-  // Тултип нужен только для "уже оценено" (после подтверждения), и не нужен сразу после клика.
-  const tooltipTitle = isRated
+  const tooltipTitle = (isRated || isLocked)
     ? intl.formatMessage({ id: 'rate_message_already_rated' })
     : '';
+
+  // Если запрос упал и лок снят — возвращаем иконку в исходное состояние.
+  useEffect(() => {
+    if (!isLocked && !isRated && optimisticRating) {
+      setOptimisticRating(null);
+    }
+  }, [isLocked, isRated, optimisticRating]);
 
   return (
     <Tooltip title={tooltipTitle} center>
       <button
         className={className}
         onClick={(e) => {
-          if (isRated) {
+          if (isRated || isLocked) {
             e.preventDefault();
             return;
           }
           // Локальный optimistic: фиксируем активную иконку до WS-апдейта,
-          // без хранения состояния наверху.
           if (!optimisticRating) {
             setOptimisticRating(type);
           }

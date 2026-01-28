@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import { cn } from '../../utilsCommon';
 import { Player } from '@lottiefiles/react-lottie-player';
@@ -68,13 +68,13 @@ class RatingCommentModalComponent extends Component<IRatingCommentModalProps, IR
     }));
 
     // // Автозакрытие: через 1s начинаем fade-out, через 1.3s закрываем.
-    // this.closeStartTimeout = setTimeout(() => {
-    //   this.setState({ isClosing: true });
-    // }, 1000);
+    this.closeStartTimeout = setTimeout(() => {
+      this.setState({ isClosing: true });
+    }, 1500);
 
-    // this.closeFinishTimeout = setTimeout(() => {
-    //   this.props.onSkip();
-    // }, 1300);
+    this.closeFinishTimeout = setTimeout(() => {
+      this.props.onSkip();
+    }, 2000);
   };
 
   handleSubmit = () => {
@@ -95,7 +95,10 @@ class RatingCommentModalComponent extends Component<IRatingCommentModalProps, IR
     const lottieKey = isSuccess ? `success-${lottiePlayId}` : 'default';
     
     return (
-      <div className="elixirchat-rating-comment-modal">
+      <div className={cn({
+        'elixirchat-rating-comment-modal': true,
+        'elixirchat-rating-comment-modal--closing': isClosing,
+      })}>
         <div 
           className="elixirchat-rating-comment-modal__overlay" 
           onClick={isSubmitting || isSuccess || isClosing ? () => {} : onSkip} 
