@@ -30,6 +30,7 @@ import {
 import { ElixirChatWidget } from '../ElixirChatWidget';
 import { FormattedMarkdown } from './FormattedMarkdown';
 import { MessageSearch } from './MessageSearch';
+import { Avatar } from './Avatar';
 import { getScreenshotCompatibilityFallback } from '../../sdk/ScreenshotTaker';
 import { serializeMessage } from '../../sdk/serializers/serializeMessage';
 import {
@@ -841,12 +842,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
                           {!message.sender.isCurrentClient && (
                             <div className="elixirchat-chat-messages__sender">
                               <div>
-                                {this.processedAvatar(message) && (
-                                  <img className="elixirchat-chat-avatar" src={this.processedAvatar(message)} />
-                                )}
-                                {!this.processedAvatar(message) && (
-                                  <div className="elixirchat-chat-avatar elixirchat-chat-avatar__empty" />
-                                )}
+                                <Avatar src={this.processedAvatar(message)} />
                               </div>
                               <b>{getUserFullName(message.sender) || getOperatorName(message.sender, elixirChatWidget.widgetCustomEmployerName, elixirChatWidget.widgetTitle)}</b>
                               {Boolean(message.mentions.length) && (
@@ -982,12 +978,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
                       <div className="elixirchat-chat-messages__balloon">
                         <div className="elixirchat-chat-messages__sender">
                           <div>
-                            {this.processedAvatar(message) && (
-                              <img className="elixirchat-chat-avatar" src={this.processedAvatar(message)} />
-                            )}
-                            {!this.processedAvatar(message) && (
-                              <div className="elixirchat-chat-avatar elixirchat-chat-avatar__system" />
-                            )}
+                            <Avatar src={this.processedAvatar(message)} />
                           </div>
                           <b>{getUserFullName(message.sender) || getOperatorName(message.sender, elixirChatWidget.widgetCustomEmployerName, elixirChatWidget.widgetTitle)}</b>
                         </div>
@@ -1008,7 +999,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
                         {message.systemData.type === 'NobodyWorkingMessage' && (
                           <div className="elixirchat-chat-messages__text">
                             <FormattedMessage id="specialists_are_offline" values={{
-                              hasDatetime: Boolean(message.systemData?.workHoursStartAt)
+                              hasDatetime: Boolean(message.systemData?.workHoursStartAt),
                               datetime: humanizeUpcomingDate(message.systemData?.workHoursStartAt, this.props.intl)
                             }} />
                           </div>
