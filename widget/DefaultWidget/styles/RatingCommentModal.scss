@@ -21,11 +21,12 @@
 }
 
 .elixirchat-rating-comment-modal__content {
+  min-height: 334px;
   box-sizing: border-box;
   position: relative;
   background: #fff;
   border-radius: 12px 12px 0 0;
-  padding: 22px 16px 16px;
+  padding: 8px 16px 16px;
   width: 320px;
   box-shadow: 0 0 40px 0 rgba(5, 5, 5, 0.16);
   animation: modalAppear 0.3s ease forwards;
@@ -33,22 +34,6 @@
   &--hiding {
     animation: modalDisappear 0.3s ease forwards;
   }
-
-  &--thank-you {
-    height: 307px;
-    padding: 26px 30px;
-    text-align: center;
-    animation: thankYouFadeIn 2s ease forwards;
-    width: 320px;
-    box-sizing: border-box;
-  }
-}
-
-.elixirchat-rating-comment-modal__thank-you {
-  font-size: 20px;
-  font-weight: 500;
-  color: #050505;
-  margin-top: 45px;
 }
 
 @keyframes modalAppear {
@@ -73,29 +58,45 @@
   }
 }
 
-@keyframes thankYouFadeIn {
-  0% {
-    opacity: 0;
-    transform: translateY(10px);
-  }
+.elixirchat-rating-comment-modal__animation {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 112px;
+  height: 112px;
+  margin: 0 auto;
+  pointer-events: none;
+}
 
-  33% { 
-    opacity: 1;
-    transform: translateY(0);
-  }
+.elixirchat-rating-comment-modal__title {
+  font-size: 16px;
+  line-height: 24px;
+  margin: 0 auto;
+  max-width: 250px;
+  text-align: center;
+  font-weight: 500;
+  color: #050505;
+  transition: opacity 200ms ease, transform 200ms ease;
+}
 
-  66% {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.elixirchat-rating-comment-modal__title--success {
+  position: absolute;
+  top: 120px;
+  left: 50%;
+  transform: translate(-50%, 0);
+  opacity: 0;
+}
 
-  100% {
-    opacity: 0;
-    transform: translateY(10px);
+.elixirchat-rating-comment-modal__content--success {
+  .elixirchat-rating-comment-modal__default-form {
+    animation: fadeOut 0.3s ease forwards;
+  }
+  .elixirchat-rating-comment-modal__title--success {
+    animation: fadeIn 0.5s 0.1s ease forwards;
   }
 }
 
-@keyframes thankYouFadeOut {
+@keyframes fadeOut {
   from {
     opacity: 1;
   }
@@ -104,29 +105,21 @@
   }
 }
 
-.elixirchat-rating-comment-modal__icon {
-  display: block;
-  margin: 0 auto;
-  width: 60px;
-  height: 60px;
-  pointer-events: none;
-
-  &--heart {
-    margin-bottom: 12px;
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 10px);
   }
-}
-
-.elixirchat-rating-comment-modal__title {
-  margin: 12px auto;
-  max-width: 250px;
-  text-align: center;
-  font-weight: 500;
-  color: #050505;
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0px);
+  }
 }
 
 .elixirchat-rating-comment-modal__textarea {
   width: 100%;
   min-height: 82px;
+  margin-top: 12px;
   padding: 8px 8px 8px 15px;
   border: 1px solid #D7D7D7;
   border-radius: 8px;
