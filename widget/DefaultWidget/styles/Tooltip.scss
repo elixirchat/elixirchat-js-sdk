@@ -15,8 +15,6 @@ $tooltip-background-color: rgba($color-black, .7);
   right: 0;
   backdrop-filter: blur(10px);
   font-size: 14px;
-  z-index: 1000;
-  pointer-events: none;
 
   &:after {
     content: '';

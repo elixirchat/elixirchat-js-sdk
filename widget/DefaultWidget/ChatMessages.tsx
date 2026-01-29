@@ -1008,7 +1008,8 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
                                 <RatingButton
                                   key={`${message.id}-positive`}
                                   type="POSITIVE"
-                                  message={message}
+                                  messageId={message.id}
+                                  rating={message?.rating?.rating}
                                   isLocked={isMessageLocked(this.state.ratingLocksByMessageId, message.id)}
                                   onRate={this.onRateMessage}
                                   intl={intl}
@@ -1016,7 +1017,8 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
                                 <RatingButton
                                   key={`${message.id}-negative`}
                                   type="NEGATIVE"
-                                  message={message}
+                                  messageId={message.id}
+                                  rating={message?.rating?.rating}
                                   isLocked={isMessageLocked(this.state.ratingLocksByMessageId, message.id)}
                                   onRate={this.onRateMessage}
                                   intl={intl}

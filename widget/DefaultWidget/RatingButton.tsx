@@ -4,7 +4,8 @@ import { Tooltip } from './Tooltip';
 
 interface IRatingButtonProps {
   type: 'POSITIVE' | 'NEGATIVE';
-  message: any;
+  messageId: string;
+  rating?: 'POSITIVE' | 'NEGATIVE' | null;
   isLocked?: boolean;
   onRate: (messageId: string, rating: 'POSITIVE' | 'NEGATIVE') => void;
   intl: {
@@ -12,11 +13,10 @@ interface IRatingButtonProps {
   };
 }
 
-export const RatingButton = ({ type, message, isLocked = false, onRate, intl }: IRatingButtonProps) => {
+export const RatingButton = ({ type, messageId, rating, isLocked = false, onRate, intl }: IRatingButtonProps) => {
   const isPositive = type === 'POSITIVE';
   const [optimisticRating, setOptimisticRating] = useState<'POSITIVE' | 'NEGATIVE' | null>(null);
   
-  const rating = message?.rating?.rating;
   const isRated = Boolean(rating);
   const effectiveRating = rating ?? optimisticRating;
   const isActive = effectiveRating === type;
@@ -62,7 +62,7 @@ export const RatingButton = ({ type, message, isLocked = false, onRate, intl }: 
             return;
           }
           setOptimisticRating(prev => prev ?? type);
-          onRate(message.id, type);
+          onRate(messageId, type);
         }}
       >
         <i className={icon}/>

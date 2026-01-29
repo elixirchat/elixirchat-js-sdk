@@ -36,9 +36,7 @@ class RatingCommentModalComponent extends Component<IRatingCommentModalProps, IR
   }
 
   componentDidMount() {
-    requestAnimationFrame(() => {
-      this.textareaRef.current?.focus();
-    });
+    this.textareaRef.current?.focus();
   }
 
   componentDidUpdate(prevProps: IRatingCommentModalProps) {
@@ -73,15 +71,11 @@ class RatingCommentModalComponent extends Component<IRatingCommentModalProps, IR
     }));
 
     this.closeStartTimeout = setTimeout(() => {
-      if (this.closeStartTimeout) {
         this.setState({ isClosing: true });
-      }
     }, 1500);
 
     this.closeFinishTimeout = setTimeout(() => {
-      if (this.closeFinishTimeout) {
         this.props.onSkip();
-      }
     }, 2000);
   };
 
@@ -119,7 +113,7 @@ class RatingCommentModalComponent extends Component<IRatingCommentModalProps, IR
           'elixirchat-rating-comment-modal__content--hiding': isClosing,
           'elixirchat-rating-comment-modal__content--success': isSuccess,
         })}>
-          <div className="elixirchat-rating-comment-modal__animation" aria-hidden="true">
+          <div className="elixirchat-rating-comment-modal__animation">
             <Player
               key={lottieKey}
               src={animationData as any}
@@ -131,7 +125,7 @@ class RatingCommentModalComponent extends Component<IRatingCommentModalProps, IR
 
           <div className="elixirchat-rating-comment-modal__default-form">
             <h3 className="elixirchat-rating-comment-modal__title elixirchat-rating-comment-modal__title--default">
-            <FormattedMessage id="rate_message_comment_title" />
+              <FormattedMessage id="rate_message_comment_title" />
             </h3>
 
             <div className="elixirchat-rating-comment-modal__body">
