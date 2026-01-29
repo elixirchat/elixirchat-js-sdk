@@ -16,10 +16,10 @@ export const RatingButton = ({ type, message, isLocked = false, onRate, intl }: 
   const isPositive = type === 'POSITIVE';
   const [optimisticRating, setOptimisticRating] = useState<'POSITIVE' | 'NEGATIVE' | null>(null);
 
-  const isRated = !!(message.rating && (message.rating.id || message.rating.rating));
-  const effectiveRating = message.rating?.rating ?? optimisticRating;
+  const isRated = Boolean(message?.rating && (message.rating.id || message.rating.rating));
+  const effectiveRating = message?.rating?.rating ?? optimisticRating;
   const isActive = effectiveRating === type;
-  const iconRef = useRef<HTMLElement>(null);
+  const prevLockedRef = useRef(isLocked);
 
   const className = cn({
     'elixirchat-chat-messages__rating-button': true,
@@ -31,23 +31,25 @@ export const RatingButton = ({ type, message, isLocked = false, onRate, intl }: 
     ? isActive ? 'icon-like-active' : 'icon-like'
     : isActive ? 'icon-dislike-active' : 'icon-dislike';
 
-  // Как только сервер/WS принёс реальный рейтинг — сбрасываем локальный optimistic.
   useEffect(() => {
-    if (isRated && optimisticRating) {
+    const prevLocked = prevLockedRef.current;
+    prevLockedRef.current = isLocked;
+
+    if (!optimisticRating) {
+      return;
+    }
+    if (isRated) {
+      setOptimisticRating(null);
+      return;
+    }
+    if (prevLocked && !isLocked) {
       setOptimisticRating(null);
     }
-  }, [isRated, optimisticRating]);
+  }, [isLocked, isRated, optimisticRating]);
 
   const tooltipTitle = (isRated || isLocked)
     ? intl.formatMessage({ id: 'rate_message_already_rated' })
     : '';
-
-  // Если запрос упал и лок снят — возвращаем иконку в исходное состояние.
-  useEffect(() => {
-    if (!isLocked && !isRated && optimisticRating) {
-      setOptimisticRating(null);
-    }
-  }, [isLocked, isRated, optimisticRating]);
 
   return (
     <Tooltip title={tooltipTitle} center>
@@ -59,13 +61,11 @@ export const RatingButton = ({ type, message, isLocked = false, onRate, intl }: 
             return;
           }
           // Локальный optimistic: фиксируем активную иконку до WS-апдейта,
-          if (!optimisticRating) {
-            setOptimisticRating(type);
-          }
+          setOptimisticRating(prev => prev ?? type);
           onRate(message.id, type);
         }}
       >
-        <i ref={iconRef} className={icon}/>
+        <i className={icon}/>
       </button>
     </Tooltip>
   );

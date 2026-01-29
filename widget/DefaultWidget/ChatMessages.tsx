@@ -578,6 +578,10 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
       }
     } catch (error) {
       elixirChatWidget.logError('Failed to rate message', error);
+      // Если запрос упал — снимаем лок, чтобы можно было повторить попытку.
+      this.setState(prevState => ({
+        ratingLocksByMessageId: { ...(prevState.ratingLocksByMessageId || {}), [messageId]: false },
+      }));
     }
   };
 
