@@ -303,40 +303,24 @@
     "ru": "по вашему времени ({tz})",
     "en": "in your time zone ({tz})"
   },
-  "rate_message": {
-    "ru": "Оценить ответ",
-    "en": "Rate message"
-  },
-  "rate_positive": {
-    "ru": "👍 Хорошо",
-    "en": "👍 Good"
-  },
-  "rate_negative": {
-    "ru": "👎 Плохо",
-    "en": "👎 Bad"
-  },
   "rate_message_comment_title": {
     "ru": "Почему наш ответ не помог? Мы читаем каждый отзыв ❤️",
-    "en": "Please leave a comment"
-  },
-  "rate_message_comment_placeholder": {
-    "ru": "Расскажите, что можно улучшить...",
-    "en": "Tell us what can be improved..."
+    "en": ""
   },
   "rate_message_comment_submit": {
     "ru": "Отправить",
-    "en": "Submit"
+    "en": ""
   },
   "rate_message_comment_skip": {
     "ru": "Не буду отвечать",
-    "en": "Skip"
+    "en": ""
   },
   "rate_message_thank_you": {
     "ru": "Спасибо<br></br> за ваш отзыв!",
-    "en": "Thank you<br></br> for your feedback!"
+    "en": ""
   },
   "rate_message_already_rated": {
     "ru": "Вы уже оценили это сообщение",
-    "en": "You have already rated this message"
+    "en": ""
   }
 }
