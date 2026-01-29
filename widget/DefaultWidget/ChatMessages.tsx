@@ -35,6 +35,7 @@ import { RatingCommentModal } from './RatingCommentModal';
 import {
   closeRatingCommentModalState,
   isMessageLocked,
+  isMessageRated,
 } from './chatMessagesRatingHelpers';
 import { rateMessageFlow, submitRatingCommentFlow } from './chatMessagesRatingFlow';
 import { getScreenshotCompatibilityFallback } from '../../sdk/ScreenshotTaker';
@@ -537,6 +538,9 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
   };
 
   onRateMessage = async (messageId: string, rating: 'POSITIVE' | 'NEGATIVE') => {
+    const { processedMessages, ratingLocksByMessageId } = this.state;
+    const message = processedMessages.find(m => m.id === messageId);
+
     await rateMessageFlow(
       {
         elixirChatWidget: this.props.elixirChatWidget,
@@ -545,7 +549,11 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
         closeRatingCommentModal: this.closeRatingCommentModal,
       },
       messageId,
-      rating
+      rating,
+      {
+        isLocked: isMessageLocked(ratingLocksByMessageId, messageId),
+        isRated: isMessageRated(message),
+      }
     );
   };
 

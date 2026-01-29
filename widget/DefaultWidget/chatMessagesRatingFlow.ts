@@ -1,7 +1,5 @@
 import type { RatingType, RatingLocksByMessageId, RatingCommentModalState } from './chatMessagesRatingHelpers';
 import {
-  isMessageLocked,
-  isMessageRated,
   lockRating,
   openRatingCommentModalState,
   setRatingCommentModalRatingIdState,
@@ -10,7 +8,6 @@ import {
 } from './chatMessagesRatingHelpers';
 
 type RatingFlowState = {
-  processedMessages: any[];
   ratingLocksByMessageId: RatingLocksByMessageId;
   ratingCommentModal: RatingCommentModalState;
 };
@@ -27,14 +24,13 @@ export type RatingFlowContext = {
 export async function rateMessageFlow(
   ctx: RatingFlowContext,
   messageId: string,
-  rating: RatingType
+  rating: RatingType,
+  stateSnapshot: { isLocked: boolean; isRated: boolean }
 ) {
-  const { elixirChatWidget, getState, setState } = ctx;
-  const { processedMessages, ratingLocksByMessageId } = getState();
-  const message = processedMessages.find(m => m.id === messageId);
+  const { elixirChatWidget, setState } = ctx;
 
   // Предотвращаем повторную оценку
-  if (isMessageLocked(ratingLocksByMessageId, messageId) || isMessageRated(message)) {
+  if (stateSnapshot.isLocked || stateSnapshot.isRated) {
     return;
   }
 
