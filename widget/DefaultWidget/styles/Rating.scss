@@ -37,10 +37,6 @@
     transition: transform 0.2s ease;
   }
 
-  path {
-    transition: 0.2s ease;
-  }
-
   &:hover {
     i {
       color: #050505;
@@ -63,11 +59,21 @@
         transform: none;
       }
 
+      .icon-like {
+        color: #B4B4B4;
+      }
+
       .icon-dislike {
         color: #B4B4B4;
       }
     }
   }
+}
+
+.elixirchat-chat-messages__rating-comment {
+  font-size: 12px;
+  color: $color-gray-dark;
+  font-style: italic;
 }
 
 @keyframes likeAnimation {
@@ -83,19 +89,4 @@
   100% {
     transform: scale(1) translateY(0);
   }
-}
-
-.elixirchat-chat-messages__rating--rated {
-  i {
-    font-size: 20px;
-    line-height: 1;
-    color: #B4B4B4;
-    margin-right: 4px;
-  }
-}
-
-.elixirchat-chat-messages__rating-comment {
-  font-size: 12px;
-  color: $color-gray-dark;
-  font-style: italic;
 }

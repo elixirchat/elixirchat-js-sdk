@@ -52,7 +52,7 @@ export const RatingButton = ({ type, message, isLocked = false, onRate, intl }: 
     : '';
 
   return (
-    <Tooltip title={tooltipTitle} center>
+    <Tooltip title={tooltipTitle} center trigger="click">
       <button
         className={className}
         onClick={(e) => {
