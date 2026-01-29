@@ -35,13 +35,8 @@ import { RatingCommentModal } from './RatingCommentModal';
 import {
   closeRatingCommentModalState,
   isMessageLocked,
-  isMessageRated,
-  lockRating,
-  markRatingCommentSubmittedState,
-  openRatingCommentModalState,
-  setRatingCommentModalRatingIdState,
-  unlockRating
 } from './chatMessagesRatingHelpers';
+import { rateMessageFlow, submitRatingCommentFlow } from './chatMessagesRatingFlow';
 import { getScreenshotCompatibilityFallback } from '../../sdk/ScreenshotTaker';
 import { serializeMessage } from '../../sdk/serializers/serializeMessage';
 import {
@@ -542,67 +537,28 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
   };
 
   onRateMessage = async (messageId: string, rating: 'POSITIVE' | 'NEGATIVE') => {
-    const { elixirChatWidget } = this.props;
-    const { processedMessages, ratingLocksByMessageId } = this.state;
-    const message = processedMessages.find(m => m.id === messageId);
-    
-    // Предотвращаем повторную оценку
-    if (isMessageLocked(ratingLocksByMessageId, messageId) || isMessageRated(message)) {
-      return;
-    }
-
-    try {
-      // Лочим повторные клики сразу (без изменений messageHistory/processedMessages)
-      this.setState(prevState => ({
-        ratingLocksByMessageId: lockRating(prevState.ratingLocksByMessageId, messageId),
-      }));
-
-      // Для дизлайка показываем модалку сразу, не дожидаясь ответа API
-      // (ratingId проставим после успешного rateMessage)
-      if (rating === 'NEGATIVE') {
-        this.setState({ ratingCommentModal: openRatingCommentModalState(messageId) });
-      }
-
-      const result = await elixirChatWidget.rateMessage(messageId, rating);
-
-      if (rating === 'NEGATIVE') {
-        this.setState(prevState => {
-          const nextModal = setRatingCommentModalRatingIdState(prevState.ratingCommentModal, messageId, result.id);
-          if (!nextModal) {
-            return null;
-          }
-          return { ratingCommentModal: nextModal };
-        });
-      }
-    } catch (error) {
-      elixirChatWidget.logError('Failed to rate message', error);
-      // Если запрос упал — снимаем лок, чтобы можно было повторить попытку.
-      this.setState(prevState => ({
-        ratingLocksByMessageId: unlockRating(prevState.ratingLocksByMessageId, messageId),
-      }));
-    }
+    await rateMessageFlow(
+      {
+        elixirChatWidget: this.props.elixirChatWidget,
+        getState: () => this.state,
+        setState: this.setState.bind(this),
+        closeRatingCommentModal: this.closeRatingCommentModal,
+      },
+      messageId,
+      rating
+    );
   };
 
   onRatingCommentSubmit = async (comment: string) => {
-    const { elixirChatWidget } = this.props;
-    const { ratingCommentModal } = this.state;
-    
-    if (!ratingCommentModal.ratingId) {
-      return;
-    }
-
-    try {
-      await elixirChatWidget.addRatingComment(ratingCommentModal.ratingId, comment);
-      this.setState(prevState => {
-        const nextModal = markRatingCommentSubmittedState(prevState.ratingCommentModal);
-        if (!nextModal) {
-          return null;
-        }
-        return { ratingCommentModal: nextModal };
-      });
-    } catch (error) {
-      this.closeRatingCommentModal();
-    }
+    await submitRatingCommentFlow(
+      {
+        elixirChatWidget: this.props.elixirChatWidget,
+        getState: () => this.state,
+        setState: this.setState.bind(this),
+        closeRatingCommentModal: this.closeRatingCommentModal,
+      },
+      comment
+    );
   };
 
   closeRatingCommentModal = () => {

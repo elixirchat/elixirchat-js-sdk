@@ -22,6 +22,7 @@ interface IRatingCommentModalState {
 class RatingCommentModalComponent extends Component<IRatingCommentModalProps, IRatingCommentModalState> {
   private closeStartTimeout: ReturnType<typeof setTimeout> | null = null;
   private closeFinishTimeout: ReturnType<typeof setTimeout> | null = null;
+  private textareaRef = React.createRef<HTMLTextAreaElement>();
 
   constructor(props: IRatingCommentModalProps) {
     super(props);
@@ -32,6 +33,12 @@ class RatingCommentModalComponent extends Component<IRatingCommentModalProps, IR
       isClosing: false,
       lottiePlayId: 0,
     };
+  }
+
+  componentDidMount() {
+    requestAnimationFrame(() => {
+      this.textareaRef.current?.focus();
+    });
   }
 
   componentDidUpdate(prevProps: IRatingCommentModalProps) {
@@ -82,14 +89,6 @@ class RatingCommentModalComponent extends Component<IRatingCommentModalProps, IR
     this.setState({ comment: e.target.value });
   };
 
-  handleOverlayClick = () => {
-    const isSuccess = this.state.mode === 'success';
-    if (this.state.isSubmitting || isSuccess || this.state.isClosing) {
-      return;
-    }
-    this.props.onSkip();
-  };
-
   handleSubmit = () => {
     const comment = this.state.comment.trim();
     
@@ -114,7 +113,6 @@ class RatingCommentModalComponent extends Component<IRatingCommentModalProps, IR
       })}>
         <div 
           className="elixirchat-rating-comment-modal__overlay" 
-          onClick={this.handleOverlayClick} 
         />
         <div className={cn({
           'elixirchat-rating-comment-modal__content': true,
@@ -139,6 +137,7 @@ class RatingCommentModalComponent extends Component<IRatingCommentModalProps, IR
             <div className="elixirchat-rating-comment-modal__body">
               <textarea
                 className="elixirchat-rating-comment-modal__textarea"
+                ref={this.textareaRef}
                 value={comment}
                 onChange={this.handleChange}
                 rows={3}

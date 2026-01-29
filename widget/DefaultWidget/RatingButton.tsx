@@ -15,9 +15,10 @@ interface IRatingButtonProps {
 export const RatingButton = ({ type, message, isLocked = false, onRate, intl }: IRatingButtonProps) => {
   const isPositive = type === 'POSITIVE';
   const [optimisticRating, setOptimisticRating] = useState<'POSITIVE' | 'NEGATIVE' | null>(null);
-
-  const isRated = Boolean(message?.rating && (message.rating.id || message.rating.rating));
-  const effectiveRating = message?.rating?.rating ?? optimisticRating;
+  
+  const rating = message?.rating?.rating;
+  const isRated = Boolean(rating);
+  const effectiveRating = rating ?? optimisticRating;
   const isActive = effectiveRating === type;
   const prevLockedRef = useRef(isLocked);
 
@@ -60,7 +61,6 @@ export const RatingButton = ({ type, message, isLocked = false, onRate, intl }: 
             e.preventDefault();
             return;
           }
-          // Локальный optimistic: фиксируем активную иконку до WS-апдейта,
           setOptimisticRating(prev => prev ?? type);
           onRate(message.id, type);
         }}
