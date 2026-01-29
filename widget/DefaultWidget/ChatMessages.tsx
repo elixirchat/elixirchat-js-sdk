@@ -1116,15 +1116,14 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
             </Fragment>
           </div>
         </div>
-{this.state.ratingCommentModal.isOpen && (
-  <RatingCommentModal
-    onSubmit={this.onRatingCommentSubmit}
-    onSkip={this.closeRatingCommentModal}
-    isSubmitted={this.state.ratingCommentModal.isSubmitted}
-    isReady={Boolean(this.state.ratingCommentModal.ratingId)}
-  />
-)}
-
+        {this.state.ratingCommentModal.isOpen && (
+          <RatingCommentModal
+            onSubmit={this.onRatingCommentSubmit}
+            onSkip={this.closeRatingCommentModal}
+            isSubmitted={this.state.ratingCommentModal.isSubmitted}
+            isReady={Boolean(this.state.ratingCommentModal.ratingId)}
+          />
+        )}
       </div>
     );
   }

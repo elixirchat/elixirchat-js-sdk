@@ -35,7 +35,7 @@ export async function rateMessageFlow(
   }
 
   try {
-    // Лочим повторные клики сразу (без изменений messageHistory/processedMessages)
+    // Лочим повторные клики сразу
     setState((prevState: RatingFlowState) => ({
       ratingLocksByMessageId: lockRating(prevState.ratingLocksByMessageId, messageId),
     }));
