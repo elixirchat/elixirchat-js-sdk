@@ -32,6 +32,16 @@ import { FormattedMarkdown } from './FormattedMarkdown';
 import { MessageSearch } from './MessageSearch';
 import { RatingButton } from './RatingButton';
 import { RatingCommentModal } from './RatingCommentModal';
+import {
+  closeRatingCommentModalState,
+  isMessageLocked,
+  isMessageRated,
+  lockRating,
+  markRatingCommentSubmittedState,
+  openRatingCommentModalState,
+  setRatingCommentModalRatingIdState,
+  unlockRating
+} from './chatMessagesRatingHelpers';
 import { getScreenshotCompatibilityFallback } from '../../sdk/ScreenshotTaker';
 import { serializeMessage } from '../../sdk/serializers/serializeMessage';
 import {
@@ -537,50 +547,38 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
     const message = processedMessages.find(m => m.id === messageId);
     
     // Предотвращаем повторную оценку
-    if (ratingLocksByMessageId?.[messageId] || (message?.rating && (message.rating.id || message.rating.rating))) {
+    if (isMessageLocked(ratingLocksByMessageId, messageId) || isMessageRated(message)) {
       return;
     }
 
     try {
       // Лочим повторные клики сразу (без изменений messageHistory/processedMessages)
       this.setState(prevState => ({
-        ratingLocksByMessageId: { ...(prevState.ratingLocksByMessageId || {}), [messageId]: true },
+        ratingLocksByMessageId: lockRating(prevState.ratingLocksByMessageId, messageId),
       }));
 
       // Для дизлайка показываем модалку сразу, не дожидаясь ответа API
       // (ratingId проставим после успешного rateMessage)
       if (rating === 'NEGATIVE') {
-        this.setState({
-          ratingCommentModal: {
-            isOpen: true,
-            ratingId: null,
-            messageId,
-            isSubmitted: false,
-          },
-        });
+        this.setState({ ratingCommentModal: openRatingCommentModalState(messageId) });
       }
 
       const result = await elixirChatWidget.rateMessage(messageId, rating);
 
       if (rating === 'NEGATIVE') {
         this.setState(prevState => {
-          const modal = prevState.ratingCommentModal;
-          if (!modal?.isOpen || modal.messageId !== messageId) {
+          const nextModal = setRatingCommentModalRatingIdState(prevState.ratingCommentModal, messageId, result.id);
+          if (!nextModal) {
             return null;
           }
-          return {
-            ratingCommentModal: {
-              ...modal,
-              ratingId: result.id,
-            },
-          };
+          return { ratingCommentModal: nextModal };
         });
       }
     } catch (error) {
       elixirChatWidget.logError('Failed to rate message', error);
       // Если запрос упал — снимаем лок, чтобы можно было повторить попытку.
       this.setState(prevState => ({
-        ratingLocksByMessageId: { ...(prevState.ratingLocksByMessageId || {}), [messageId]: false },
+        ratingLocksByMessageId: unlockRating(prevState.ratingLocksByMessageId, messageId),
       }));
     }
   };
@@ -595,11 +593,12 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
 
     try {
       await elixirChatWidget.addRatingComment(ratingCommentModal.ratingId, comment);
-      this.setState({
-        ratingCommentModal: {
-          ...ratingCommentModal,
-          isSubmitted: true,
-        },
+      this.setState(prevState => {
+        const nextModal = markRatingCommentSubmittedState(prevState.ratingCommentModal);
+        if (!nextModal) {
+          return null;
+        }
+        return { ratingCommentModal: nextModal };
       });
     } catch (error) {
       this.closeRatingCommentModal();
@@ -608,12 +607,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
 
   closeRatingCommentModal = () => {
     this.setState({
-      ratingCommentModal: {
-        isOpen: false,
-        ratingId: null,
-        messageId: null,
-        isSubmitted: false,
-      },
+      ratingCommentModal: closeRatingCommentModalState(),
     });
   };
 
@@ -1059,7 +1053,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
                                   key={`${message.id}-positive`}
                                   type="POSITIVE"
                                   message={message}
-                                  isLocked={!!this.state.ratingLocksByMessageId?.[message.id]}
+                                  isLocked={isMessageLocked(this.state.ratingLocksByMessageId, message.id)}
                                   onRate={this.onRateMessage}
                                   intl={intl}
                                 />
@@ -1067,7 +1061,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
                                   key={`${message.id}-negative`}
                                   type="NEGATIVE"
                                   message={message}
-                                  isLocked={!!this.state.ratingLocksByMessageId?.[message.id]}
+                                  isLocked={isMessageLocked(this.state.ratingLocksByMessageId, message.id)}
                                   onRate={this.onRateMessage}
                                   intl={intl}
                                 />
