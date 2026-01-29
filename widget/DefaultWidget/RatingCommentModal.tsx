@@ -5,10 +5,8 @@ import { Player } from '@lottiefiles/react-lottie-player';
 import animationData from './assets/lottie-dislike-animation.json';
 
 interface IRatingCommentModalProps {
-  intl: any;
   onSubmit: (comment: string) => void;
   onSkip: () => void;
-  elixirChatWidget?: any;
   isSubmitted?: boolean;
   isReady?: boolean;
 }
@@ -67,14 +65,29 @@ class RatingCommentModalComponent extends Component<IRatingCommentModalProps, IR
       lottiePlayId: prevState.lottiePlayId + 1,
     }));
 
-    // // Автозакрытие: через 1s начинаем fade-out, через 1.3s закрываем.
     this.closeStartTimeout = setTimeout(() => {
-      this.setState({ isClosing: true });
+      if (this.closeStartTimeout) {
+        this.setState({ isClosing: true });
+      }
     }, 1500);
 
     this.closeFinishTimeout = setTimeout(() => {
-      this.props.onSkip();
+      if (this.closeFinishTimeout) {
+        this.props.onSkip();
+      }
     }, 2000);
+  };
+
+  handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    this.setState({ comment: e.target.value });
+  };
+
+  handleOverlayClick = () => {
+    const isSuccess = this.state.mode === 'success';
+    if (this.state.isSubmitting || isSuccess || this.state.isClosing) {
+      return;
+    }
+    this.props.onSkip();
   };
 
   handleSubmit = () => {
@@ -89,7 +102,7 @@ class RatingCommentModalComponent extends Component<IRatingCommentModalProps, IR
   };
 
   render() {
-    const { onSkip, elixirChatWidget, isReady = true } = this.props;
+    const { onSkip, isReady = true } = this.props;
     const { comment, isSubmitting, mode, isClosing, lottiePlayId } = this.state;
     const isSuccess = mode === 'success';
     const lottieKey = isSuccess ? `success-${lottiePlayId}` : 'default';
@@ -101,7 +114,7 @@ class RatingCommentModalComponent extends Component<IRatingCommentModalProps, IR
       })}>
         <div 
           className="elixirchat-rating-comment-modal__overlay" 
-          onClick={isSubmitting || isSuccess || isClosing ? () => {} : onSkip} 
+          onClick={this.handleOverlayClick} 
         />
         <div className={cn({
           'elixirchat-rating-comment-modal__content': true,
@@ -118,46 +131,44 @@ class RatingCommentModalComponent extends Component<IRatingCommentModalProps, IR
             />
           </div>
 
-          <div
-            className='elixirchat-rating-comment-modal__default-form'
-          >
-          <h3
-            className="elixirchat-rating-comment-modal__title elixirchat-rating-comment-modal__title--default"
-          >
+          <div className="elixirchat-rating-comment-modal__default-form">
+            <h3 className="elixirchat-rating-comment-modal__title elixirchat-rating-comment-modal__title--default">
             <FormattedMessage id="rate_message_comment_title" />
-          </h3>
+            </h3>
 
-          <div className="elixirchat-rating-comment-modal__body">
+            <div className="elixirchat-rating-comment-modal__body">
               <textarea
                 className="elixirchat-rating-comment-modal__textarea"
                 value={comment}
-                onChange={(e) => this.setState({ comment: e.target.value })}
+                onChange={this.handleChange}
                 rows={3}
                 disabled={isSubmitting}
                 maxLength={1000}
               />
-            <div className="elixirchat-rating-comment-modal__actions">
-              <button
-                className="elixirchat-rating-comment-modal__button"
-                onClick={this.handleSubmit}
-                disabled={isSuccess || !isReady || !comment.trim() || isSubmitting}>
-                <FormattedMessage id="rate_message_comment_submit" />
-              </button>
-              <button
-                className="elixirchat-rating-comment-modal__button elixirchat-rating-comment-modal__button--skip"
-                onClick={onSkip}
-                disabled={isSubmitting || isSuccess}>
-                <FormattedMessage id="rate_message_comment_skip" />
-              </button>
+              <div className="elixirchat-rating-comment-modal__actions">
+                <button
+                  className="elixirchat-rating-comment-modal__button"
+                  onClick={this.handleSubmit}
+                  disabled={isSuccess || !isReady || !comment.trim() || isSubmitting}>
+                  <FormattedMessage id="rate_message_comment_submit" />
+                </button>
+                <button
+                  className="elixirchat-rating-comment-modal__button elixirchat-rating-comment-modal__button--skip"
+                  onClick={onSkip}
+                  disabled={isSubmitting || isSuccess}>
+                  <FormattedMessage id="rate_message_comment_skip" />
+                </button>
+              </div>
             </div>
           </div>
-          </div>
-            <h3
-            className="elixirchat-rating-comment-modal__title elixirchat-rating-comment-modal__title--success"
-          >
-             <FormattedMessage id="rate_message_thank_you" values={{
+
+          <h3 className="elixirchat-rating-comment-modal__title elixirchat-rating-comment-modal__title--success">
+            <FormattedMessage
+              id="rate_message_thank_you"
+              values={{
                 br: () => <br />
-              }} />
+              }}
+            />
           </h3>
         </div>
       </div>

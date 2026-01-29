@@ -1158,10 +1158,8 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
         </div>
 {this.state.ratingCommentModal.isOpen && (
   <RatingCommentModal
-    intl={this.props.intl}
     onSubmit={this.onRatingCommentSubmit}
     onSkip={this.closeRatingCommentModal}
-    elixirChatWidget={elixirChatWidget}
     isSubmitted={this.state.ratingCommentModal.isSubmitted}
     isReady={Boolean(this.state.ratingCommentModal.ratingId)}
   />
