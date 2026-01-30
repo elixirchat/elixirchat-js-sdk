@@ -17,6 +17,7 @@ interface IRatingCommentModalState {
   mode: 'default' | 'success';
   isClosing: boolean;
   lottiePlayId: number;
+  contentAppear: boolean;
 }
 
 class RatingCommentModalComponent extends Component<IRatingCommentModalProps, IRatingCommentModalState> {
@@ -32,6 +33,7 @@ class RatingCommentModalComponent extends Component<IRatingCommentModalProps, IR
       mode: 'default',
       isClosing: false,
       lottiePlayId: 0,
+      contentAppear: true,
     };
   }
 
@@ -48,6 +50,12 @@ class RatingCommentModalComponent extends Component<IRatingCommentModalProps, IR
   componentWillUnmount() {
     this.clearCloseTimeouts();
   }
+
+  onContentAnimationEnd = (e: React.AnimationEvent<HTMLDivElement>) => {
+    if (e.animationName === 'modalAppear' && this.state.contentAppear) {
+      this.setState({ contentAppear: false });
+    }
+  };
 
   clearCloseTimeouts = () => {
     if (this.closeStartTimeout) {
@@ -96,7 +104,7 @@ class RatingCommentModalComponent extends Component<IRatingCommentModalProps, IR
 
   render() {
     const { onSkip, isReady = true } = this.props;
-    const { comment, isSubmitting, mode, isClosing, lottiePlayId } = this.state;
+    const { comment, isSubmitting, mode, isClosing, lottiePlayId, contentAppear } = this.state;
     const isSuccess = mode === 'success';
     const lottieKey = isSuccess ? `success-${lottiePlayId}` : 'default';
     
@@ -108,11 +116,15 @@ class RatingCommentModalComponent extends Component<IRatingCommentModalProps, IR
         <div 
           className="elixirchat-rating-comment-modal__overlay" 
         />
-        <div className={cn({
-          'elixirchat-rating-comment-modal__content': true,
-          'elixirchat-rating-comment-modal__content--hiding': isClosing,
-          'elixirchat-rating-comment-modal__content--success': isSuccess,
-        })}>
+        <div
+          className={cn({
+            'elixirchat-rating-comment-modal__content': true,
+            'elixirchat-rating-comment-modal__content--appear': contentAppear,
+            'elixirchat-rating-comment-modal__content--hiding': isClosing,
+            'elixirchat-rating-comment-modal__content--success': isSuccess,
+          })}
+          onAnimationEnd={this.onContentAnimationEnd}
+        >
           <div className="elixirchat-rating-comment-modal__animation">
             <Player
               key={lottieKey}

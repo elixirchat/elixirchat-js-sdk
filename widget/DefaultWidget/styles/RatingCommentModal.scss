@@ -37,7 +37,10 @@
   padding: 0 16px 16px;
   width: 320px;
   box-shadow: 0 0 40px 0 rgba(5, 5, 5, 0.16);
-  animation: modalAppear 0.3s ease forwards;
+
+  &--appear {
+    animation: modalAppear 0.3s ease forwards;
+  }
 
   &--hiding {
     animation: modalDisappear 0.3s ease forwards;

@@ -305,22 +305,22 @@
   },
   "rate_message_comment_title": {
     "ru": "Почему наш ответ не помог? Мы читаем каждый отзыв ❤️",
-    "en": ""
+    "en": "Why wasn't our response helpful? We read every piece of feedback ❤️"
   },
   "rate_message_comment_submit": {
     "ru": "Отправить",
-    "en": ""
+    "en": "Send"
   },
   "rate_message_comment_skip": {
     "ru": "Не буду отвечать",
-    "en": ""
+    "en": "I won’t reply"
   },
   "rate_message_thank_you": {
     "ru": "Спасибо<br></br> за ваш отзыв!",
-    "en": ""
+    "en": "Thank you<br></br> for your feedback!"
   },
   "rate_message_already_rated": {
     "ru": "Вы уже оценили это сообщение",
-    "en": ""
+    "en": "You’ve already rated this message"
   }
 }
