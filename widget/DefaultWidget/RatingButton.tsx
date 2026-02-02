@@ -16,6 +16,7 @@ interface IRatingButtonProps {
 export const RatingButton = ({ type, messageId, rating, isLocked = false, onRate, intl }: IRatingButtonProps) => {
   const isPositive = type === 'POSITIVE';
   const [optimisticRating, setOptimisticRating] = useState<'POSITIVE' | 'NEGATIVE' | null>(null);
+  const [shouldAnimate, setShouldAnimate] = useState(false);
   
   const isRated = Boolean(rating);
   const effectiveRating = rating ?? optimisticRating;
@@ -31,22 +32,34 @@ export const RatingButton = ({ type, messageId, rating, isLocked = false, onRate
   const icon = isPositive
     ? isActive ? 'icon-like-active' : 'icon-like'
     : isActive ? 'icon-dislike-active' : 'icon-dislike';
+  
+  const iconClassName = cn({
+    [icon]: true,
+    'elixirchat-chat-messages__rating-button--animate': shouldAnimate && isActive && isPositive
+  });
 
   useEffect(() => {
     const prevLocked = prevLockedRef.current;
     prevLockedRef.current = isLocked;
 
-    if (!optimisticRating) {
-      return;
+    if (isActive && optimisticRating === type && !isRated && isPositive) {
+        setShouldAnimate(true);
     }
-    if (isRated) {
+
+    if (optimisticRating && (isRated || (prevLocked && !isLocked))) {
       setOptimisticRating(null);
-      return;
+      setShouldAnimate(false);
     }
-    if (prevLocked && !isLocked) {
-      setOptimisticRating(null);
+  }, [isActive, optimisticRating, type, isRated, isLocked, isPositive]);
+
+  useEffect(() => {
+    if (shouldAnimate) {
+      const timer = setTimeout(() => {
+        setShouldAnimate(false);
+      }, 400);
+      return () => clearTimeout(timer);
     }
-  }, [isLocked, isRated, optimisticRating]);
+  }, [shouldAnimate]);
 
   const tooltipTitle = (isRated || isLocked)
     ? intl.formatMessage({ id: 'rate_message_already_rated' })
@@ -61,11 +74,11 @@ export const RatingButton = ({ type, messageId, rating, isLocked = false, onRate
             e.preventDefault();
             return;
           }
-          setOptimisticRating(prev => prev ?? type);
+          setOptimisticRating(type);
           onRate(messageId, type);
         }}
       >
-        <i className={icon}/>
+        <i className={iconClassName}/>
       </button>
     </Tooltip>
   );

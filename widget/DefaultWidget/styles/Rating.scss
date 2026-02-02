@@ -46,7 +46,10 @@
 
   i.icon-like-active {
     color: #00D89D;
-    animation: likeAnimation 0.4s ease-out forwards;
+    
+    &.elixirchat-chat-messages__rating-button--animate {
+      animation: likeAnimation 0.4s ease-out forwards;
+    }
   }
 
   i.icon-dislike-active {
