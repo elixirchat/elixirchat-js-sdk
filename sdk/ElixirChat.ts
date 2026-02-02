@@ -19,6 +19,7 @@ import { Logger } from './Logger';
 import { ScreenshotTaker, IScreenshot } from './ScreenshotTaker';
 import { TypingStatusSubscription } from './TypingStatusSubscription';
 import { UpdateMessageSubscription } from './UpdateMessageSubscription';
+import { MessageRatingSubscription } from './MessageRatingSubscription';
 import { OnlineStatusSubscription } from './OnlineStatusSubscription';
 import { UnreadCounter, IUnreadCounterData } from './UnreadCounter';
 import { MessageSubscription, ISentMessageSerialized } from './MessageSubscription';
@@ -38,6 +39,7 @@ import {
   JOIN_ROOM_ERROR,
   UNREAD_COUNTER_LAST_READ_MESSAGE_CHANGE,
   UPDATE_MESSAGE_SUBSCRIPTION_CHANGE_MESSAGE,
+  NEW_RATING,
   ERROR_ALERT, MESSAGES_SEARCH_IDS,
 } from './ElixirChatEventTypes';
 
@@ -139,6 +141,7 @@ export class ElixirChat {
   public graphQLClientSocket: GraphQLClientSocket;
   public messageSubscription: MessageSubscription;
   public updateMessageSubscription: UpdateMessageSubscription;
+  public messageRatingSubscription: MessageRatingSubscription;
   public onlineStatusSubscription: OnlineStatusSubscription;
   public typingStatusSubscription: TypingStatusSubscription;
   public unreadCounter: UnreadCounter;
@@ -180,11 +183,18 @@ export class ElixirChat {
     this.messageSubscription = new MessageSubscription({ elixirChat: this });
     this.unreadCounter = new UnreadCounter({ elixirChat: this });
     this.updateMessageSubscription = new UpdateMessageSubscription({ elixirChat: this });
+    this.messageRatingSubscription = new MessageRatingSubscription({ elixirChat: this });
     this.typingStatusSubscription = new TypingStatusSubscription({ elixirChat: this });
     this.onlineStatusSubscription = new OnlineStatusSubscription({ elixirChat: this });
 
     this.on(UPDATE_MESSAGE_SUBSCRIPTION_CHANGE_MESSAGE, updatedMessage => {
       this.messageSubscription.changeMessageBy({ id: updatedMessage.id }, updatedMessage);
+    });
+    this.on(NEW_RATING, (ratingPayload: { id: string; rating: string; comment: string | null; message_id: string }) => {
+      this.messageSubscription.changeMessageBy(
+        { id: ratingPayload.message_id },
+        { rating: { id: ratingPayload.id, rating: ratingPayload.rating, comment: ratingPayload.comment } }
+      );
     });
     this.on(UNREAD_COUNTER_LAST_READ_MESSAGE_CHANGE, lastReadMessageId => {
       this.messageSubscription.markPrecedingMessagesRead(lastReadMessageId);
@@ -367,6 +377,7 @@ export class ElixirChat {
 
     this.messageSubscription.subscribe();
     this.updateMessageSubscription.subscribe();
+    this.messageRatingSubscription.subscribe();
     this.onlineStatusSubscription.subscribe({ isOnline, workHoursStartAt });
     this.unreadCounter.subscribe({ unreadMessagesCount, unreadRepliesCount, lastReadMessageId });
 
@@ -681,6 +692,7 @@ export class ElixirChat {
       this.isConnected = false;
       this.messageSubscription.unsubscribe();
       this.updateMessageSubscription.unsubscribe();
+      this.messageRatingSubscription.unsubscribe();
       this.unreadCounter.unsubscribe();
       this.typingStatusSubscription.unsubscribe();
       this.onlineStatusSubscription.unsubscribe();
