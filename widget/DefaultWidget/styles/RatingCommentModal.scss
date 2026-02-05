@@ -92,7 +92,7 @@
 
 .elixirchat-rating-comment-modal__title--success {
   position: absolute;
-  top: 120px;
+  top: 112px;
   left: 50%;
   transform: translate(-50%, 0);
   opacity: 0;
@@ -139,6 +139,7 @@
 
   &:focus {
     outline: none;
+    border-color: #03F;
   }
 }
 
@@ -172,7 +173,12 @@
   &--skip {
     color: #999;
     background: transparent;
-    border: unset;
+    border-color: transparent;
+
+    &[disabled] {
+      background: transparent;
+      border-color: transparent;
+    }
 
     &:hover:not([disabled]) {
       background: rgba(0, 0, 0, 0.05);
