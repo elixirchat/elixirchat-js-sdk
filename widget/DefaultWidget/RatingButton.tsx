@@ -43,12 +43,11 @@ export const RatingButton = ({ type, messageId, rating, isLocked = false, onRate
     prevLockedRef.current = isLocked;
 
     if (isActive && optimisticRating === type && !isRated && isPositive) {
-        setShouldAnimate(true);
+      setShouldAnimate(true);
     }
 
     if (optimisticRating && (isRated || (prevLocked && !isLocked))) {
       setOptimisticRating(null);
-      setShouldAnimate(false);
     }
   }, [isActive, optimisticRating, type, isRated, isLocked, isPositive]);
 
@@ -56,7 +55,7 @@ export const RatingButton = ({ type, messageId, rating, isLocked = false, onRate
     if (shouldAnimate) {
       const timer = setTimeout(() => {
         setShouldAnimate(false);
-      }, 400);
+      }, 500);
       return () => clearTimeout(timer);
     }
   }, [shouldAnimate]);
