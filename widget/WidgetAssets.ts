@@ -147,7 +147,7 @@ export class WidgetAssets {
       },
       {
         fontFamily: 'Graphik',
-        fontWeight: 'normal',
+        fontWeight: '400',
         fontStyle: 'normal',
         src: [{
           url: fonts.graphikRegular,
@@ -156,7 +156,7 @@ export class WidgetAssets {
       },
       {
         fontFamily: 'Graphik',
-        fontWeight: 'normal',
+        fontWeight: '400',
         fontStyle: 'italic',
         src: [{
           url: fonts.graphikRegularItalic,
@@ -173,7 +173,7 @@ export class WidgetAssets {
       },
       {
         fontFamily: 'Graphik',
-        fontWeight: 'bold',
+        fontWeight: '700',
         src: [{
           url: fonts.graphikBold,
           format: 'woff',
