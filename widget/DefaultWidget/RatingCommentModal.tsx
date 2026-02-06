@@ -91,6 +91,18 @@ class RatingCommentModalComponent extends Component<IRatingCommentModalProps, IR
     this.setState({ comment: e.target.value });
   };
 
+  handleSkip = () => {
+    const { onSkip } = this.props;
+
+    this.clearCloseTimeouts();
+
+    this.setState({ isClosing: true });
+
+    this.closeFinishTimeout = setTimeout(() => {
+      onSkip();
+    }, 500);
+  };
+
   handleSubmit = () => {
     const comment = this.state.comment.trim();
     
@@ -159,7 +171,7 @@ class RatingCommentModalComponent extends Component<IRatingCommentModalProps, IR
                 </button>
                 <button
                   className="elixirchat-rating-comment-modal__button elixirchat-rating-comment-modal__button--skip"
-                  onClick={onSkip}
+                  onClick={this.handleSkip}
                   disabled={isSubmitting || isSuccess}>
                   <FormattedMessage id="rate_message_comment_skip" />
                 </button>

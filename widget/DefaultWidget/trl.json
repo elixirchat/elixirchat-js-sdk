@@ -313,7 +313,7 @@
   },
   "rate_message_comment_skip": {
     "ru": "Не буду отвечать",
-    "en": "I won’t reply"
+    "en": "Skip feedback"
   },
   "rate_message_thank_you": {
     "ru": "Спасибо<br></br> за ваш отзыв!",
