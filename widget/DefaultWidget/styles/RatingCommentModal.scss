@@ -100,6 +100,7 @@
 
 .elixirchat-rating-comment-modal__content--success {
   .elixirchat-rating-comment-modal__default-form {
+    transform: translateZ(0); /* Safari: GPU layer для анимации */
     animation: fadeOut 0.3s ease forwards;
   }
   .elixirchat-rating-comment-modal__title--success {
