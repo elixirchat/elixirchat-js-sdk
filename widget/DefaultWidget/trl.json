@@ -60,7 +60,7 @@
     "en": "Please, take a screenshot of the issue and send it to us. To do so, press {hasSecondaryKey, select, true {{primaryKey}\u00a0({secondaryKey})} other {{primaryKey}}} and insert the image to the message field."
   },
   "take_a_screenshot": {
-    "ru": "Сделать скриншот",
+    "ru": "Загрузить скриншот ",
     "en": "Take a screenshot"
   },
   "reply": {
@@ -116,7 +116,7 @@
     "en": "Send a message..."
   },
   "attach_files": {
-    "ru": "Прикрепить файлы",
+    "ru": "Загрузить файл",
     "en": "Attach files"
   },
   "drop_files": {
