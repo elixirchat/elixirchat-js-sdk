@@ -24,7 +24,7 @@ export function ActionsDropdown({
       const next = e.relatedTarget;
 
       if (!next || !containerRef.current?.contains(next)) {
-        // setOpen(false);
+        setOpen(false);
       }
     },
     []

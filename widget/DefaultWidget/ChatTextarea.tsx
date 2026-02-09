@@ -328,6 +328,20 @@ class ChatTextareaComponent extends Component<IDefaultWidgetTextareaProps, IDefa
     this.inputFile.current.value = '';
   };
 
+  onSubmitClick = () => {
+    const { textareaText, textareaAttachments, textareaResponseToMessageId } = this.state;
+    if (textareaText.trim() || textareaAttachments.length) {
+      this.onMessageSubmit();
+      this.setState({
+        textareaText: '',
+        textareaResponseToMessageId: null,
+        textareaAttachments: [],
+      });
+      this.onVerticalResize();
+      this.focusTextarea();
+    }
+  };
+
   onMessageSubmit = () => {
     const { elixirChatWidget } = this.props;
     const { textareaText, textareaResponseToMessageId, textareaAttachments } = this.state;
@@ -383,13 +397,23 @@ class ChatTextareaComponent extends Component<IDefaultWidgetTextareaProps, IDefa
                 onClick={this.onRemoveReplyTo}/>
             </div>
           )}
-          <ActionsDropdown
-            onAttachFile={this.onAttachFileClick}
-            onScreenshot={this.onScreenShotClick}
-            screenshotAvailable={!Boolean(screenshotFallback)}
-            screenshotLabel={this.props.intl.formatMessage({ id: 'take_a_screenshot' })}
-            attachFileLabel={this.props.intl.formatMessage({ id: 'attach_files' })}
-          />
+          <div className="elixirchat-chat-textarea__actions-row">
+            <ActionsDropdown
+              onAttachFile={this.onAttachFileClick}
+              onScreenshot={this.onScreenShotClick}
+              screenshotAvailable={!Boolean(screenshotFallback)}
+              screenshotLabel={this.props.intl.formatMessage({ id: 'take_a_screenshot' })}
+              attachFileLabel={this.props.intl.formatMessage({ id: 'attach_files' })}
+            />
+            <button
+              type="button"
+              className="elixirchat-chat-textarea__send-btn"
+              onClick={this.onSubmitClick}
+              disabled={!textareaText.trim() && !textareaAttachments.length}
+            >
+              <i className="icon-send" />
+            </button>
+          </div>
           <input
             className="elixirchat-chat-textarea__actions-attach-input"
             id="DefaultWidget-file-upload"
