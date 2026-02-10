@@ -6,6 +6,8 @@ export interface IDefaultWidgetTooltipProps {
   title: string;
   placement?: string;
   className?: string;
+  center?: boolean;
+  trigger?: 'hover' | 'click';
 }
 
 export interface IDefaultWidgetTooltipState {}
@@ -23,21 +25,50 @@ class TooltipComponent extends Component<IDefaultWidgetTooltipProps, IDefaultWid
   }
 
   onTargetMouseEnter = () => {
+    if (!this.props.title) {
+      return;
+    }
     if (!this.tooltip) {
       this.tooltip = this.createTooltip();
     }
-    this.tooltip.hidden = false;
+    if (this.tooltip) {
+      this.tooltip.hidden = false;
+    }
   };
 
   onTargetMouseLeave = () => {
-    this.tooltip.hidden = true;
+    if (this.tooltip) {
+      this.tooltip.hidden = true;
+    }
+  };
+
+  onTargetClick = () => {
+    if (!this.props.title) {
+      return;
+    }
+    if (!this.tooltip) {
+      this.tooltip = this.createTooltip();
+    }
+    if (this.tooltip) {
+      this.tooltip.hidden = false;
+    }
   };
 
   createTooltip = () => {
-    const { title, className } = this.props;
+    if (!this.targetRef.current) {
+      return null;
+    }
+    const { title, className, center } = this.props;
     const tooltip = document.createElement('div');
-    tooltip.classList.add('elixirchat-tooltip', className);
+    tooltip.classList.add('elixirchat-tooltip');
+    if (className) {
+      tooltip.classList.add(className);
+    }
+    if (center) {
+      tooltip.classList.add('elixirchat-tooltip--center');
+    }
     tooltip.innerText = title;
+    tooltip.hidden = true;
     this.targetRef.current.appendChild(tooltip);
     return tooltip;
   };
@@ -46,15 +77,36 @@ class TooltipComponent extends Component<IDefaultWidgetTooltipProps, IDefaultWid
     const {
       title,
       className,
+      center,
+      trigger = 'hover',
       children,
+      intl,
       ...otherProps
     } = this.props;
+
+    const childProps: any = (children as any)?.props || {};
 
     const passedProps = {
       ...otherProps,
       ref: this.targetRef,
-      onMouseEnter: this.onTargetMouseEnter,
-      onMouseLeave: this.onTargetMouseLeave,
+      onMouseEnter: trigger === 'hover'
+        ? (e) => {
+          childProps.onMouseEnter?.(e);
+          this.onTargetMouseEnter();
+        }
+        : childProps.onMouseEnter,
+      onMouseLeave: (trigger === 'hover' || trigger === 'click')
+        ? (e) => {
+          childProps.onMouseLeave?.(e);
+          this.onTargetMouseLeave();
+        }
+        : childProps.onMouseLeave,
+      onClick: trigger === 'click'
+        ? (e) => {
+          childProps.onClick?.(e);
+          this.onTargetClick();
+        }
+        : childProps.onClick,
     };
     return React.cloneElement(children, passedProps);
   }

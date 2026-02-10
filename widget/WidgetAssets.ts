@@ -33,10 +33,12 @@ export class WidgetAssets {
       styles.Tooltip,
       styles.Chat,
       styles.ChatMessages,
+      styles.Rating,
       styles.ChatTextarea,
       styles.MessageSearch,
       styles.WelcomeScreen,
       styles.FormattedMarkdown,
+      styles.RatingCommentModal,
       styles.WidgetInsideIFrame,
     ].join('\n');
   }
@@ -57,11 +59,13 @@ export class WidgetAssets {
       Tooltip:              fs.readFileSync(__dirname + '../../dist/styles/Tooltip.css', 'utf8'),
       Chat:                 fs.readFileSync(__dirname + '../../dist/styles/Chat.css', 'utf8'),
       ChatMessages:         fs.readFileSync(__dirname + '../../dist/styles/ChatMessages.css', 'utf8'),
+      Rating:               fs.readFileSync(__dirname + '../../dist/styles/Rating.css', 'utf8'),
       ChatTextarea:         fs.readFileSync(__dirname + '../../dist/styles/ChatTextarea.css', 'utf8'),
       MessageSearch:        fs.readFileSync(__dirname + '../../dist/styles/MessageSearch.css', 'utf8'),
       WelcomeScreen:        fs.readFileSync(__dirname + '../../dist/styles/WelcomeScreen.css', 'utf8'),
       FormattedMarkdown:    fs.readFileSync(__dirname + '../../dist/styles/FormattedMarkdown.css', 'utf8'),
       FullScreenPreview:    fs.readFileSync(__dirname + '../../dist/styles/FullScreenPreview.css', 'utf8'),
+      RatingCommentModal:   fs.readFileSync(__dirname + '../../dist/styles/RatingCommentModal.css', 'utf8'),
       WidgetOutsideIFrame:  fs.readFileSync(__dirname + '../../dist/styles/WidgetOutsideIFrame.css', 'utf8'),
       WidgetInsideIFrame:   fs.readFileSync(__dirname + '../../dist/styles/WidgetInsideIFrame.css', 'utf8'),
     };
@@ -143,7 +147,7 @@ export class WidgetAssets {
       },
       {
         fontFamily: 'Graphik',
-        fontWeight: 'normal',
+        fontWeight: '400',
         fontStyle: 'normal',
         src: [{
           url: fonts.graphikRegular,
@@ -152,7 +156,7 @@ export class WidgetAssets {
       },
       {
         fontFamily: 'Graphik',
-        fontWeight: 'normal',
+        fontWeight: '400',
         fontStyle: 'italic',
         src: [{
           url: fonts.graphikRegularItalic,
@@ -169,7 +173,7 @@ export class WidgetAssets {
       },
       {
         fontFamily: 'Graphik',
-        fontWeight: 'bold',
+        fontWeight: '700',
         src: [{
           url: fonts.graphikBold,
           format: 'woff',

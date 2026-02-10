@@ -1,6 +1,6 @@
 {
   "name": "elixirchat-js-sdk",
-  "version": "4.7.4",
+  "version": "4.7.5",
   "description": "JavaScript SDK for https://elixir.chat",
   "scripts": {
     "dev": "./bin/dev.sh",
@@ -26,6 +26,7 @@
   "homepage": "https://github.com/elixirchat/elixirchat-js-sdk#readme",
   "dependencies": {
     "@absinthe/socket": "^0.2.1",
+    "@lottiefiles/react-lottie-player": "^3.6.0",
     "@sentry/browser": "^5.22.3",
     "babel-polyfill": "^6.26.0",
     "dayjs": "^1.8.35",

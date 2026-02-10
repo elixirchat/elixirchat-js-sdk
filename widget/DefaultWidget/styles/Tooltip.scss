@@ -28,4 +28,17 @@ $tooltip-background-color: rgba($color-black, .7);
     right: 0;
     margin-right: 8px;
   }
+
+  &--center {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+
+    &:after {
+      left: 50%;
+      right: auto;
+      margin-right: 0;
+      transform: translateX(-50%);
+    }
+  }
 }

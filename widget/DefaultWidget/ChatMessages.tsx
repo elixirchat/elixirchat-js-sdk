@@ -30,6 +30,14 @@ import {
 import { ElixirChatWidget } from '../ElixirChatWidget';
 import { FormattedMarkdown } from './FormattedMarkdown';
 import { MessageSearch } from './MessageSearch';
+import { RatingButton } from './RatingButton';
+import { RatingCommentModal } from './RatingCommentModal';
+import {
+  closeRatingCommentModalState,
+  isMessageLocked,
+  isMessageRated,
+} from './chatMessagesRatingHelpers';
+import { rateMessageFlow, submitRatingCommentFlow } from './chatMessagesRatingFlow';
 import { Avatar } from './Avatar';
 import { getScreenshotCompatibilityFallback } from '../../sdk/ScreenshotTaker';
 import { serializeMessage } from '../../sdk/serializers/serializeMessage';
@@ -83,6 +91,13 @@ export interface IDefaultWidgetMessagesState {
   showScrollButton: boolean;
   originalMessages: object;
   lastMessageId: string;
+  ratingLocksByMessageId: Record<string, boolean>;
+  ratingCommentModal?: {
+    isOpen: boolean;
+    ratingId: string | null;
+    messageId: string | null;
+    isSubmitted: boolean;
+  };
 }
 
 class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefaultWidgetMessagesState> {
@@ -109,6 +124,14 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
     // Лог оригинальных сообщений, которые мы выделяем при поиске
     originalMessages: {},
     lastMessageId: '',
+    // Rating
+    ratingLocksByMessageId: {},
+    ratingCommentModal: {
+      isOpen: false,
+      ratingId: null,
+      messageId: null,
+      isSubmitted: false,
+    },
   };
 
   MAX_THUMBNAIL_SIZE: number = isMobile() ? 208 : 256;
@@ -515,6 +538,44 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
     }
   };
 
+  onRateMessage = async (messageId: string, rating: 'POSITIVE' | 'NEGATIVE') => {
+    const { processedMessages, ratingLocksByMessageId } = this.state;
+    const message = processedMessages.find(m => m.id === messageId);
+
+    await rateMessageFlow(
+      {
+        elixirChatWidget: this.props.elixirChatWidget,
+        getState: () => this.state,
+        setState: this.setState.bind(this),
+        closeRatingCommentModal: this.closeRatingCommentModal,
+      },
+      messageId,
+      rating,
+      {
+        isLocked: isMessageLocked(ratingLocksByMessageId, messageId),
+        isRated: isMessageRated(message),
+      }
+    );
+  };
+
+  onRatingCommentSubmit = async (comment: string) => {
+    await submitRatingCommentFlow(
+      {
+        elixirChatWidget: this.props.elixirChatWidget,
+        getState: () => this.state,
+        setState: this.setState.bind(this),
+        closeRatingCommentModal: this.closeRatingCommentModal,
+      },
+      comment
+    );
+  };
+
+  closeRatingCommentModal = () => {
+    this.setState({
+      ratingCommentModal: closeRatingCommentModalState(),
+    });
+  };
+
   onReplyButtonClick = (messageId) => {
     const { elixirChatWidget } = this.props;
     elixirChatWidget.triggerEvent(WIDGET_REPLY_MESSAGE, messageId);
@@ -757,7 +818,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
   }
 
   render() {
-    const { elixirChatWidget, className } = this.props;
+    const { elixirChatWidget, className, intl } = this.props;
     const {
       processedMessages,
       screenshotFallback,
@@ -851,6 +912,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
                                   {this.getMentionsStr(message)}
                                 </Fragment>
                               )}
+                              <span className="elixirchat-chat-messages__time">{dayjs(message.timestamp).format('H:mm')}</span>
                             </div>
                           )}
 
@@ -950,12 +1012,33 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
                         )}
                         {!message.submissionErrorCode && (
                           <Fragment>
-                            {!message.sender.isCurrentClient && dayjs(message.timestamp).format('H:mm')}
                             {!message.isSystem && (
                               <span className="elixirchat-chat-messages__reply-button"
                                 onClick={() => this.onReplyButtonClick(message.id)}>
                               <FormattedMessage id="reply" />
                             </span>
+                            )}
+                            {!message.sender.isCurrentClient && !message.isSystem && (
+                              <div className="elixirchat-chat-messages__rating">
+                                <RatingButton
+                                  key={`${message.id}-positive`}
+                                  type="POSITIVE"
+                                  messageId={message.id}
+                                  rating={message?.rating?.rating}
+                                  isLocked={isMessageLocked(this.state.ratingLocksByMessageId, message.id)}
+                                  onRate={this.onRateMessage}
+                                  intl={intl}
+                                />
+                                <RatingButton
+                                  key={`${message.id}-negative`}
+                                  type="NEGATIVE"
+                                  messageId={message.id}
+                                  rating={message?.rating?.rating}
+                                  isLocked={isMessageLocked(this.state.ratingLocksByMessageId, message.id)}
+                                  onRate={this.onRateMessage}
+                                  intl={intl}
+                                />
+                              </div>
                             )}
                             {message.sender.isCurrentClient && dayjs(message.timestamp).format('H:mm')}
                           </Fragment>
@@ -1043,6 +1126,14 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
             </Fragment>
           </div>
         </div>
+        {this.state.ratingCommentModal.isOpen && (
+          <RatingCommentModal
+            onSubmit={this.onRatingCommentSubmit}
+            onSkip={this.closeRatingCommentModal}
+            isSubmitted={this.state.ratingCommentModal.isSubmitted}
+            isReady={Boolean(this.state.ratingCommentModal.ratingId)}
+          />
+        )}
       </div>
     );
   }

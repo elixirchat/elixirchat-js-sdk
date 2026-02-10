@@ -38,30 +38,42 @@
 .icon-close-thin:before {
     content: "\f104";
 }
-.icon-file:before {
+.icon-dislike-active:before {
     content: "\f105";
 }
-.icon-logo:before {
+.icon-dislike:before {
     content: "\f106";
 }
-.icon-reply-right:before {
+.icon-file:before {
     content: "\f107";
 }
-.icon-screenshot:before {
+.icon-like-active:before {
     content: "\f108";
 }
-.icon-search:before {
+.icon-like:before {
     content: "\f109";
 }
-.icon-speaker-mute:before {
+.icon-logo:before {
     content: "\f10a";
 }
-.icon-speaker:before {
+.icon-reply-right:before {
     content: "\f10b";
 }
-.icon-spinner-xs:before {
+.icon-screenshot:before {
     content: "\f10c";
 }
-.icon-typing:before {
+.icon-search:before {
     content: "\f10d";
+}
+.icon-speaker-mute:before {
+    content: "\f10e";
+}
+.icon-speaker:before {
+    content: "\f10f";
+}
+.icon-spinner-xs:before {
+    content: "\f110";
+}
+.icon-typing:before {
+    content: "\f111";
 }

@@ -1,0 +1,188 @@
+@import "./variables";
+@import "./mixins";
+
+.elixirchat-rating-comment-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 100;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.elixirchat-rating-comment-modal__overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(4px);
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+.elixirchat-rating-comment-modal--closing {
+  .elixirchat-rating-comment-modal__overlay {
+    opacity: 0;
+  }
+}
+
+.elixirchat-rating-comment-modal__content {
+  min-height: 334px;
+  box-sizing: border-box;
+  position: relative;
+  background: #fff;
+  border-radius: 12px 12px 0 0;
+  padding: 0 16px 16px;
+  width: 320px;
+  box-shadow: 0 0 40px 0 rgba(5, 5, 5, 0.16);
+
+  &--appear {
+    animation: modalAppear 0.3s ease forwards;
+  }
+
+  &--hiding {
+    animation: modalDisappear 0.3s ease forwards;
+  }
+}
+
+@keyframes modalAppear {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes modalDisappear {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+}
+
+.elixirchat-rating-comment-modal__animation {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 112px;
+  height: 112px;
+  margin: 0 auto;
+  pointer-events: none;
+}
+
+.elixirchat-rating-comment-modal__title {
+  font-size: 16px;
+  line-height: 24px;
+  margin: 0 auto;
+  max-width: 250px;
+  text-align: center;
+  font-weight: 500;
+  color: #050505;
+  transition: opacity 200ms ease, transform 200ms ease;
+}
+
+.elixirchat-rating-comment-modal__title--success {
+  position: absolute;
+  top: 112px;
+  left: 50%;
+  transform: translate(-50%, 0);
+  opacity: 0;
+}
+
+.elixirchat-rating-comment-modal__content--success {
+  .elixirchat-rating-comment-modal__default-form {
+    transform: translateZ(0); /* Safari: GPU layer для анимации */
+    animation: fadeOut 0.3s ease forwards;
+  }
+  .elixirchat-rating-comment-modal__title--success {
+    animation: fadeIn 0.6s 0.1s ease forwards;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.elixirchat-rating-comment-modal__textarea {
+  width: 100%;
+  min-height: 82px;
+  margin-top: 12px;
+  padding: 8px 8px 8px 15px;
+  border: 1px solid #D7D7D7;
+  border-radius: 8px;
+  font-size: 15px;
+  resize: vertical;
+  margin-bottom: 16px;
+  resize: none;
+
+  &:focus {
+    outline: none;
+    border-color: #03F;
+  }
+}
+
+.elixirchat-rating-comment-modal__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.elixirchat-rating-comment-modal__button {
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 7px;
+  border: 1px solid #03F;
+  cursor: pointer;
+  background-color: #03F;
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 400;
+  transition: all 0.2s;
+
+  &:disabled {
+    background-color: #E5E5E5;
+    color: #999;
+    border: 1px solid #E5E5E5;
+  }
+
+  &:hover:not([disabled]) {
+    background-color: #0029cc;
+  }
+
+  &--skip {
+    color: #999;
+    background: transparent;
+    border-color: transparent;
+
+    &[disabled] {
+      background: transparent;
+      border-color: transparent;
+    }
+
+    &:hover:not([disabled]) {
+      background: rgba(0, 0, 0, 0.05);
+    }
+  }
+}

@@ -65,6 +65,7 @@ export class Widget extends Component<IWidgetProps, IWidgetState> {
     exposeComponentToGlobalScope(this, elixirChatWidget);
 
     this.widgetAssets = new WidgetAssets(elixirChatWidget);
+    elixirChatWidget.widgetAssets = this.widgetAssets;
     this.fontExtractor = new FontExtractor(elixirChatWidget.widgetConfig.fonts, window);
     this.fontExtractor.extract(fontRules => {
       this.appendToStyles({
