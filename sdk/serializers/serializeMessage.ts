@@ -29,6 +29,11 @@ export const fragmentMessage = insertGraphQlFragments(gql`
         isDeleted
         sender { ...fragmentUser }
       }
+      rating {
+        id
+        rating
+        comment
+      }
     }
     
     ... on ScreenshotRequestedMessage {
@@ -65,11 +70,16 @@ export interface IMessage {
   attachments?: Array<IFile>,
   isSubmitting: boolean,
   submissionErrorCode: number | null,
+  rating?: {
+    id: string;
+    rating: 'POSITIVE' | 'NEGATIVE';
+    comment?: string | null;
+  } | null;
 }
 
 
 export function serializeMessage(data: any, elixirChat: ElixirChat): IMessage {
-  let { sender, responseToMessage, attachments, mentions } = data || {};
+  let { sender, responseToMessage, attachments, mentions, rating } = data || {};
   return {
     ...extractSerializedData(data, {
       id: null,
@@ -100,6 +110,11 @@ export function serializeMessage(data: any, elixirChat: ElixirChat): IMessage {
         value: mention.value,
       };
     }),
+    rating: rating ? {
+      id: rating.id,
+      rating: rating.rating,
+      comment: rating.comment || null,
+    } : null,
     systemData: {
       type: data?.__typename || null,
       workHoursStartAt: data?.workHoursStartAt || null,
