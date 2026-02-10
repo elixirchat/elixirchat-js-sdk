@@ -1018,7 +1018,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
                               <FormattedMessage id="reply" />
                             </span>
                             )}
-                            {!message.sender.isCurrentClient && !message.isSystem && (
+                            {message.sender.isOperator && !message.isSystem && (
                               <div className="elixirchat-chat-messages__rating">
                                 <RatingButton
                                   key={`${message.id}-positive`}
