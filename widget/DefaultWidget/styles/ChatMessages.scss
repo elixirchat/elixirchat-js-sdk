@@ -145,27 +145,10 @@
   transition: background-color 2000ms;
 }
 
-.elixirchat-chat-messages__item--system {
-  .elixirchat-chat-messages__sender {
-    margin-bottom: 0;
-  }
-
-  .elixirchat-chat-messages__text {
-    margin-top: -8px;
-  }
-}
-
 .elixirchat-chat-messages__sender {
-  display: flex;
-  align-items: baseline;
+  position: relative;
   color: $color-blue;
   padding-bottom: 1px;
-  display: flex;
-  flex-direction: row;
-  align-items: flex-start;
-  gap: 7px;
-  margin-left: -35px;
-  margin-bottom: -8px;
 
   .elixirchat-chat-messages__item--by-me & {
     color: $color-white;
@@ -184,6 +167,7 @@
   color: #999;
   font-size: 13px;
   font-weight: 400;
+  margin-left: 6px;
 }
 
 .elixirchat-chat-messages__balloon {
@@ -600,6 +584,11 @@ $selected-color-bg: #fff2f7;
   height: 28px;
   display: block;
   border-radius: 50%;
+  object-fit: cover;
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  left: -35px;
 }
 
 .elixirchat-chat-avatar__empty {
