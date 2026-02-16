@@ -145,20 +145,29 @@ class ChatComponent extends Component<IDefaultWidgetProps, IDefaultWidgetState> 
                 'elixirchat-chat-header__button-search': true,
                 'elixirchat-chat-header__button-search_active': widgetIsSearchOpen,
               })}
-              onClick={this.onToggleSearchForm}>
-              <i className={cn({
-                'icon-search': true,
-                'elixirchat-widget-icon__header-search_active': widgetIsSearchOpen,
-              })}/>
+              onClick={this.onToggleSearchForm}
+            >
+              <i
+                className={cn({
+                  'icon-search': true,
+                  'elixirchat-widget-icon__header-search_active': widgetIsSearchOpen,
+                })}
+              />
             </button>
 
-            
-              <button className="elixirchat-chat-header__button"
-                      onClick={() => widgetIsMuted ? elixirChatWidget.unmute() : elixirChatWidget.mute()}>
-                <Tooltip className="elixirchat-chat-header__mute-tooltip" title={this.getMuteTooltipMessage()}>
-                <i className={widgetIsMuted ? 'icon-speaker-mute' : 'icon-speaker'}/>
-                  
-              </button>
+            <button
+              className="elixirchat-chat-header__button"
+              onClick={() =>
+                widgetIsMuted ? elixirChatWidget.unmute() : elixirChatWidget.mute()
+              }
+            >
+              <Tooltip
+                className="elixirchat-chat-header__mute-tooltip"
+                title={this.getMuteTooltipMessage()}
+              >
+                <i className={widgetIsMuted ? 'icon-speaker-mute' : 'icon-speaker'} />
+              </Tooltip>
+            </button>
 
             <button className="elixirchat-chat-header__button" onClick={elixirChatWidget.closePopup}>
               <i className="icon-close-thin"/>

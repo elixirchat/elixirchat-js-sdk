@@ -1,17 +1,49 @@
 import { ElixirChatWidget } from '../ElixirChatWidget';
 import { generateFontFaceCSS } from './FontExtractor';
-const fs = require('fs'); // This is a Parcel limited implementation of "fs", @see https://en.parceljs.org/javascript.html#javascript
+
+// CSS
+import IconsCSS from 'bundle-text:../dist/styles/Icons.css';
+import AlertCSS from 'bundle-text:../dist/styles/Alert.css';
+import TooltipCSS from 'bundle-text:../dist/styles/Tooltip.css';
+import ChatCSS from 'bundle-text:../dist/styles/Chat.css';
+import ChatMessagesCSS from 'bundle-text:../dist/styles/ChatMessages.css';
+import RatingCSS from 'bundle-text:../dist/styles/Rating.css';
+import ChatTextareaCSS from 'bundle-text:../dist/styles/ChatTextarea.css';
+import MessageSearchCSS from 'bundle-text:../dist/styles/MessageSearch.css';
+import WelcomeScreenCSS from 'bundle-text:../dist/styles/WelcomeScreen.css';
+import FormattedMarkdownCSS from 'bundle-text:../dist/styles/FormattedMarkdown.css';
+import FullScreenPreviewCSS from 'bundle-text:../dist/styles/FullScreenPreview.css';
+import RatingCommentModalCSS from 'bundle-text:../dist/styles/RatingCommentModal.css';
+import WidgetOutsideIFrameCSS from 'bundle-text:../dist/styles/WidgetOutsideIFrame.css';
+import WidgetInsideIFrameCSS from 'bundle-text:../dist/styles/WidgetInsideIFrame.css';
+
+// Fonts
+import graphikBoldUrl from './DefaultWidget/assets/fonts/Graphik-Bold-Web.woff?url';
+import graphikMediumUrl from './DefaultWidget/assets/fonts/Graphik-Medium-Web.woff?url';
+import graphikRegularUrl from './DefaultWidget/assets/fonts/Graphik-Regular-Web.woff?url';
+import graphikRegularItalicUrl from './DefaultWidget/assets/fonts/Graphik-RegularItalic-Web.woff?url';
+import elixirchatIconsUrl from './DefaultWidget/assets/fonts/elixirchat-icons.woff?url';
+
+// SVG иконки
+import whatsappSvgUrl from './DefaultWidget/assets/images/channel-whatsapp.svg?url';
+import telegramSvgUrl from './DefaultWidget/assets/images/channel-telegram.svg?url';
+import facebookSvgUrl from './DefaultWidget/assets/images/channel-facebook.svg?url';
+import viberSvgUrl from './DefaultWidget/assets/images/channel-viber.svg?url';
+import vkontakteSvgUrl from './DefaultWidget/assets/images/channel-vk.svg?url';
+
+// Аудио
+import notificationSoundUrl from './DefaultWidget/assets/audio/notification.mp3?url';
 
 export class WidgetAssets {
 
   public outsideIframeStyles = '';
   public insideIframeStyles = '';
-  public styles = {};
-  public assets = {};
+  public styles: Record<string, string> = {};
+  public assets: Record<string, Record<string, string>> = {};
 
   constructor(elixirChatWidget: ElixirChatWidget){
-    const styles = this.importCSSFiles();
-    const assets = this.importAssetFiles();
+    const styles = this.getStyles();
+    const assets = this.getAssets();
     const fontFaceCSS = this.generateFontFaceCSS(assets.woff);
     const svgIconsCSS = this.generateSvgIconsCSS(assets.svg);
 
@@ -43,100 +75,44 @@ export class WidgetAssets {
     ].join('\n');
   }
 
-  importCSSFiles = () => {
-    /**
-     * How it works:
-     * 1. SCSS files from widget/DefaultWidget/styles are transpiled into dist/styles
-     * 2. Then dist/styles/*.css are imported as strings via fs.readFileSync
-     *
-     * Why?
-     * Because all JS, CSS and assets need to be a single JS file (default-widget.min.js).
-     * Simply importing CSS files won't merge them into the JS bundle.
-     */
-    return {
-      Icons:                fs.readFileSync(__dirname + '../../dist/styles/Icons.css', 'utf8'),
-      Alert:                fs.readFileSync(__dirname + '../../dist/styles/Alert.css', 'utf8'),
-      Tooltip:              fs.readFileSync(__dirname + '../../dist/styles/Tooltip.css', 'utf8'),
-      Chat:                 fs.readFileSync(__dirname + '../../dist/styles/Chat.css', 'utf8'),
-      ChatMessages:         fs.readFileSync(__dirname + '../../dist/styles/ChatMessages.css', 'utf8'),
-      Rating:               fs.readFileSync(__dirname + '../../dist/styles/Rating.css', 'utf8'),
-      ChatTextarea:         fs.readFileSync(__dirname + '../../dist/styles/ChatTextarea.css', 'utf8'),
-      MessageSearch:        fs.readFileSync(__dirname + '../../dist/styles/MessageSearch.css', 'utf8'),
-      WelcomeScreen:        fs.readFileSync(__dirname + '../../dist/styles/WelcomeScreen.css', 'utf8'),
-      FormattedMarkdown:    fs.readFileSync(__dirname + '../../dist/styles/FormattedMarkdown.css', 'utf8'),
-      FullScreenPreview:    fs.readFileSync(__dirname + '../../dist/styles/FullScreenPreview.css', 'utf8'),
-      RatingCommentModal:   fs.readFileSync(__dirname + '../../dist/styles/RatingCommentModal.css', 'utf8'),
-      WidgetOutsideIFrame:  fs.readFileSync(__dirname + '../../dist/styles/WidgetOutsideIFrame.css', 'utf8'),
-      WidgetInsideIFrame:   fs.readFileSync(__dirname + '../../dist/styles/WidgetInsideIFrame.css', 'utf8'),
-    };
-  };
+  getStyles = () => ({
+    Icons: IconsCSS,
+    Alert: AlertCSS,
+    Tooltip: TooltipCSS,
+    Chat: ChatCSS,
+    ChatMessages: ChatMessagesCSS,
+    Rating: RatingCSS,
+    ChatTextarea: ChatTextareaCSS,
+    MessageSearch: MessageSearchCSS,
+    WelcomeScreen: WelcomeScreenCSS,
+    FormattedMarkdown: FormattedMarkdownCSS,
+    FullScreenPreview: FullScreenPreviewCSS,
+    RatingCommentModal: RatingCommentModalCSS,
+    WidgetOutsideIFrame: WidgetOutsideIFrameCSS,
+    WidgetInsideIFrame: WidgetInsideIFrameCSS,
+  });
 
-  importAssetFiles = () => {
-    /**
-     * Assets are imported as base64 via fs.readFileSync and converted into Blob URLs
-     *
-     * Why?
-     * Because all JS, CSS and assets need to be a single JS file (default-widget.min.js).
-     * Simply importing CSS files won't merge them into the JS bundle.
-     */
-    const base64WoffData = {
-      graphikBold:          fs.readFileSync(__dirname + '/DefaultWidget/assets/fonts/Graphik-Bold-Web.woff', { encoding: 'base64' }),
-      graphikMedium:        fs.readFileSync(__dirname + '/DefaultWidget/assets/fonts/Graphik-Medium-Web.woff', { encoding: 'base64' }),
-      graphikRegular:       fs.readFileSync(__dirname + '/DefaultWidget/assets/fonts/Graphik-Regular-Web.woff', { encoding: 'base64' }),
-      graphikRegularItalic: fs.readFileSync(__dirname + '/DefaultWidget/assets/fonts/Graphik-RegularItalic-Web.woff', { encoding: 'base64' }),
-      elixirchatIcons:      fs.readFileSync(__dirname + '/DefaultWidget/assets/fonts/elixirchat-icons.woff', { encoding: 'base64' }),
-    };
-    const base64SvgData = {
-      whatsapp:             fs.readFileSync(__dirname + '/DefaultWidget/assets/images/channel-whatsapp.svg', { encoding: 'base64' }),
-      telegram:             fs.readFileSync(__dirname + '/DefaultWidget/assets/images/channel-telegram.svg', { encoding: 'base64' }),
-      facebook:             fs.readFileSync(__dirname + '/DefaultWidget/assets/images/channel-facebook.svg', { encoding: 'base64' }),
-      viber:                fs.readFileSync(__dirname + '/DefaultWidget/assets/images/channel-viber.svg', { encoding: 'base64' }),
-      vkontakte:            fs.readFileSync(__dirname + '/DefaultWidget/assets/images/channel-vk.svg', { encoding: 'base64' }),
-    };
-    const base64Mp3Data = {
-      notificationSound:    fs.readFileSync(__dirname + '/DefaultWidget/assets/audio/notification.mp3', { encoding: 'base64' }),
-    };
-    return {
-      woff: this.base64FilesToBlobUrls(base64WoffData, 'woff'),
-      svg: this.base64FilesToBlobUrls(base64SvgData, 'svg'),
-      mp3: this.base64FilesToBlobUrls(base64Mp3Data, 'mp3'),
-    };
-  };
+  getAssets = () => ({
+    woff: {
+      graphikBold: graphikBoldUrl,
+      graphikMedium: graphikMediumUrl,
+      graphikRegular: graphikRegularUrl,
+      graphikRegularItalic: graphikRegularItalicUrl,
+      elixirchatIcons: elixirchatIconsUrl,
+    },
+    svg: {
+      whatsapp: whatsappSvgUrl,
+      telegram: telegramSvgUrl,
+      facebook: facebookSvgUrl,
+      viber: viberSvgUrl,
+      vkontakte: vkontakteSvgUrl,
+    },
+    mp3: {
+      notificationSound: notificationSoundUrl,
+    },
+  });
 
-  base64FilesToBlobUrls = (base64Data, format) => {
-    const contentTypes = {
-      woff: 'font/woff',
-      svg: 'image/svg+xml',
-      mp3: 'audio/mpeg',
-    };
-    const blobUrls = {};
-    for (let key in base64Data) {
-      const contentType = contentTypes[format];
-      blobUrls[key] = this.singleBase64StringToBlobUrl(base64Data[key], contentType);
-    }
-    return blobUrls;
-  };
-
-  singleBase64StringToBlobUrl = (base64String, contentType, sliceSize = 512) => {
-    const byteCharacters = atob(base64String);
-    const byteArrays = [];
-
-    for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
-      const slice = byteCharacters.slice(offset, offset + sliceSize);
-
-      const byteNumbers = new Array(slice.length);
-      for (let i = 0; i < slice.length; i++) {
-        byteNumbers[i] = slice.charCodeAt(i);
-      }
-
-      const byteArray = new Uint8Array(byteNumbers);
-      byteArrays.push(byteArray);
-    }
-    const blob = new Blob(byteArrays, { type: contentType });
-    return URL.createObjectURL(blob);
-  };
-
-  generateFontFaceCSS = (fonts) => {
+  generateFontFaceCSS = (fonts: Record<string, string>) => {
     return generateFontFaceCSS([
       {
         fontFamily: 'elixirchat-icons',
@@ -182,9 +158,9 @@ export class WidgetAssets {
     ]);
   };
 
-  generateSvgIconsCSS = (svgIcons) => {
+  generateSvgIconsCSS = (svgIcons: Record<string, string>) => {
     const cssRules = [];
-    for (let iconName in svgIcons) {
+    for (const iconName in svgIcons) {
       cssRules.push(
         `.svg-icon-${iconName} { background-image: url("${svgIcons[iconName]}"); }`
       );

@@ -1,5 +1,6 @@
 import 'babel-polyfill';
-import { _find, getFromLocalStorage, logEvent, setToLocalStorage } from '../utilsCommon';
+import { _find, getFromLocalStorage, setToLocalStorage } from '../utilsCommon';
+// logEvent
 import { renderWidgetReactComponent } from './DefaultWidget/Widget';
 import { IFontRule } from './FontExtractor';
 import { IJoinRoomChannel, IJoinRoomData } from '../sdk/ElixirChat';
@@ -43,13 +44,13 @@ if (!ElixirChat) {
 }
 
 if (!ElixirChat) {
-  logEvent(
-    true,
-    'Cannot find ElixirChat SDK. Are you sure you imported SDK (ether via "import" or via the <script/> tag)?\n' +
-    'See: https://github.com/elixirchat/elixirchat-js-sdk#add-default-widget', {
-      NODE_ENV: process.env.NODE_ENV
-    }, 'error'
-  );
+  // logEvent(
+  //   true,
+  //   'Cannot find ElixirChat SDK. Are you sure you imported SDK (ether via "import" or via the <script/> tag)?\n' +
+  //   'See: https://github.com/elixirchat/elixirchat-js-sdk#add-default-widget', {
+  //     NODE_ENV: process.env.NODE_ENV
+  //   }, 'error'
+  // );
 }
 
 export interface IElixirChatWidgetConfig {

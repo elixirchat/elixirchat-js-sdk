@@ -697,6 +697,9 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
       this.loadPrecedingMessages();
     } else {
       const scrollBlock = this.scrollBlock.current;
+      if (!scrollBlock) {
+        return;
+      }
       const scrollBottom = scrollBlock.scrollHeight - scrollBlock.scrollTop - scrollBlock.clientHeight;
       if (scrollBottom < 15) {
         this.loadNextMessages();
@@ -1139,4 +1142,4 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
   }
 }
 
-export const ChatMessages = injectIntl(ChatMessagesComponent);
+export const ChatMessages = injectIntl(ChatMessagesComponent, { forwardRef: true });

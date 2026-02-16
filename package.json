@@ -14,7 +14,24 @@
     "link-with-backend": "./bin/link-with-backend.sh",
     "update-icon-font": "./bin/update-icon-font.sh"
   },
-  "main": "./sdk",
+  "main": "./sdk/index.js",
+  "sdk": "build/sdk.min.js",
+  "widget": "build/default-widget.min.js",
+  "targets": {
+    "main": false,
+    "default": {
+      "source": "dev.html",
+      "distDir": "dist"
+    },
+    "sdk": {
+      "source": "sdk/index.ts",
+      "distDir": "build"
+    },
+    "widget": {
+      "source": "widget/index.ts",
+      "distDir": "build"
+    }
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/elixirchat/elixirchat-js-sdk.git"
@@ -28,6 +45,7 @@
     "@absinthe/socket": "^0.2.1",
     "@lottiefiles/react-lottie-player": "^3.6.0",
     "@sentry/browser": "^5.22.3",
+    "core-js": "^3.39.0",
     "dayjs": "^1.8.35",
     "phoenix": "^1.5.4",
     "react": "^16.13.1",
@@ -38,12 +56,13 @@
   },
   "devDependencies": {
     "@babel/core": "^7.29.0",
-    "@babel/preset-env": "^7.12.1",
+    "@babel/preset-env": "^7.29.0",
     "@babel/preset-react": "^7.28.5",
     "@babel/preset-typescript": "^7.28.5",
+    "@parcel/transformer-inline-string": "^2.16.4",
     "concurrently": "^4.1.2",
     "http-server": "^0.12.3",
-    "parcel-bundler": "^1.12.4",
+    "parcel": "^2.16.4",
     "sass": "^1.97.3",
     "typescript": "^4.5.5",
     "watch": "^1.0.2"
