@@ -1,6 +1,7 @@
-@import "./variables";
-@import "./mixins";
-@import "./Chat";
+@use "./variables" as *;
+@use "./mixins" as *;
+@use "./Chat" as *;
+@use "sass:color";
 
 .exlixir-chat__wrapper {
   overflow: hidden;
@@ -339,7 +340,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: lighten($color-gray-dark, 5) !important;
+  color: color.adjust($color-gray-dark, $lightness: 5%) !important;
 }
 
 .elixirchat-chat-files__preview-image {
@@ -402,7 +403,7 @@
   transition: background-color 300ms;
 
   &:hover {
-    background: darken($color-pink, 6);
+    background: color.adjust($color-pink, $lightness: -6%);
   }
 }
 
@@ -528,7 +529,7 @@
   left: 0;
   top: 3px;
   font-size: 11px;
-  color: lighten($color-gray-dark, 5);
+  color: color.adjust($color-gray-dark, $lightness: 5%);
 }
 
 .elixirchat-chat-previews__video-play {
