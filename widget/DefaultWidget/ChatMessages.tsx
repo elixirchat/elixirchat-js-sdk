@@ -1139,4 +1139,4 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
   }
 }
 
-export const ChatMessages = injectIntl(ChatMessagesComponent);
+export const ChatMessages = injectIntl(ChatMessagesComponent, { forwardRef: true });
