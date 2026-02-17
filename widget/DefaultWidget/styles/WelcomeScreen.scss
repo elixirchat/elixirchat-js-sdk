@@ -1,5 +1,6 @@
-@import "./variables";
-@import "./mixins";
+@use "./variables" as *;
+@use "./mixins" as *;
+@use "sass:color";
 
 .elixirchat-welcome-screen__container {
   overflow: hidden;
@@ -111,7 +112,7 @@
   font-size: 16px;
 
   &:hover {
-    background: darken($color-blue, 10);
+    background: color.adjust($color-blue, $lightness: -10%);
   }
 
   .elixirchat-browser--safari & {
@@ -185,7 +186,7 @@
 
 .elixirchat-welcome-screen__mute,
 .elixirchat-welcome-screen__close {
-  color: darken($color-gray-light, 10);
+  color: color.adjust($color-gray-light, $lightness: -10%);
   height: 52px;
   top: 1px;
   position: fixed;

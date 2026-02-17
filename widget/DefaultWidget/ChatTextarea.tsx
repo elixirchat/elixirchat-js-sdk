@@ -412,7 +412,7 @@ class ChatTextareaComponent extends Component<IDefaultWidgetTextareaProps, IDefa
           <TextareaAutosize
             className="elixirchat-chat-textarea__textarea"
             placeholder={this.props.intl.formatMessage({ id: 'send_a_message' })}
-            inputRef={tag => {this.textarea = tag;}}
+            ref={tag => {this.textarea = tag;}}
             minRows={1}
             maxRows={5}
             onHeightChange={this.onVerticalResize}

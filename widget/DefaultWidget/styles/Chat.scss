@@ -1,5 +1,6 @@
-@import "./variables";
-@import "./mixins";
+@use "./variables" as *;
+@use "./mixins" as *;
+@use "sass:color";
 
 $chat-header-height: 52px;
 
@@ -48,7 +49,7 @@ $chat-header-height: 52px;
 }
 
 .elixirchat-chat-header__button {
-  color: darken($color-gray-light, 10);
+  color: color.adjust($color-gray-light, $lightness: -10%);
   background: none;
   cursor: pointer;
   border: 0;
