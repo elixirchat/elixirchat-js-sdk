@@ -321,7 +321,9 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
         })
         .finally(() => {
           scrollBlock.scrollTop = scrollBlock.scrollHeight - initialScrollHeight;
-          this.setState({ isLoadingPrecedingMessageHistory: false });
+            setTimeout(() => {
+              this.setState({ isLoadingPrecedingMessageHistory: false });
+            }, 500); 
         });
     }
   };
