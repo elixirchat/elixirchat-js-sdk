@@ -41,15 +41,11 @@
     "unique-names-generator": "^3.0.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.29.0",
-    "@babel/preset-env": "^7.11.5",
-    "@babel/preset-react": "^7.10.4",
-    "@babel/preset-typescript": "^7.10.4",
     "concurrently": "^4.1.2",
     "http-server": "^0.12.3",
-    "parcel-bundler": "^1.12.4",
     "sass": "^1.97.3",
     "typescript": "^4.5.5",
-    "watch": "^1.0.2"
+    "watch": "^1.0.2",
+    "vite": "^5.4.0"
   }
 }

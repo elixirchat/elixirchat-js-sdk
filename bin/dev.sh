@@ -11,4 +11,4 @@ export default ElixirChat;
 
 concurrently \
 "sass --watch widget/DefaultWidget/styles/:dist/styles/ --no-source-map" \
-"parcel dev.html --port 8001"
+"vite --port 8001"

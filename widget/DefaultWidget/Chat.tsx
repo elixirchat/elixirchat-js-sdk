@@ -152,13 +152,12 @@ class ChatComponent extends Component<IDefaultWidgetProps, IDefaultWidgetState> 
               })}/>
             </button>
 
-            
+            <Tooltip className="elixirchat-chat-header__mute-tooltip" title={this.getMuteTooltipMessage()}>
               <button className="elixirchat-chat-header__button"
                       onClick={() => widgetIsMuted ? elixirChatWidget.unmute() : elixirChatWidget.mute()}>
-                <Tooltip className="elixirchat-chat-header__mute-tooltip" title={this.getMuteTooltipMessage()}>
                 <i className={widgetIsMuted ? 'icon-speaker-mute' : 'icon-speaker'}/>
-                  
               </button>
+            </Tooltip>
 
             <button className="elixirchat-chat-header__button" onClick={elixirChatWidget.closePopup}>
               <i className="icon-close-thin"/>

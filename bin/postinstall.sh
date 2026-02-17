@@ -26,7 +26,7 @@ if [[ $script_dir =~ node_modules/elixirchat-js-sdk ]];
     print_success "\nelixirchat-js-sdk/bin/postinstall.sh script_dir: $script_dir\nConfirmed elixirchat-js-sdk is being installed in ANOTHER project.\n\n"
     echo "const ElixirChat = require('../build/sdk.min').default; export default ElixirChat;" > dist/sdk.min.js
     print_success "\nCreated dist/sdk.min.js\nRebuilding default-widget.min.js...\n\n"
-    parcel build widget/index.ts --out-dir build --out-file default-widget.min.js --no-source-maps
+    vite build -c vite.widget.config.ts
   else
     print_success "\nelixirchat-js-sdk/bin/postinstall.sh script_dir: $script_dir\nelixirchat-js-sdk is NOT being installed in ANOTHER project. Skipping rebuilding default-widget.min.js...\n\n"
     generate_default_env-bin

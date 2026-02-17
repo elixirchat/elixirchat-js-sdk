@@ -5,8 +5,8 @@
 # running "npm install" within elixirchat-js-sdk folder)
 #
 # If elixirchat-js-sdk is being installed as a dependency in ANOTHER project,
-# parcel-bundler and sass must be installed prior to launching bin/postinstall.sh
-# to avoid the bug when parcel-bundler or sass are not being found in bin/postinstall.sh
+# vite and sass must be installed prior to launching bin/postinstall.sh
+# to avoid the bug when vite or sass are not being found in bin/postinstall.sh
 
 source bin/utils.sh
 
@@ -18,11 +18,11 @@ get_dev_package_version () {
 
 if [[ $script_dir =~ node_modules/elixirchat-js-sdk ]];
   then
-    parcel_version=$(get_dev_package_version "parcel-bundler")
+    vite_version=$(get_dev_package_version "vite")
     sass_version=$(get_dev_package_version "sass")
 
-    print_success "elixirchat-js-sdk/bin/preinstall.sh script_dir: $script_dir\nConfirmed elixirchat-js-sdk is being installed in ANOTHER project.\nInstalling sass@$sass_version and parcel-bundler@$parcel_version...\n\n"
-    npm i "parcel-bundler@$parcel_version"
+    print_success "elixirchat-js-sdk/bin/preinstall.sh script_dir: $script_dir\nConfirmed elixirchat-js-sdk is being installed in ANOTHER project.\nInstalling sass@$sass_version and vite@$vite_version...\n\n"
+    npm i "vite@$vite_version"
     npm i "sass@$sass_version"
   else
     print_success "elixirchat-js-sdk/bin/preinstall.sh script_dir:$script_dir\nelixirchat-js-sdk is NOT being installed in ANOTHER project. Skipping bin/preinstall.sh...\n\n"
