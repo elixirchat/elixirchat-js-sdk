@@ -19,7 +19,7 @@ function generate_default_env-bin() {
 
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-node-sass --recursive widget/DefaultWidget/styles/ --output dist/styles/
+sass widget/DefaultWidget/styles/:dist/styles/ --no-source-map
 
 if [[ $script_dir =~ node_modules/elixirchat-js-sdk ]];
   then

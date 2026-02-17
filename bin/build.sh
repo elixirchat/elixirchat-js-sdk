@@ -8,7 +8,7 @@ source bin/utils.sh
 output_version=$(get_variable_from_dotenv_file "ELIXIRCHAT_VERSION" .env)
 
 printf "\nBuilding JS (version $output_version) into 'build' directory\n\n";
-node-sass --recursive widget/DefaultWidget/styles/ --output dist/styles/ --output-style compressed
+sass widget/DefaultWidget/styles/:dist/styles/ --style=compressed --no-source-map
 
 # When building SDK locally (npm run build), dist/sdk.min.js is empty so that sdk.min.js is not included into default-widget.min.js bundle
 # See widget/ElixirChatWidget.ts:20

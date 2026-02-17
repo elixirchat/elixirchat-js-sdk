@@ -53,21 +53,22 @@ export class WidgetAssets {
      * Because all JS, CSS and assets need to be a single JS file (default-widget.min.js).
      * Simply importing CSS files won't merge them into the JS bundle.
      */
+    // __dirname is widget/ (this file's dir), so dist/styles is one level up: __dirname + '/../dist/styles/...'
     return {
-      Icons:                fs.readFileSync(__dirname + '../../dist/styles/Icons.css', 'utf8'),
-      Alert:                fs.readFileSync(__dirname + '../../dist/styles/Alert.css', 'utf8'),
-      Tooltip:              fs.readFileSync(__dirname + '../../dist/styles/Tooltip.css', 'utf8'),
-      Chat:                 fs.readFileSync(__dirname + '../../dist/styles/Chat.css', 'utf8'),
-      ChatMessages:         fs.readFileSync(__dirname + '../../dist/styles/ChatMessages.css', 'utf8'),
-      Rating:               fs.readFileSync(__dirname + '../../dist/styles/Rating.css', 'utf8'),
-      ChatTextarea:         fs.readFileSync(__dirname + '../../dist/styles/ChatTextarea.css', 'utf8'),
-      MessageSearch:        fs.readFileSync(__dirname + '../../dist/styles/MessageSearch.css', 'utf8'),
-      WelcomeScreen:        fs.readFileSync(__dirname + '../../dist/styles/WelcomeScreen.css', 'utf8'),
-      FormattedMarkdown:    fs.readFileSync(__dirname + '../../dist/styles/FormattedMarkdown.css', 'utf8'),
-      FullScreenPreview:    fs.readFileSync(__dirname + '../../dist/styles/FullScreenPreview.css', 'utf8'),
-      RatingCommentModal:   fs.readFileSync(__dirname + '../../dist/styles/RatingCommentModal.css', 'utf8'),
-      WidgetOutsideIFrame:  fs.readFileSync(__dirname + '../../dist/styles/WidgetOutsideIFrame.css', 'utf8'),
-      WidgetInsideIFrame:   fs.readFileSync(__dirname + '../../dist/styles/WidgetInsideIFrame.css', 'utf8'),
+      Icons:                fs.readFileSync(__dirname + '/../dist/styles/Icons.css', 'utf8'),
+      Alert:                fs.readFileSync(__dirname + '/../dist/styles/Alert.css', 'utf8'),
+      Tooltip:              fs.readFileSync(__dirname + '/../dist/styles/Tooltip.css', 'utf8'),
+      Chat:                 fs.readFileSync(__dirname + '/../dist/styles/Chat.css', 'utf8'),
+      ChatMessages:         fs.readFileSync(__dirname + '/../dist/styles/ChatMessages.css', 'utf8'),
+      Rating:               fs.readFileSync(__dirname + '/../dist/styles/Rating.css', 'utf8'),
+      ChatTextarea:         fs.readFileSync(__dirname + '/../dist/styles/ChatTextarea.css', 'utf8'),
+      MessageSearch:        fs.readFileSync(__dirname + '/../dist/styles/MessageSearch.css', 'utf8'),
+      WelcomeScreen:        fs.readFileSync(__dirname + '/../dist/styles/WelcomeScreen.css', 'utf8'),
+      FormattedMarkdown:    fs.readFileSync(__dirname + '/../dist/styles/FormattedMarkdown.css', 'utf8'),
+      FullScreenPreview:    fs.readFileSync(__dirname + '/../dist/styles/FullScreenPreview.css', 'utf8'),
+      RatingCommentModal:   fs.readFileSync(__dirname + '/../dist/styles/RatingCommentModal.css', 'utf8'),
+      WidgetOutsideIFrame:  fs.readFileSync(__dirname + '/../dist/styles/WidgetOutsideIFrame.css', 'utf8'),
+      WidgetInsideIFrame:   fs.readFileSync(__dirname + '/../dist/styles/WidgetInsideIFrame.css', 'utf8'),
     };
   };
 
