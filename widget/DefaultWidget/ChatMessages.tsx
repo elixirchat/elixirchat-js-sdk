@@ -1,4 +1,5 @@
 import React, { Component, Fragment } from 'react';
+import { flushSync } from 'react-dom';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import debounce from 'lodash/debounce';
 import uniqBy from 'lodash/uniqBy';
@@ -228,7 +229,9 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
   };
 
   onMessageHistoryPrepend = (chunk) => {
-    this.updateMessageHistory({ chunk, prepend: true }, this.reAttachIntersectionObserverToMessages);
+    flushSync(() => {
+      this.updateMessageHistory({ chunk, prepend: true }, this.reAttachIntersectionObserverToMessages);
+    });
   };
 
   onMessageHistoryAppend = (chunk) => {
