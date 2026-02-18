@@ -267,7 +267,10 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
     const { elixirChatWidget } = this.props;
     this.setState({ isLoading: true });
 
-    if (elixirChatWidget.messageHistory.length) {
+    const { messageSubscription } = elixirChatWidget;
+    const hasCachedHistory = messageSubscription.hasFetchedInitialHistory && elixirChatWidget.messageHistory.length;
+
+    if (hasCachedHistory) {
       this.onMessageHistoryChange(elixirChatWidget.messageHistory);
       this.setState({ isLoading: false });
       elixirChatWidget.waitForPopupToOpen(this.scrollInitiallyToAppropriatePosition);
