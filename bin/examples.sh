@@ -8,15 +8,17 @@
 
 source bin/utils.sh
 
-if [[ $1 = "dev" ]] || [[ $2 = "dev" ]];
-  then
-    export is_local_server=0
-  else
-    export is_local_server=1
+if [[ $1 == "dev" ]] || [[ $2 == "dev" ]]; then
+  is_local_server=false
+else
+  is_local_server=true
 fi
 
-[[ $1 = "open" ]] || [[ $2 = "open" ]] && export should_open_in_browser=1
-
+if [[ $1 == "open" ]] || [[ $2 == "open" ]]; then
+  should_open_in_browser=true
+else
+  should_open_in_browser=false
+fi
 function replace_api_urls_with_local_server () {
   API_URL="http:\/\/localhost:4000"
   SOCKET_URL="ws:\/\/localhost:4000\/socket"
