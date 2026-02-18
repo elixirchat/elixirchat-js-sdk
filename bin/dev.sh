@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-sass widget/DefaultWidget/styles/:dist/styles/ --no-source-map
+sass widget/DefaultWidget/styles/:dist/styles/
 
 # When developing SDK locally (npm run dev), dist/sdk.min.js refers to sdk/ElixirChat.ts
 # See: widget/ElixirChatWidget.ts:20
@@ -10,5 +10,5 @@ export default ElixirChat;
 """ > dist/sdk.min.js
 
 concurrently \
-"sass --watch widget/DefaultWidget/styles/:dist/styles/ --no-source-map" \
+"sass --watch widget/DefaultWidget/styles/:dist/styles/" \
 "vite --port 8001"
