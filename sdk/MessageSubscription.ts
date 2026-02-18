@@ -540,6 +540,10 @@ export class MessageSubscription {
   public fetchHistoryMessageBySearch = (messageId: string): Promise<[IMessage] | any> => {
     const { triggerEvent } = this.elixirChat;
 
+    if (!messageId) {
+        return Promise.resolve();
+    }
+
     return this.getHistoryToMessage(messageId, true).then(messageHistory => {
       triggerEvent(MESSAGES_HISTORY_CHANGE, messageHistory);
       const lastMessage = _last(messageHistory) || {};
@@ -557,6 +561,10 @@ export class MessageSubscription {
    */
   public fetchHistoryMessagePrepend = (messageId: string): Promise<[IMessage] | any> => {
     const { triggerEvent } = this.elixirChat;
+
+    if (!messageId) {
+        return Promise.resolve();
+    }
 
     return this.getHistoryToMessage(messageId).then(messageHistory => {
       this.retrieveLastMessageCursor().then(() => {

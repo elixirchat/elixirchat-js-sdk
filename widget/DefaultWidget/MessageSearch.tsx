@@ -146,6 +146,9 @@ class MessageSearchComponent extends Component<SearchProps, SearchState> {
    * @param direction
    */
   loadMessageLogic = (messageId, direction) => {
+    if (!messageId) {
+      return;
+    }
     if (this.props.messagesIds.includes(messageId)) {
       this.props.onScroll(messageId);
     } else {
