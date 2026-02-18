@@ -1,47 +1,47 @@
-import {ElixirChatWidget} from './widget/ElixirChatWidget';
-//
-// {
-//   "apiUrl": "https://elixir-widget.huntflow.ru/api/",
-//   "backendStaticUrl": "https://elixir-widget.huntflow.ru/api/",
-//   "socketUrl": "wss://elixir-widget.huntflow.ru/api/socket",
-//   "company_id": "02c1b2cb-db4d-4260-8762-768172ace826",
-//   "room_id": "e27397ef17ee877e9d964b8dede3ecaf57d705b4e6474aa6e9a30a00bc2c50c6",
-//   "client_id": "6c99f050b745e2d634e5be4afbf357ec7fa206dd8968dfb69a6321ee3d05f105"
-// }
-/**
- * "apiUrl": "https://elixir.huntflow.dev/api/",
- *     "backendStaticUrl": "https://elixir.huntflow.dev/api/",
- *     "socketUrl": "wss://elixir.huntflow.dev/api/socket",
- *     "company_id": "d774c50a-42ff-46ba-8ed6-1904d4485ac4",
- *     "room_id": "fede62c1f3a759f3cef3df03a7540bb61cdb134e5fba9533b92472146455e68a",
- *     "client_id": "55ebec24fd59a2ac38c740c9341fa4004cabfe1b22e68cdbf37f7195f1006949"
- */
-
-
-const customEmployerName = (sender) => {
-  if (sender.isOperator) {
-    return 'Служба заботы из Хантфлоу';
-  }
-  return 'Служба заботы';
-};
+import { ElixirChatWidget } from './widget/ElixirChatWidget';
 
 const elixirChatWidget = new ElixirChatWidget({
-  "apiUrl": "https://elixir-widget.huntflow.dev/api/",
-  "socketUrl": "wss://elixir-widget.huntflow.dev/api/socket",
-  "backendStaticUrl": "https://elixir-widget.huntflow.dev/api/",
-  "companyId": "d774c50a-42ff-46ba-8ed6-1904d4485ac4",
-  "room": {
-    "id": "Um9vbTpiNTM1NDQyMy05NTZkLTQwMmQtYTk1NC0yZThlZjIxMWNjZDY",
-    "title": "Huntflow",
-    "data": {
-      "version": "PROD-7678_filter-vacancy",
-      "plan": "Демо",
-      "planInfo": "Демо\n16.12.2025 — 06.02.2026",
-      "access": "ACTIVE"
+  apiUrl: 'http://localhost:4000',
+  socketUrl: 'ws://localhost:4000/socket',
+  companyId: 'd774c50a-42ff-46ba-8ed6-1904d4485ac4',
+  room: {
+    id: 'dev-room-id',
+    title: 'ElixirChat Dev Widget',
+    data: {
+      type: 'Internal',
+      last_action: 'June 25',
+      permission: 'Paid until December 30',
+      live_page: 'https://example.com/live/#test-page',
+      users: 25,
+      api: 2,
+      version: '7.11.31',
     }
   },
-  "client": {
-    "id": "6c99f050b745e2d634e5be4afbf357ec7fa206dd8968dfb69a6321ee3d05f105",
+  client: {
+    id: 'dev-client-id',
+    firstName: null,
+    lastName: null,
+    fullName: 'John Doe',
+  },
+  debug: true,
+});
+
+elixirChatWidget.appendWidget({
+  container: document.getElementById('elixirchat-widget'),
+  title: 'Служба поддержки',
+  logo: 'https://picsum.photos/200',
+  supportEmail: 'support@elixir.chat',
+  enabledChannels: [
+    'whatsapp',
+    'telegram',
+    'facebook',
+    'vkontakte',
+    'viber',
+  ],
+  iframeCSS: `
+    /* Custom styles inside the iframe */
+  `,
+});
     "fullName": "Maxim Gladkih",
     "locale": "ru"
   },
