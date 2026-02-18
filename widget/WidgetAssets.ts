@@ -1,6 +1,10 @@
 import { ElixirChatWidget } from '../ElixirChatWidget';
 import { generateFontFaceCSS } from './FontExtractor';
 
+function stripBOM(css: string): string {
+  return css.replace(/^\uFEFF/, '');
+}
+
 // CSS
 import IconsCSS from '../dist/styles/Icons.css?raw';
 import AlertCSS from '../dist/styles/Alert.css?raw';
@@ -84,7 +88,7 @@ export class WidgetAssets {
      * Why?
      * Because all JS, CSS and assets need to be a single JS file (default-widget.min.js).
      */
-    return {
+    const cssFiles = {
       Icons:                IconsCSS,
       Alert:                AlertCSS,
       Tooltip:              TooltipCSS,
@@ -100,6 +104,10 @@ export class WidgetAssets {
       WidgetOutsideIFrame:  WidgetOutsideIFrameCSS,
       WidgetInsideIFrame:   WidgetInsideIFrameCSS,
     };
+
+    return Object.fromEntries(
+      Object.entries(cssFiles).map(([key, value]) => [key, stripBOM(value)])
+    );
   };
 
   importAssetFiles = () => {
