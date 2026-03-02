@@ -3,6 +3,7 @@ import { FormattedMessage, injectIntl } from 'react-intl';
 import TextareaAutosize from 'react-textarea-autosize';
 import { ElixirChatWidget } from '../ElixirChatWidget';
 import { Tooltip } from './Tooltip';
+import { ActionsDropdown } from './ActionsDropdown';
 import { cn, randomDigitStringId, setToLocalStorage } from '../../utilsCommon';
 import { getImageDimensions, generateReplyMessageQuote } from '../../utilsWidget';
 import { getScreenshotCompatibilityFallback } from '../../sdk/ScreenshotTaker';
@@ -111,6 +112,10 @@ class ChatTextareaComponent extends Component<IDefaultWidgetTextareaProps, IDefa
     elixirChatWidget.off(WIDGET_POPUP_OPEN, this.focusTextarea);
     elixirChatWidget.off(WIDGET_POPUP_OPEN, this.onVerticalResize);
   }
+
+  onAttachFileClick = () => {
+    this.inputFile.current?.click();
+  };
 
   preventLoosingUploadingFiles = (e) => {
     const { isSubmittingMessage } = this.state;
@@ -323,6 +328,20 @@ class ChatTextareaComponent extends Component<IDefaultWidgetTextareaProps, IDefa
     this.inputFile.current.value = '';
   };
 
+  onSubmitClick = () => {
+    const { textareaText, textareaAttachments, textareaResponseToMessageId } = this.state;
+    if (textareaText.trim() || textareaAttachments.length) {
+      this.onMessageSubmit();
+      this.setState({
+        textareaText: '',
+        textareaResponseToMessageId: null,
+        textareaAttachments: [],
+      });
+      this.onVerticalResize();
+      this.focusTextarea();
+    }
+  };
+
   onMessageSubmit = () => {
     const { elixirChatWidget } = this.props;
     const { textareaText, textareaResponseToMessageId, textareaAttachments } = this.state;
@@ -378,36 +397,30 @@ class ChatTextareaComponent extends Component<IDefaultWidgetTextareaProps, IDefa
                 onClick={this.onRemoveReplyTo}/>
             </div>
           )}
-
-          <div className="elixirchat-chat-textarea__actions">
-            {!Boolean(screenshotFallback) && (
-              <Tooltip className="elixirchat-chat-textarea__actions-tooltip"
-                title={this.props.intl.formatMessage({ id: 'take_a_screenshot' })}>
-                <span className="elixirchat-chat-textarea__actions-button">
-                  <button className="elixirchat-chat-textarea__actions-screenshot" onClick={this.onScreenShotClick}>
-                    <i className="icon-screenshot"/>
-                  </button>
-                </span>
-              </Tooltip>
-            )}
-            <Tooltip className="elixirchat-chat-textarea__actions-tooltip"
-              title={this.props.intl.formatMessage({ id: 'attach_files' })}>
-              <span className="elixirchat-chat-textarea__actions-button">
-                <span className="elixirchat-chat-textarea__actions-attach">
-                  <label className="elixirchat-chat-textarea__actions-attach-label" htmlFor="DefaultWidget-file-upload">
-                    <i className="icon-file"/>
-                  </label>
-                  <input
-                    className="elixirchat-chat-textarea__actions-attach-input"
-                    id="DefaultWidget-file-upload"
-                    type="file"
-                    ref={this.inputFile}
-                    multiple={true}
-                    onChange={this.onInputFileChange}/>
-                </span>
-              </span>
-            </Tooltip>
+          <div className="elixirchat-chat-textarea__actions-row">
+            <ActionsDropdown
+              onAttachFile={this.onAttachFileClick}
+              onScreenshot={this.onScreenShotClick}
+              screenshotAvailable={!Boolean(screenshotFallback)}
+              screenshotLabel={this.props.intl.formatMessage({ id: 'take_a_screenshot' })}
+              attachFileLabel={this.props.intl.formatMessage({ id: 'attach_files' })}
+            />
+            <button
+              type="button"
+              className="elixirchat-chat-textarea__send-btn"
+              onClick={this.onSubmitClick}
+              disabled={!textareaText.trim() && !textareaAttachments.length}
+            >
+              <i className="icon-send" />
+            </button>
           </div>
+          <input
+            className="elixirchat-chat-textarea__actions-attach-input"
+            id="DefaultWidget-file-upload"
+            type="file"
+            ref={this.inputFile}
+            multiple={true}
+            onChange={this.onInputFileChange}/>
 
           <TextareaAutosize
             className="elixirchat-chat-textarea__textarea"
