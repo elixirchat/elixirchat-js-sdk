@@ -102,7 +102,7 @@ $color-textarea-bg: #FFF;
   height: 32px;
   padding: 0;
   background: transparent;
-  border: 1px solid darken($color-gray-light, 5);
+  border: 1px solid color.adjust($color-gray-light, $lightness: 5%);
   border-radius: 8px;
   position: relative;
   display: inline-flex;
@@ -115,7 +115,7 @@ $color-textarea-bg: #FFF;
   font-size: 15px;
 
   &:hover {
-    background-color: lighten($color-gray-light, 5);
+    background-color: color.adjust($color-gray-light, $lightness: 5%);
   }
 
   .icon-file {
