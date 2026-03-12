@@ -696,7 +696,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
     return message.mentions.map(mention => {
       return mention.value === 'ALL'
         ? this.props.intl.formatMessage({ id: 'everyone' })
-        : getUserFullName(mention.client, '\u00A0');
+        : getUserFullName(mention.client, ' ');
     }).join(', ');
   };
 
@@ -910,17 +910,17 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
 
                           {!message.sender.isCurrentClient && (
                             <div className="elixirchat-chat-messages__sender">
-                              <div>
-                                <Avatar src={this.processedAvatar(message)} />
-                              </div>
-                              <b>{getUserFullName(message.sender) || getOperatorName(message.sender, elixirChatWidget.widgetCustomEmployerName, elixirChatWidget.widgetTitle)}</b>
-                              {Boolean(message.mentions.length) && (
-                                <Fragment>
-                                  &nbsp;→ @&nbsp;
-                                  {this.getMentionsStr(message)}
-                                </Fragment>
-                              )}
-                              <span className="elixirchat-chat-messages__time">{dayjs(message.timestamp).format('H:mm')}</span>
+                              <Avatar src={this.processedAvatar(message)} />
+                              <span className="elixirchat-chat-messages__sender-info">
+                                <b>{getUserFullName(message.sender) || getOperatorName(message.sender, elixirChatWidget.widgetCustomEmployerName, elixirChatWidget.widgetTitle)}</b>
+                                {Boolean(message.mentions.length) && (
+                                  <Fragment>
+                                    <span className="mention-prefix"> → @</span>
+                                    {this.getMentionsStr(message)}
+                                  </Fragment>
+                                )}
+                                <span className="elixirchat-chat-messages__time">{dayjs(message.timestamp).format('H:mm')}</span>
+                              </span>
                             </div>
                           )}
 
