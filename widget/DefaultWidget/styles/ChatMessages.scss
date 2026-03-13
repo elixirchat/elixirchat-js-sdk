@@ -221,13 +221,16 @@
 
   .elixirchat-chat-messages__item--by-operator & {
     a {
-      color: $color-pink;
+      color: #56D2EC;
     }
   }
 
   .elixirchat-chat-messages__item--by-me & {
     a {
-      color: $color-pink;
+      color: #fff;
+      text-decoration-line: underline;
+      text-decoration-skip-ink: none;
+      text-underline-offset: 18%;
     }
     & + .elixirchat-chat-files {
       padding-top: 8px;
