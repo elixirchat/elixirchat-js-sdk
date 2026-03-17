@@ -1,5 +1,6 @@
-@import "./variables";
-@import "./mixins";
+@use "./variables" as *;
+@use "./mixins" as *;
+@use "sass:color";
 
 $max-height: 800px;
 $max-width-mobile: 480px;
@@ -22,7 +23,7 @@ $max-width-mobile: 480px;
   color: #ffffff;
 
   &:hover {
-    background-color: darken($color-pink, 6);
+    background-color: color.adjust($color-pink, $lightness: -6%);
   }
 
   @include elixir-media-query(0px, $max-width-mobile) {

@@ -1,13 +1,49 @@
 import { ElixirChatWidget } from '../ElixirChatWidget';
 import { generateFontFaceCSS } from './FontExtractor';
-const fs = require('fs'); // This is a Parcel limited implementation of "fs", @see https://en.parceljs.org/javascript.html#javascript
+
+function stripBOM(css: string): string {
+  return css.replace(/^\uFEFF/, '');
+}
+
+// CSS
+import IconsCSS from '../dist/styles/Icons.css?raw';
+import AlertCSS from '../dist/styles/Alert.css?raw';
+import TooltipCSS from '../dist/styles/Tooltip.css?raw';
+import ChatCSS from '../dist/styles/Chat.css?raw';
+import ChatMessagesCSS from '../dist/styles/ChatMessages.css?raw';
+import RatingCSS from '../dist/styles/Rating.css?raw';
+import ChatTextareaCSS from '../dist/styles/ChatTextarea.css?raw';
+import MessageSearchCSS from '../dist/styles/MessageSearch.css?raw';
+import WelcomeScreenCSS from '../dist/styles/WelcomeScreen.css?raw';
+import FormattedMarkdownCSS from '../dist/styles/FormattedMarkdown.css?raw';
+import FullScreenPreviewCSS from '../dist/styles/FullScreenPreview.css?raw';
+import RatingCommentModalCSS from '../dist/styles/RatingCommentModal.css?raw';
+import WidgetOutsideIFrameCSS from '../dist/styles/WidgetOutsideIFrame.css?raw';
+import WidgetInsideIFrameCSS from '../dist/styles/WidgetInsideIFrame.css?raw';
+
+// Assets
+import graphikBoldUrl from './DefaultWidget/assets/fonts/Graphik-Bold-Web.woff?inline';
+import graphikMediumUrl from './DefaultWidget/assets/fonts/Graphik-Medium-Web.woff?inline';
+import graphikRegularUrl from './DefaultWidget/assets/fonts/Graphik-Regular-Web.woff?inline';
+import graphikRegularItalicUrl from './DefaultWidget/assets/fonts/Graphik-RegularItalic-Web.woff?inline';
+import elixirchatIconsUrl from './DefaultWidget/assets/fonts/elixirchat-icons.woff?inline';
+import whatsappSvgUrl from './DefaultWidget/assets/images/channel-whatsapp.svg?inline';
+import telegramSvgUrl from './DefaultWidget/assets/images/channel-telegram.svg?inline';
+import facebookSvgUrl from './DefaultWidget/assets/images/channel-facebook.svg?inline';
+import viberSvgUrl from './DefaultWidget/assets/images/channel-viber.svg?inline';
+import vkontakteSvgUrl from './DefaultWidget/assets/images/channel-vk.svg?inline';
+import notificationSoundUrl from './DefaultWidget/assets/audio/notification.mp3?inline';
+
+function dataUrlToBase64(dataUrl: string): string {
+  return dataUrl.split(',')[1] || '';
+}
 
 export class WidgetAssets {
 
   public outsideIframeStyles = '';
   public insideIframeStyles = '';
-  public styles = {};
-  public assets = {};
+  public styles: Record<string, string> = {};
+  public assets: Record<string, Record<string, string>> = {};
 
   constructor(elixirChatWidget: ElixirChatWidget){
     const styles = this.importCSSFiles();
@@ -43,83 +79,84 @@ export class WidgetAssets {
     ].join('\n');
   }
 
-  importCSSFiles = () => {
+  importCSSFiles = (): Record<string, string> => {
     /**
      * How it works:
      * 1. SCSS files from widget/DefaultWidget/styles are transpiled into dist/styles
-     * 2. Then dist/styles/*.css are imported as strings via fs.readFileSync
+     * 2. Then dist/styles/*.css are imported as strings via ?raw
      *
      * Why?
      * Because all JS, CSS and assets need to be a single JS file (default-widget.min.js).
-     * Simply importing CSS files won't merge them into the JS bundle.
      */
-    return {
-      Icons:                fs.readFileSync(__dirname + '../../dist/styles/Icons.css', 'utf8'),
-      Alert:                fs.readFileSync(__dirname + '../../dist/styles/Alert.css', 'utf8'),
-      Tooltip:              fs.readFileSync(__dirname + '../../dist/styles/Tooltip.css', 'utf8'),
-      Chat:                 fs.readFileSync(__dirname + '../../dist/styles/Chat.css', 'utf8'),
-      ChatMessages:         fs.readFileSync(__dirname + '../../dist/styles/ChatMessages.css', 'utf8'),
-      Rating:               fs.readFileSync(__dirname + '../../dist/styles/Rating.css', 'utf8'),
-      ChatTextarea:         fs.readFileSync(__dirname + '../../dist/styles/ChatTextarea.css', 'utf8'),
-      MessageSearch:        fs.readFileSync(__dirname + '../../dist/styles/MessageSearch.css', 'utf8'),
-      WelcomeScreen:        fs.readFileSync(__dirname + '../../dist/styles/WelcomeScreen.css', 'utf8'),
-      FormattedMarkdown:    fs.readFileSync(__dirname + '../../dist/styles/FormattedMarkdown.css', 'utf8'),
-      FullScreenPreview:    fs.readFileSync(__dirname + '../../dist/styles/FullScreenPreview.css', 'utf8'),
-      RatingCommentModal:   fs.readFileSync(__dirname + '../../dist/styles/RatingCommentModal.css', 'utf8'),
-      WidgetOutsideIFrame:  fs.readFileSync(__dirname + '../../dist/styles/WidgetOutsideIFrame.css', 'utf8'),
-      WidgetInsideIFrame:   fs.readFileSync(__dirname + '../../dist/styles/WidgetInsideIFrame.css', 'utf8'),
+    const cssFiles = {
+      Icons:                IconsCSS,
+      Alert:                AlertCSS,
+      Tooltip:              TooltipCSS,
+      Chat:                 ChatCSS,
+      ChatMessages:         ChatMessagesCSS,
+      Rating:               RatingCSS,
+      ChatTextarea:         ChatTextareaCSS,
+      MessageSearch:        MessageSearchCSS,
+      WelcomeScreen:        WelcomeScreenCSS,
+      FormattedMarkdown:    FormattedMarkdownCSS,
+      FullScreenPreview:    FullScreenPreviewCSS,
+      RatingCommentModal:   RatingCommentModalCSS,
+      WidgetOutsideIFrame:  WidgetOutsideIFrameCSS,
+      WidgetInsideIFrame:   WidgetInsideIFrameCSS,
     };
+
+    return Object.fromEntries(
+      Object.entries(cssFiles).map(([key, value]) => [key, stripBOM(value)])
+    );
   };
 
   importAssetFiles = () => {
     /**
-     * Assets are imported as base64 via fs.readFileSync and converted into Blob URLs
-     *
-     * Why?
-     * Because all JS, CSS and assets need to be a single JS file (default-widget.min.js).
-     * Simply importing CSS files won't merge them into the JS bundle.
+     * Assets are imported as data URLs via ?inline.
+     * Fonts & SVG: use data URLs directly in CSS (work in iframe, unlike Blob URLs).
+     * MP3: convert to Blob URL for use in Audio().
      */
-    const base64WoffData = {
-      graphikBold:          fs.readFileSync(__dirname + '/DefaultWidget/assets/fonts/Graphik-Bold-Web.woff', { encoding: 'base64' }),
-      graphikMedium:        fs.readFileSync(__dirname + '/DefaultWidget/assets/fonts/Graphik-Medium-Web.woff', { encoding: 'base64' }),
-      graphikRegular:       fs.readFileSync(__dirname + '/DefaultWidget/assets/fonts/Graphik-Regular-Web.woff', { encoding: 'base64' }),
-      graphikRegularItalic: fs.readFileSync(__dirname + '/DefaultWidget/assets/fonts/Graphik-RegularItalic-Web.woff', { encoding: 'base64' }),
-      elixirchatIcons:      fs.readFileSync(__dirname + '/DefaultWidget/assets/fonts/elixirchat-icons.woff', { encoding: 'base64' }),
+    const fontDataUrls = {
+      graphikBold:          graphikBoldUrl as string,
+      graphikMedium:        graphikMediumUrl as string,
+      graphikRegular:       graphikRegularUrl as string,
+      graphikRegularItalic: graphikRegularItalicUrl as string,
+      elixirchatIcons:      elixirchatIconsUrl as string,
     };
-    const base64SvgData = {
-      whatsapp:             fs.readFileSync(__dirname + '/DefaultWidget/assets/images/channel-whatsapp.svg', { encoding: 'base64' }),
-      telegram:             fs.readFileSync(__dirname + '/DefaultWidget/assets/images/channel-telegram.svg', { encoding: 'base64' }),
-      facebook:             fs.readFileSync(__dirname + '/DefaultWidget/assets/images/channel-facebook.svg', { encoding: 'base64' }),
-      viber:                fs.readFileSync(__dirname + '/DefaultWidget/assets/images/channel-viber.svg', { encoding: 'base64' }),
-      vkontakte:            fs.readFileSync(__dirname + '/DefaultWidget/assets/images/channel-vk.svg', { encoding: 'base64' }),
+    const svgDataUrls = {
+      whatsapp:             whatsappSvgUrl as string,
+      telegram:             telegramSvgUrl as string,
+      facebook:             facebookSvgUrl as string,
+      viber:                viberSvgUrl as string,
+      vkontakte:            vkontakteSvgUrl as string,
     };
     const base64Mp3Data = {
-      notificationSound:    fs.readFileSync(__dirname + '/DefaultWidget/assets/audio/notification.mp3', { encoding: 'base64' }),
+      notificationSound:    dataUrlToBase64(notificationSoundUrl as string),
     };
     return {
-      woff: this.base64FilesToBlobUrls(base64WoffData, 'woff'),
-      svg: this.base64FilesToBlobUrls(base64SvgData, 'svg'),
+      woff: fontDataUrls,
+      svg: svgDataUrls,
       mp3: this.base64FilesToBlobUrls(base64Mp3Data, 'mp3'),
     };
   };
 
-  base64FilesToBlobUrls = (base64Data, format) => {
-    const contentTypes = {
+  base64FilesToBlobUrls = (base64Data: Record<string, string>, format: 'woff' | 'svg' | 'mp3'): Record<string, string> => {
+    const contentTypes: Record<string, string> = {
       woff: 'font/woff',
       svg: 'image/svg+xml',
       mp3: 'audio/mpeg',
     };
-    const blobUrls = {};
-    for (let key in base64Data) {
+    const blobUrls: Record<string, string> = {};
+    for (const key in base64Data) {
       const contentType = contentTypes[format];
       blobUrls[key] = this.singleBase64StringToBlobUrl(base64Data[key], contentType);
     }
     return blobUrls;
   };
 
-  singleBase64StringToBlobUrl = (base64String, contentType, sliceSize = 512) => {
+  singleBase64StringToBlobUrl = (base64String: string, contentType: string, sliceSize = 512): string => {
     const byteCharacters = atob(base64String);
-    const byteArrays = [];
+    const byteArrays: Uint8Array[] = [];
 
     for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
       const slice = byteCharacters.slice(offset, offset + sliceSize);
@@ -136,7 +173,7 @@ export class WidgetAssets {
     return URL.createObjectURL(blob);
   };
 
-  generateFontFaceCSS = (fonts) => {
+  generateFontFaceCSS = (fonts: Record<string, string>) => {
     return generateFontFaceCSS([
       {
         fontFamily: 'elixirchat-icons',
@@ -182,9 +219,9 @@ export class WidgetAssets {
     ]);
   };
 
-  generateSvgIconsCSS = (svgIcons) => {
-    const cssRules = [];
-    for (let iconName in svgIcons) {
+  generateSvgIconsCSS = (svgIcons: Record<string, string>) => {
+    const cssRules: string[] = [];
+    for (const iconName in svgIcons) {
       cssRules.push(
         `.svg-icon-${iconName} { background-image: url("${svgIcons[iconName]}"); }`
       );

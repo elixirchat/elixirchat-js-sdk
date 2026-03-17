@@ -71,6 +71,7 @@ export class MessageSubscription {
 
   public elixirChat: ElixirChat;
   public messageHistory: Array<IMessage> = [];
+  public hasFetchedInitialHistory: boolean = false;
 
   private pollingInterval: number = null;
   private lastMessageCursor: null | string = null;
@@ -442,6 +443,7 @@ export class MessageSubscription {
       triggerEvent(MESSAGES_HISTORY_CHANGE, messageHistory);
       this.messageHistory = messageHistory;
       this.lastMessageCursor = _last(messageHistory)?.cursor || null;
+      this.hasFetchedInitialHistory = true;
       return messageHistory;
     });
   };
@@ -479,6 +481,7 @@ export class MessageSubscription {
 
     this.messageHistory = [];
     this.lastMessageCursor = null;
+    this.hasFetchedInitialHistory = false;
     this.temporaryMessageTempIds = [];
     clearInterval(this.pollingInterval);
 
@@ -537,11 +540,16 @@ export class MessageSubscription {
   public fetchHistoryMessageBySearch = (messageId: string): Promise<[IMessage] | any> => {
     const { triggerEvent } = this.elixirChat;
 
+    if (!messageId) {
+        return Promise.resolve();
+    }
+
     return this.getHistoryToMessage(messageId, true).then(messageHistory => {
       triggerEvent(MESSAGES_HISTORY_CHANGE, messageHistory);
       const lastMessage = _last(messageHistory) || {};
       this.messageHistory = messageHistory;
       this.lastMessageCursor = lastMessage?.cursor || null;
+      this.hasFetchedInitialHistory = true;
       triggerEvent(MESSAGES_LAST_MESSAGE_ID, lastMessage?.id);
       return messageHistory;
     });
@@ -553,6 +561,10 @@ export class MessageSubscription {
    */
   public fetchHistoryMessagePrepend = (messageId: string): Promise<[IMessage] | any> => {
     const { triggerEvent } = this.elixirChat;
+
+    if (!messageId) {
+        return Promise.resolve();
+    }
 
     return this.getHistoryToMessage(messageId).then(messageHistory => {
       this.retrieveLastMessageCursor().then(() => {

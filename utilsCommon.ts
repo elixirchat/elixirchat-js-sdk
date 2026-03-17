@@ -152,6 +152,14 @@ export function setToLocalStorage(key: string, data: any){
 }
 
 
+// Standalone logger for use when ElixirChat SDK is not available (e.g. widget loaded without SDK)
+export function logEvent(isDebug: boolean, text: string, data?: any, type?: string): void {
+  if (!isDebug) return;
+  const logFn = type === 'error' ? console.error : console.warn;
+  logFn('[ElixirChat]', text, data ?? '');
+}
+
+
 export function getMediaType(mimeType: string): string | null {
   if ( ['image/jpg', 'image/jpeg', 'image/png', 'image/gif'].includes(mimeType.toLowerCase()) ) {
     return 'image';
