@@ -1,6 +1,7 @@
 import 'babel-polyfill';
 import { _find, getFromLocalStorage, logEvent, setToLocalStorage } from '../utilsCommon';
 import { renderWidgetReactComponent } from './DefaultWidget/Widget';
+import { renderWidgetVue } from './VueWidget/main';
 import { IFontRule } from './FontExtractor';
 import { IJoinRoomChannel, IJoinRoomData } from '../sdk/ElixirChat';
 import {
@@ -61,7 +62,8 @@ export interface IElixirChatWidgetConfig {
   enabledChannels?: Array<string>;
   hideDefaultButton?: boolean;
   iframeCSS?: string;
-  customEmployerName?: any
+  customEmployerName?: any;
+  compareMode?: boolean;
 }
 
 export class ElixirChatWidget extends ElixirChat {
@@ -111,6 +113,28 @@ export class ElixirChatWidget extends ElixirChat {
     }
 
     this.initializeWidget();
+
+    if (this.widgetConfig.compareMode) {
+      const dualWrapper = document.createElement('div');
+      dualWrapper.className = 'elixirchat-dual-widget';
+
+      const reactPanel = document.createElement('div');
+      reactPanel.className = 'elixirchat-panel elixirchat-panel--react';
+
+      const vuePanel = document.createElement('div');
+      vuePanel.className = 'elixirchat-panel elixirchat-panel--vue';
+
+      dualWrapper.appendChild(reactPanel);
+      dualWrapper.appendChild(vuePanel);
+      container.appendChild(dualWrapper);
+
+      const reactComponent = renderWidgetReactComponent(reactPanel, this);
+      const vueApp = renderWidgetVue(vuePanel, this);
+
+      this.logInfo('Appended ElixirChat dual widget (React + Vue)', container);
+      return { reactComponent, vueApp };
+    }
+
     const reactComponent = renderWidgetReactComponent(container, this);
 
     this.logInfo('Appended ElixirChat default widget', container);
