@@ -16,8 +16,9 @@ import {
 } from '../ElixirChatWidgetEventTypes';
 import IFrameWrapper from './IFrameWrapper.vue';
 import { ElixirChatWidgetKey } from './composables/useElixirChatWidget';
-import WelcomeScreen from './components/welcomeScreen.vue';
+import WelcomeScreen from './components/welcomeScreen/welcomeScreen.vue';
 import Chat from './components/chat.vue';
+import { vueComponentStyles } from './componentStyles';
 
 const props = defineProps<{
   elixirChatWidget: ElixirChatWidget;
@@ -165,6 +166,7 @@ onMounted(() => {
 
   const { outsideIframeStyles: outsideCSS, insideIframeStyles: insideCSS } = widgetAssets;
   appendToStyles({ outsideIframeStyles: outsideCSS, insideIframeStyles: insideCSS });
+  appendToStyles({ insideIframeStyles: vueComponentStyles });
 
   applyOutsideStylesToDocument();
   applyInsideStylesToIframe();
