@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-node-sass --recursive widget/DefaultWidget/styles/ --output dist/styles/
+sass widget/DefaultWidget/styles/:dist/styles/
 
 # When developing SDK locally (npm run dev), dist/sdk.min.js refers to sdk/ElixirChat.ts
 # See: widget/ElixirChatWidget.ts:20
@@ -10,5 +10,5 @@ export default ElixirChat;
 """ > dist/sdk.min.js
 
 concurrently \
-"node-sass --watch --recursive widget/DefaultWidget/styles/ --output dist/styles/" \
-"parcel dev.html --port 8001"
+"sass --watch widget/DefaultWidget/styles/:dist/styles/" \
+"vite --port 8001"

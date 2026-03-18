@@ -1,4 +1,5 @@
 import React, { Component, Fragment } from 'react';
+import { flushSync } from 'react-dom';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import debounce from 'lodash/debounce';
 import uniqBy from 'lodash/uniqBy';
@@ -228,7 +229,9 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
   };
 
   onMessageHistoryPrepend = (chunk) => {
-    this.updateMessageHistory({ chunk, prepend: true }, this.reAttachIntersectionObserverToMessages);
+    flushSync(() => {
+      this.updateMessageHistory({ chunk, prepend: true }, this.reAttachIntersectionObserverToMessages);
+    });
   };
 
   onMessageHistoryAppend = (chunk) => {
@@ -264,7 +267,10 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
     const { elixirChatWidget } = this.props;
     this.setState({ isLoading: true });
 
-    if (elixirChatWidget.messageHistory.length) {
+    const { messageSubscription } = elixirChatWidget;
+    const hasCachedHistory = messageSubscription.hasFetchedInitialHistory && elixirChatWidget.messageHistory.length;
+
+    if (hasCachedHistory) {
       this.onMessageHistoryChange(elixirChatWidget.messageHistory);
       this.setState({ isLoading: false });
       elixirChatWidget.waitForPopupToOpen(this.scrollInitiallyToAppropriatePosition);
@@ -318,7 +324,9 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
         })
         .finally(() => {
           scrollBlock.scrollTop = scrollBlock.scrollHeight - initialScrollHeight;
-          this.setState({ isLoadingPrecedingMessageHistory: false });
+            setTimeout(() => {
+              this.setState({ isLoadingPrecedingMessageHistory: false });
+            }, 500); 
         });
     }
   };
@@ -1139,4 +1147,4 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
   }
 }
 
-export const ChatMessages = injectIntl(ChatMessagesComponent);
+export const ChatMessages = injectIntl(ChatMessagesComponent, { forwardRef: true });

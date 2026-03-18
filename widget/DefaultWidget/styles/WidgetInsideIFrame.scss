@@ -1,9 +1,13 @@
-@import "./variables";
-@import "./mixins";
+@use "./variables" as *;
+@use "./mixins" as *;
 
 body {
   margin: 0;
   padding: 0;
+}
+
+.elixirchat-widget-main {
+  overflow: hidden;
 }
 
 body,

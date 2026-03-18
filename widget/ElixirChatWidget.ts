@@ -21,26 +21,24 @@ import {
   WIDGET_SEARCH_TOGGLE,
 } from './ElixirChatWidgetEventTypes';
 
+import ElixirChatFromDist from '../dist/sdk.min.js';
 
-let ElixirChat = window.ElixirChat;
-if (!ElixirChat) {
-  ElixirChat = require('../dist/sdk.min').default;
-  /**
-   * dist/sdk.min.js is generated on fly depending on the context:
-   *
-   *  - When developing SDK locally (npm run dev), dist/sdk.min.js exports sdk/ElixirChat.ts
-   *    @see bin/dev.sh
-   *
-   *  - When building SDK locally (npm run build), dist/sdk.min.js is empty
-   *    so that sdk.min.js is not included into default-widget.min.js bundle
-   *    @see bin/build.sh
-   *
-   *  - When "elixirchat-js-sdk" in being installed via npm in another project (npm install elixirchat-js-sdk),
-   *    dist/sdk.min.js exports build/sdk.min.js so that sdk.js IS included into default-widget.min.js bundle
-   *    and it'd be possible to use `import ElixirChatWidget from "elixirchat-js-sdk/widget"`
-   *    @see bin/postinstall.sh
-   */
-}
+/**
+ * dist/sdk.min.js is generated on fly depending on the context:
+ *
+ *  - When developing SDK locally (npm run dev), dist/sdk.min.js exports sdk/ElixirChat.ts
+ *    @see bin/dev.sh
+ *
+ *  - When building SDK locally (npm run build), dist/sdk.min.js exports undefined
+ *    so that sdk.min.js is not included into default-widget.min.js bundle (user loads SDK separately)
+ *    @see bin/build.sh
+ *
+ *  - When "elixirchat-js-sdk" in being installed via npm in another project (npm install elixirchat-js-sdk),
+ *    dist/sdk.min.js exports build/sdk.min.js so that sdk.js IS included into default-widget.min.js bundle
+ *    and it'd be possible to use `import ElixirChatWidget from "elixirchat-js-sdk/widget"`
+ *    @see bin/postinstall.sh
+ */
+let ElixirChat = window.ElixirChat ?? ElixirChatFromDist;
 
 if (!ElixirChat) {
   logEvent(

@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { IntlProvider, createIntl, createIntlCache, RawIntlProvider } from 'react-intl';
 import { ElixirChatWidget } from '../ElixirChatWidget';
 import { FontExtractor, generateFontFaceCSS } from '../FontExtractor';
@@ -226,10 +226,15 @@ export function renderWidgetReactComponent(container, elixirChatWidget) {
     Object.entries(trl).map(([key, value]) => [key, value[locale]])
   );
   let component;
-  ReactDOM.render((
+  const root = createRoot(container);
+  root.render(
     <IntlProvider messages={messages} locale={locale} defaultLocale={locale}>
-      <Widget ref={(widget) => {component = widget}} elixirChatWidget={elixirChatWidget} />
+      <Widget
+        ref={(widget) => { component = widget }}
+        elixirChatWidget={elixirChatWidget}
+      />
     </IntlProvider>
-  ), container);
+  );
+
   return component;
 }

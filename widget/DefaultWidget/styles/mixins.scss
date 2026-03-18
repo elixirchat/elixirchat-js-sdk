@@ -1,4 +1,4 @@
-@import "./variables";
+@use "./variables" as *;
 
 @mixin elixir-media-query($screen-size-from, $screen-size-to) {
   @media (min-width: $screen-size-from) and (max-width: $screen-size-to) {

@@ -4,7 +4,7 @@ import dayjsCalendar from 'dayjs/plugin/calendar';
 import 'dayjs/locale/ru';
 import 'dayjs/locale/en';
 
-import { ElixirChatWidget } from './widget/ElixirChatWidget';
+import type { ElixirChatWidget } from './widget/ElixirChatWidget';
 import { IMessage } from './sdk/serializers/serializeMessage';
 import { _last, _round, getUserFullName } from './utilsCommon';
 

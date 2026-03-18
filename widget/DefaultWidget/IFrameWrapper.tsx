@@ -25,6 +25,7 @@ export class IFrameWrapper extends Component<IIFrameWrapperProps, IIFrameWrapper
 
     this.onIframeReady().then(iframeDocument => {
       this.iframeContentContainer = iframeDocument.createElement('main');
+      this.iframeContentContainer.className = 'elixirchat-widget-main';
       iframeDocument.body.appendChild(this.iframeContentContainer);
 
       this.setState({ isIframeReady: true }, () => {
