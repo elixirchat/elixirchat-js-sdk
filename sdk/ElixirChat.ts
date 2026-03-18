@@ -611,7 +611,7 @@ export class ElixirChat {
 
   public takeScreenshot = (): Promise<IScreenshot> => {
     return this.screenshotTaker.takeScreenshot();
-  };
+  }; 
 
   public rateMessage = (
     messageId: string,
