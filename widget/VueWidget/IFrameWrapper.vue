@@ -1,32 +1,27 @@
 <script setup lang="ts">
-import { createApp, onBeforeUnmount, onMounted, ref, useSlots } from 'vue';
+import { onBeforeUnmount, onMounted, ref, useAttrs } from 'vue';
 import type { ElixirChatWidget } from '../ElixirChatWidget';
 
 const props = defineProps<{
   elixirChatWidget: ElixirChatWidget;
-  className?: string;
 }>();
 
 const iframeRef = ref<HTMLIFrameElement | null>(null);
-let iframeContentContainer: HTMLElement | null = null;
-let innerApp: ReturnType<typeof createApp> | null = null;
-
-const slots = useSlots();
+const iframeContentContainer = ref<HTMLElement | null>(null);
+const attrs = useAttrs();
 
 const onIframeReady = (iframeElement: HTMLIFrameElement): Promise<Document> => {
   return new Promise((resolve) => {
-    let iframe = iframeElement;
-    let iframeDocument = iframe.contentWindow?.document;
+    let iframeDocument = iframeElement.contentWindow?.document;
 
     if (iframeDocument && iframeDocument.readyState === 'complete') {
       resolve(iframeDocument);
     } else {
-      iframe.addEventListener('load', (e: Event) => {
+      iframeElement.addEventListener('load', (e: Event) => {
         const target = e.target as HTMLIFrameElement;
-        iframe = target;
-        iframeDocument = iframe.contentWindow?.document || document;
+        iframeDocument = target.contentWindow?.document || document;
         resolve(iframeDocument);
-      });
+      }, { once: true });
     }
   });
 };
@@ -36,36 +31,33 @@ onMounted(async () => {
 
   const iframeDocument = await onIframeReady(iframeRef.value);
 
-  iframeContentContainer = iframeDocument.createElement('main');
-  iframeContentContainer.className = 'elixirchat-widget-main';
-  iframeDocument.body.appendChild(iframeContentContainer);
+  const container = iframeDocument.createElement('main');
+  container.className = 'elixirchat-widget-main';
+  iframeDocument.body.appendChild(container);
+  iframeContentContainer.value = container;
 
   props.elixirChatWidget.setIFrameDocument(iframeDocument);
-
-  innerApp = createApp({
-    setup() {
-      return () => (slots.default ? slots.default() : null);
-    },
-  });
-
-  innerApp.mount(iframeContentContainer);
 });
 
 onBeforeUnmount(() => {
-  if (innerApp) {
-    innerApp.unmount();
-    innerApp = null;
+  if (iframeContentContainer.value?.parentNode) {
+    iframeContentContainer.value.parentNode.removeChild(iframeContentContainer.value);
   }
-  iframeContentContainer = null;
+  iframeContentContainer.value = null;
 });
-defineExpose({});
 </script>
 
 <template>
   <iframe
     id="elixirchat-widget-iframe"
-    :class="className"
+    :class="attrs.class"
     ref="iframeRef"
   />
+  <Teleport
+    v-if="iframeContentContainer"
+    :to="iframeContentContainer"
+  >
+    <slot />
+  </Teleport>
 </template>
 

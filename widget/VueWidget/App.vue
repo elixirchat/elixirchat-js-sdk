@@ -3,7 +3,7 @@ import { computed, onBeforeUnmount, onMounted, provide, ref, watch } from 'vue';
 import type { ElixirChatWidget } from '../ElixirChatWidget';
 import { FontExtractor, generateFontFaceCSS } from '../FontExtractor';
 import { WidgetAssets } from '../WidgetAssets';
-import { cn, detectBrowser } from '../../utilsCommon';
+import { detectBrowser } from '../../utilsCommon';
 import {
   UNREAD_COUNTER_MESSAGES_CHANGE,
   UNREAD_COUNTER_NOTIFY_ABOUT_NEW_REPLIES,
@@ -50,14 +50,12 @@ const iframeClassName = computed(() => ({
   'elixirchat-widget-iframe--opening': widgetIsPopupOpeningAnimation.value,
 }));
 
-const viewClassName = computed(() =>
-  cn({
-    'elixirchat-widget-view': true,
-    'elixirchat-widget-view--animating-slide-left': widgetViewAnimation.value === 'slide-left',
-    'elixirchat-widget-view--animating-slide-right': widgetViewAnimation.value === 'slide-right',
-    [`elixirchat-browser--${detectedBrowser.value}`]: true,
-  }),
-);
+const viewClassName = computed(() => ({
+  'elixirchat-widget-view': true,
+  'elixirchat-widget-view--animating-slide-left': widgetViewAnimation.value === 'slide-left',
+  'elixirchat-widget-view--animating-slide-right': widgetViewAnimation.value === 'slide-right',
+  [`elixirchat-browser--${detectedBrowser.value}`]: true,
+}));
 
 provide(ElixirChatWidgetKey, props.elixirChatWidget);
 
@@ -221,7 +219,7 @@ onBeforeUnmount(() => {
 
     <IFrameWrapper
       :elixirChatWidget="props.elixirChatWidget"
-      :className="iframeClassName"
+      :class="iframeClassName"
     >
       <div :class="viewClassName">
         <div v-if="widgetView === 'chat'">

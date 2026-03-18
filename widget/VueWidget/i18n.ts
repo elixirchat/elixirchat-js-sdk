@@ -5,16 +5,19 @@ import trl from '../DefaultWidget/trl.json';
 type Locale = 'ru' | 'en';
 
 type Messages = Record<Locale, Record<string, string>>;
+type TranslationSchema = Record<string, Record<Locale, string>>;
 
 const SUPPORTED_LOCALES: Locale[] = ['ru', 'en'];
 
 const buildMessages = (): Messages => {
+  const typedTrl = trl as TranslationSchema;
+  
   const messages: Messages = {
     ru: {},
     en: {},
   };
 
-  Object.entries(trl as Record<string, { ru: string; en: string }>).forEach(
+  Object.entries(typedTrl).forEach(
     ([key, value]) => {
       messages.ru[key] = value.ru;
       messages.en[key] = value.en;
@@ -27,17 +30,16 @@ const buildMessages = (): Messages => {
 const allMessages = buildMessages();
 
 export const createWidgetI18n = (elixirChatWidget: ElixirChatWidget) => {
-  const rawLocale = elixirChatWidget.client?.locale as string | undefined;
-  const normalizedLocale = (rawLocale || 'ru').toLowerCase() as Locale;
+  const rawLocale = elixirChatWidget.client?.locale?.toLowerCase();
 
-  const locale: Locale = SUPPORTED_LOCALES.includes(normalizedLocale)
-    ? normalizedLocale
+  const locale: Locale = SUPPORTED_LOCALES.includes(rawLocale)
+    ? rawLocale
     : 'en';
 
   return createI18n({
     legacy: false,
     locale,
-    fallbackLocale: 'en',
+    fallbackLocale: 'ru',
     messages: allMessages,
   });
 };
