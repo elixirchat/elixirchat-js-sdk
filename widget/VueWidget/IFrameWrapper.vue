@@ -32,7 +32,7 @@ onMounted(async () => {
   const iframeDocument = await onIframeReady(iframeRef.value);
 
   const container = iframeDocument.createElement('main');
-  container.className = 'elixirchat-widget-main';
+  container.className = 'elixirchat-widget-main-vue';
   iframeDocument.body.appendChild(container);
   iframeContentContainer.value = container;
 

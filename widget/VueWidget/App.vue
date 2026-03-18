@@ -1,24 +1,23 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, provide, ref, watch } from 'vue';
 import type { ElixirChatWidget } from '../ElixirChatWidget';
+import { computed, onBeforeUnmount, onMounted, provide, ref, watch } from 'vue';
 import { FontExtractor, generateFontFaceCSS } from '../FontExtractor';
 import { WidgetAssets } from '../WidgetAssets';
 import { detectBrowser } from '../../utilsCommon';
 import {
   UNREAD_COUNTER_MESSAGES_CHANGE,
-  UNREAD_COUNTER_NOTIFY_ABOUT_NEW_REPLIES,
+  UNREAD_COUNTER_NOTIFY_ABOUT_NEW_REPLIES
 } from '../../sdk/ElixirChatEventTypes';
 import {
   WIDGET_DATA_SET,
   WIDGET_IFRAME_READY,
   WIDGET_NAVIGATE_TO,
-  WIDGET_POPUP_TOGGLE,
+  WIDGET_POPUP_TOGGLE
 } from '../ElixirChatWidgetEventTypes';
 import IFrameWrapper from './IFrameWrapper.vue';
 import { ElixirChatWidgetKey } from './composables/useElixirChatWidget';
 import WelcomeScreen from './components/welcomeScreen/welcomeScreen.vue';
 import Chat from './components/chat.vue';
-import { vueComponentStyles } from './componentStyles';
 
 const props = defineProps<{
   elixirChatWidget: ElixirChatWidget;
@@ -48,19 +47,22 @@ const visibleUnreadMessagesCount = computed(() => {
 const iframeClassName = computed(() => ({
   'elixirchat-widget-iframe': true,
   'elixirchat-widget-iframe--visible': widgetIsPopupOpen.value,
-  'elixirchat-widget-iframe--opening': widgetIsPopupOpeningAnimation.value,
+  'elixirchat-widget-iframe--opening': widgetIsPopupOpeningAnimation.value
 }));
 
 const viewClassName = computed(() => ({
   'elixirchat-widget-view': true,
   'elixirchat-widget-view--animating-slide-left': widgetViewAnimation.value === 'slide-left',
   'elixirchat-widget-view--animating-slide-right': widgetViewAnimation.value === 'slide-right',
-  [`elixirchat-browser--${detectedBrowser.value}`]: true,
+  [`elixirchat-browser--${detectedBrowser.value}`]: true
 }));
 
 provide(ElixirChatWidgetKey, props.elixirChatWidget);
 
-const appendToStyles = (params: { outsideIframeStyles?: string; insideIframeStyles?: string }) => {
+const appendToStyles = (params: {
+  outsideIframeStyles?: string;
+  insideIframeStyles?: string;
+}) => {
   if (typeof params.outsideIframeStyles === 'string') {
     outsideIframeStyles.value = `${outsideIframeStyles.value}\n\n${params.outsideIframeStyles}`;
   }
@@ -83,7 +85,9 @@ const applyOutsideStylesToDocument = () => {
 
 const applyInsideStylesToIframe = () => {
   const iframeDoc = props.elixirChatWidget.widgetIFrameDocument as Document | undefined;
-  if (!iframeDoc || !iframeDoc.head) return;
+  if (!iframeDoc || !iframeDoc.head) {
+    return;
+  }
 
   let styleEl = iframeDoc.getElementById('elixirchat-widget-inside-styles') as HTMLStyleElement | null;
   if (!styleEl) {
@@ -118,7 +122,9 @@ const onPopupToggle = (isOpen: boolean) => {
 };
 
 const unlockNotificationSoundAutoplay = (e: Event) => {
-  if (!widgetAssets) return;
+  if (!widgetAssets) {
+    return;
+  }
 
   const notification = new Audio(widgetAssets.assets.mp3.notificationSound);
   notification.volume = 0;
@@ -135,7 +141,9 @@ const unlockNotificationSoundAutoplay = (e: Event) => {
 };
 
 const playNotificationSound = () => {
-  if (!widgetAssets) return;
+  if (!widgetAssets) {
+    return;
+  }
   const { elixirChatWidget } = props;
   if (elixirChatWidget.widgetIsMuted) {
     return;
@@ -145,7 +153,7 @@ const playNotificationSound = () => {
     notification.play();
   } catch (e) {
     console.error(
-      'Unable to play notification sound before any action was taken by the user in the current browser tab',
+      'Unable to play notification sound before any action was taken by the user in the current browser tab'
     );
   }
 };
@@ -160,13 +168,15 @@ onMounted(() => {
   fontExtractor = new FontExtractor(elixirChatWidget.widgetConfig.fonts, window);
   fontExtractor.extract((fontRules) => {
     appendToStyles({
-      insideIframeStyles: generateFontFaceCSS(fontRules),
+      insideIframeStyles: generateFontFaceCSS(fontRules)
     });
   });
 
   const { outsideIframeStyles: outsideCSS, insideIframeStyles: insideCSS } = widgetAssets;
-  appendToStyles({ outsideIframeStyles: outsideCSS, insideIframeStyles: insideCSS });
-  appendToStyles({ insideIframeStyles: vueComponentStyles });
+  appendToStyles({
+    outsideIframeStyles: outsideCSS,
+    insideIframeStyles: insideCSS
+  });
 
   applyOutsideStylesToDocument();
   applyInsideStylesToIframe();
@@ -211,7 +221,7 @@ onBeforeUnmount(() => {
       v-if="!widgetIsButtonHidden"
       class="elixirchat-widget-button"
       :class="{
-        'elixirchat-widget-button--widget-open': widgetIsPopupOpen,
+        'elixirchat-widget-button--widget-open': widgetIsPopupOpen
       }"
       @click="() => props.elixirChatWidget.togglePopup()"
     >
@@ -220,15 +230,15 @@ onBeforeUnmount(() => {
       <span
         class="elixirchat-widget-button-counter"
         :class="{
-          'elixirchat-widget-button-counter--has-unread': visibleUnreadMessagesCount,
+          'elixirchat-widget-button-counter--has-unread': visibleUnreadMessagesCount
         }"
       >
         {{ visibleUnreadMessagesCount || '' }}
       </span>
     </button>
 
-    <IFrameWrapper
-      :elixirChatWidget="props.elixirChatWidget"
+    <i-frame-wrapper
+      :elixir-chat-widget="props.elixirChatWidget"
       :class="iframeClassName"
     >
       <div :class="viewClassName">
@@ -239,7 +249,6 @@ onBeforeUnmount(() => {
           <welcome-screen />
         </div>
       </div>
-    </IFrameWrapper>
+    </i-frame-wrapper>
   </div>
 </template>
-
