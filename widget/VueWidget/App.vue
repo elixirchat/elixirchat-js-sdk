@@ -10,10 +10,10 @@ import {
 } from '../../sdk/ElixirChatEventTypes';
 import {
   WIDGET_DATA_SET,
+  WIDGET_IFRAME_READY,
   WIDGET_NAVIGATE_TO,
   WIDGET_POPUP_TOGGLE,
 } from '../ElixirChatWidgetEventTypes';
-// @ts-ignore
 import IFrameWrapper from './IFrameWrapper.vue';
 import { ElixirChatWidgetKey } from './composables/useElixirChatWidget';
 import WelcomeScreen from './components/welcomeScreen.vue';
@@ -95,6 +95,10 @@ const applyInsideStylesToIframe = () => {
   styleEl.innerHTML = `${insideIframeStyles.value}\n\n${iframeCSS}`;
 };
 
+const onIframeReady = () => {
+  applyInsideStylesToIframe();
+};
+
 const onViewChange = (nextView: string) => {
   const animation = nextView === 'welcome-screen' ? 'slide-right' : 'slide-left';
   widgetViewAnimation.value = animation;
@@ -147,6 +151,7 @@ const playNotificationSound = () => {
 
 onMounted(() => {
   const { elixirChatWidget } = props;
+  const widgetEvents = elixirChatWidget as any;
 
   widgetAssets = new WidgetAssets(elixirChatWidget);
   (elixirChatWidget as any).widgetAssets = widgetAssets;
@@ -164,18 +169,19 @@ onMounted(() => {
   applyOutsideStylesToDocument();
   applyInsideStylesToIframe();
 
-  elixirChatWidget.on(WIDGET_DATA_SET, () => {
+  widgetEvents.on(WIDGET_DATA_SET, () => {
     widgetIsButtonHidden.value = elixirChatWidget.widgetIsButtonHidden;
     widgetIsPopupOpen.value = elixirChatWidget.widgetIsPopupOpen;
     widgetView.value = elixirChatWidget.widgetView;
   });
 
-  elixirChatWidget.on(UNREAD_COUNTER_MESSAGES_CHANGE, (count: number) => {
+  widgetEvents.on(UNREAD_COUNTER_MESSAGES_CHANGE, (count: number) => {
     unreadMessagesCount.value = count;
   });
-  elixirChatWidget.on(UNREAD_COUNTER_NOTIFY_ABOUT_NEW_REPLIES, playNotificationSound);
-  elixirChatWidget.on(WIDGET_POPUP_TOGGLE, onPopupToggle);
-  elixirChatWidget.on(WIDGET_NAVIGATE_TO, onViewChange);
+  widgetEvents.on(UNREAD_COUNTER_NOTIFY_ABOUT_NEW_REPLIES, playNotificationSound);
+  widgetEvents.on(WIDGET_IFRAME_READY, onIframeReady);
+  widgetEvents.on(WIDGET_POPUP_TOGGLE, onPopupToggle);
+  widgetEvents.on(WIDGET_NAVIGATE_TO, onViewChange);
 
   detectedBrowser.value = detectBrowser();
   document.body.addEventListener('click', unlockNotificationSoundAutoplay as any);
@@ -186,11 +192,13 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   const { elixirChatWidget } = props;
-  elixirChatWidget.off(WIDGET_DATA_SET, () => {});
-  elixirChatWidget.off(WIDGET_POPUP_TOGGLE, onPopupToggle as any);
-  elixirChatWidget.off(WIDGET_NAVIGATE_TO, onViewChange as any);
-  elixirChatWidget.off(UNREAD_COUNTER_MESSAGES_CHANGE, () => {});
-  elixirChatWidget.off(UNREAD_COUNTER_NOTIFY_ABOUT_NEW_REPLIES, playNotificationSound as any);
+  const widgetEvents = elixirChatWidget as any;
+  widgetEvents.off(WIDGET_DATA_SET, () => {});
+  widgetEvents.off(WIDGET_IFRAME_READY, onIframeReady);
+  widgetEvents.off(WIDGET_POPUP_TOGGLE, onPopupToggle);
+  widgetEvents.off(WIDGET_NAVIGATE_TO, onViewChange);
+  widgetEvents.off(UNREAD_COUNTER_MESSAGES_CHANGE, () => {});
+  widgetEvents.off(UNREAD_COUNTER_NOTIFY_ABOUT_NEW_REPLIES, playNotificationSound);
   document.body.removeEventListener('click', unlockNotificationSoundAutoplay as any);
 });
 </script>
