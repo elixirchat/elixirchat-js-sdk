@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ElixirChatWidget } from '../ElixirChatWidget';
-import { computed, onBeforeUnmount, onMounted, provide, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { FontExtractor, generateFontFaceCSS } from '../FontExtractor';
 import { WidgetAssets } from '../WidgetAssets';
 import { detectBrowser } from '../../utilsCommon';
@@ -15,7 +15,7 @@ import {
   WIDGET_POPUP_TOGGLE
 } from '../ElixirChatWidgetEventTypes';
 import IFrameWrapper from './IFrameWrapper.vue';
-import { ElixirChatWidgetKey } from './composables/useElixirChatWidget';
+import { provideElixirChatWidget } from './composables/useElixirChatWidget';
 import WelcomeScreen from './components/welcomeScreen/welcomeScreen.vue';
 import Chat from './components/chat.vue';
 
@@ -57,7 +57,7 @@ const viewClassName = computed(() => ({
   [`elixirchat-browser--${detectedBrowser.value}`]: true
 }));
 
-provide(ElixirChatWidgetKey, props.elixirChatWidget);
+provideElixirChatWidget(props.elixirChatWidget);
 
 const appendToStyles = (params: {
   outsideIframeStyles?: string;
@@ -102,6 +102,17 @@ const applyInsideStylesToIframe = () => {
 
 const onIframeReady = () => {
   applyInsideStylesToIframe();
+};
+
+const onWidgetDataSet = () => {
+  const { elixirChatWidget } = props;
+  widgetIsButtonHidden.value = elixirChatWidget.widgetIsButtonHidden;
+  widgetIsPopupOpen.value = elixirChatWidget.widgetIsPopupOpen;
+  widgetView.value = elixirChatWidget.widgetView;
+};
+
+const onUnreadCounterChange = (count: number) => {
+  unreadMessagesCount.value = count;
 };
 
 const onViewChange = (nextView: string) => {
@@ -181,15 +192,9 @@ onMounted(() => {
   applyOutsideStylesToDocument();
   applyInsideStylesToIframe();
 
-  widgetEvents.on(WIDGET_DATA_SET, () => {
-    widgetIsButtonHidden.value = elixirChatWidget.widgetIsButtonHidden;
-    widgetIsPopupOpen.value = elixirChatWidget.widgetIsPopupOpen;
-    widgetView.value = elixirChatWidget.widgetView;
-  });
+  widgetEvents.on(WIDGET_DATA_SET, onWidgetDataSet);
 
-  widgetEvents.on(UNREAD_COUNTER_MESSAGES_CHANGE, (count: number) => {
-    unreadMessagesCount.value = count;
-  });
+  widgetEvents.on(UNREAD_COUNTER_MESSAGES_CHANGE, onUnreadCounterChange);
   widgetEvents.on(UNREAD_COUNTER_NOTIFY_ABOUT_NEW_REPLIES, playNotificationSound);
   widgetEvents.on(WIDGET_IFRAME_READY, onIframeReady);
   widgetEvents.on(WIDGET_POPUP_TOGGLE, onPopupToggle);
@@ -205,11 +210,11 @@ onMounted(() => {
 onBeforeUnmount(() => {
   const { elixirChatWidget } = props;
   const widgetEvents = elixirChatWidget as any;
-  widgetEvents.off(WIDGET_DATA_SET, () => {});
+  widgetEvents.off(WIDGET_DATA_SET, onWidgetDataSet);
   widgetEvents.off(WIDGET_IFRAME_READY, onIframeReady);
   widgetEvents.off(WIDGET_POPUP_TOGGLE, onPopupToggle);
   widgetEvents.off(WIDGET_NAVIGATE_TO, onViewChange);
-  widgetEvents.off(UNREAD_COUNTER_MESSAGES_CHANGE, () => {});
+  widgetEvents.off(UNREAD_COUNTER_MESSAGES_CHANGE, onUnreadCounterChange);
   widgetEvents.off(UNREAD_COUNTER_NOTIFY_ABOUT_NEW_REPLIES, playNotificationSound);
   document.body.removeEventListener('click', unlockNotificationSoundAutoplay as any);
 });
@@ -237,10 +242,7 @@ onBeforeUnmount(() => {
       </span>
     </button>
 
-    <i-frame-wrapper
-      :elixir-chat-widget="props.elixirChatWidget"
-      :class="iframeClassName"
-    >
+    <i-frame-wrapper :class="iframeClassName">
       <div :class="viewClassName">
         <div v-if="widgetView === 'chat'">
           <chat />

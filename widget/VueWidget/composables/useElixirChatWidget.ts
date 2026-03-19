@@ -1,7 +1,11 @@
-import { inject } from 'vue';
+import { inject, provide } from 'vue';
 import type { ElixirChatWidget } from '../../ElixirChatWidget';
 
-export const ElixirChatWidgetKey = Symbol('elixirChatWidget');
+const ElixirChatWidgetKey = Symbol('elixirChatWidget');
+
+export const provideElixirChatWidget = (widget: ElixirChatWidget) => {
+  provide(ElixirChatWidgetKey, widget);
+};
 
 export const useElixirChatWidget = (): ElixirChatWidget => {
   const widget = inject<ElixirChatWidget | null>(ElixirChatWidgetKey, null);
