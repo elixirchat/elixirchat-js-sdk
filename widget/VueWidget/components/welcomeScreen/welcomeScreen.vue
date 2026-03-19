@@ -9,6 +9,7 @@ import {
   getAvatarColorByUserId
 } from '../../../../utilsWidget';
 import { _last } from '../../../../utilsCommon';
+import Tooltip from '../tooltip/tooltip.vue';
 
 const { t } = useI18n();
 
@@ -94,6 +95,8 @@ function muteButtonHandleClick() {
   return widgetIsMuted.value ? elixirChatWidget.unmute() : elixirChatWidget.mute();
 }
 
+const muteTooltipTitle = computed(() => widgetIsMuted.value ? t('unmute') : t('mute'));
+
 onMounted(() => {
   syncFromWidget();
   elixirChatWidget.on(WIDGET_MUTE_TOGGLE, onMuteToggle);
@@ -108,12 +111,17 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="elixirchat-welcome-screen__container">
-    <button
-      class="elixirchat-welcome-screen__mute"
-      @click="muteButtonHandleClick"
+    <tooltip
+      class-name="elixirchat-welcome-screen__mute-tooltip"
+      :title="muteTooltipTitle"
     >
-      <i :class="mutedButtonIcon" />
-    </button>
+      <button
+        class="elixirchat-welcome-screen__mute"
+        @click="muteButtonHandleClick"
+      >
+        <i :class="mutedButtonIcon" />
+      </button>
+    </tooltip>
 
     <button
       class="elixirchat-welcome-screen__close"
