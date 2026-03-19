@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { IOnlineStatusParams } from '../../../../sdk/OnlineStatusSubscription';
 import type { IJoinRoomChannel } from '../../../../sdk/ElixirChat';
-import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useElixirChatWidget } from '../../composables/useElixirChatWidget';
 import { WIDGET_DATA_SET, WIDGET_MUTE_TOGGLE } from '../../../ElixirChatWidgetEventTypes';
