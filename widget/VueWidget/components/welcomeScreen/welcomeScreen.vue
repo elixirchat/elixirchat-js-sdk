@@ -102,11 +102,6 @@ onMounted(() => {
   elixirChatWidget.on(WIDGET_MUTE_TOGGLE, onMuteToggle);
   elixirChatWidget.on(WIDGET_DATA_SET, syncFromWidget);
 });
-
-onBeforeUnmount(() => {
-  elixirChatWidget.off(WIDGET_DATA_SET, syncFromWidget);
-  elixirChatWidget.off(WIDGET_MUTE_TOGGLE, onMuteToggle);
-});
 </script>
 
 <template>

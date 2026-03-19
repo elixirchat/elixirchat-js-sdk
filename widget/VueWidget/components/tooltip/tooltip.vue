@@ -3,13 +3,11 @@ import { computed, ref, onMounted } from 'vue';
 
 const {
   title = '',
-  // placement = 'top',/
   className = '',
   center = false,
   trigger = 'hover'
 } = defineProps<{
   title?: string;
-  // placement?: string;
   className?: string;
   center?: boolean;
   trigger?: 'hover' | 'click';
