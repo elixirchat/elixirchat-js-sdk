@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, useTempateRef, onMounted } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 
 const {
   title = '',
@@ -20,8 +20,8 @@ const tooltipClass = computed(() => ({
   'elixirchat-tooltip--center': center,
   [className || '']: Boolean(className)
 }));
-const rootRef = useTempateRef<HTMLElement | null>(null);
-const targetEl = useTempateRef<HTMLElement | null>(null);
+const rootRef = ref<HTMLElement | null>(null);
+const targetEl = ref<HTMLElement | null>(null);
 
 function showTooltip() {
   isVisible.value = true;
