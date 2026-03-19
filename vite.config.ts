@@ -13,6 +13,13 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       port: 8001,
+      watch: {
+        ignored: [
+          '**/node_modules/**',
+          '**/dist/**',
+          '!**/dist/styles/**',
+        ],
+      },
     },
   };
 });
