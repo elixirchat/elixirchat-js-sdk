@@ -231,6 +231,7 @@ $color-textarea-bg: #FFF;
   resize: none;
   width: calc(100% - 96px);
   background: transparent;
+  max-height: calc(20px * 5 + 16px);
 }
 
 .elixirchat-chat-attachment-list {
