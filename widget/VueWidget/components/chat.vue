@@ -10,6 +10,7 @@ import {
 import { useElixirChatWidget } from '../composables/useElixirChatWidget';
 import ChatMessages from './ChatMessages.vue';
 import Tooltip from './tooltip/tooltip.vue';
+import ChatTextarea from './ChatTextarea.vue';
 
 const elixirChatWidget = useElixirChatWidget();
 const { t } = useI18n();
@@ -131,6 +132,9 @@ onBeforeUnmount(() => {
         </button>
       </div>
     </div>
+
     <chat-messages />
+
+    <chat-textarea />
   </div>
 </template>
