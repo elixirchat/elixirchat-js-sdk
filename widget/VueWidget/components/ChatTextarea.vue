@@ -3,11 +3,22 @@ import { ref, useTemplateRef, watch, onMounted, onBeforeUnmount, nextTick } from
 import { useTextareaAutosize } from '@vueuse/core';
 import { useI18n } from 'vue-i18n';
 import { useElixirChatWidget } from '../composables/useElixirChatWidget';
-import { setToLocalStorage } from '../../../utilsCommon';
+import { setToLocalStorage, randomDigitStringId } from '../../../utilsCommon';
 import { MESSAGES_HISTORY_CHANGE, TYPING_STATUS_SUBSCRIBE_SUCCESS } from '../../../sdk/ElixirChatEventTypes';
-import { WIDGET_REPLY_MESSAGE, WIDGET_TEXTAREA_RESIZE } from '../../ElixirChatWidgetEventTypes';
-import { generateReplyMessageQuote } from '../../../utilsWidget';
+import {
+  WIDGET_REPLY_MESSAGE,
+  WIDGET_TEXTAREA_RESIZE,
+  WIDGET_FULLSCREEN_PREVIEW_CLOSE,
+  WIDGET_SCREENSHOT_REQUEST_SUCCESS,
+  WIDGET_SCREENSHOT_REQUEST_ERROR,
+  WIDGET_MUTE_TOGGLE,
+  WIDGET_POPUP_OPEN,
+  WIDGET_IFRAME_READY
+
+} from '../../ElixirChatWidgetEventTypes';
+import { generateReplyMessageQuote, getImageDimensions } from '../../../utilsWidget';
 import ActionsDropdown from './actionsDropdown.vue';
+import { getScreenshotCompatibilityFallback } from '../../../sdk/ScreenshotTaker';
 
 const TYPED_TEXT_STORAGE_KEY = 'elixirchat-typed-text';
 
@@ -31,6 +42,7 @@ const elixirChatWidget = useElixirChatWidget();
 
 const textareaRef = useTemplateRef<HTMLTextAreaElement>('textareaRef');
 const textareaContainerRef = useTemplateRef<HTMLDivElement>('textareaContainer');
+const inputFileRef = useTemplateRef<HTMLInputElement>('inputFileRef');
 
 const textareaText = ref('');
 const textareaResponseToMessageId = ref<string | null>(null);
@@ -81,8 +93,58 @@ function onTextareaKeyDown(e: KeyboardEvent) {
   }
 }
 
-function handleAttachmentPaste() {
-  console.log('paste');
+function handleAttachmentPaste(e: ClipboardEvent) {
+  const items = Array.from(e.clipboardData?.items || []);
+  const fileItem = items.find((i) => i.kind === 'file');
+  if (!fileItem) {
+    return;
+  }
+  const file = fileItem.getAsFile();
+  if (!file) {
+    return;
+  }
+  e.preventDefault();
+  addAttachments([
+    {
+      name: t('pasted_from_clipboard'),
+      file
+    }
+  ]);
+}
+
+function onWidgetPopupDrag(e: DragEvent) {
+  e.preventDefault();
+  e.stopPropagation();
+  isDraggingAttachments.value = true;
+  if (!hasCanceledDraggingAttachments.value) {
+    hasCanceledDraggingAttachments.value = true;
+    requestAnimationFrame(() => {
+      elixirChatWidget.widgetIFrameDocument?.body?.addEventListener('dragleave', onWidgetPopupDragLeave);
+    });
+  }
+}
+function onWidgetPopupDragLeave() {
+  elixirChatWidget.widgetIFrameDocument?.body?.removeEventListener('dragleave', onWidgetPopupDragLeave);
+  isDraggingAttachments.value = false;
+  hasCanceledDraggingAttachments.value = false;
+}
+function cancelWidgetPopupDrag() {
+  isDraggingAttachments.value = false;
+}
+function onBodyDrop(e: DragEvent) {
+  e.preventDefault();
+  e.stopPropagation();
+  const items = Array.from(e.dataTransfer?.items || []);
+  const files = items
+    .filter((item) => item.kind === 'file')
+    .map((item) => item.getAsFile())
+    .filter((f): f is File => Boolean(f))
+    .map((file) => ({
+      name: file.name,
+      file
+    }));
+  addAttachments(files);
+  cancelWidgetPopupDrag();
 }
 
 function reset() {
@@ -183,12 +245,81 @@ function onMessageHistoryChange() {
   updateResponseToMessage();
 }
 
+function onIframeReady() {
+  const body = elixirChatWidget.widgetIFrameDocument?.body;
+  if (!body) {
+    return;
+  }
+  body.addEventListener('dragover', onWidgetPopupDrag);
+  body.addEventListener('drop', onBodyDrop);
+}
+
+function onScreenshotRequestSuccess(screenshot: { file: File }) {
+  addAttachments([
+    {
+      name: t('screenshot'),
+      file: screenshot.file,
+      isScreenshot: true
+    }
+  ]);
+  elixirChatWidget.openPopup();
+  if (!textareaText.value.trim()) {
+    textareaText.value = t('here_is_the_screenshot');
+  }
+}
+
+function onScreenshotRequestError() {
+  elixirChatWidget.openPopup();
+}
+
 function onScreenShotClick() {
+  elixirChatWidget.closePopup();
   elixirChatWidget.takeScreenshot();
 }
 
 function onAttachFileClick() {
-  alert('file');
+  inputFileRef.value?.click();
+}
+
+async function addAttachments(newAttachments: Array<{
+  name: string;
+  file: File;
+  isScreenshot?: boolean;
+}>) {
+  const enriched: Attachment[] = [];
+  for (const attachment of newAttachments) {
+    const id = randomDigitStringId(6);
+    const imageBlobUrl = URL.createObjectURL(attachment.file);
+    const dimensions = await getImageDimensions(imageBlobUrl);
+    enriched.push({
+      id,
+      file: attachment.file,
+      name: attachment.name,
+      width: dimensions.width,
+      height: dimensions.height,
+      isScreenshot: attachment.isScreenshot
+    });
+  }
+  textareaAttachments.value = [...textareaAttachments.value, ...enriched];
+  onVerticalResize();
+  focusTextarea();
+}
+
+function onInputFileChange(e: Event) {
+  const target = e.target as HTMLInputElement;
+  const files = Array.from(target.files || []);
+  const attachments = files.map((file) => ({
+    name: file.name,
+    file
+  }));
+  addAttachments(attachments);
+  target.value = '';
+}
+
+function removeAttachment(attachmentId: string) {
+  textareaAttachments.value = textareaAttachments.value.filter((a) => a.id !== attachmentId);
+  onVerticalResize();
+  focusTextarea();
 }
 
 onMounted(() => {
@@ -199,6 +330,14 @@ onMounted(() => {
   elixirChatWidget.on(TYPING_STATUS_SUBSCRIBE_SUCCESS, onTypingStatusSubscribeSuccess);
   elixirChatWidget.on(WIDGET_REPLY_MESSAGE, onReplyMessage);
   elixirChatWidget.on(MESSAGES_HISTORY_CHANGE, onMessageHistoryChange);
+  elixirChatWidget.on(WIDGET_SCREENSHOT_REQUEST_SUCCESS, onScreenshotRequestSuccess);
+  elixirChatWidget.on(WIDGET_SCREENSHOT_REQUEST_ERROR, onScreenshotRequestError);
+  elixirChatWidget.on(WIDGET_IFRAME_READY, onIframeReady);
+  window.addEventListener('dragover', cancelWidgetPopupDrag);
+  elixirChatWidget.on(WIDGET_FULLSCREEN_PREVIEW_CLOSE, focusTextarea);
+  elixirChatWidget.on(WIDGET_MUTE_TOGGLE, focusTextarea);
+  elixirChatWidget.on(WIDGET_POPUP_OPEN, focusTextarea);
+  elixirChatWidget.on(WIDGET_POPUP_OPEN, onVerticalResize);
 
   nextTick(() => triggerResize());
 
@@ -212,6 +351,15 @@ onBeforeUnmount(() => {
   elixirChatWidget.off(TYPING_STATUS_SUBSCRIBE_SUCCESS, onTypingStatusSubscribeSuccess);
   elixirChatWidget.off(WIDGET_REPLY_MESSAGE, onReplyMessage);
   elixirChatWidget.off(MESSAGES_HISTORY_CHANGE, onMessageHistoryChange);
+  elixirChatWidget.off(WIDGET_SCREENSHOT_REQUEST_SUCCESS, onScreenshotRequestSuccess);
+  elixirChatWidget.off(WIDGET_SCREENSHOT_REQUEST_ERROR, onScreenshotRequestError);
+  elixirChatWidget.off(WIDGET_IFRAME_READY, onIframeReady);
+
+  const body = elixirChatWidget.widgetIFrameDocument?.body;
+  body?.removeEventListener('dragover', onWidgetPopupDrag);
+  body?.removeEventListener('drop', onBodyDrop);
+  body?.removeEventListener('dragleave', onWidgetPopupDragLeave);
+  window.removeEventListener('dragover', cancelWidgetPopupDrag);
 });
 </script>
 
@@ -235,6 +383,15 @@ onBeforeUnmount(() => {
         @click="onRemoveReplyTo"
       />
     </div>
+
+    <input
+      ref="inputFileRef"
+      class="elixirchat-chat-textarea__actions-attach-input"
+      type="file"
+      multiple
+      @change="onInputFileChange"
+    >
+
     <textarea
       ref="textareaRef"
       v-model="textareaText"
@@ -258,5 +415,34 @@ onBeforeUnmount(() => {
         <i class="icon-send" />
       </button>
     </div>
+    <ul
+      v-if="textareaAttachments.length"
+      class="elixirchat-chat-attachment-list"
+    >
+      <li
+        v-for="attachment in textareaAttachments"
+        :key="attachment.id"
+        class="elixirchat-chat-attachment-item"
+      >
+        <i
+          class="elixirchat-chat-attachment-icon"
+          :class="[attachment.isScreenshot ? 'icon-screenshot' : 'icon-file']"
+        />
+        <span class="elixirchat-chat-attachment-filename">{{ attachment.name }}</span>
+        <i
+          class="elixirchat-chat-attachment-remove icon-close-thick"
+          tabindex="0"
+          @click="removeAttachment(attachment.id)"
+        />
+      </li>
+    </ul>
+
+    <template v-if="isDraggingAttachments">
+      <div class="elixirchat-chat-draggable-backdrop" />
+      <div class="elixirchat-chat-draggable-area">
+        <i class="elixirchat-chat-draggable-area__icon icon-file" />
+        <div>{{ t('drop_files') }}</div>
+      </div>
+    </template>
   </div>
 </template>
