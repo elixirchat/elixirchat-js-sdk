@@ -354,6 +354,10 @@ onBeforeUnmount(() => {
   elixirChatWidget.off(WIDGET_SCREENSHOT_REQUEST_SUCCESS, onScreenshotRequestSuccess);
   elixirChatWidget.off(WIDGET_SCREENSHOT_REQUEST_ERROR, onScreenshotRequestError);
   elixirChatWidget.off(WIDGET_IFRAME_READY, onIframeReady);
+  elixirChatWidget.off(WIDGET_FULLSCREEN_PREVIEW_CLOSE, focusTextarea);
+  elixirChatWidget.off(WIDGET_MUTE_TOGGLE, focusTextarea);
+  elixirChatWidget.off(WIDGET_POPUP_OPEN, focusTextarea);
+  elixirChatWidget.off(WIDGET_POPUP_OPEN, onVerticalResize);
 
   const body = elixirChatWidget.widgetIFrameDocument?.body;
   body?.removeEventListener('dragover', onWidgetPopupDrag);
