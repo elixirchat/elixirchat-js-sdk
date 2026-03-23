@@ -9,47 +9,49 @@ const RE_COUNTRY_DOMAIN = /\b_?[a-z0-9\-.]+\.([a-z]{2})(?::\d{4,5})?(?:\/[\wа-�
 const RE_NON_COUNTRY_DOMAIN = /\b_?[a-z0-9\-.]+\.([a-z]{3,10})(?::\d{4,5})?(?:\/[\wа-я\-/.?&%=#+;:,!~]*)?_?/gi;
 const RE_EMAIL_ADDRESS = /\b[\w.\-+]+@[a-z0-9.\-]+_?/gi;
 
-let allExtractedUrls = [];
-let allExtractedHtml = [];
+let allExtractedUrls: string[] = [];
+let allExtractedHtml: string[] = [];
 
-function replaceLinksInText(text) {
-  text = ` ${text || ''} `;
+function replaceLinksInText(text: string): string {
+  const normalizedText = ` ${text || ''} `;
 
-  const replacedText = text
-    .replace(RE_FULL_URL, (match, topLevelDomain, offset) => handleLinkReplacement(match, offset))
-    .replace(RE_IP_ADDRESS, (match, topLevelDomain, offset) => handleLinkReplacement(match, offset, '', 1))
-    .replace(RE_LOCALHOST, (match, topLevelDomain, offset) => handleLinkReplacement(match, offset))
-    .replace(RE_EMAIL_ADDRESS, (match, topLevelDomain, offset) => handleLinkReplacement(match, offset, 'mailto:'))
-    .replace(RE_NON_COUNTRY_DOMAIN, (match, topLevelDomain, offset) => {
+  const replacedText = normalizedText
+    .replace(RE_FULL_URL, (match) => handleLinkReplacement(match))
+    .replace(RE_IP_ADDRESS, (match) => handleLinkReplacement(match, ''))
+    .replace(RE_LOCALHOST, (match) => handleLinkReplacement(match))
+    .replace(RE_EMAIL_ADDRESS, (match) => handleLinkReplacement(match, 'mailto:'))
+    .replace(RE_NON_COUNTRY_DOMAIN, (match, topLevelDomain) => {
       return TOP50_NON_COUNTRY_DOMAINS.includes(topLevelDomain.toLowerCase())
-        ? handleLinkReplacement(match, offset, 'http://')
+        ? handleLinkReplacement(match, 'http://')
         : match;
     })
-    .replace(RE_COUNTRY_DOMAIN, (match, topLevelDomain, offset) => {
+    .replace(RE_COUNTRY_DOMAIN, (match, topLevelDomain) => {
       return !TOP_TWO_LETTER_FILE_EXTENSIONS.includes(topLevelDomain.toLowerCase())
-        ? handleLinkReplacement(match, offset, 'http://')
+        ? handleLinkReplacement(match, 'http://')
         : match;
     })
-    .replace(/◆◆◆(\d+)\|([^◆]*)◆◆◆/g, (match, index, urlPrefix) => { // Put back URLs (that was extracted on the first step)
-      const currentUrl = this.allExtractedUrls[+index];
+    .replace(/◆◆◆(\d+)\|([^◆]*)◆◆◆/g, (_match, index, urlPrefix) => {
+      const currentUrl = allExtractedUrls[+index];
       return `<a href="${urlPrefix + currentUrl}" target="_blank" rel="noreferrer noopener">${currentUrl}</a>`;
     })
     .trim();
 
   allExtractedUrls = [];
   return replacedText;
-};
+}
 
-function handleLinkReplacement(match, offset, urlPrefix = '') {
+function handleLinkReplacement(match: string, urlPrefix = ''): string {
+  let normalizedMatch = match;
   let isWrappedWithUnderscore = false;
-  if (match[0] === '_' && match[match.length - 1] === '_') {
+  if (normalizedMatch[0] === '_' && normalizedMatch[normalizedMatch.length - 1] === '_') {
     isWrappedWithUnderscore = true;
-    match = match.replace(/^_/, '').replace(/_$/, '');
+    normalizedMatch = normalizedMatch.replace(/^_/, '').replace(/_$/, '');
   }
-  let [urlWithoutTrailingHtmlEntities, trailingHtmlEntities = ''] = match
+
+  const [urlWithoutTrailingHtmlEntities, trailingHtmlEntities = ''] = normalizedMatch
     .replace(/(&quot;|&lt;|&gt;)/, '◆◆◆$1')
     .split('◆◆◆');
-  let [urlWithoutTrailingSymbols, trailingSymbols = ''] = urlWithoutTrailingHtmlEntities
+  const [urlWithoutTrailingSymbols, trailingSymbols = ''] = urlWithoutTrailingHtmlEntities
     .replace(/([^\wа-я\-/=]+)$/gi, '◆◆◆$1')
     .split('◆◆◆');
 
@@ -62,16 +64,13 @@ function handleLinkReplacement(match, offset, urlPrefix = '') {
     trailingSymbols
   }${trailingHtmlEntities
   }${isWrappedWithUnderscore ? '_' : ''}`;
-};
+}
 
-function replaceMarkdownWithHTML(markdown) {
-  markdown = `\n\n${markdown || ''}\n\n`;
+function replaceMarkdownWithHTML(markdown: string): string {
+  const normalizedMarkdown = `\n\n${markdown || ''}\n\n`;
 
-  const replacedMarkdown = markdown
-    // Temporarily replace all HTML (e.g. links) with placeholders surrounded by '◆◆◆'
+  const replacedMarkdown = normalizedMarkdown
     .replace(/<[a-z][^>]*>[^<]*<\/[a-z]+>/gi, (match) => handleHtmlReplacement(match))
-
-  // Замена спецсимвола, которым мы окружаем найденный текст
     .replace(/★(?=[^ ])([^★\n]+)(?=[^ ])★/g, '<mark>$1</mark>')
 
   // Font formatting <b> & <i>
@@ -99,33 +98,33 @@ function replaceMarkdownWithHTML(markdown) {
 
   // Put back <a href...> HTML (that was extracted on the first step)
     .replace(/◆◆◆(\d+)◆◆◆/g, (match, index) => {
+    .replace(/◆◆◆(\d+)◆◆◆/g, (_match, index) => {
       return allExtractedHtml[+index];
     })
     .trim();
 
   allExtractedHtml = [];
   return replacedMarkdown;
-};
+}
 
-function handleHtmlReplacement(match) {
+function handleHtmlReplacement(match: string): string {
   allExtractedHtml.push(match);
   const currentHtmlIndex = allExtractedHtml.length - 1;
   return `◆◆◆${currentHtmlIndex}◆◆◆`;
-};
+}
 
-function sanitizeHTML(html) {
-  html = html || '';
-  return html
+function sanitizeHTML(html: string): string {
+  return (html || '')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&apos;');
-};
+}
 
-export function function format(markdown) {
+export function formatMarkdown(markdown: string): string {
   return replaceMarkdownWithHTML(
     replaceLinksInText(
       sanitizeHTML(markdown)
     )
   );
-};
+}
