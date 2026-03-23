@@ -97,7 +97,6 @@ function replaceMarkdownWithHTML(markdown: string): string {
     })
 
   // Put back <a href...> HTML (that was extracted on the first step)
-    .replace(/◆◆◆(\d+)◆◆◆/g, (match, index) => {
     .replace(/◆◆◆(\d+)◆◆◆/g, (_match, index) => {
       return allExtractedHtml[+index];
     })
