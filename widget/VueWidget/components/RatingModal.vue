@@ -1,11 +1,16 @@
 <script setup lang="ts">
-import { ref, useTemplateRef, onMounted } from 'vue';
+import { nextTick, onMounted, ref, useTemplateRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import animationData from '../../DefaultWidget/assets/lottie-dislike-animation.json';
 
+const { isSubmitted = false, isReady = true } = defineProps<{
+  isSubmitted?: boolean;
+  isReady?: boolean;
+}>();
+
 const emit = defineEmits<{
-  close: [];
   submit: [comment: string];
+  skip: [];
 }>();
 
 const { t } = useI18n();
@@ -14,31 +19,62 @@ const textareaRef = useTemplateRef<HTMLTextAreaElement>('textareaRef');
 
 const comment = ref('');
 const isSubmitting = ref(false);
-const mode = ref<'default' | 'success'>('default');
-const isClosing = ref(false);
 const contentAppear = ref(true);
 const isSuccess = ref(false);
+const isClosing = ref(false);
 
 function textareaFocus() {
   textareaRef.value?.focus();
+}
+
+function startSuccessFlow() {
+  isSuccess.value = true;
+  isSubmitting.value = false;
+
+  setTimeout(() => {
+    handleLottieComplete();
+  }, 1200);
+}
+
+function handleSubmit() {
+  const normalizedComment = comment.value.trim();
+
+  if (!isReady || !normalizedComment || isSubmitting.value) {
+    return;
+  }
+
+  isSubmitting.value = true;
+  emit('submit', normalizedComment);
 }
 
 function handleSkip() {
   isClosing.value = true;
 }
 
-function handleAnimationEnd() {
-  if (!isClosing.value) {
-    return;
+function handleLottieComplete() {
+  if (isSuccess.value) {
+    isClosing.value = true;
   }
-
-  emit('close');
 }
 
-function handleSubmit() {
-  isSubmitting.value = true;
-  emit('submit');
+function onAnimationEnd(e: AnimationEvent) {
+  if (e.animationName === 'modalDisappear' && isClosing.value) {
+    emit('skip');
+  }
 }
+
+watch(
+  () => isSubmitted,
+  (next, prev) => {
+    if (!prev && next) {
+      startSuccessFlow();
+    }
+  }
+);
+
+onMounted(() => {
+  textareaFocus();
+});
 </script>
 
 <template>
@@ -47,9 +83,9 @@ function handleSubmit() {
     :class="{
       'elixirchat-rating-comment-modal--closing': isClosing
     }"
-    @animationend="handleAnimationEnd"
   >
     <div class="elixirchat-rating-comment-modal__overlay" />
+
     <div
       class="elixirchat-rating-comment-modal__content"
       :class="{
@@ -57,6 +93,7 @@ function handleSubmit() {
         'elixirchat-rating-comment-modal__content--hiding': isClosing,
         'elixirchat-rating-comment-modal__content--success': isSuccess
       }"
+      @animationend="onAnimationEnd"
     >
       <div class="elixirchat-rating-comment-modal__animation">
         <Vue3Lottie
@@ -67,6 +104,7 @@ function handleSubmit() {
           :width="112"
         />
       </div>
+
       <div class="elixirchat-rating-comment-modal__default-form">
         <h3 class="elixirchat-rating-comment-modal__title elixirchat-rating-comment-modal__title--default">
           {{ t('rate_message_comment_title') }}
@@ -78,18 +116,22 @@ function handleSubmit() {
             v-model="comment"
             class="elixirchat-rating-comment-modal__textarea"
             rows="3"
-            :disabled="isSubmitting"
             maxlength="1000"
+            :disabled="isSubmitting || isSuccess"
           />
+
           <div class="elixirchat-rating-comment-modal__actions">
             <button
               class="elixirchat-rating-comment-modal__button"
+              :disabled="isSuccess || !isReady || !comment.trim() || isSubmitting"
               @click="handleSubmit"
             >
               {{ t('rate_message_comment_submit') }}
             </button>
+
             <button
               class="elixirchat-rating-comment-modal__button elixirchat-rating-comment-modal__button--skip"
+              :disabled="isSubmitting || isSuccess"
               @click="handleSkip"
             >
               {{ t('rate_message_comment_skip') }}
@@ -97,8 +139,9 @@ function handleSubmit() {
           </div>
         </div>
       </div>
+
       <h3 class="elixirchat-rating-comment-modal__title elixirchat-rating-comment-modal__title--success">
-        {{ t('rate_message_thank_you') }}
+        <span v-html="t('rate_message_thank_you')" />
       </h3>
     </div>
   </div>
