@@ -19,6 +19,7 @@ import Avatar from '../avatar.vue';
 import FormattedMarkdown from '../FormattedMarkdown.vue';
 import { getScreenshotCompatibilityFallback } from '../../../../sdk/ScreenshotTaker';
 import submissionErrorMessage from './submissionErrorMessage.vue';
+import ChatMessageFiles from './ChatMessageFiles.vue';
 import {
   WIDGET_FULLSCREEN_PREVIEW_OPEN,
   WIDGET_TEXTAREA_RESIZE,
@@ -425,6 +426,12 @@ onBeforeUnmount(() => {
                   v-if="message.text"
                   class="elixirchat-chat-messages__text"
                   :markdown="message.text"
+                />
+
+                <chat-message-files
+                  v-if="message.files.length"
+                  :files="message.files"
+                  :is-submitting="message.isSubmitting"
                 />
               </div>
 

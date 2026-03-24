@@ -257,6 +257,10 @@
   line-height: 17px;
   padding-top: 3px;
   display: inline-block;
+
+  br {
+    display: contents;
+  }
 }
 
 .elixirchat-chat-messages__submission-error-link {
