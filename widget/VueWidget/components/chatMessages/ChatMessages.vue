@@ -3,8 +3,8 @@ import { onBeforeUnmount, onMounted, ref, useTemplateRef, computed } from 'vue';
 import dayjs from 'dayjs';
 import dayjsCalendar from 'dayjs/plugin/calendar';
 import { useI18n } from 'vue-i18n';
-import { useElixirChatWidget } from '../composables/useElixirChatWidget';
-import { _flatten, _uniqBy, getMediaType, randomDigitStringId, getUserFullName, getOperatorName } from '../../../utilsCommon';
+import { useElixirChatWidget } from '../../composables/useElixirChatWidget';
+import { _flatten, _uniqBy, getMediaType, randomDigitStringId, getUserFullName, getOperatorName } from '../../../../utilsCommon';
 import {
   ERROR_ALERT,
   JOIN_ROOM_SUCCESS,
@@ -12,12 +12,19 @@ import {
   MESSAGES_HISTORY_CHANGE,
   MESSAGES_HISTORY_PREPEND,
   MESSAGES_RECEIVE
-} from '../../../sdk/ElixirChatEventTypes';
-import { fitDimensionsIntoLimits, isMobile, generateReplyMessageQuote, humanizeUpcomingDate } from '../../../utilsWidgetVue';
-import { serializeMessage } from '../../../sdk/serializers/serializeMessage';
-import Avatar from './avatar.vue';
-import FormattedMarkdown from './FormattedMarkdown.vue';
-import { getScreenshotCompatibilityFallback } from '../../../sdk/ScreenshotTaker';
+} from '../../../../sdk/ElixirChatEventTypes';
+import { fitDimensionsIntoLimits, isMobile, generateReplyMessageQuote, humanizeUpcomingDate } from '../../../../utilsWidgetVue';
+import { serializeMessage } from '../../../../sdk/serializers/serializeMessage';
+import Avatar from '../avatar.vue';
+import FormattedMarkdown from '../FormattedMarkdown.vue';
+import { getScreenshotCompatibilityFallback } from '../../../../sdk/ScreenshotTaker';
+import submissionErrorMessage from './submissionErrorMessage.vue';
+import {
+  WIDGET_FULLSCREEN_PREVIEW_OPEN,
+  WIDGET_TEXTAREA_RESIZE,
+  WIDGET_REPLY_MESSAGE,
+  WIDGET_POPUP_OPEN
+} from '../../../ElixirChatWidgetEventTypes';
 
 const MESSAGE_CHUNK_SIZE = 20;
 const MAX_THUMBNAIL_SIZE = isMobile() ? 208 : 256;
@@ -264,10 +271,15 @@ function getScreenshotShortcutMessage(): string {
     return t('please_send_screenshot');
   }
   const pressKeySecondary = (fallback as any)?.pressKeySecondary;
-  return t('please_send_screenshot_with_shortcut', {
-    hasSecondaryKey: Boolean(pressKeySecondary),
-    primaryKey: renderKeyShortcut(pressKey),
-    secondaryKey: renderKeyShortcut(pressKeySecondary)
+  const hasSecondaryKey = Boolean(pressKeySecondary);
+  if (hasSecondaryKey) {
+    return t('please_send_screenshot_with_shortcut_both_keys', {
+      primaryKey: renderKeyShortcut(pressKey),
+      secondaryKey: renderKeyShortcut(pressKeySecondary)
+    });
+  }
+  return t('please_send_screenshot_with_shortcut_primary_only', {
+    primaryKey: renderKeyShortcut(pressKey)
   });
 }
 
@@ -305,6 +317,10 @@ function getHelloMessage(): string {
     return t('hello_short');
   }
   return t('hello_with_name', { name });
+}
+
+function onReplyButtonClick(messageId) {
+  elixirChatWidget.triggerEvent(WIDGET_REPLY_MESSAGE, messageId);
 }
 
 onMounted(() => {
@@ -411,6 +427,25 @@ onBeforeUnmount(() => {
                   :markdown="message.text"
                 />
               </div>
+
+              <div class="elixirchat-chat-messages__bottom">
+                <submissionErrorMessage
+                  v-if="message.submissionErrorCode"
+                  :message="message"
+                  @retry="elixirChatWidget.retrySendMessage(message)"
+                />
+                <template v-else>
+                  <span
+                    class="elixirchat-chat-messages__reply-button"
+                    @click="onReplyButtonClick(message.id)"
+                  >
+                    {{ t('reply') }}
+                  </span>
+                  <span v-if="message.sender.isCurrentClient">
+                    {{ dayjs(message.timestamp).format('H:mm') }}
+                  </span>
+                </template>
+              </div>
             </div>
           </div>
 
@@ -468,7 +503,7 @@ onBeforeUnmount(() => {
                 </div>
               </div>
 
-              <div className="elixirchat-chat-messages__bottom">
+              <div class="elixirchat-chat-messages__bottom">
                 {{ dayjs(message.timestamp).format('H:mm') }}
               </div>
             </div>

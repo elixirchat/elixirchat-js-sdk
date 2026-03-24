@@ -75,6 +75,14 @@
     "ru": "Пожалуйста, пришлите скриншот\u00a0вашего экрана. Для этого нажмите {hasSecondaryKey, select, true {{primaryKey}\u00a0({secondaryKey})} other {{primaryKey}}}, а затем вставьте результат в текстовое поле.",
     "en": "Please, take a screenshot of the issue and send it to us. To do so, press {hasSecondaryKey, select, true {{primaryKey}\u00a0({secondaryKey})} other {{primaryKey}}} and insert the image to the message field."
   },
+  "please_send_screenshot_with_shortcut_primary_only": {
+    "ru": "Пожалуйста, пришлите скриншот\u00a0вашего экрана. Для этого нажмите {primaryKey}, а затем вставьте результат в текстовое поле.",
+    "en": "Please, take a screenshot of the issue and send it to us. To do so, press {primaryKey} and insert the image to the message field."
+  },
+  "please_send_screenshot_with_shortcut_both_keys": {
+    "ru": "Пожалуйста, пришлите скриншот\u00a0вашего экрана. Для этого нажмите {primaryKey}\u00a0({secondaryKey}), а затем вставьте результат в текстовое поле.",
+    "en": "Please, take a screenshot of the issue and send it to us. To do so, press {primaryKey} ({secondaryKey}) and insert the image to the message field."
+  },
   "take_a_screenshot": {
     "ru": "Сделать скриншот",
     "en": "Take a screenshot"
@@ -84,8 +92,8 @@
     "en": "Reply"
   },
   "attachment_type_is_not_supported": {
-    "ru": "Вложения такого типа<br></br> не поддерживаются",
-    "en": "Attachments of this type<br></br> are not supported"
+    "ru": "Вложения такого типа<br/> не поддерживаются",
+    "en": "Attachments of this type<br /> are not supported"
   },
   "file_size_limit": {
     "ru": "Поддерживаются файлы до 5Мб",

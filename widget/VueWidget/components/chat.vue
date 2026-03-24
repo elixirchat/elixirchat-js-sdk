@@ -8,7 +8,7 @@ import {
   WIDGET_SEARCH_TOGGLE
 } from '../../ElixirChatWidgetEventTypes';
 import { useElixirChatWidget } from '../composables/useElixirChatWidget';
-import ChatMessages from './ChatMessages.vue';
+import ChatMessages from './chatMessages/ChatMessages.vue';
 import Tooltip from './tooltip/tooltip.vue';
 import ChatTextarea from './ChatTextarea.vue';
 
