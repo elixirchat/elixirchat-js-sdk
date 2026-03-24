@@ -43,6 +43,14 @@
     "ru": "{isConfidentAboutFirstName, select, true {Здравствуйте, {name}! Как мы можем вам помочь?} other {Здравствуйте! Как мы можем вам помочь?}}",
     "en": "{isConfidentAboutFirstName, select, true {Hello, {name}! How can we help you?} other {Hello! How can we help you?}}"
   },
+  "hello_with_name": {
+    "ru": "Здравствуйте, {name}! Как мы можем вам помочь?",
+    "en": "Hello, {name}! How can we help you?"
+  },
+  "hello_short": {
+    "ru": "Здравствуйте! Как мы можем вам помочь?",
+    "en": "Hello! How can we help you?"
+  },
   "specialists_are_offline": {
     "ru": "К сожалению, все операторы поддержки сейчас оффлайн{hasDatetime, select, true {, но будут снова в сети и ответят на ваш вопрос {datetime}} other {}}",
     "en": "Unfortunately, all of our Support Specialists are currently offline.{hasDatetime, select, true { They will get back online and answer your questions {datetime}} other {}}"

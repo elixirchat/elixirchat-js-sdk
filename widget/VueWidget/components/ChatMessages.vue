@@ -297,6 +297,16 @@ function getSpecialistsOfflineMessage(message: any): string {
   });
 }
 
+function getHelloMessage(): string {
+  const client = elixirChatWidget.client;
+  const isConfident = Boolean(client?.isConfidentAboutFirstName);
+  const name = client?.firstName;
+  if (!isConfident || !name) {
+    return t('hello_short');
+  }
+  return t('hello_with_name', { name });
+}
+
 onMounted(() => {
   dayjs.extend(dayjsCalendar);
   dayjs.locale(locale.value);
@@ -436,7 +446,6 @@ onBeforeUnmount(() => {
                     {{ t('take_a_screenshot') }}
                   </button>
                 </div>
-                {{ getSpecialistsOfflineMessage('2025-03-15T12:00:00+03:00') }}
 
                 <div
                   v-if="message.systemData?.type === 'NobodyWorkingMessage'"
@@ -444,6 +453,23 @@ onBeforeUnmount(() => {
                 >
                   {{ getSpecialistsOfflineMessage(message) }}
                 </div>
+
+                <div v-if="message.systemData.type === 'HighLoadMessage'">
+                  <div class="elixirchat-chat-messages__text">
+                    {{ t('waiting_takes_longer') }}
+                  </div>
+                </div>
+
+                <div
+                  v-if="message.systemData?.type === 'NewClientPlaceholderMessage'"
+                  class="elixirchat-chat-messages__text"
+                >
+                  {{ getHelloMessage() }}
+                </div>
+              </div>
+
+              <div className="elixirchat-chat-messages__bottom">
+                {{ dayjs(message.timestamp).format('H:mm') }}
               </div>
             </div>
           </div>
