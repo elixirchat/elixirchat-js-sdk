@@ -34,7 +34,7 @@ function formatFileSize(bytes: number): string {
           'elixirchat-chat-files__preview-submitting': isSubmitting
         }"
         :href="file.url"
-        :style="{ backgroundImage: `url(${file.thumbnails?.[0]?.url})` }"
+        :style="file.thumbnails?.[0]?.url ? { backgroundImage: `url(${file.thumbnails[0].url})` } : undefined"
         target="_blank"
       >
         <i

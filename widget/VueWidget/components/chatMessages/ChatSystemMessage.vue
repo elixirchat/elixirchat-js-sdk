@@ -8,7 +8,10 @@ import Avatar from '../avatar.vue';
 
 const props = defineProps<{
   message: any;
-  screenshotFallback?: { pressKey?: string | null; pressKeySecondary?: string } | null;
+  screenshotFallback?: {
+    pressKey?: string | null;
+    pressKeySecondary?: string;
+  } | null;
 }>();
 
 const { locale, t } = useI18n();
@@ -21,8 +24,8 @@ function processedAvatar(message: any): string {
 function senderName(): string {
   const { message } = props;
   return (
-    getUserFullName(message.sender) ||
-    getOperatorName(
+    getUserFullName(message.sender)
+    || getOperatorName(
       message.sender,
       elixirChatWidget.widgetCustomEmployerName,
       elixirChatWidget.widgetTitle
@@ -31,7 +34,9 @@ function senderName(): string {
 }
 
 function renderKeyShortcut(keySequence: string | null | undefined): string | undefined {
-  if (!keySequence) return undefined;
+  if (!keySequence) {
+    return undefined;
+  }
   return keySequence
     .split(/\+/)
     .map((key, index) => (index ? `+<kbd>${key}</kbd>` : `<kbd>${key}</kbd>`))
@@ -41,7 +46,9 @@ function renderKeyShortcut(keySequence: string | null | undefined): string | und
 function getScreenshotShortcutMessage(): string {
   const fallback = props.screenshotFallback ?? null;
   const pressKey = fallback?.pressKey;
-  if (!pressKey) return t('please_send_screenshot');
+  if (!pressKey) {
+    return t('please_send_screenshot');
+  }
   const pressKeySecondary = (fallback as any)?.pressKeySecondary;
   const hasSecondaryKey = Boolean(pressKeySecondary);
   if (hasSecondaryKey) {
@@ -58,9 +65,14 @@ function getScreenshotShortcutMessage(): string {
 function getSpecialistsOfflineMessage(): string {
   const { message } = props;
   const hasDatetime = Boolean(message.systemData?.workHoursStartAt);
-  if (!hasDatetime) return t('specialists_are_offline_short');
+  if (!hasDatetime) {
+    return t('specialists_are_offline_short');
+  }
   const workHoursStartAt = message.systemData.workHoursStartAt;
-  const datetime = humanizeUpcomingDate(workHoursStartAt, { locale: locale.value, t });
+  const datetime = humanizeUpcomingDate(workHoursStartAt, {
+    locale: locale.value,
+    t
+  });
   return t('specialists_are_offline_with_datetime', { datetime });
 }
 
@@ -68,7 +80,9 @@ function getHelloMessage(): string {
   const client = elixirChatWidget.client;
   const isConfident = Boolean(client?.isConfidentAboutFirstName);
   const name = client?.firstName;
-  if (!isConfident || !name) return t('hello_short');
+  if (!isConfident || !name) {
+    return t('hello_short');
+  }
   return t('hello_with_name', { name });
 }
 
@@ -98,7 +112,7 @@ function onTakeScreenshotClick() {
             v-html="getScreenshotShortcutMessage()"
           />
           <button
-            v-if="!screenshotFallback?.pressKey"
+            v-if="!props.screenshotFallback?.pressKey"
             class="elixirchat-chat-messages__take-screenshot"
             @click="onTakeScreenshotClick"
           >

@@ -14,10 +14,10 @@ const { t } = useI18n();
 
 const code = computed(() => props.message?.submissionErrorCode);
 
-const errorMap: Record<number, {
+const errorMap = computed<Record<number, {
   text: string;
   hasRetry: boolean;
-}> = {
+}>>(() => ({
   415: {
     text: t('attachment_type_is_not_supported'),
     hasRetry: false
@@ -30,11 +30,11 @@ const errorMap: Record<number, {
     text: t('sending_has_failed_bad_connection'),
     hasRetry: true
   }
-};
+}));
 
 const content = computed(() => {
   return (
-    errorMap[code.value] || {
+    errorMap.value[code.value] || {
       text: t('sending_has_failed'),
       hasRetry: true
     }
