@@ -27,8 +27,6 @@ function formatFileSize(bytes: number): string {
       :key="file.id"
       class="elixirchat-chat-files__item"
     >
-      {{ file }}
-
       <a
         class="elixirchat-chat-files__preview"
         :class="{
