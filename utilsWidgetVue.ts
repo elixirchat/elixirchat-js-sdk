@@ -1,4 +1,3 @@
-import type { Component } from 'react';
 import type { ElixirChatWidget } from './widget/ElixirChatWidget';
 import type { IMessage } from './sdk/serializers/serializeMessage';
 import 'dayjs/locale/ru';
@@ -9,11 +8,16 @@ import { _last, _round, getUserFullName } from './utilsCommon';
 
 dayjs.extend(dayjsCalendar);
 
-export function humanizeFileSize(sizeInBytes: number, intl: any): string {
+export type WidgetI18n = {
+  locale: string;
+  t: (key: string, params?: Record<string, unknown>) => string;
+};
+
+export function humanizeFileSize(sizeInBytes: number, i18n: WidgetI18n): string {
   const unitsDict = {
-    kb: intl.formatMessage({ id: 'size_kb' }),
-    mb: intl.formatMessage({ id: 'size_mb' }),
-    gb: intl.formatMessage({ id: 'size_gb' })
+    kb: i18n.t('size_kb'),
+    mb: i18n.t('size_mb'),
+    gb: i18n.t('size_gb')
   };
   const sizeInKb = sizeInBytes / 1024;
   const sizeInMb = sizeInKb / 1024;
@@ -29,11 +33,11 @@ export function humanizeFileSize(sizeInBytes: number, intl: any): string {
     primaryUnit = 'mb';
   }
   primarySize = primarySize < 0.1 ? 0.1 : +(primarySize.toFixed(1));
-  return `${primarySize.toLocaleString(intl.locale)} ${unitsDict[primaryUnit]}`;
+  return `${primarySize.toLocaleString(i18n.locale)} ${unitsDict[primaryUnit]}`;
 }
 
-function humanizeTimezoneName(date: Date, intl: any): string {
-  dayjs.locale(intl.locale);
+function humanizeTimezoneName(date: Date, i18n: WidgetI18n): string {
+  dayjs.locale(i18n.locale);
 
   date = new Date(date);
 
@@ -69,10 +73,10 @@ function humanizeTimezoneName(date: Date, intl: any): string {
   const tz = humanizeTimezoneOffset(date);
   for (let timezoneKeyword of timezones) {
     if (timezoneName.toLowerCase().includes(timezoneKeyword.toLowerCase())) {
-      return intl.formatMessage({ id: `timezone ${timezoneKeyword}` }, { tz });
+      return i18n.t(`timezone ${timezoneKeyword}`, { tz });
     }
   }
-  return intl.formatMessage({ id: 'timezone default' }, { tz });
+  return i18n.t('timezone default', { tz });
 }
 
 function humanizeTimezoneOffset(date: Date) {
@@ -87,27 +91,27 @@ function humanizeTimezoneOffset(date: Date) {
   }${timezoneOffsetMinutes ? `:${timezoneOffsetMinutes}` : ''}`;
 }
 
-export function humanizeUpcomingDate(date: Date | string, intl: any): string {
-  dayjs.locale(intl.locale);
+export function humanizeUpcomingDate(date: Date | string, i18n: WidgetI18n): string {
+  dayjs.locale(i18n.locale);
 
-  const tz = humanizeTimezoneName(date, intl);
+  const tz = humanizeTimezoneName(date, i18n);
   date = new Date(date);
   const inflectDayDict = {
-    [dayjs().day(1)]: intl.formatMessage({ id: 'on_monday' }),
-    [dayjs().day(2)]: intl.formatMessage({ id: 'on_tuesday' }),
-    [dayjs().day(3)]: intl.formatMessage({ id: 'on_wednesday' }),
-    [dayjs().day(4)]: intl.formatMessage({ id: 'on_thursday' }),
-    [dayjs().day(5)]: intl.formatMessage({ id: 'on_friday' }),
-    [dayjs().day(6)]: intl.formatMessage({ id: 'on_saturday' }),
-    [dayjs().day(0)]: intl.formatMessage({ id: 'on_sunday' })
+    [dayjs().day(1)]: i18n.t('on_monday'),
+    [dayjs().day(2)]: i18n.t('on_tuesday'),
+    [dayjs().day(3)]: i18n.t('on_wednesday'),
+    [dayjs().day(4)]: i18n.t('on_thursday'),
+    [dayjs().day(5)]: i18n.t('on_friday'),
+    [dayjs().day(6)]: i18n.t('on_saturday'),
+    [dayjs().day(0)]: i18n.t('on_sunday')
   };
   let humanizedDate = dayjs(date).calendar(null, {
-    nextWeek: intl.formatMessage({ id: 'humanized_date_next_week' }, { tz }),
-    nextDay: intl.formatMessage({ id: 'humanized_date_next_day' }, { tz }),
-    sameDay: intl.formatMessage({ id: 'humanized_date_same_day' }, { tz }),
-    lastDay: intl.formatMessage({ id: 'humanized_date' }, { tz }),
-    lastWeek: intl.formatMessage({ id: 'humanized_date' }, { tz }),
-    sameElse: intl.formatMessage({ id: 'humanized_date' }, { tz })
+    nextWeek: i18n.t('humanized_date_next_week', { tz }),
+    nextDay: i18n.t('humanized_date_next_day', { tz }),
+    sameDay: i18n.t('humanized_date_same_day', { tz }),
+    lastDay: i18n.t('humanized_date', { tz }),
+    lastWeek: i18n.t('humanized_date', { tz }),
+    sameElse: i18n.t('humanized_date', { tz })
   });
   for (let nominativeDay in inflectDayDict) {
     humanizedDate = humanizedDate.replace(nominativeDay, inflectDayDict[nominativeDay]);
@@ -183,7 +187,10 @@ export function isMobile() {
   });
 }
 
-export function exposeComponentToGlobalScope(instance: Component, elixirChatWidget: ElixirChatWidget) {
+export function exposeComponentToGlobalScope(
+  instance: { constructor: { name: string } },
+  elixirChatWidget: ElixirChatWidget
+) {
   elixirChatWidget.widgetComponents[instance.constructor.name] = instance;
 }
 

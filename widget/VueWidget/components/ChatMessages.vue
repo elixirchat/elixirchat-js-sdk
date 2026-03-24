@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, useTemplateRef } from 'vue';
+import { onBeforeUnmount, onMounted, ref, useTemplateRef, computed } from 'vue';
 import dayjs from 'dayjs';
 import dayjsCalendar from 'dayjs/plugin/calendar';
 import { useI18n } from 'vue-i18n';
 import { useElixirChatWidget } from '../composables/useElixirChatWidget';
-import { _flatten, _uniqBy, getMediaType, randomDigitStringId } from '../../../utilsCommon';
+import { _flatten, _uniqBy, getMediaType, randomDigitStringId, getUserFullName, getOperatorName } from '../../../utilsCommon';
 import {
   ERROR_ALERT,
   JOIN_ROOM_SUCCESS,
@@ -13,8 +13,11 @@ import {
   MESSAGES_HISTORY_PREPEND,
   MESSAGES_RECEIVE
 } from '../../../sdk/ElixirChatEventTypes';
-import { fitDimensionsIntoLimits, isMobile } from '../../../utilsWidget';
+import { fitDimensionsIntoLimits, isMobile, generateReplyMessageQuote, humanizeUpcomingDate } from '../../../utilsWidgetVue';
 import { serializeMessage } from '../../../sdk/serializers/serializeMessage';
+import Avatar from './avatar.vue';
+import FormattedMarkdown from './FormattedMarkdown.vue';
+import { getScreenshotCompatibilityFallback } from '../../../sdk/ScreenshotTaker';
 
 const MESSAGE_CHUNK_SIZE = 20;
 const MAX_THUMBNAIL_SIZE = isMobile() ? 208 : 256;
@@ -25,7 +28,7 @@ type HistoryUpdateParams = {
   append?: boolean;
 };
 
-const { locale } = useI18n();
+const { locale, t } = useI18n();
 
 const elixirChatWidget = useElixirChatWidget();
 
@@ -34,6 +37,10 @@ const fullScreenPreviews = ref<any[]>([]);
 const hasPreviousPage = ref(false);
 const isLoading = ref(false);
 const scrollContainerRef = useTemplateRef<HTMLDivElement>('scrollContainerRef');
+const screenshotFallback = ref<{
+  pressKey?: string | null;
+  pressKeySecondary?: string;
+} | null>(null);
 
 function processMessageAttachments(message: any) {
   const previews: any[] = [];
@@ -222,6 +229,74 @@ function loadInitialMessages() {
     });
 }
 
+const calendarFormat = computed(() => ({
+  sameDay: `[${t('today')}, ] D MMMM`,
+  lastDay: `[${t('yesterday')}, ] D MMMM`,
+  lastWeek: 'D MMMM',
+  sameElse: 'D MMMM'
+}));
+
+function processedAvatar(message: any): string {
+  return message.sender.avatar.url || '';
+}
+
+function getMentionsStr(message: any) {
+  return message.mentions.map((mention) => {
+    return mention.value === 'ALL'
+      ? t('everyone')
+      : getUserFullName(mention.client, ' ');
+  }).join(', ');
+};
+
+function renderKeyShortcut(keySequence: string | null | undefined): string | undefined {
+  if (!keySequence) {
+    return undefined;
+  }
+  return keySequence.split(/\+/).map((key, index) => {
+    return index ? `+<kbd>${key}</kbd>` : `<kbd>${key}</kbd>`;
+  }).join('');
+}
+
+function getScreenshotShortcutMessage(): string {
+  const fallback = screenshotFallback.value;
+  const pressKey = fallback?.pressKey;
+  if (!pressKey) {
+    return t('please_send_screenshot');
+  }
+  const pressKeySecondary = (fallback as any)?.pressKeySecondary;
+  return t('please_send_screenshot_with_shortcut', {
+    hasSecondaryKey: Boolean(pressKeySecondary),
+    primaryKey: renderKeyShortcut(pressKey),
+    secondaryKey: renderKeyShortcut(pressKeySecondary)
+  });
+}
+
+function onTakeScreenshotClick() {
+  elixirChatWidget.closePopup();
+  elixirChatWidget.takeScreenshot();
+}
+
+function humanizedWorkHoursStartAt(message: any): string {
+  const workHoursStartAt = message.systemData?.workHoursStartAt;
+  if (!workHoursStartAt) {
+    return '';
+  }
+  return humanizeUpcomingDate(workHoursStartAt, {
+    locale: locale.value,
+    t
+  });
+}
+
+function getSpecialistsOfflineMessage(message: any): string {
+  const hasDatetime = Boolean(message.systemData?.workHoursStartAt);
+  if (!hasDatetime) {
+    return t('specialists_are_offline_short');
+  }
+  return t('specialists_are_offline_with_datetime', {
+    datetime: humanizedWorkHoursStartAt(message)
+  });
+}
+
 onMounted(() => {
   dayjs.extend(dayjsCalendar);
   dayjs.locale(locale.value);
@@ -231,6 +306,8 @@ onMounted(() => {
   elixirChatWidget.on(MESSAGES_HISTORY_CHANGE, onMessageHistoryChange);
   elixirChatWidget.on(MESSAGES_HISTORY_PREPEND, onMessageHistoryPrepend);
   elixirChatWidget.on(MESSAGES_HISTORY_APPEND, onMessageHistoryAppend);
+
+  screenshotFallback.value = getScreenshotCompatibilityFallback();
 });
 
 onBeforeUnmount(() => {
@@ -244,28 +321,133 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="exlixir-chat__wrapper">
+    <!-- MessageSearch -->
     <div
       ref="scrollContainerRef"
       class="elixirchat-chat-scroll"
     >
-      <div class="elixirchat-chat-messages">
-        <div
-          v-if="isLoading"
-          class="elixirchat-chat-messages__loading"
-        >
-          Loading...
-        </div>
-
-        <div
+      <div
+        class="elixirchat-chat-messages"
+        :class="{
+          'elixirchat-chat-messages--loading': isLoading
+        }"
+      >
+        <!-- Вывод сообщений -->
+        <template
           v-for="message in processedMessages"
-          :id="message.id"
           :key="message.id"
-          class="elixirchat-chat-message"
         >
-          <div class="elixirchat-chat-message__text">
-            {{ message.text }}
+          <!-- Групповой лейбл -->
+          <template v-if="message.showGroupChatLabel && !elixirChatWidget.room?.isPrivate">
+            <div class="elixirchat-chat-messages__group-chat-label">
+              {{ t('this_is_a_support_group', { title: elixirChatWidget.room?.title }) }}
+            </div>
+          </template>
+
+          <!-- дата -->
+          <div
+            v-if="message.showDateLabel"
+            class="elixirchat-chat-messages__date-title"
+          >
+            {{ dayjs(message.timestamp).calendar(null, calendarFormat) }}
           </div>
-        </div>
+
+          <!-- Обычные сообщения -->
+          <div
+            v-if="!message.isSystem && !message.isDeleted"
+            class="elixirchat-chat-messages__item"
+            :class="
+              {
+                'elixirchat-chat-messages__item--by-me': message.sender?.isCurrentClient,
+                'elixirchat-chat-messages__item--by-operator': message.sender?.isOperator,
+                'elixirchat-chat-messages__item--by-client': message.sender?.isClient,
+                'elixirchat-chat-messages__item--by-another-client': !message.sender.isOperator && !message.sender.isCurrentClient,
+                'elixirchat-chat-messages__item--unread': message.isUnread
+              }"
+          >
+            <div class="elixirchat-chat-messages__inner">
+              <div
+                v-if="!message.hasPreviewsOnly"
+                class="elixirchat-chat-messages__balloon"
+              >
+                <div v-if="!message.sender.isCurrentClient">
+                  <div class="elixirchat-chat-messages__sender">
+                    <avatar :src="processedAvatar(message)" />
+                    <span class="elixirchat-chat-messages__sender-info">
+                      <b>
+                        {{ getUserFullName(message.sender)
+                          || getOperatorName(message.sender, elixirChatWidget.widgetCustomEmployerName, elixirChatWidget.widgetTitle) }}
+                      </b>
+                      <template v-if="Boolean(message.mentions.length)">
+                        <span class="mention-prefix"> → @</span>
+                        {{ getMentionsStr(message) }}
+                      </template>
+                      <span class="elixirchat-chat-messages__time">
+                        {{ dayjs(message.timestamp).format('H:mm') }}
+                      </span>
+                    </span>
+                  </div>
+                </div>
+
+                <div v-if="message.responseToMessage.id && !message.responseToMessage.isDeleted">
+                  <div class="elixirchat-chat-messages__reply-message">
+                    {{ generateReplyMessageQuote(message.responseToMessage, elixirChatWidget) }}
+                  </div>
+                </div>
+
+                <formatted-markdown
+                  v-if="message.text"
+                  class="elixirchat-chat-messages__text"
+                  :markdown="message.text"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Системные сообщения -->
+          <div
+            v-if="message.isSystem"
+            class="elixirchat-chat-messages__item elixirchat-chat-messages__item--by-operator elixirchat-chat-messages__item--system"
+            :class="{
+              'elixirchat-chat-messages__item--unread': message.isUnread
+            }"
+          >
+            <div class="elixirchat-chat-messages__inner">
+              <div class="elixirchat-chat-messages__balloon">
+                <div class="elixirchat-chat-messages__sender">
+                  <div>
+                    <avatar :src="processedAvatar(message)" />
+                  </div>
+                  <b>{{ getUserFullName(message.sender) || getOperatorName(message.sender, elixirChatWidget.widgetCustomEmployerName, elixirChatWidget.widgetTitle) }}</b>
+                </div>
+
+                <div
+                  v-if="message.systemData.type === 'ScreenshotRequestedMessage'"
+                >
+                  <div
+                    class="elixirchat-chat-messages__text"
+                    v-html="getScreenshotShortcutMessage()"
+                  />
+                  <button
+                    v-if="!screenshotFallback"
+                    class="elixirchat-chat-messages__take-screenshot"
+                    @click="onTakeScreenshotClick"
+                  >
+                    {{ t('take_a_screenshot') }}
+                  </button>
+                </div>
+                {{ getSpecialistsOfflineMessage('2025-03-15T12:00:00+03:00') }}
+
+                <div
+                  v-if="message.systemData?.type === 'NobodyWorkingMessage'"
+                  class="elixirchat-chat-messages__text"
+                >
+                  {{ getSpecialistsOfflineMessage(message) }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </template>
       </div>
     </div>
   </div>

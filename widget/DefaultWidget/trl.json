@@ -47,6 +47,14 @@
     "ru": "К сожалению, все операторы поддержки сейчас оффлайн{hasDatetime, select, true {, но будут снова в сети и ответят на ваш вопрос {datetime}} other {}}",
     "en": "Unfortunately, all of our Support Specialists are currently offline.{hasDatetime, select, true { They will get back online and answer your questions {datetime}} other {}}"
   },
+  "specialists_are_offline_short": {
+    "ru": "К сожалению, все операторы поддержки сейчас оффлайн.",
+    "en": "Unfortunately, all of our Support Specialists are currently offline."
+  },
+  "specialists_are_offline_with_datetime": {
+    "ru": "К сожалению, все операторы поддержки сейчас оффлайн, но будут снова в сети и ответят на ваш вопрос {datetime}",
+    "en": "Unfortunately, all of our Support Specialists are currently offline. They will get back online and answer your questions {datetime}"
+  },
   "waiting_takes_longer": {
     "ru": "Время ответа может увеличиться из-за большого количества вопросов, мы обязательно вернёмся к вам, спасибо за ожидание.",
     "en": "Waiting might take longer that usual due to increased amount of requests. We'll get back to you as soon as possible. Thank you for your patience."
