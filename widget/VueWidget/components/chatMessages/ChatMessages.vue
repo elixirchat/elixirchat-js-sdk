@@ -17,6 +17,7 @@ import { fitDimensionsIntoLimits, isMobile, generateReplyMessageQuote, humanizeU
 import { serializeMessage } from '../../../../sdk/serializers/serializeMessage';
 import Avatar from '../avatar.vue';
 import FormattedMarkdown from '../FormattedMarkdown.vue';
+import ChatMessagePreviews from './ChatMessagePreviews.vue';
 import { getScreenshotCompatibilityFallback } from '../../../../sdk/ScreenshotTaker';
 import submissionErrorMessage from './submissionErrorMessage.vue';
 import ChatMessageFiles from './ChatMessageFiles.vue';
@@ -324,6 +325,15 @@ function onReplyButtonClick(messageId) {
   elixirChatWidget.triggerEvent(WIDGET_REPLY_MESSAGE, messageId);
 }
 
+function onPreviewClick(event, preview, sender) {
+  event.preventDefault();
+  elixirChatWidget.triggerEvent(WIDGET_FULLSCREEN_PREVIEW_OPEN, {
+    preview,
+    sender,
+    gallery: fullScreenPreviews.value
+  });
+}
+
 onMounted(() => {
   dayjs.extend(dayjsCalendar);
   dayjs.locale(locale.value);
@@ -434,6 +444,14 @@ onBeforeUnmount(() => {
                   :is-submitting="message.isSubmitting"
                 />
               </div>
+
+              <chat-message-previews
+                v-if="message.previews.length"
+                :previews="message.previews"
+                :is-submitting="message.isSubmitting"
+                :sender="message.sender"
+                @preview-click="onPreviewClick"
+              />
 
               <div class="elixirchat-chat-messages__bottom">
                 <submissionErrorMessage
