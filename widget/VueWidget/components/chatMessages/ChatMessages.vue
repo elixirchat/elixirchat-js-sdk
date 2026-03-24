@@ -27,6 +27,8 @@ import {
   WIDGET_REPLY_MESSAGE,
   WIDGET_POPUP_OPEN
 } from '../../../ElixirChatWidgetEventTypes';
+import RatingButton from './RatingButton.vue';
+import RatingModal from '../RatingModal.vue';
 
 const MESSAGE_CHUNK_SIZE = 20;
 const MAX_THUMBNAIL_SIZE = isMobile() ? 208 : 256;
@@ -50,6 +52,14 @@ const screenshotFallback = ref<{
   pressKey?: string | null;
   pressKeySecondary?: string;
 } | null>(null);
+
+const ratingLocksByMessageId = ref<Record<string, boolean>>({});
+const ratingCommentModal = ref({
+  isOpen: false,
+  ratingId: null as string | null,
+  messageId: null as string | null,
+  isSubmitted: false
+});
 
 function processMessageAttachments(message: any) {
   const previews: any[] = [];
@@ -334,6 +344,76 @@ function onPreviewClick(event, preview, sender) {
   });
 }
 
+function isMessageRated(message: any): boolean {
+  return Boolean(message?.rating && (message.rating.id || message.rating.rating));
+}
+
+function isMessageLocked(messageId: string): boolean {
+  return Boolean(ratingLocksByMessageId.value[messageId]);
+}
+
+function closeRatingCommentModal() {
+  ratingCommentModal.value = {
+    isOpen: false,
+    ratingId: null,
+    messageId: null,
+    isSubmitted: false
+  };
+}
+
+async function onRate(messageId: string, rating: 'POSITIVE' | 'NEGATIVE') {
+  const message = processedMessages.value.find((m) => m.id === messageId);
+  if (!message || isMessageRated(message) || isMessageLocked(messageId)) {
+    return;
+  }
+
+  ratingLocksByMessageId.value = {
+    ...ratingLocksByMessageId.value,
+    [messageId]: true
+  };
+
+  if (rating === 'NEGATIVE') {
+    ratingCommentModal.value = {
+      isOpen: true,
+      messageId,
+      ratingId: null,
+      isSubmitted: false
+    };
+  }
+
+  try {
+    const result = await elixirChatWidget.rateMessage(messageId, rating);
+    if (rating === 'NEGATIVE' && ratingCommentModal.value.isOpen && ratingCommentModal.value.messageId === messageId) {
+      ratingCommentModal.value = {
+        ...ratingCommentModal.value,
+        ratingId: result.id
+      };
+    }
+  } catch (error) {
+    elixirChatWidget.logError('Failed to rate message', error);
+    ratingLocksByMessageId.value = {
+      ...ratingLocksByMessageId.value,
+      [messageId]: false
+    };
+  }
+}
+
+async function onRatingCommentSubmit(comment: string) {
+  const { ratingId } = ratingCommentModal.value;
+  if (!ratingId) {
+    return;
+  }
+  try {
+    await elixirChatWidget.addRatingComment(ratingId, comment);
+    ratingCommentModal.value = {
+      ...ratingCommentModal.value,
+      isSubmitted: true
+    };
+  } catch {
+    closeRatingCommentModal();
+  }
+}
+
 onMounted(() => {
   dayjs.extend(dayjsCalendar);
   dayjs.locale(locale.value);
@@ -466,6 +546,24 @@ onBeforeUnmount(() => {
                   >
                     {{ t('reply') }}
                   </span>
+                  <template v-if="message.sender.isOperator && !message.isSystem">
+                    <div class="elixirchat-chat-messages__rating">
+                      <rating-button
+                        type="POSITIVE"
+                        :message-id="message.id"
+                        :rating="message?.rating?.rating"
+                        :is-locked="isMessageLocked(message.id)"
+                        @rate="onRate"
+                      />
+                      <rating-button
+                        type="NEGATIVE"
+                        :message-id="message.id"
+                        :rating="message?.rating?.rating"
+                        :is-locked="isMessageLocked(message.id)"
+                        @rate="onRate"
+                      />
+                    </div>
+                  </template>
                   <span v-if="message.sender.isCurrentClient">
                     {{ dayjs(message.timestamp).format('H:mm') }}
                   </span>
@@ -536,5 +634,13 @@ onBeforeUnmount(() => {
         </template>
       </div>
     </div>
+
+    <rating-modal
+      v-if="ratingCommentModal.isOpen"
+      :is-submitted="ratingCommentModal.isSubmitted"
+      :is-ready="Boolean(ratingCommentModal.ratingId)"
+      @submit="onRatingCommentSubmit"
+      @skip="closeRatingCommentModal"
+    />
   </div>
 </template>
