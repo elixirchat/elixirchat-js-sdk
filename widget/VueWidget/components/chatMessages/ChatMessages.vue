@@ -13,7 +13,7 @@ import {
   MESSAGES_HISTORY_PREPEND,
   MESSAGES_RECEIVE
 } from '../../../../sdk/ElixirChatEventTypes';
-import { fitDimensionsIntoLimits, isMobile, generateReplyMessageQuote, humanizeUpcomingDate } from '../../../../utilsWidgetVue';
+import { fitDimensionsIntoLimits, isMobile, generateReplyMessageQuote } from '../../../../utilsWidgetVue';
 import { serializeMessage } from '../../../../sdk/serializers/serializeMessage';
 import Avatar from '../avatar.vue';
 import FormattedMarkdown from '../FormattedMarkdown.vue';
@@ -21,6 +21,7 @@ import ChatMessagePreviews from './ChatMessagePreviews.vue';
 import { getScreenshotCompatibilityFallback } from '../../../../sdk/ScreenshotTaker';
 import submissionErrorMessage from './submissionErrorMessage.vue';
 import ChatMessageFiles from './ChatMessageFiles.vue';
+import ChatSystemMessage from './ChatSystemMessage.vue';
 import {
   WIDGET_FULLSCREEN_PREVIEW_OPEN,
   WIDGET_TEXTAREA_RESIZE,
@@ -267,70 +268,6 @@ function getMentionsStr(message: any) {
   }).join(', ');
 };
 
-function renderKeyShortcut(keySequence: string | null | undefined): string | undefined {
-  if (!keySequence) {
-    return undefined;
-  }
-  return keySequence.split(/\+/).map((key, index) => {
-    return index ? `+<kbd>${key}</kbd>` : `<kbd>${key}</kbd>`;
-  }).join('');
-}
-
-function getScreenshotShortcutMessage(): string {
-  const fallback = screenshotFallback.value;
-  const pressKey = fallback?.pressKey;
-  if (!pressKey) {
-    return t('please_send_screenshot');
-  }
-  const pressKeySecondary = (fallback as any)?.pressKeySecondary;
-  const hasSecondaryKey = Boolean(pressKeySecondary);
-  if (hasSecondaryKey) {
-    return t('please_send_screenshot_with_shortcut_both_keys', {
-      primaryKey: renderKeyShortcut(pressKey),
-      secondaryKey: renderKeyShortcut(pressKeySecondary)
-    });
-  }
-  return t('please_send_screenshot_with_shortcut_primary_only', {
-    primaryKey: renderKeyShortcut(pressKey)
-  });
-}
-
-function onTakeScreenshotClick() {
-  elixirChatWidget.closePopup();
-  elixirChatWidget.takeScreenshot();
-}
-
-function humanizedWorkHoursStartAt(message: any): string {
-  const workHoursStartAt = message.systemData?.workHoursStartAt;
-  if (!workHoursStartAt) {
-    return '';
-  }
-  return humanizeUpcomingDate(workHoursStartAt, {
-    locale: locale.value,
-    t
-  });
-}
-
-function getSpecialistsOfflineMessage(message: any): string {
-  const hasDatetime = Boolean(message.systemData?.workHoursStartAt);
-  if (!hasDatetime) {
-    return t('specialists_are_offline_short');
-  }
-  return t('specialists_are_offline_with_datetime', {
-    datetime: humanizedWorkHoursStartAt(message)
-  });
-}
-
-function getHelloMessage(): string {
-  const client = elixirChatWidget.client;
-  const isConfident = Boolean(client?.isConfidentAboutFirstName);
-  const name = client?.firstName;
-  if (!isConfident || !name) {
-    return t('hello_short');
-  }
-  return t('hello_with_name', { name });
-}
-
 function onReplyButtonClick(messageId) {
   elixirChatWidget.triggerEvent(WIDGET_REPLY_MESSAGE, messageId);
 }
@@ -573,64 +510,11 @@ onBeforeUnmount(() => {
           </div>
 
           <!-- Системные сообщения -->
-          <div
+          <chat-system-message
             v-if="message.isSystem"
-            class="elixirchat-chat-messages__item elixirchat-chat-messages__item--by-operator elixirchat-chat-messages__item--system"
-            :class="{
-              'elixirchat-chat-messages__item--unread': message.isUnread
-            }"
-          >
-            <div class="elixirchat-chat-messages__inner">
-              <div class="elixirchat-chat-messages__balloon">
-                <div class="elixirchat-chat-messages__sender">
-                  <div>
-                    <avatar :src="processedAvatar(message)" />
-                  </div>
-                  <b>{{ getUserFullName(message.sender) || getOperatorName(message.sender, elixirChatWidget.widgetCustomEmployerName, elixirChatWidget.widgetTitle) }}</b>
-                </div>
-
-                <div
-                  v-if="message.systemData.type === 'ScreenshotRequestedMessage'"
-                >
-                  <div
-                    class="elixirchat-chat-messages__text"
-                    v-html="getScreenshotShortcutMessage()"
-                  />
-                  <button
-                    v-if="!screenshotFallback"
-                    class="elixirchat-chat-messages__take-screenshot"
-                    @click="onTakeScreenshotClick"
-                  >
-                    {{ t('take_a_screenshot') }}
-                  </button>
-                </div>
-
-                <div
-                  v-if="message.systemData?.type === 'NobodyWorkingMessage'"
-                  class="elixirchat-chat-messages__text"
-                >
-                  {{ getSpecialistsOfflineMessage(message) }}
-                </div>
-
-                <div v-if="message.systemData.type === 'HighLoadMessage'">
-                  <div class="elixirchat-chat-messages__text">
-                    {{ t('waiting_takes_longer') }}
-                  </div>
-                </div>
-
-                <div
-                  v-if="message.systemData?.type === 'NewClientPlaceholderMessage'"
-                  class="elixirchat-chat-messages__text"
-                >
-                  {{ getHelloMessage() }}
-                </div>
-              </div>
-
-              <div class="elixirchat-chat-messages__bottom">
-                {{ dayjs(message.timestamp).format('H:mm') }}
-              </div>
-            </div>
-          </div>
+            :message="message"
+            :screenshot-fallback="screenshotFallback"
+          />
         </template>
       </div>
     </div>
