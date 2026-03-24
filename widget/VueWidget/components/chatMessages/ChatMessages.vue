@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, useTemplateRef, computed } from 'vue';
+import { onBeforeUnmount, onMounted, ref, useTemplateRef, computed, nextTick } from 'vue';
 import dayjs from 'dayjs';
 import dayjsCalendar from 'dayjs/plugin/calendar';
 import { useI18n } from 'vue-i18n';
@@ -11,9 +11,10 @@ import {
   MESSAGES_HISTORY_APPEND,
   MESSAGES_HISTORY_CHANGE,
   MESSAGES_HISTORY_PREPEND,
+  MESSAGES_PAGINATION,
   MESSAGES_RECEIVE
 } from '../../../../sdk/ElixirChatEventTypes';
-import { fitDimensionsIntoLimits, isMobile, generateReplyMessageQuote } from '../../../../utilsWidgetVue';
+import { fitDimensionsIntoLimits, isMobile, generateReplyMessageQuote, humanizeUpcomingDate } from '../../../../utilsWidgetVue';
 import { serializeMessage } from '../../../../sdk/serializers/serializeMessage';
 import Avatar from '../avatar.vue';
 import FormattedMarkdown from '../FormattedMarkdown.vue';
@@ -49,6 +50,9 @@ const fullScreenPreviews = ref<any[]>([]);
 const hasPreviousPage = ref(false);
 const isLoading = ref(false);
 const scrollContainerRef = useTemplateRef<HTMLDivElement>('scrollContainerRef');
+
+const scrollBlockBottomOffset = ref<number | null>(null);
+
 const screenshotFallback = ref<{
   pressKey?: string | null;
   pressKeySecondary?: string;
@@ -119,7 +123,7 @@ function generateNewClientPlaceholderMessage(firstEverMessageInHistory: any) {
   };
 }
 
-function processMessages(messages: any[], hasPreviousPageInHistory: boolean) {
+function processMessages(messages: any[], shouldInjectNewClientPlaceholder: boolean) {
   const safeMessages = Array.isArray(messages) ? messages : [];
 
   let normalizedMessages = safeMessages.map((message, index) => {
@@ -148,8 +152,8 @@ function processMessages(messages: any[], hasPreviousPageInHistory: boolean) {
     };
   });
 
-  const firstEverMessageInHistory = hasPreviousPageInHistory ? safeMessages[0] : null;
-  if (hasPreviousPageInHistory && (firstEverMessageInHistory?.sender?.isClient || !firstEverMessageInHistory)) {
+  const firstEverMessageInHistory = shouldInjectNewClientPlaceholder ? safeMessages[0] : null;
+  if (shouldInjectNewClientPlaceholder && (firstEverMessageInHistory?.sender?.isClient || !firstEverMessageInHistory)) {
     normalizedMessages = [
       generateNewClientPlaceholderMessage(firstEverMessageInHistory),
       ...normalizedMessages
@@ -166,7 +170,8 @@ function extractFullScreenPreviews(messages: any[]) {
 function updateMessageHistory(params: HistoryUpdateParams, callback?: () => void) {
   const { chunk, prepend, append } = params;
   const normalizedChunk = Array.isArray(chunk) ? chunk : [];
-  let nextProcessedMessages = processMessages(normalizedChunk, !hasPreviousPage.value);
+  const shouldInjectNewClientPlaceholder = !append && !prepend && !hasPreviousPage.value;
+  let nextProcessedMessages = processMessages(normalizedChunk, shouldInjectNewClientPlaceholder);
   let nextFullScreenPreviews = extractFullScreenPreviews(normalizedChunk);
 
   if (append) {
@@ -199,11 +204,46 @@ function updateMessageHistory(params: HistoryUpdateParams, callback?: () => void
   callback?.();
 }
 
+function hasUserScroll(): boolean {
+  const scrollBlock = scrollContainerRef.value;
+  if (!scrollBlock) {
+    return false;
+  }
+  return scrollBlock.scrollTop <= scrollBlock.scrollHeight - scrollBlock.offsetHeight - 30;
+}
+
+function scrollToBottom() {
+  nextTick(() => {
+    requestAnimationFrame(() => {
+      const el = scrollContainerRef.value;
+      if (el) {
+        el.scrollTop = el.scrollHeight;
+      }
+    });
+  });
+}
+
+function onWidgetTextareaResize(offset: number) {
+  const userScrolledAwayFromBottom = hasUserScroll();
+  scrollBlockBottomOffset.value = offset;
+  if (!userScrolledAwayFromBottom) {
+    scrollToBottom();
+  }
+}
+
 function onMessageReceive(message: any) {
+  const shouldScrollMessagesToBottom = document.hasFocus()
+    && elixirChatWidget.widgetIsPopupOpen
+    && (message.sender?.isCurrentClient || !hasUserScroll());
+
   updateMessageHistory({
     chunk: [message],
     append: true
   });
+
+  if (shouldScrollMessagesToBottom) {
+    scrollToBottom();
+  }
 }
 
 function onMessageHistoryChange(chunk: any[]) {
@@ -222,6 +262,10 @@ function onMessageHistoryAppend(chunk: any[]) {
     chunk,
     append: true
   });
+}
+
+function onMessagesPagination(pageInfo: { hasPreviousPage: boolean; hasNextPage: boolean }) {
+  hasPreviousPage.value = pageInfo.hasPreviousPage;
 }
 
 function loadInitialMessages() {
@@ -360,6 +404,8 @@ onMounted(() => {
   elixirChatWidget.on(MESSAGES_HISTORY_CHANGE, onMessageHistoryChange);
   elixirChatWidget.on(MESSAGES_HISTORY_PREPEND, onMessageHistoryPrepend);
   elixirChatWidget.on(MESSAGES_HISTORY_APPEND, onMessageHistoryAppend);
+  elixirChatWidget.on(MESSAGES_PAGINATION, onMessagesPagination);
+  elixirChatWidget.on(WIDGET_TEXTAREA_RESIZE, onWidgetTextareaResize);
 
   screenshotFallback.value = getScreenshotCompatibilityFallback();
 });
@@ -370,6 +416,8 @@ onBeforeUnmount(() => {
   elixirChatWidget.off(MESSAGES_HISTORY_CHANGE, onMessageHistoryChange);
   elixirChatWidget.off(MESSAGES_HISTORY_PREPEND, onMessageHistoryPrepend);
   elixirChatWidget.off(MESSAGES_HISTORY_APPEND, onMessageHistoryAppend);
+  elixirChatWidget.off(MESSAGES_PAGINATION, onMessagesPagination);
+  elixirChatWidget.off(WIDGET_TEXTAREA_RESIZE, onWidgetTextareaResize);
 });
 </script>
 
@@ -379,6 +427,7 @@ onBeforeUnmount(() => {
     <div
       ref="scrollContainerRef"
       class="elixirchat-chat-scroll"
+      :style="scrollBlockBottomOffset !== null ? { bottom: `${scrollBlockBottomOffset}px` } : undefined"
     >
       <div
         class="elixirchat-chat-messages"
