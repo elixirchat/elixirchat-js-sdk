@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, useTemplateRef } from 'vue';
+import { onBeforeUnmount, onMounted, ref, useTemplateRef, computed } from 'vue';
 import { onClickOutside } from '@vueuse/core';
 import { useElixirChatWidget } from '../composables/useElixirChatWidget';
 import { fitDimensionsIntoLimits } from '../../../utilsWidgetVue';
@@ -34,7 +34,6 @@ const isSlideAnimation = ref(false);
 const videoRef = useTemplateRef<HTMLVideoElement>('videoRef');
 const innerRef = useTemplateRef<HTMLElement>('innerRef');
 const navRef = useTemplateRef<HTMLElement>('navRef');
-
 
 let slideAnimationTimeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -119,11 +118,23 @@ function closePreview() {
 }
 
 function onKeyNavigation(event: KeyboardEvent) {
-  if (event.key === 'Escape') {
+  const { key } = event;
+  const isVideo = preview.value.previewType === 'video';
+
+  if (key === 'Escape') {
     closePreview();
-  } else if (event.key === 'ArrowLeft' && preview.value.previewType !== 'video') {
+    return;
+  }
+
+  if (isVideo) {
+    return;
+  }
+
+  if (key === 'ArrowLeft') {
     navigateToFollowingPreview(-1);
-  } else if (event.key === 'ArrowRight' && preview.value.previewType !== 'video') {
+  }
+
+  if (key === 'ArrowRight') {
     navigateToFollowingPreview(1);
   }
 }
@@ -143,6 +154,9 @@ function onOpen(payload: {
 function onIframeReady() {
   elixirChatWidget.widgetIFrameDocument?.body?.addEventListener('keyup', onKeyNavigation);
 }
+
+const isImagePreview = computed(() => Boolean(preview.value.url && preview.value.previewType === 'image'));
+const isVideoPreview = computed(() => Boolean(preview.value.url && preview.value.previewType === 'video'));
 
 onClickOutside(innerRef, () => {
   if (isVisible.value) {
@@ -196,7 +210,7 @@ onBeforeUnmount(() => {
       :style="{ marginTop: `${previewTopMargin}px` }"
     >
       <img
-        v-if="preview.url && preview.previewType === 'image'"
+        v-if="isImagePreview"
         class="elixirchat-widget-full-screen-preview__img"
         :class="{ 'elixirchat-widget-full-screen-preview__img--animated': isSlideAnimation }"
         :width="previewWidth"
@@ -206,7 +220,7 @@ onBeforeUnmount(() => {
         @click="closePreview"
       >
       <video
-        v-if="preview.url && preview.previewType === 'video'"
+        v-if="isVideoPreview"
         ref="videoRef"
         class="elixirchat-widget-full-screen-preview__video"
         :class="{ 'elixirchat-widget-full-screen-preview__video--animated': isSlideAnimation }"
