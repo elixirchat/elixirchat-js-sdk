@@ -65,7 +65,6 @@ class AlertComponent extends Component<IDefaultWidgetAlertProps, IDefaultWidgetA
     }
   };
 
-  
   resetErrorBlockHeight = () => {
     try {
       this.messageBlock.current.style.height = 'auto';
