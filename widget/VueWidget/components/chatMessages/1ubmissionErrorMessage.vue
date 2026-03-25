@@ -14,6 +14,7 @@ const { t } = useI18n();
 
 const code = computed(() => props.message?.submissionErrorCode);
 
+
 const errorMap = computed<Record<number, {
   text: string;
   hasRetry: boolean;
