@@ -2,15 +2,25 @@
 import { onBeforeUnmount, onMounted, ref, useTemplateRef, computed, nextTick } from 'vue';
 import dayjs from 'dayjs';
 import dayjsCalendar from 'dayjs/plugin/calendar';
+import debounce from 'lodash/debounce';
 import { useI18n } from 'vue-i18n';
 import { useElixirChatWidget } from '../../composables/useElixirChatWidget';
-import { _flatten, _uniqBy, getMediaType, randomDigitStringId, getUserFullName, getOperatorName } from '../../../../utilsCommon';
+import {
+  _flatten,
+  _findIndex,
+  _uniqBy,
+  getMediaType,
+  randomDigitStringId,
+  getUserFullName,
+  getOperatorName
+} from '../../../../utilsCommon';
 import {
   ERROR_ALERT,
   JOIN_ROOM_SUCCESS,
   MESSAGES_HISTORY_APPEND,
   MESSAGES_HISTORY_CHANGE,
   MESSAGES_HISTORY_PREPEND,
+  MESSAGES_LAST_MESSAGE_ID,
   MESSAGES_PAGINATION,
   MESSAGES_RECEIVE
 } from '../../../../sdk/ElixirChatEventTypes';
@@ -34,6 +44,8 @@ import RatingModal from '../RatingModal.vue';
 
 const MESSAGE_CHUNK_SIZE = 20;
 const MAX_THUMBNAIL_SIZE = isMobile() ? 208 : 256;
+const LOAD_PRECEDING_MESSAGES_SCROLL_Y_POSITION = 10;
+const SCROLL_LOAD_NEXT_THRESHOLD_PX = 15;
 
 type HistoryUpdateParams = {
   chunk: any[];
@@ -48,8 +60,14 @@ const elixirChatWidget = useElixirChatWidget();
 const processedMessages = ref<any[]>([]);
 const fullScreenPreviews = ref<any[]>([]);
 const hasPreviousPage = ref(false);
+const hasNextPage = ref(false);
+const lastMessageId = ref('');
 const isLoading = ref(false);
+const isLoadingPrecedingMessageHistory = ref(false);
+const hasInitiallyScrolledToAppropriatePosition = ref(false);
 const scrollContainerRef = useTemplateRef<HTMLDivElement>('scrollContainerRef');
+
+let initialScrollTimeout: ReturnType<typeof setTimeout> | null = null;
 
 const scrollBlockBottomOffset = ref<number | null>(null);
 
@@ -223,6 +241,56 @@ function scrollToBottom() {
   });
 }
 
+function scrollToFirstUnreadMessage() {
+  const { messageHistory, lastReadMessageId } = elixirChatWidget;
+  const lastReadMessageIndex = _findIndex(messageHistory, { id: lastReadMessageId });
+
+  const lastReadMessagePrecedesLoadedMessageHistory = lastReadMessageId && !lastReadMessageIndex;
+
+  if (!lastReadMessagePrecedesLoadedMessageHistory) {
+    requestAnimationFrame(() => {
+      const firstUnreadMessage = messageHistory[(lastReadMessageIndex ?? -1) + 1];
+      const id = firstUnreadMessage?.id;
+      const scrollEl = scrollContainerRef.value;
+      const doc = scrollEl?.ownerDocument;
+      const messageElementToScrollTo = id && doc ? doc.getElementById(String(id)) : null;
+      if (messageElementToScrollTo) {
+        setTimeout(() => {
+          messageElementToScrollTo.scrollIntoView({
+            behavior: 'smooth',
+            block: 'end'
+          });
+        });
+      } else {
+        scrollToBottom();
+      }
+    });
+  }
+}
+
+function scrollInitiallyToAppropriatePosition() {
+  elixirChatWidget.off(WIDGET_POPUP_OPEN, scrollInitiallyToAppropriatePosition);
+
+  if (elixirChatWidget.widgetChatScrollY) {
+    requestAnimationFrame(() => {
+      const el = scrollContainerRef.value;
+      if (el) {
+        el.scrollTop = elixirChatWidget.widgetChatScrollY as number;
+      }
+    });
+  } else {
+    scrollToFirstUnreadMessage();
+  }
+
+  if (initialScrollTimeout != null) {
+    clearTimeout(initialScrollTimeout);
+  }
+  initialScrollTimeout = setTimeout(() => {
+    hasInitiallyScrolledToAppropriatePosition.value = true;
+    initialScrollTimeout = null;
+  }, 3000);
+}
+
 function onWidgetTextareaResize(offset: number) {
   const userScrolledAwayFromBottom = hasUserScroll();
   scrollBlockBottomOffset.value = offset;
@@ -264,11 +332,96 @@ function onMessageHistoryAppend(chunk: any[]) {
   });
 }
 
-function onMessagesPagination(pageInfo: { hasPreviousPage: boolean; hasNextPage: boolean }) {
+function onMessagesPagination(pageInfo: {
+  hasPreviousPage: boolean;
+  hasNextPage: boolean;
+}) {
   hasPreviousPage.value = pageInfo.hasPreviousPage;
+  hasNextPage.value = pageInfo.hasNextPage;
+}
+
+function onLastMessageId(id: string | undefined) {
+  lastMessageId.value = id ? String(id) : '';
+}
+
+function loadPrecedingMessages() {
+  const scrollBlock = scrollContainerRef.value;
+  if (!scrollBlock) {
+    return;
+  }
+
+  const initialScrollHeight = scrollBlock.scrollHeight;
+  const shouldLoadPreviousMessages = !isLoading.value
+    && !isLoadingPrecedingMessageHistory.value
+    && hasPreviousPage.value
+    && hasInitiallyScrolledToAppropriatePosition.value;
+
+  if (!shouldLoadPreviousMessages) {
+    return;
+  }
+
+  isLoadingPrecedingMessageHistory.value = true;
+
+  elixirChatWidget
+    .fetchPrecedingMessageHistory(MESSAGE_CHUNK_SIZE)
+    .catch((e: any) => {
+      elixirChatWidget.triggerEvent(ERROR_ALERT, {
+        customMessage: e.errorMessage,
+        retryCallback: loadPrecedingMessages,
+        error: e.rawError
+      });
+      throw e;
+    })
+    .finally(() => {
+      nextTick(() => {
+        requestAnimationFrame(() => {
+          const block = scrollContainerRef.value;
+          if (block) {
+            block.scrollTop = block.scrollHeight - initialScrollHeight;
+          }
+          setTimeout(() => {
+            isLoadingPrecedingMessageHistory.value = false;
+          }, 500);
+        });
+      });
+    });
+}
+
+function loadNextMessages() {
+  if (!isLoading.value && hasNextPage.value && lastMessageId.value) {
+    elixirChatWidget.loadHistoryMessageNewer(lastMessageId.value);
+  }
+}
+
+function scrollPosition(scrollTop: number) {
+  if (scrollTop <= LOAD_PRECEDING_MESSAGES_SCROLL_Y_POSITION) {
+    loadPrecedingMessages();
+  } else {
+    const scrollBlock = scrollContainerRef.value;
+    if (!scrollBlock) {
+      return;
+    }
+    const scrollBottom = scrollBlock.scrollHeight - scrollBlock.scrollTop - scrollBlock.clientHeight;
+    if (scrollBottom < SCROLL_LOAD_NEXT_THRESHOLD_PX) {
+      loadNextMessages();
+    }
+  }
+}
+
+const debouncedScrollPosition = debounce(scrollPosition, 400);
+
+function onScrollHandler(event: Event) {
+  const target = event.target as HTMLDivElement;
+  debouncedScrollPosition(target.scrollTop);
 }
 
 function loadInitialMessages() {
+  if (initialScrollTimeout != null) {
+    clearTimeout(initialScrollTimeout);
+    initialScrollTimeout = null;
+  }
+  hasInitiallyScrolledToAppropriatePosition.value = false;
+
   isLoading.value = true;
 
   const { messageSubscription } = elixirChatWidget;
@@ -277,10 +430,15 @@ function loadInitialMessages() {
   if (hasCachedHistory) {
     onMessageHistoryChange(elixirChatWidget.messageHistory);
     isLoading.value = false;
+    elixirChatWidget.waitForPopupToOpen(scrollInitiallyToAppropriatePosition);
     return;
   }
 
-  elixirChatWidget.fetchMessageHistory(MESSAGE_CHUNK_SIZE)
+  elixirChatWidget
+    .fetchMessageHistory(MESSAGE_CHUNK_SIZE)
+    .then(() => {
+      elixirChatWidget.waitForPopupToOpen(scrollInitiallyToAppropriatePosition);
+    })
     .catch((error) => {
       elixirChatWidget.triggerEvent(ERROR_ALERT, {
         customMessage: error.errorMessage,
@@ -405,18 +563,27 @@ onMounted(() => {
   elixirChatWidget.on(MESSAGES_HISTORY_PREPEND, onMessageHistoryPrepend);
   elixirChatWidget.on(MESSAGES_HISTORY_APPEND, onMessageHistoryAppend);
   elixirChatWidget.on(MESSAGES_PAGINATION, onMessagesPagination);
+  elixirChatWidget.on(MESSAGES_LAST_MESSAGE_ID, onLastMessageId);
   elixirChatWidget.on(WIDGET_TEXTAREA_RESIZE, onWidgetTextareaResize);
 
   screenshotFallback.value = getScreenshotCompatibilityFallback();
 });
 
 onBeforeUnmount(() => {
+  debouncedScrollPosition.cancel();
+  if (initialScrollTimeout != null) {
+    clearTimeout(initialScrollTimeout);
+    initialScrollTimeout = null;
+  }
+  elixirChatWidget.off(WIDGET_POPUP_OPEN, scrollInitiallyToAppropriatePosition);
+
   elixirChatWidget.off(JOIN_ROOM_SUCCESS, loadInitialMessages);
   elixirChatWidget.off(MESSAGES_RECEIVE, onMessageReceive);
   elixirChatWidget.off(MESSAGES_HISTORY_CHANGE, onMessageHistoryChange);
   elixirChatWidget.off(MESSAGES_HISTORY_PREPEND, onMessageHistoryPrepend);
   elixirChatWidget.off(MESSAGES_HISTORY_APPEND, onMessageHistoryAppend);
   elixirChatWidget.off(MESSAGES_PAGINATION, onMessagesPagination);
+  elixirChatWidget.off(MESSAGES_LAST_MESSAGE_ID, onLastMessageId);
   elixirChatWidget.off(WIDGET_TEXTAREA_RESIZE, onWidgetTextareaResize);
 });
 </script>
@@ -428,7 +595,14 @@ onBeforeUnmount(() => {
       ref="scrollContainerRef"
       class="elixirchat-chat-scroll"
       :style="scrollBlockBottomOffset !== null ? { bottom: `${scrollBlockBottomOffset}px` } : undefined"
+      @scroll="onScrollHandler"
     >
+      <i
+        class="elixirchat-chat-scroll-progress-bar"
+        :class="{
+          'elixirchat-chat-scroll-progress-bar--animating': isLoadingPrecedingMessageHistory
+        }"
+      />
       <div
         class="elixirchat-chat-messages"
         :class="{
@@ -458,6 +632,7 @@ onBeforeUnmount(() => {
           <!-- Обычные сообщения -->
           <div
             v-if="!message.isSystem && !message.isDeleted"
+            :id="String(message.id)"
             class="elixirchat-chat-messages__item"
             :class="
               {
@@ -561,6 +736,7 @@ onBeforeUnmount(() => {
           <!-- Системные сообщения -->
           <chat-system-message
             v-if="message.isSystem"
+            :id="String(message.id)"
             :message="message"
             :screenshot-fallback="screenshotFallback"
           />
