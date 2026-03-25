@@ -15,7 +15,7 @@ const props = defineProps<{
   replyText: string;
   isMessageLocked: boolean;
   isSelected?: boolean;
-  setMessageRef?: (messageId: string, el: HTMLElement | null) => void;
+  setMessageRef?: (messageId: string, isUnread: boolean, el: HTMLElement | null) => void;
 }>();
 
 const emit = defineEmits<{
@@ -57,7 +57,7 @@ function onRetry(message: any) {
 }
 
 function onRootRef(el: HTMLElement | null) {
-  props.setMessageRef?.(String(props.message.id), el);
+  props.setMessageRef?.(String(props.message.id), Boolean(props.message.isUnread), el);
 }
 </script>
 

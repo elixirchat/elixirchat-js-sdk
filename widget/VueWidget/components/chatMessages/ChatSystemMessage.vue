@@ -8,7 +8,7 @@ import Avatar from '../avatar.vue';
 
 const props = defineProps<{
   message: any;
-  setMessageRef?: (messageId: string, el: HTMLElement | null) => void;
+  setMessageRef?: (messageId: string, isUnread: boolean, el: HTMLElement | null) => void;
   screenshotFallback?: {
     pressKey?: string | null;
     pressKeySecondary?: string;
@@ -93,7 +93,7 @@ function onTakeScreenshotClick() {
 }
 
 function onRootRef(el: HTMLElement | null) {
-  props.setMessageRef?.(String(props.message.id), el);
+  props.setMessageRef?.(String(props.message.id), Boolean(props.message.isUnread), el);
 }
 </script>
 
