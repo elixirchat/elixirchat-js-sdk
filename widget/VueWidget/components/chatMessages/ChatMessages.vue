@@ -10,9 +10,7 @@ import {
   _findIndex,
   _uniqBy,
   getMediaType,
-  randomDigitStringId,
-  getUserFullName,
-  getOperatorName
+  randomDigitStringId
 } from '../../../../utilsCommon';
 import {
   ERROR_ALERT,
@@ -26,14 +24,9 @@ import {
   MESSAGES_SEARCH_IDS,
   TYPING_STATUS_CHANGE
 } from '../../../../sdk/ElixirChatEventTypes';
-import { fitDimensionsIntoLimits, isMobile, generateReplyMessageQuote, humanizeUpcomingDate } from '../../../../utilsWidgetVue';
+import { fitDimensionsIntoLimits, isMobile, humanizeUpcomingDate } from '../../../../utilsWidgetVue';
 import { serializeMessage } from '../../../../sdk/serializers/serializeMessage';
-import Avatar from '../avatar.vue';
-import FormattedMarkdown from '../FormattedMarkdown.vue';
-import ChatMessagePreviews from './ChatMessagePreviews.vue';
 import { getScreenshotCompatibilityFallback } from '../../../../sdk/ScreenshotTaker';
-import SubmissionErrorMessage from './SubmissionErrorMessage.vue';
-import ChatMessageFiles from './ChatMessageFiles.vue';
 import ChatSystemMessage from './ChatSystemMessage.vue';
 import {
   WIDGET_FULLSCREEN_PREVIEW_OPEN,
@@ -41,10 +34,11 @@ import {
   WIDGET_REPLY_MESSAGE,
   WIDGET_POPUP_OPEN
 } from '../../../ElixirChatWidgetEventTypes';
-import RatingButton from './RatingButton.vue';
 import RatingModal from '../RatingModal.vue';
 import ChatTyping from './ChatTyping.vue';
 import MessageSearch from '../MessageSearch.vue';
+import ChatMessageItem from './ChatMessageItem.vue';
+import ChatMessagesViewport from './ChatMessagesViewport.vue';
 
 const MESSAGE_CHUNK_SIZE = 20;
 const MAX_THUMBNAIL_SIZE = isMobile() ? 208 : 256;
@@ -594,18 +588,6 @@ const calendarFormat = computed(() => ({
   sameElse: 'D MMMM'
 }));
 
-function processedAvatar(message: any): string {
-  return message.sender.avatar.url || '';
-}
-
-function getMentionsStr(message: any) {
-  return message.mentions.map((mention) => {
-    return mention.value === 'ALL'
-      ? t('everyone')
-      : getUserFullName(mention.client, ' ');
-  }).join(', ');
-};
-
 function onReplyButtonClick(messageId) {
   elixirChatWidget.triggerEvent(WIDGET_REPLY_MESSAGE, messageId);
 }
@@ -741,31 +723,20 @@ onBeforeUnmount(() => {
       :style="scrollBlockBottomOffset !== null ? { bottom: `${scrollBlockBottomOffset}px` } : undefined"
       @scroll="onScrollHandler"
     >
-      <i
-        class="elixirchat-chat-scroll-progress-bar"
-        :class="{
-          'elixirchat-chat-scroll-progress-bar--animating': isLoadingPrecedingMessageHistory
-        }"
-      />
-      <div
-        class="elixirchat-chat-messages"
-        :class="{
-          'elixirchat-chat-messages--loading': isLoading
-        }"
+      <chat-messages-viewport
+        :is-loading="isLoading"
+        :is-loading-preceding-message-history="isLoadingPrecedingMessageHistory"
       >
-        <!-- Вывод сообщений -->
         <template
           v-for="message in processedMessages"
           :key="message.id"
         >
-          <!-- Групповой лейбл -->
           <template v-if="message.showGroupChatLabel && !elixirChatWidget.room?.isPrivate">
             <div class="elixirchat-chat-messages__group-chat-label">
               {{ t('this_is_a_support_group', { title: elixirChatWidget.room?.title }) }}
             </div>
           </template>
 
-          <!-- дата -->
           <div
             v-if="message.showDateLabel"
             class="elixirchat-chat-messages__date-title"
@@ -773,111 +744,18 @@ onBeforeUnmount(() => {
             {{ dayjs(message.timestamp).calendar(null, calendarFormat) }}
           </div>
 
-          <!-- Обычные сообщения -->
-          <div
+          <chat-message-item
             v-if="!message.isSystem && !message.isDeleted"
-            :id="String(message.id)"
-            class="elixirchat-chat-messages__item"
-            :class="
-              {
-                'elixirchat-chat-messages__item--by-me': message.sender?.isCurrentClient,
-                'elixirchat-chat-messages__item--by-operator': message.sender?.isOperator,
-                'elixirchat-chat-messages__item--by-client': message.sender?.isClient,
-                'elixirchat-chat-messages__item--by-another-client': !message.sender.isOperator && !message.sender.isCurrentClient,
-                'elixirchat-chat-messages__item--unread': message.isUnread
-              }"
-          >
-            <div class="elixirchat-chat-messages__inner">
-              <div
-                v-if="!message.hasPreviewsOnly"
-                class="elixirchat-chat-messages__balloon"
-              >
-                <div v-if="!message.sender.isCurrentClient">
-                  <div class="elixirchat-chat-messages__sender">
-                    <avatar :src="processedAvatar(message)" />
-                    <span class="elixirchat-chat-messages__sender-info">
-                      <b>
-                        {{ getUserFullName(message.sender)
-                          || getOperatorName(message.sender, elixirChatWidget.widgetCustomEmployerName, elixirChatWidget.widgetTitle) }}
-                      </b>
-                      <template v-if="Boolean(message.mentions.length)">
-                        <span class="mention-prefix"> → @</span>
-                        {{ getMentionsStr(message) }}
-                      </template>
-                      <span class="elixirchat-chat-messages__time">
-                        {{ dayjs(message.timestamp).format('H:mm') }}
-                      </span>
-                    </span>
-                  </div>
-                </div>
+            :message="message"
+            :elixir-chat-widget="elixirChatWidget"
+            :reply-text="t('reply')"
+            :is-message-locked="isMessageLocked(message.id)"
+            @preview-click="onPreviewClick"
+            @reply="onReplyButtonClick"
+            @rate="onRate"
+            @retry="elixirChatWidget.retrySendMessage"
+          />
 
-                <div v-if="message.responseToMessage.id && !message.responseToMessage.isDeleted">
-                  <div class="elixirchat-chat-messages__reply-message">
-                    {{ generateReplyMessageQuote(message.responseToMessage, elixirChatWidget) }}
-                  </div>
-                </div>
-
-                <formatted-markdown
-                  v-if="message.text"
-                  class="elixirchat-chat-messages__text"
-                  :markdown="message.text"
-                />
-
-                <chat-message-files
-                  v-if="message.files.length"
-                  :files="message.files"
-                  :is-submitting="message.isSubmitting"
-                />
-              </div>
-
-              <chat-message-previews
-                v-if="message.previews.length"
-                :previews="message.previews"
-                :is-submitting="message.isSubmitting"
-                :sender="message.sender"
-                @preview-click="onPreviewClick"
-              />
-
-              <div class="elixirchat-chat-messages__bottom">
-                <submission-error-message
-                  v-if="message.submissionErrorCode"
-                  :message="message"
-                  @retry="elixirChatWidget.retrySendMessage(message)"
-                />
-                <template v-else>
-                  <span
-                    class="elixirchat-chat-messages__reply-button"
-                    @click="onReplyButtonClick(message.id)"
-                  >
-                    {{ t('reply') }}
-                  </span>
-                  <template v-if="message.sender.isOperator && !message.isSystem">
-                    <div class="elixirchat-chat-messages__rating">
-                      <rating-button
-                        type="POSITIVE"
-                        :message-id="message.id"
-                        :rating="message?.rating?.rating"
-                        :is-locked="isMessageLocked(message.id)"
-                        @rate="onRate"
-                      />
-                      <rating-button
-                        type="NEGATIVE"
-                        :message-id="message.id"
-                        :rating="message?.rating?.rating"
-                        :is-locked="isMessageLocked(message.id)"
-                        @rate="onRate"
-                      />
-                    </div>
-                  </template>
-                  <span v-if="message.sender.isCurrentClient">
-                    {{ dayjs(message.timestamp).format('H:mm') }}
-                  </span>
-                </template>
-              </div>
-            </div>
-          </div>
-
-          <!-- Системные сообщения -->
           <chat-system-message
             v-if="message.isSystem"
             :id="String(message.id)"
@@ -885,7 +763,7 @@ onBeforeUnmount(() => {
             :screenshot-fallback="screenshotFallback"
           />
         </template>
-      </div>
+      </chat-messages-viewport>
 
       <chat-typing
         v-if="currentlyTypingUsers.length"

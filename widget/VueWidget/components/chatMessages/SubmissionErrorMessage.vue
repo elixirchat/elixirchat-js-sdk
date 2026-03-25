@@ -7,13 +7,12 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  (e: 'retry', message: any): void;
+  retry: [message: any];
 }>();
 
 const { t } = useI18n();
 
 const code = computed(() => props.message?.submissionErrorCode);
-
 
 const errorMap = computed<Record<number, {
   text: string;

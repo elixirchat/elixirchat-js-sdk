@@ -11,8 +11,8 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  (e: 'change-text', value: string): void;
-  (e: 'scroll-message', messageId: string, direction?: 'up' | 'down'): void;
+  'change-text': [value: string];
+  'scroll-message': [messageId: string, direction?: 'up' | 'down'];
 }>();
 
 const { locale, t } = useI18n();
