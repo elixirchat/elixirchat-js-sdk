@@ -9,6 +9,7 @@ import {
   _flatten,
   _findIndex,
   _uniqBy,
+  detectBrowser,
   getMediaType,
   randomDigitStringId
 } from '../../../../utilsCommon';
@@ -24,7 +25,7 @@ import {
   MESSAGES_SEARCH_IDS,
   TYPING_STATUS_CHANGE
 } from '../../../../sdk/ElixirChatEventTypes';
-import { fitDimensionsIntoLimits, isMobile, humanizeUpcomingDate } from '../../../../utilsWidgetVue';
+import { fitDimensionsIntoLimits, isMobile } from '../../../../utilsWidgetVue';
 import { serializeMessage } from '../../../../sdk/serializers/serializeMessage';
 import { getScreenshotCompatibilityFallback } from '../../../../sdk/ScreenshotTaker';
 import ChatSystemMessage from './ChatSystemMessage.vue';
@@ -66,6 +67,7 @@ const currentlyTypingUsers = ref<any[]>([]);
 const isLoadingPrecedingMessageHistory = ref(false);
 const hasInitiallyScrolledToAppropriatePosition = ref(false);
 const searchText = ref('');
+const selectMessageId = ref('');
 const searchMessagesIds = ref<string[]>([]);
 const originalMessages = ref<Record<string, string>>({});
 const scrollContainerRef = useTemplateRef<HTMLDivElement>('scrollContainerRef');
@@ -344,7 +346,10 @@ function initializeMessagesIntersectionObserver() {
   messageVisibilityObserver = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       const messageElement = entry.target as HTMLElement;
-      const messageData = getDatasetValue<{ id: string; isUnread: boolean }>(messageElement, 'messageData');
+      const messageData = getDatasetValue<{
+        id: string;
+        isUnread: boolean;
+      }>(messageElement, 'messageData');
 
       if (entry.isIntersecting) {
         setDatasetValues(messageElement, { isMessageWithinViewport: true });
@@ -481,6 +486,26 @@ function scrollInitiallyToAppropriatePosition() {
   }, 3000);
 }
 
+function preventSafariFromLockingScroll() {
+  const scrollBlock = scrollContainerRef.value;
+  if (!scrollBlock) {
+    return;
+  }
+  const originalBackgroundColor = scrollBlock.style.backgroundColor;
+  scrollBlock.style.backgroundColor = 'inherit';
+  setTimeout(() => {
+    if (scrollContainerRef.value) {
+      scrollContainerRef.value.style.backgroundColor = originalBackgroundColor;
+    }
+  });
+}
+
+function onWidgetPopupOpen() {
+  if (detectBrowser() === 'safari') {
+    preventSafariFromLockingScroll();
+  }
+}
+
 function onWidgetTextareaResize(offset: number) {
   const userScrolledAwayFromBottom = hasUserScroll();
   scrollBlockBottomOffset.value = offset;
@@ -544,6 +569,7 @@ function changeSearchText(text = '') {
     });
 
     originalMessages.value = {};
+    selectMessageId.value = '';
     processedMessages.value = nextProcessedMessages;
     return;
   }
@@ -556,6 +582,8 @@ function scrollToMessage(messageId: string, direction?: 'up' | 'down') {
   if (!scrollBlock) {
     return;
   }
+
+  selectMessageId.value = String(messageId);
 
   const target = messageRefs.value[String(messageId)] || scrollBlock.ownerDocument.getElementById(String(messageId));
   const chatHeight = 380;
@@ -828,6 +856,7 @@ onMounted(() => {
   elixirChatWidget.on(MESSAGES_SEARCH_IDS, onSearchIds);
   elixirChatWidget.on(WIDGET_TEXTAREA_RESIZE, onWidgetTextareaResize);
   elixirChatWidget.on(TYPING_STATUS_CHANGE, onTypingStatusChange);
+  elixirChatWidget.on(WIDGET_POPUP_OPEN, onWidgetPopupOpen);
 
   screenshotFallback.value = getScreenshotCompatibilityFallback();
   requestAnimationFrame(initializeMessagesIntersectionObserver);
@@ -851,6 +880,7 @@ onBeforeUnmount(() => {
   elixirChatWidget.off(MESSAGES_SEARCH_IDS, onSearchIds);
   elixirChatWidget.off(WIDGET_TEXTAREA_RESIZE, onWidgetTextareaResize);
   elixirChatWidget.off(TYPING_STATUS_CHANGE, onTypingStatusChange);
+  elixirChatWidget.off(WIDGET_POPUP_OPEN, onWidgetPopupOpen);
 
   if (messageVisibilityObserver) {
     messageVisibilityObserver.disconnect();
@@ -901,6 +931,7 @@ onBeforeUnmount(() => {
             :elixir-chat-widget="elixirChatWidget"
             :reply-text="t('reply')"
             :is-message-locked="isMessageLocked(message.id)"
+            :is-selected="String(message.id) === selectMessageId"
             :set-message-ref="setMessageRef"
             @preview-click="onPreviewClick"
             @reply="onReplyButtonClick"

@@ -14,6 +14,7 @@ const props = defineProps<{
   elixirChatWidget: any;
   replyText: string;
   isMessageLocked: boolean;
+  isSelected?: boolean;
   setMessageRef?: (messageId: string, el: HTMLElement | null) => void;
 }>();
 
@@ -70,7 +71,8 @@ function onRootRef(el: HTMLElement | null) {
       'elixirchat-chat-messages__item--by-operator': message.sender?.isOperator,
       'elixirchat-chat-messages__item--by-client': message.sender?.isClient,
       'elixirchat-chat-messages__item--by-another-client': !message.sender.isOperator && !message.sender.isCurrentClient,
-      'elixirchat-chat-messages__item--unread': message.isUnread
+      'elixirchat-chat-messages__item--unread': message.isUnread,
+      'elixirchat-chat-messages__item--selected': Boolean(isSelected)
     }"
   >
     <div class="elixirchat-chat-messages__inner">
