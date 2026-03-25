@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, useTemplateRef } from 'vue';
+import { onClickOutside } from '@vueuse/core';
 import { useElixirChatWidget } from '../composables/useElixirChatWidget';
-import { fitDimensionsIntoLimits, isWithinElement } from '../../../utilsWidgetVue';
+import { fitDimensionsIntoLimits } from '../../../utilsWidgetVue';
 import {
   WIDGET_FULLSCREEN_PREVIEW_CLOSE,
   WIDGET_FULLSCREEN_PREVIEW_OPEN,
@@ -117,15 +118,6 @@ function closePreview() {
   isVisible.value = false;
 }
 
-function onContainerClick(event: MouseEvent) {
-  const target = event.target as HTMLElement;
-  const isWithinInner = isWithinElement(target, innerRef.value);
-  const isWithinNav = isWithinElement(target, navRef.value);
-  if (!isWithinInner && !isWithinNav) {
-    closePreview();
-  }
-}
-
 function onKeyNavigation(event: KeyboardEvent) {
   if (event.key === 'Escape') {
     closePreview();
@@ -152,6 +144,14 @@ function onIframeReady() {
   elixirChatWidget.widgetIFrameDocument?.body?.addEventListener('keyup', onKeyNavigation);
 }
 
+onClickOutside(innerRef, () => {
+  if (isVisible.value) {
+    closePreview();
+  }
+}, {
+  ignore: [navRef]
+});
+
 onMounted(() => {
   elixirChatWidget.on(WIDGET_FULLSCREEN_PREVIEW_OPEN, onOpen);
   elixirChatWidget.on(WIDGET_IFRAME_READY, onIframeReady);
@@ -171,11 +171,9 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  123321321123
   <div
     class="elixirchat-widget-full-screen-preview"
     :class="{ 'elixirchat-widget-full-screen-preview--visible': isVisible }"
-    @click="onContainerClick"
   >
     <div ref="navRef">
       <span
