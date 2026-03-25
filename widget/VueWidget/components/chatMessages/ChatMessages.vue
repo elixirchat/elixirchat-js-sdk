@@ -32,7 +32,7 @@ import Avatar from '../avatar.vue';
 import FormattedMarkdown from '../FormattedMarkdown.vue';
 import ChatMessagePreviews from './ChatMessagePreviews.vue';
 import { getScreenshotCompatibilityFallback } from '../../../../sdk/ScreenshotTaker';
-import submissionErrorMessage from './SubmissionErrorMessage.vue';
+import SubmissionErrorMessage from './SubmissionErrorMessage.vue';
 import ChatMessageFiles from './ChatMessageFiles.vue';
 import ChatSystemMessage from './ChatSystemMessage.vue';
 import {
@@ -434,19 +434,31 @@ function scrollToMessage(messageId: string, direction?: 'up' | 'down') {
   const chatHeight = 380;
 
   if (!target) {
-    scrollBlock.scrollTo({ top: chatHeight, behavior: 'smooth' });
+    scrollBlock.scrollTo({
+      top: chatHeight,
+      behavior: 'smooth'
+    });
     return;
   }
 
   const gap = scrollBlock.clientHeight / 2 - target.clientHeight / 2;
 
   if (direction === 'up') {
-    scrollBlock.scrollTo({ top: target.offsetTop - target.clientHeight / 2, behavior: 'auto' });
+    scrollBlock.scrollTo({
+      top: target.offsetTop - target.clientHeight / 2,
+      behavior: 'auto'
+    });
   } else if (direction === 'down') {
-    scrollBlock.scrollTo({ top: gap, behavior: 'auto' });
+    scrollBlock.scrollTo({
+      top: gap,
+      behavior: 'auto'
+    });
   }
 
-  scrollBlock.scrollTo({ top: target.offsetTop - gap, behavior: 'smooth' });
+  scrollBlock.scrollTo({
+    top: target.offsetTop - gap,
+    behavior: 'smooth'
+  });
 }
 
 const loadedMessageIdsForSearch = computed(() => {
@@ -827,7 +839,7 @@ onBeforeUnmount(() => {
               />
 
               <div class="elixirchat-chat-messages__bottom">
-                <submissionErrorMessage
+                <submission-error-message
                   v-if="message.submissionErrorCode"
                   :message="message"
                   @retry="elixirChatWidget.retrySendMessage(message)"
