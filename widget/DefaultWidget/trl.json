@@ -119,6 +119,18 @@
     "ru": "Файл не найден",
     "en": "File is not found"
   },
+  "search": {
+    "ru": "Поиск",
+    "en": "Search"
+  },
+  "searh_next": {
+    "ru": "Следующий",
+    "en": "Next"
+  },
+  "searh_close": {
+    "ru": "Закрыть",
+    "en": "Close"
+  },
   "here_is_the_screenshot": {
     "ru": "Вот скриншот моего экрана",
     "en": "Here is the screenshot"

@@ -56,6 +56,14 @@ function onSearchToggle(isOpen: boolean) {
   widgetIsSearchOpen.value = isOpen;
 }
 
+function onSearchClick() {
+  if (widgetIsSearchOpen.value) {
+    elixirChatWidget.closeSearch();
+    return;
+  }
+  elixirChatWidget.openSearch();
+}
+
 function onBackButtonClick() {
   elixirChatWidget.navigateTo('welcome-screen');
 }
@@ -108,7 +116,13 @@ onBeforeUnmount(() => {
       </div>
 
       <div class="elixirchat-chat-header__column">
-        <!-- TODO: добавить поиск -->
+        <button
+          class="elixirchat-chat-header__button elixirchat-chat-header__button-search"
+          :class="{ 'elixirchat-chat-header__button-search_active': widgetIsSearchOpen }"
+          @click="onSearchClick"
+        >
+          <i class="icon-search" />
+        </button>
 
         <tooltip
           class-name="elixirchat-chat-header__mute-tooltip"

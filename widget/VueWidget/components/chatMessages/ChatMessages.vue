@@ -23,6 +23,7 @@ import {
   MESSAGES_LAST_MESSAGE_ID,
   MESSAGES_PAGINATION,
   MESSAGES_RECEIVE,
+  MESSAGES_SEARCH_IDS,
   TYPING_STATUS_CHANGE
 } from '../../../../sdk/ElixirChatEventTypes';
 import { fitDimensionsIntoLimits, isMobile, generateReplyMessageQuote, humanizeUpcomingDate } from '../../../../utilsWidgetVue';
@@ -43,6 +44,7 @@ import {
 import RatingButton from './RatingButton.vue';
 import RatingModal from '../RatingModal.vue';
 import ChatTyping from './ChatTyping.vue';
+import MessageSearch from '../MessageSearch.vue';
 
 const MESSAGE_CHUNK_SIZE = 20;
 const MAX_THUMBNAIL_SIZE = isMobile() ? 208 : 256;
@@ -68,6 +70,9 @@ const isLoading = ref(false);
 const currentlyTypingUsers = ref<any[]>([]);
 const isLoadingPrecedingMessageHistory = ref(false);
 const hasInitiallyScrolledToAppropriatePosition = ref(false);
+const searchText = ref('');
+const searchMessagesIds = ref<string[]>([]);
+const originalMessages = ref<Record<string, string>>({});
 const scrollContainerRef = useTemplateRef<HTMLDivElement>('scrollContainerRef');
 
 let initialScrollTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -192,6 +197,53 @@ function extractFullScreenPreviews(messages: any[]) {
   return _flatten(messages.map((message) => processMessageAttachments(message).previews));
 }
 
+function markSearchText(messages: any[], updateState = false): any[] {
+  const nextMessages = JSON.parse(JSON.stringify(messages || []));
+  const nextOriginalMessages = { ...originalMessages.value };
+  const normalizedSearchText = searchText.value.trim();
+
+  if (!normalizedSearchText) {
+    originalMessages.value = {};
+    return nextMessages;
+  }
+
+  const escapedSearchText = normalizedSearchText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const regExp = new RegExp(escapedSearchText, 'gim');
+
+  nextMessages.forEach((message) => {
+    const messageId = String(message.id);
+
+    if (Object.prototype.hasOwnProperty.call(nextOriginalMessages, messageId) && message.isMarked) {
+      message.text = nextOriginalMessages[messageId];
+      delete message.isMarked;
+      delete nextOriginalMessages[messageId];
+    }
+
+    if (!searchMessagesIds.value.includes(messageId)) {
+      return;
+    }
+
+    if (!message.isMarked && message.text) {
+      nextOriginalMessages[messageId] = message.text;
+      message.isMarked = true;
+      message.text = message.text.replace(regExp, (match) => `★${match}★`);
+    }
+  });
+
+  originalMessages.value = nextOriginalMessages;
+
+  if (updateState) {
+    processedMessages.value = nextMessages;
+  }
+
+  return nextMessages;
+}
+
+function onSearchIds(ids: string[]) {
+  searchMessagesIds.value = (ids || []).map((id) => String(id));
+  markSearchText(processedMessages.value, true);
+}
+
 function updateMessageHistory(params: HistoryUpdateParams, callback?: () => void) {
   const { chunk, prepend, append } = params;
   const normalizedChunk = Array.isArray(chunk) ? chunk : [];
@@ -209,6 +261,10 @@ function updateMessageHistory(params: HistoryUpdateParams, callback?: () => void
       [...nextProcessedMessages, ...processedMessages.value],
       'id'
     ) as any[];
+  }
+
+  if (searchMessagesIds.value.length) {
+    nextProcessedMessages = markSearchText(nextProcessedMessages);
   }
 
   if (append) {
@@ -338,6 +394,67 @@ function onMessageHistoryAppend(chunk: any[]) {
     append: true
   });
 }
+
+function changeSearchText(text = '') {
+  searchText.value = text;
+
+  if (!text) {
+    const nextProcessedMessages = [...processedMessages.value];
+    const nextOriginalMessages = { ...originalMessages.value };
+
+    nextProcessedMessages.forEach((message) => {
+      const messageId = String(message.id);
+
+      if (!searchMessagesIds.value.includes(messageId)) {
+        return;
+      }
+
+      if (Object.prototype.hasOwnProperty.call(nextOriginalMessages, messageId)) {
+        message.text = nextOriginalMessages[messageId];
+        delete message.isMarked;
+        delete nextOriginalMessages[messageId];
+      }
+    });
+
+    originalMessages.value = {};
+    processedMessages.value = nextProcessedMessages;
+    return;
+  }
+
+  markSearchText(processedMessages.value, true);
+}
+
+function scrollToMessage(messageId: string, direction?: 'up' | 'down') {
+  const scrollBlock = scrollContainerRef.value;
+  if (!scrollBlock) {
+    return;
+  }
+
+  const target = scrollBlock.ownerDocument.getElementById(String(messageId));
+  const chatHeight = 380;
+
+  if (!target) {
+    scrollBlock.scrollTo({ top: chatHeight, behavior: 'smooth' });
+    return;
+  }
+
+  const gap = scrollBlock.clientHeight / 2 - target.clientHeight / 2;
+
+  if (direction === 'up') {
+    scrollBlock.scrollTo({ top: target.offsetTop - target.clientHeight / 2, behavior: 'auto' });
+  } else if (direction === 'down') {
+    scrollBlock.scrollTo({ top: gap, behavior: 'auto' });
+  }
+
+  scrollBlock.scrollTo({ top: target.offsetTop - gap, behavior: 'smooth' });
+}
+
+const loadedMessageIdsForSearch = computed(() => {
+  if (!searchText.value) {
+    return [];
+  }
+  return processedMessages.value.map((message) => String(message.id));
+});
 
 function onMessagesPagination(pageInfo: {
   hasPreviousPage: boolean;
@@ -571,6 +688,7 @@ onMounted(() => {
   elixirChatWidget.on(MESSAGES_HISTORY_APPEND, onMessageHistoryAppend);
   elixirChatWidget.on(MESSAGES_PAGINATION, onMessagesPagination);
   elixirChatWidget.on(MESSAGES_LAST_MESSAGE_ID, onLastMessageId);
+  elixirChatWidget.on(MESSAGES_SEARCH_IDS, onSearchIds);
   elixirChatWidget.on(WIDGET_TEXTAREA_RESIZE, onWidgetTextareaResize);
   elixirChatWidget.on(TYPING_STATUS_CHANGE, onTypingStatusChange);
 
@@ -592,6 +710,7 @@ onBeforeUnmount(() => {
   elixirChatWidget.off(MESSAGES_HISTORY_APPEND, onMessageHistoryAppend);
   elixirChatWidget.off(MESSAGES_PAGINATION, onMessagesPagination);
   elixirChatWidget.off(MESSAGES_LAST_MESSAGE_ID, onLastMessageId);
+  elixirChatWidget.off(MESSAGES_SEARCH_IDS, onSearchIds);
   elixirChatWidget.off(WIDGET_TEXTAREA_RESIZE, onWidgetTextareaResize);
   elixirChatWidget.off(TYPING_STATUS_CHANGE, onTypingStatusChange);
 });
@@ -599,7 +718,11 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="exlixir-chat__wrapper">
-    <!-- MessageSearch -->
+    <message-search
+      :messages-ids="loadedMessageIdsForSearch"
+      @change-text="changeSearchText"
+      @scroll-message="scrollToMessage"
+    />
     <div
       ref="scrollContainerRef"
       class="elixirchat-chat-scroll"
