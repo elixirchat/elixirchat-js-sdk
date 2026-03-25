@@ -32,7 +32,7 @@ import Avatar from '../avatar.vue';
 import FormattedMarkdown from '../FormattedMarkdown.vue';
 import ChatMessagePreviews from './ChatMessagePreviews.vue';
 import { getScreenshotCompatibilityFallback } from '../../../../sdk/ScreenshotTaker';
-import submissionErrorMessage from './submissionErrorMessage.vue';
+import submissionErrorMessage from './SubmissionErrorMessage.vue';
 import ChatMessageFiles from './ChatMessageFiles.vue';
 import ChatSystemMessage from './ChatSystemMessage.vue';
 import {
