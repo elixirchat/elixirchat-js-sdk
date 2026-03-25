@@ -9,16 +9,18 @@ import ChatMessageFiles from './ChatMessageFiles.vue';
 import ChatMessagePreviews from './ChatMessagePreviews.vue';
 import ChatMessageBottom from './ChatMessageBottom.vue';
 
-defineProps<{
+const props = defineProps<{
   message: any;
   elixirChatWidget: any;
   replyText: string;
   isMessageLocked: boolean;
+  setMessageRef?: (messageId: string, el: HTMLElement | null) => void;
 }>();
 
 const emit = defineEmits<{
   'preview-click': [event: Event, preview: any, sender: any];
   reply: [messageId: string];
+  'reply-original-click': [messageId: string];
   rate: [messageId: string, rating: 'POSITIVE' | 'NEGATIVE'];
   retry: [message: any];
 }>();
@@ -52,11 +54,16 @@ function onRate(messageId: string, rating: 'POSITIVE' | 'NEGATIVE') {
 function onRetry(message: any) {
   emit('retry', message);
 }
+
+function onRootRef(el: HTMLElement | null) {
+  props.setMessageRef?.(String(props.message.id), el);
+}
 </script>
 
 <template>
   <div
     :id="String(message.id)"
+    :ref="onRootRef"
     class="elixirchat-chat-messages__item"
     :class="{
       'elixirchat-chat-messages__item--by-me': message.sender?.isCurrentClient,
@@ -70,6 +77,7 @@ function onRetry(message: any) {
       <div
         v-if="!message.hasPreviewsOnly"
         class="elixirchat-chat-messages__balloon"
+        @dblclick="onReply(String(message.id))"
       >
         <div v-if="!message.sender.isCurrentClient">
           <div class="elixirchat-chat-messages__sender">
@@ -91,7 +99,12 @@ function onRetry(message: any) {
         </div>
 
         <div v-if="message.responseToMessage.id && !message.responseToMessage.isDeleted">
-          <div class="elixirchat-chat-messages__reply-message">
+          <div
+            class="elixirchat-chat-messages__reply-message"
+            role="button"
+            tabindex="0"
+            @click="emit('reply-original-click', String(message.responseToMessage.id))"
+          >
             {{ generateReplyMessageQuote(message.responseToMessage, elixirChatWidget) }}
           </div>
         </div>

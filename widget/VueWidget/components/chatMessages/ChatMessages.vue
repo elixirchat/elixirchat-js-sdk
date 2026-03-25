@@ -68,6 +68,7 @@ const searchText = ref('');
 const searchMessagesIds = ref<string[]>([]);
 const originalMessages = ref<Record<string, string>>({});
 const scrollContainerRef = useTemplateRef<HTMLDivElement>('scrollContainerRef');
+const messageRefs = ref<Record<string, HTMLElement>>({});
 
 let initialScrollTimeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -308,9 +309,7 @@ function scrollToFirstUnreadMessage() {
     requestAnimationFrame(() => {
       const firstUnreadMessage = messageHistory[(lastReadMessageIndex ?? -1) + 1];
       const id = firstUnreadMessage?.id;
-      const scrollEl = scrollContainerRef.value;
-      const doc = scrollEl?.ownerDocument;
-      const messageElementToScrollTo = id && doc ? doc.getElementById(String(id)) : null;
+      const messageElementToScrollTo = id ? messageRefs.value[String(id)] : null;
       if (messageElementToScrollTo) {
         setTimeout(() => {
           messageElementToScrollTo.scrollIntoView({
@@ -323,6 +322,26 @@ function scrollToFirstUnreadMessage() {
       }
     });
   }
+}
+
+function setMessageRef(messageId: string, el: HTMLElement | null) {
+  const id = String(messageId);
+  if (!el) {
+    if (messageRefs.value[id]) {
+      const next = { ...messageRefs.value };
+      delete next[id];
+      messageRefs.value = next;
+    }
+    return;
+  }
+
+  if (messageRefs.value[id] === el) {
+    return;
+  }
+  messageRefs.value = {
+    ...messageRefs.value,
+    [id]: el
+  };
 }
 
 function scrollInitiallyToAppropriatePosition() {
@@ -424,7 +443,7 @@ function scrollToMessage(messageId: string, direction?: 'up' | 'down') {
     return;
   }
 
-  const target = scrollBlock.ownerDocument.getElementById(String(messageId));
+  const target = messageRefs.value[String(messageId)] || scrollBlock.ownerDocument.getElementById(String(messageId));
   const chatHeight = 380;
 
   if (!target) {
@@ -453,6 +472,16 @@ function scrollToMessage(messageId: string, direction?: 'up' | 'down') {
     top: target.offsetTop - gap,
     behavior: 'smooth'
   });
+}
+
+function onReplyOriginalMessageClick(messageId: string | number) {
+  const target = messageRefs.value[String(messageId)];
+  if (target) {
+    target.scrollIntoView({
+      behavior: 'smooth',
+      block: 'center'
+    });
+  }
 }
 
 const loadedMessageIdsForSearch = computed(() => {
@@ -750,8 +779,10 @@ onBeforeUnmount(() => {
             :elixir-chat-widget="elixirChatWidget"
             :reply-text="t('reply')"
             :is-message-locked="isMessageLocked(message.id)"
+            :set-message-ref="setMessageRef"
             @preview-click="onPreviewClick"
             @reply="onReplyButtonClick"
+            @reply-original-click="onReplyOriginalMessageClick"
             @rate="onRate"
             @retry="elixirChatWidget.retrySendMessage"
           />
