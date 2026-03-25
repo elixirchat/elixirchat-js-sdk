@@ -42,6 +42,7 @@ import ChatMessagesViewport from './ChatMessagesViewport.vue';
 
 const MESSAGE_CHUNK_SIZE = 20;
 const MAX_THUMBNAIL_SIZE = isMobile() ? 208 : 256;
+const MARK_AS_READ_TIMEOUT = 2000;
 const LOAD_PRECEDING_MESSAGES_SCROLL_Y_POSITION = 10;
 const SCROLL_LOAD_NEXT_THRESHOLD_PX = 15;
 
@@ -69,6 +70,8 @@ const searchMessagesIds = ref<string[]>([]);
 const originalMessages = ref<Record<string, string>>({});
 const scrollContainerRef = useTemplateRef<HTMLDivElement>('scrollContainerRef');
 const messageRefs = ref<Record<string, HTMLElement>>({});
+let messageVisibilityObserver: IntersectionObserver | null = null;
+const markAsReadTimeoutsByMessageId = new Map<string, ReturnType<typeof setTimeout>>();
 
 let initialScrollTimeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -280,6 +283,106 @@ function updateMessageHistory(params: HistoryUpdateParams, callback?: () => void
   callback?.();
 }
 
+function getDatasetValue<T>(element: HTMLElement, key: string): T | undefined {
+  try {
+    return JSON.parse(element.dataset[key] ?? '');
+  } catch {
+    return undefined;
+  }
+}
+
+function setDatasetValues(element: HTMLElement, values: Record<string, unknown>) {
+  Object.keys(values).forEach((key) => {
+    element.dataset[key] = JSON.stringify(values[key]);
+  });
+}
+
+function getMessageMeta(messageId: string) {
+  const normalizedId = String(messageId);
+  const message = processedMessages.value.find((item) => String(item.id) === normalizedId);
+  return {
+    id: normalizedId,
+    isUnread: Boolean(message?.isUnread)
+  };
+}
+
+function clearMarkAsReadTimeout(messageId: string) {
+  const timeout = markAsReadTimeoutsByMessageId.get(messageId);
+  if (!timeout) {
+    return;
+  }
+  clearTimeout(timeout);
+  markAsReadTimeoutsByMessageId.delete(messageId);
+}
+
+function onScrollOverUnreadMessage(messageId: string) {
+  if (markAsReadTimeoutsByMessageId.has(messageId)) {
+    return;
+  }
+  const timeout = setTimeout(() => {
+    markAsReadTimeoutsByMessageId.delete(messageId);
+    const messageElement = messageRefs.value[messageId];
+    if (!messageElement) {
+      return;
+    }
+    const isMessageStillWithinViewportAfterTimeout = Boolean(
+      getDatasetValue<boolean>(messageElement, 'isMessageWithinViewport')
+    );
+    if (isMessageStillWithinViewportAfterTimeout) {
+      elixirChatWidget.setLastReadMessage(messageId);
+    }
+  }, MARK_AS_READ_TIMEOUT);
+  markAsReadTimeoutsByMessageId.set(messageId, timeout);
+}
+
+function initializeMessagesIntersectionObserver() {
+  const root = scrollContainerRef.value;
+  if (!root) {
+    return;
+  }
+
+  messageVisibilityObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      const messageElement = entry.target as HTMLElement;
+      const messageData = getDatasetValue<{ id: string; isUnread: boolean }>(messageElement, 'messageData');
+
+      if (entry.isIntersecting) {
+        setDatasetValues(messageElement, { isMessageWithinViewport: true });
+        if (messageData?.isUnread) {
+          onScrollOverUnreadMessage(String(messageData.id));
+        }
+      } else {
+        setDatasetValues(messageElement, { isMessageWithinViewport: false });
+        if (messageData?.id) {
+          clearMarkAsReadTimeout(String(messageData.id));
+        }
+      }
+    });
+  }, {
+    root,
+    threshold: 0.9
+  });
+
+  reAttachIntersectionObserverToMessages();
+}
+
+function reAttachIntersectionObserverToMessages() {
+  requestAnimationFrame(() => {
+    if (!messageVisibilityObserver) {
+      return;
+    }
+    Object.entries(messageRefs.value).forEach(([messageId, messageElement]) => {
+      if (!messageElement) {
+        return;
+      }
+      setDatasetValues(messageElement, {
+        messageData: getMessageMeta(messageId)
+      });
+      messageVisibilityObserver.observe(messageElement);
+    });
+  });
+}
+
 function hasUserScroll(): boolean {
   const scrollBlock = scrollContainerRef.value;
   if (!scrollBlock) {
@@ -328,6 +431,10 @@ function setMessageRef(messageId: string, el: HTMLElement | null) {
   const id = String(messageId);
   if (!el) {
     if (messageRefs.value[id]) {
+      if (messageVisibilityObserver) {
+        messageVisibilityObserver.unobserve(messageRefs.value[id]);
+      }
+      clearMarkAsReadTimeout(id);
       const next = { ...messageRefs.value };
       delete next[id];
       messageRefs.value = next;
@@ -338,10 +445,17 @@ function setMessageRef(messageId: string, el: HTMLElement | null) {
   if (messageRefs.value[id] === el) {
     return;
   }
+  setDatasetValues(el, {
+    messageData: getMessageMeta(id),
+    isMessageWithinViewport: false
+  });
   messageRefs.value = {
     ...messageRefs.value,
     [id]: el
   };
+  if (messageVisibilityObserver) {
+    messageVisibilityObserver.observe(el);
+  }
 }
 
 function scrollInitiallyToAppropriatePosition() {
@@ -383,7 +497,7 @@ function onMessageReceive(message: any) {
   updateMessageHistory({
     chunk: [message],
     append: true
-  });
+  }, reAttachIntersectionObserverToMessages);
 
   if (shouldScrollMessagesToBottom) {
     scrollToBottom();
@@ -391,21 +505,21 @@ function onMessageReceive(message: any) {
 }
 
 function onMessageHistoryChange(chunk: any[]) {
-  updateMessageHistory({ chunk });
+  updateMessageHistory({ chunk }, reAttachIntersectionObserverToMessages);
 }
 
 function onMessageHistoryPrepend(chunk: any[]) {
   updateMessageHistory({
     chunk,
     prepend: true
-  });
+  }, reAttachIntersectionObserverToMessages);
 }
 
 function onMessageHistoryAppend(chunk: any[]) {
   updateMessageHistory({
     chunk,
     append: true
-  });
+  }, reAttachIntersectionObserverToMessages);
 }
 
 function changeSearchText(text = '') {
@@ -716,6 +830,7 @@ onMounted(() => {
   elixirChatWidget.on(TYPING_STATUS_CHANGE, onTypingStatusChange);
 
   screenshotFallback.value = getScreenshotCompatibilityFallback();
+  requestAnimationFrame(initializeMessagesIntersectionObserver);
 });
 
 onBeforeUnmount(() => {
@@ -736,6 +851,13 @@ onBeforeUnmount(() => {
   elixirChatWidget.off(MESSAGES_SEARCH_IDS, onSearchIds);
   elixirChatWidget.off(WIDGET_TEXTAREA_RESIZE, onWidgetTextareaResize);
   elixirChatWidget.off(TYPING_STATUS_CHANGE, onTypingStatusChange);
+
+  if (messageVisibilityObserver) {
+    messageVisibilityObserver.disconnect();
+    messageVisibilityObserver = null;
+  }
+  markAsReadTimeoutsByMessageId.forEach((timeout) => clearTimeout(timeout));
+  markAsReadTimeoutsByMessageId.clear();
 });
 </script>
 
@@ -792,6 +914,7 @@ onBeforeUnmount(() => {
             :id="String(message.id)"
             :message="message"
             :screenshot-fallback="screenshotFallback"
+            :set-message-ref="setMessageRef"
           />
         </template>
       </chat-messages-viewport>

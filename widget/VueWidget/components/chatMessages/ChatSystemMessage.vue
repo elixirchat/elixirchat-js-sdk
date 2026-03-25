@@ -8,6 +8,7 @@ import Avatar from '../avatar.vue';
 
 const props = defineProps<{
   message: any;
+  setMessageRef?: (messageId: string, el: HTMLElement | null) => void;
   screenshotFallback?: {
     pressKey?: string | null;
     pressKeySecondary?: string;
@@ -90,10 +91,16 @@ function onTakeScreenshotClick() {
   elixirChatWidget.closePopup();
   elixirChatWidget.takeScreenshot();
 }
+
+function onRootRef(el: HTMLElement | null) {
+  props.setMessageRef?.(String(props.message.id), el);
+}
 </script>
 
 <template>
   <div
+    :id="String(message.id)"
+    :ref="onRootRef"
     class="elixirchat-chat-messages__item elixirchat-chat-messages__item--by-operator elixirchat-chat-messages__item--system"
     :class="{ 'elixirchat-chat-messages__item--unread': message.isUnread }"
   >
