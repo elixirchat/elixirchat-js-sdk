@@ -22,7 +22,8 @@ import {
   MESSAGES_HISTORY_PREPEND,
   MESSAGES_LAST_MESSAGE_ID,
   MESSAGES_PAGINATION,
-  MESSAGES_RECEIVE
+  MESSAGES_RECEIVE,
+  TYPING_STATUS_CHANGE
 } from '../../../../sdk/ElixirChatEventTypes';
 import { fitDimensionsIntoLimits, isMobile, generateReplyMessageQuote, humanizeUpcomingDate } from '../../../../utilsWidgetVue';
 import { serializeMessage } from '../../../../sdk/serializers/serializeMessage';
@@ -41,6 +42,7 @@ import {
 } from '../../../ElixirChatWidgetEventTypes';
 import RatingButton from './RatingButton.vue';
 import RatingModal from '../RatingModal.vue';
+import ChatTyping from './ChatTyping.vue';
 
 const MESSAGE_CHUNK_SIZE = 20;
 const MAX_THUMBNAIL_SIZE = isMobile() ? 208 : 256;
@@ -63,6 +65,7 @@ const hasPreviousPage = ref(false);
 const hasNextPage = ref(false);
 const lastMessageId = ref('');
 const isLoading = ref(false);
+const currentlyTypingUsers = ref<any[]>([]);
 const isLoadingPrecedingMessageHistory = ref(false);
 const hasInitiallyScrolledToAppropriatePosition = ref(false);
 const scrollContainerRef = useTemplateRef<HTMLDivElement>('scrollContainerRef');
@@ -125,6 +128,10 @@ function processMessageAttachments(message: any) {
     previews,
     files
   };
+}
+
+function onTypingStatusChange(users: any[]) {
+  currentlyTypingUsers.value = Array.isArray(users) ? users : [];
 }
 
 function generateNewClientPlaceholderMessage(firstEverMessageInHistory: any) {
@@ -565,6 +572,7 @@ onMounted(() => {
   elixirChatWidget.on(MESSAGES_PAGINATION, onMessagesPagination);
   elixirChatWidget.on(MESSAGES_LAST_MESSAGE_ID, onLastMessageId);
   elixirChatWidget.on(WIDGET_TEXTAREA_RESIZE, onWidgetTextareaResize);
+  elixirChatWidget.on(TYPING_STATUS_CHANGE, onTypingStatusChange);
 
   screenshotFallback.value = getScreenshotCompatibilityFallback();
 });
@@ -585,6 +593,7 @@ onBeforeUnmount(() => {
   elixirChatWidget.off(MESSAGES_PAGINATION, onMessagesPagination);
   elixirChatWidget.off(MESSAGES_LAST_MESSAGE_ID, onLastMessageId);
   elixirChatWidget.off(WIDGET_TEXTAREA_RESIZE, onWidgetTextareaResize);
+  elixirChatWidget.off(TYPING_STATUS_CHANGE, onTypingStatusChange);
 });
 </script>
 
@@ -742,6 +751,11 @@ onBeforeUnmount(() => {
           />
         </template>
       </div>
+
+      <chat-typing
+        v-if="currentlyTypingUsers.length"
+        :currently-typing-users-count="currentlyTypingUsers.length"
+      />
     </div>
 
     <rating-modal

@@ -119,10 +119,6 @@
     "ru": "Файл не найден",
     "en": "File is not found"
   },
-  "typing": {
-    "ru": "{count, plural, =0 {} one {# человек пишет} few {# человека пишут} many {# человек пишут} other {# человек пишут}}",
-    "en": "{count, plural, =0 {} one {# is typing} other {# are typing}}"
-  },
   "here_is_the_screenshot": {
     "ru": "Вот скриншот моего экрана",
     "en": "Here is the screenshot"
