@@ -1,4 +1,3 @@
-import { Component } from 'react';
 import dayjs from 'dayjs';
 import dayjsCalendar from 'dayjs/plugin/calendar';
 import 'dayjs/locale/ru';
@@ -195,7 +194,7 @@ export function isMobile(){
 }
 
 
-export function exposeComponentToGlobalScope(instance: Component, elixirChatWidget: ElixirChatWidget) {
+export function exposeComponentToGlobalScope(instance: { constructor: { name: string } }, elixirChatWidget: ElixirChatWidget) {
   elixirChatWidget.widgetComponents[instance.constructor.name] = instance;
 }
 
