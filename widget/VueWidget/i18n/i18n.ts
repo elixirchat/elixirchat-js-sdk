@@ -1,6 +1,6 @@
-import type { ElixirChatWidget } from '../ElixirChatWidget';
+import type { ElixirChatWidget } from '../../ElixirChatWidget';
 import { createI18n } from 'vue-i18n';
-import trl from '../DefaultWidget/trl.json';
+import trl from './trl.json';
 
 type Locale = 'ru' | 'en';
 

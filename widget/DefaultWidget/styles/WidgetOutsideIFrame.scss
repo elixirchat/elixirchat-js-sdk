@@ -126,24 +126,3 @@ $max-width-mobile: 480px;
     border-radius: 0;
   }
 }
-
-.elixirchat-dual-widget {
-  position: fixed;
-  bottom: 100px;
-  right: 30px;
-  display: flex;
-  gap: 16px;
-  z-index: 999998;
-  height: 679px;
-
-  .elixirchat-panel {
-    flex: 0 0 auto;
-  }
-
-  .elixirchat-widget-iframe {
-    position: static;
-    bottom: 0;
-    right: 0;
-    min-height: 70vh;
-  }
-}
