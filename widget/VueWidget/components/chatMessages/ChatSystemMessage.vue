@@ -8,11 +8,13 @@ import Avatar from '../avatar.vue';
 
 const props = defineProps<{
   message: any;
-  setMessageRef?: (messageId: string, isUnread: boolean, el: HTMLElement | null) => void;
   screenshotFallback?: {
     pressKey?: string | null;
     pressKeySecondary?: string;
   } | null;
+}>();
+const emit = defineEmits<{
+  'message-ref': [messageId: string, isUnread: boolean, el: HTMLElement | null];
 }>();
 
 const { locale, t } = useI18n();
@@ -93,7 +95,7 @@ function onTakeScreenshotClick() {
 }
 
 function onRootRef(el: HTMLElement | null) {
-  props.setMessageRef?.(String(props.message.id), Boolean(props.message.isUnread), el);
+  emit('message-ref', String(props.message.id), Boolean(props.message.isUnread), el);
 }
 </script>
 

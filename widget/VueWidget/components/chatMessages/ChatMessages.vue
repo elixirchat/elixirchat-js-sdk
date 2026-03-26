@@ -829,8 +829,8 @@ onBeforeUnmount(() => {
             :reply-text="t('reply')"
             :is-message-locked="isMessageLocked(message.id)"
             :is-selected="String(message.id) === selectMessageId"
-            :set-message-ref="setMessageRef"
             @preview-click="onPreviewClick"
+            @message-ref="setMessageRef"
             @reply="onReplyButtonClick"
             @reply-original-click="onReplyOriginalMessageClick"
             @rate="onRate"
@@ -842,7 +842,7 @@ onBeforeUnmount(() => {
             :id="String(message.id)"
             :message="message"
             :screenshot-fallback="screenshotFallback"
-            :set-message-ref="setMessageRef"
+            @message-ref="setMessageRef"
           />
         </template>
       </chat-messages-viewport>

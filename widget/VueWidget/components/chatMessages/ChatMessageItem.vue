@@ -15,13 +15,13 @@ const props = defineProps<{
   replyText: string;
   isMessageLocked: boolean;
   isSelected?: boolean;
-  setMessageRef?: (messageId: string, isUnread: boolean, el: HTMLElement | null) => void;
 }>();
 
 const emit = defineEmits<{
   'preview-click': [event: Event, preview: any, sender: any];
   reply: [messageId: string];
   'reply-original-click': [messageId: string];
+  'message-ref': [messageId: string, isUnread: boolean, el: HTMLElement | null];
   rate: [messageId: string, rating: 'POSITIVE' | 'NEGATIVE'];
   retry: [message: any];
 }>();
@@ -57,7 +57,7 @@ function onRetry(message: any) {
 }
 
 function onRootRef(el: HTMLElement | null) {
-  props.setMessageRef?.(String(props.message.id), Boolean(props.message.isUnread), el);
+  emit('message-ref', String(props.message.id), Boolean(props.message.isUnread), el);
 }
 </script>
 
