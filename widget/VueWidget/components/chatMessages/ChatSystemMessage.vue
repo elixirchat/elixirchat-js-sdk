@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import dayjs from 'dayjs';
 import { useI18n } from 'vue-i18n';
 import { useElixirChatWidget } from '../../composables/useElixirChatWidget';
@@ -79,7 +80,7 @@ function getSpecialistsOfflineMessage(): string {
   return t('specialists_are_offline_with_datetime', { datetime });
 }
 
-function getHelloMessage(): string {
+const getHelloMessage = computed(() => {
   const client = elixirChatWidget.client;
   const isConfident = Boolean(client?.isConfidentAboutFirstName);
   const name = client?.firstName;
@@ -87,7 +88,7 @@ function getHelloMessage(): string {
     return t('hello_short');
   }
   return t('hello_with_name', { name });
-}
+});
 
 function onTakeScreenshotClick() {
   elixirChatWidget.closePopup();
@@ -146,7 +147,7 @@ function onRootRef(el: HTMLElement | null) {
           v-if="message.systemData?.type === 'NewClientPlaceholderMessage'"
           class="elixirchat-chat-messages__text"
         >
-          {{ getHelloMessage() }}
+          {{ getHelloMessage }}
         </div>
       </div>
 
