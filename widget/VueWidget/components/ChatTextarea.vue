@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref, useTemplateRef, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
-import { useTextareaAutosize } from '@vueuse/core';
+import { useStorage, useTextareaAutosize } from '@vueuse/core';
 import { useI18n } from 'vue-i18n';
 import { useElixirChatWidget } from '../composables/useElixirChatWidget';
-import { setToLocalStorage, randomDigitStringId } from '../../../utilsCommon';
+import { randomDigitStringId } from '../../../utilsCommon';
 import { MESSAGES_HISTORY_CHANGE, TYPING_STATUS_SUBSCRIBE_SUCCESS } from '../../../sdk/ElixirChatEventTypes';
 import {
   WIDGET_REPLY_MESSAGE,
@@ -52,6 +52,15 @@ const isSubmittingMessage = ref(false);
 const isDraggingAttachments = ref(false);
 const hasCanceledDraggingAttachments = ref(false);
 const screenshotFallback = ref<object | null>(null);
+const locallySavedTypedText = useStorage<LocallySavedTypedText>(
+  TYPED_TEXT_STORAGE_KEY,
+  {
+    textareaText: '',
+    textareaResponseToMessageId: null
+  },
+  localStorage,
+  { mergeDefaults: true }
+);
 
 function focusTextarea() {
   setTimeout(() => {
@@ -164,35 +173,26 @@ function onSubmitClick() {
   focusTextarea();
 }
 
-function getLocallySavedTypedText(): LocallySavedTypedText {
-  try {
-    const parsed = JSON.parse(localStorage.getItem(TYPED_TEXT_STORAGE_KEY) || '');
-
-    return {
-      textareaText: typeof parsed?.textareaText === 'string' ? parsed.textareaText : '',
-      textareaResponseToMessageId:
-        typeof parsed?.textareaResponseToMessageId === 'string'
-          ? parsed.textareaResponseToMessageId
-          : null
-    };
-  } catch {
-    return {
-      textareaText: '',
-      textareaResponseToMessageId: null
-    };
-  }
+function getLocallySavedTypedText(raw: unknown = locallySavedTypedText.value): LocallySavedTypedText {
+  const parsed = (raw && typeof raw === 'object') ? raw as Partial<LocallySavedTypedText> : {};
+  return {
+    textareaText: typeof parsed.textareaText === 'string' ? parsed.textareaText : '',
+    textareaResponseToMessageId:
+      typeof parsed.textareaResponseToMessageId === 'string'
+        ? parsed.textareaResponseToMessageId
+        : null
+  };
 }
 
 function updateLocallySavedTypedText(diff: Partial<LocallySavedTypedText>): void {
-  const updatedState: LocallySavedTypedText = {
-    ...getLocallySavedTypedText(),
+  locallySavedTypedText.value = {
+    ...getLocallySavedTypedText(locallySavedTypedText.value),
     ...diff
   };
-  setToLocalStorage(TYPED_TEXT_STORAGE_KEY, updatedState);
 }
 
 function onTypingStatusSubscribeSuccess() {
-  elixirChatWidget.dispatchTypedText(getLocallySavedTypedText().textareaText);
+  elixirChatWidget.dispatchTypedText(getLocallySavedTypedText(locallySavedTypedText.value).textareaText);
 }
 
 function onMessageSubmit() {
@@ -323,7 +323,7 @@ function removeAttachment(attachmentId: string) {
 }
 
 onMounted(() => {
-  const saved = getLocallySavedTypedText();
+  const saved = getLocallySavedTypedText(locallySavedTypedText.value);
   textareaText.value = saved.textareaText;
   textareaResponseToMessageId.value = saved.textareaResponseToMessageId;
 

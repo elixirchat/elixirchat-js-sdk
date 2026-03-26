@@ -88,6 +88,10 @@
   font-weight: 500;
   color: #050505;
   transition: opacity 200ms ease, transform 200ms ease;
+
+  br {
+    display: contents;
+  }
 }
 
 .elixirchat-rating-comment-modal__title--success {

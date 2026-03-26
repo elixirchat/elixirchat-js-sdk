@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { nextTick, onMounted, ref, useTemplateRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { Vue3Lottie } from 'vue3-lottie';
 import animationData from '../../DefaultWidget/assets/lottie-dislike-animation.json';
 
 const { isSubmitted = false, isReady = true } = defineProps<{
@@ -96,7 +97,7 @@ onMounted(() => {
       @animationend="onAnimationEnd"
     >
       <div class="elixirchat-rating-comment-modal__animation">
-        <Vue3Lottie
+        <vue3-lottie
           :animation-data="animationData"
           :auto-play="isSuccess"
           :loop="false"

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch, watchEffect } from 'vue';
 import { useI18n } from 'vue-i18n';
 import Tooltip from '../tooltip/tooltip.vue';
 
@@ -24,17 +24,18 @@ const isRated = computed(() => Boolean(rating));
 const effectiveRating = computed(() => rating ?? optimisticRating.value);
 const isActive = computed(() => effectiveRating.value === type);
 
-watch(
-  () => [isActive.value, optimisticRating.value, isRated.value],
-  ([active, optimistic, rated]) => {
-    if (active && optimistic === type && !rated && isPositive.value) {
-      shouldAnimate.value = true;
-    }
-    if (optimistic && rated) {
-      optimisticRating.value = null;
-    }
+watchEffect(() => {
+  const active = isActive.value;
+  const optimistic = optimisticRating.value;
+  const rated = isRated.value;
+
+  if (active && optimistic === type && !rated && isPositive.value) {
+    shouldAnimate.value = true;
   }
-);
+  if (optimistic && rated) {
+    optimisticRating.value = null;
+  }
+});
 
 watch(
   () => isLocked,
