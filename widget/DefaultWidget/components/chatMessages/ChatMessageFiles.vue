@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { IFile } from '../../../../sdk/serializers/serializeFile';
+import type { IFile } from '@sdk/serializers/serializeFile';
 import { useI18n } from 'vue-i18n';
-import { humanizeFileSize } from '../../../../utilsWidgetVue';
+import { humanizeFileSize } from '@root/utilsWidgetVue';
 
 defineProps<{
   files: IFile[];

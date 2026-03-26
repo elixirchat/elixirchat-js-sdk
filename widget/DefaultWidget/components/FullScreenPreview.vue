@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, useTemplateRef, computed } from 'vue';
 import { onClickOutside } from '@vueuse/core';
-import { useElixirChatWidget } from '../composables/useElixirChatWidget';
-import { fitDimensionsIntoLimits } from '../../../utilsWidgetVue';
+import { useElixirChatWidget } from '@defaultWidget/composables/useElixirChatWidget';
+import { fitDimensionsIntoLimits } from '@root/utilsWidgetVue';
 import {
   WIDGET_FULLSCREEN_PREVIEW_CLOSE,
   WIDGET_FULLSCREEN_PREVIEW_OPEN,
   WIDGET_IFRAME_READY
-} from '../../ElixirChatWidgetEventTypes';
+} from '@widget/ElixirChatWidgetEventTypes';
 
 type Preview = {
   id?: string;

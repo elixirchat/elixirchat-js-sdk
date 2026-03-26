@@ -2,9 +2,9 @@
 import { computed } from 'vue';
 import dayjs from 'dayjs';
 import { useI18n } from 'vue-i18n';
-import { useElixirChatWidget } from '../../composables/useElixirChatWidget';
-import { getUserFullName, getOperatorName } from '../../../../utilsCommon';
-import { humanizeUpcomingDate } from '../../../../utilsWidgetVue';
+import { useElixirChatWidget } from '@defaultWidget/composables/useElixirChatWidget';
+import { getUserFullName, getOperatorName } from '@root/utilsCommon';
+import { humanizeUpcomingDate } from '@root/utilsWidgetVue';
 import Avatar from '../Avatar.vue';
 
 const props = defineProps<{

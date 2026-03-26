@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { ONLINE_STATUS_CHANGE } from '../../../sdk/ElixirChatEventTypes';
+import { ONLINE_STATUS_CHANGE } from '@sdk/ElixirChatEventTypes';
 import {
   WIDGET_DATA_SET,
   WIDGET_MUTE_TOGGLE,
   WIDGET_SEARCH_TOGGLE
-} from '../../ElixirChatWidgetEventTypes';
-import { useElixirChatWidget } from '../composables/useElixirChatWidget';
+} from '@widget/ElixirChatWidgetEventTypes';
+import { useElixirChatWidget } from '@defaultWidget/composables/useElixirChatWidget';
 import ChatMessages from './chatMessages/ChatMessages.vue';
 import Tooltip from './Tooltip.vue';
 import ChatTextarea from './ChatTextarea.vue';

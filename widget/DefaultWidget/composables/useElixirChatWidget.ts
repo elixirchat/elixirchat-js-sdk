@@ -1,5 +1,5 @@
 import { inject, provide } from 'vue';
-import type { ElixirChatWidget } from '../../ElixirChatWidget';
+import type { ElixirChatWidget } from '@widget/ElixirChatWidget';
 
 const ElixirChatWidgetKey = Symbol('elixirChatWidget');
 

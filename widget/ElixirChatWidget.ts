@@ -1,14 +1,14 @@
-import type { IFontRule } from './FontExtractor';
-import type { IJoinRoomChannel, IJoinRoomData } from '../sdk/ElixirChat';
+import type { IFontRule } from '@widget/FontExtractor';
+import type { IJoinRoomChannel, IJoinRoomData } from '@sdk/ElixirChat';
 import 'babel-polyfill';
-import { _find, getFromLocalStorage, logEvent, setToLocalStorage } from '../utilsCommon';
-import { renderWidgetVue } from './DefaultWidget/main';
+import { _find, getFromLocalStorage, logEvent, setToLocalStorage } from '@root/utilsCommon';
+import { renderWidgetVue } from '@defaultWidget/main';
 import {
   JOIN_ROOM_ERROR,
   JOIN_ROOM_SUCCESS,
   MESSAGES_RETRIEVE_LAST_MESSAGE_CURSOR,
   MESSAGES_RECEIVE
-} from '../sdk/ElixirChatEventTypes';
+} from '@sdk/ElixirChatEventTypes';
 import {
   WIDGET_IFRAME_READY,
   WIDGET_NAVIGATE_TO,
@@ -18,8 +18,8 @@ import {
   WIDGET_POPUP_OPEN,
   WIDGET_POPUP_CLOSE,
   WIDGET_SEARCH_TOGGLE
-} from './ElixirChatWidgetEventTypes';
-import ElixirChatFromDist from '../dist/sdk.min.js';
+} from '@widget/ElixirChatWidgetEventTypes';
+import ElixirChatFromDist from '@root/dist/sdk.min.js';
 
 /**
  * dist/sdk.min.js is generated on fly depending on the context:

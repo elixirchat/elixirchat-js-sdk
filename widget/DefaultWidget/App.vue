@@ -1,25 +1,25 @@
 <script setup lang="ts">
-import type { ElixirChatWidget } from '../ElixirChatWidget';
-import { nextTick, computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import { FontExtractor, generateFontFaceCSS } from '../FontExtractor';
-import { WidgetAssets } from '../WidgetAssets';
-import { detectBrowser } from '../../utilsCommon';
+import type { ElixirChatWidget } from '@widget/ElixirChatWidget';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { FontExtractor, generateFontFaceCSS } from '@widget/FontExtractor';
+import { WidgetAssets } from '@widget/WidgetAssets';
+import { detectBrowser } from '@root/utilsCommon';
 import {
   UNREAD_COUNTER_MESSAGES_CHANGE,
   UNREAD_COUNTER_NOTIFY_ABOUT_NEW_REPLIES
-} from '../../sdk/ElixirChatEventTypes';
+} from '@sdk/ElixirChatEventTypes';
 import {
   WIDGET_DATA_SET,
   WIDGET_IFRAME_READY,
   WIDGET_NAVIGATE_TO,
   WIDGET_POPUP_TOGGLE
-} from '../ElixirChatWidgetEventTypes';
-import IFrameWrapper from './IFrameWrapper.vue';
-import { provideElixirChatWidget } from './composables/useElixirChatWidget';
-import WelcomeScreen from './components/WelcomeScreen.vue';
-import Chat from './components/Chat.vue';
-import FullScreenPreview from './components/FullScreenPreview.vue';
-import Alert from './components/Alert.vue';
+} from '@widget/ElixirChatWidgetEventTypes';
+import IFrameWrapper from '@defaultWidget/IFrameWrapper.vue';
+import { provideElixirChatWidget } from '@defaultWidget/composables/useElixirChatWidget';
+import WelcomeScreen from '@defaultWidget/components/WelcomeScreen.vue';
+import Chat from '@widget/DefaultWidget/components/Chat.vue';
+import FullScreenPreview from '@defaultWidget/components/FullScreenPreview.vue';
+import Alert from '@defaultWidget/components/Alert.vue';
 
 const props = defineProps<{
   elixirChatWidget: ElixirChatWidget;

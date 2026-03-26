@@ -1,4 +1,4 @@
-import { _flatten } from '../utilsCommon';
+import { _flatten } from '@root/utilsCommon';
 
 export interface IFontRule {
   fontFamily: string;

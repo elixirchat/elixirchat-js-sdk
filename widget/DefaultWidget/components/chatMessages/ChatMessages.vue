@@ -4,8 +4,8 @@ import dayjs from 'dayjs';
 import dayjsCalendar from 'dayjs/plugin/calendar';
 import debounce from 'lodash/debounce';
 import { useI18n } from 'vue-i18n';
-import { useElixirChatWidget } from '../../composables/useElixirChatWidget';
-import { useMarkAsReadObserver } from '../../composables/useMarkAsReadObserver';
+import { useElixirChatWidget } from '@defaultWidget/composables/useElixirChatWidget';
+import { useMarkAsReadObserver } from '@defaultWidget/composables/useMarkAsReadObserver';
 import {
   _flatten,
   _findIndex,
@@ -13,7 +13,7 @@ import {
   detectBrowser,
   getMediaType,
   randomDigitStringId
-} from '../../../../utilsCommon';
+} from '@root/utilsCommon';
 import {
   ERROR_ALERT,
   JOIN_ROOM_SUCCESS,
@@ -25,20 +25,20 @@ import {
   MESSAGES_RECEIVE,
   MESSAGES_SEARCH_IDS,
   TYPING_STATUS_CHANGE
-} from '../../../../sdk/ElixirChatEventTypes';
-import { fitDimensionsIntoLimits, isMobile } from '../../../../utilsWidgetVue';
-import { serializeMessage } from '../../../../sdk/serializers/serializeMessage';
-import { getScreenshotCompatibilityFallback } from '../../../../sdk/ScreenshotTaker';
+} from '@sdk/ElixirChatEventTypes';
+import { fitDimensionsIntoLimits, isMobile } from '@root/utilsWidgetVue';
+import { serializeMessage } from '@sdk/serializers/serializeMessage';
+import { getScreenshotCompatibilityFallback } from '@sdk/ScreenshotTaker';
 import ChatSystemMessage from './ChatSystemMessage.vue';
 import {
   WIDGET_FULLSCREEN_PREVIEW_OPEN,
   WIDGET_TEXTAREA_RESIZE,
   WIDGET_REPLY_MESSAGE,
   WIDGET_POPUP_OPEN
-} from '../../../ElixirChatWidgetEventTypes';
-import RatingModal from '../RatingModal.vue';
+} from '@widget/ElixirChatWidgetEventTypes';
+import RatingModal from '@defaultWidget/components/RatingModal.vue';
 import ChatTyping from './ChatTyping.vue';
-import MessageSearch from '../MessageSearch.vue';
+import MessageSearch from '@defaultWidget/components/MessageSearch.vue';
 import ChatMessageItem from './ChatMessageItem.vue';
 import ChatMessagesViewport from './ChatMessagesViewport.vue';
 

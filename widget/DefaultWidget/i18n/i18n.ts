@@ -1,4 +1,4 @@
-import type { ElixirChatWidget } from '../../ElixirChatWidget';
+import type { ElixirChatWidget } from '@widget/ElixirChatWidget';
 import { createI18n } from 'vue-i18n';
 import trl from './trl.json';
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, useAttrs, onBeforeUnmount, useTemplateRef } from 'vue';
-import { useElixirChatWidget } from './composables/useElixirChatWidget';
+import { useElixirChatWidget } from '@defaultWidget/composables/useElixirChatWidget';
 
 const elixirChatWidget = useElixirChatWidget();
 const iframeRef = useTemplateRef<HTMLIFrameElement>('iframeRef');

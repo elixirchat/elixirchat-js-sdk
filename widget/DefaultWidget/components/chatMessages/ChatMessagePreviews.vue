@@ -2,7 +2,7 @@
 import { useI18n } from 'vue-i18n';
 import {
   _round
-} from '../../../../utilsCommon';
+} from '@root/utilsCommon';
 
 defineProps<{
   previews: any;

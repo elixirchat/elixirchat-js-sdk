@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { IMessage } from '../../../../sdk/serializers/serializeMessage';
+import type { IMessage } from '@sdk/serializers/serializeMessage';
 import dayjs from 'dayjs';
 import SubmissionErrorMessage from './SubmissionErrorMessage.vue';
 import RatingButton from './RatingButton.vue';

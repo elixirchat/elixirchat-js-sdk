@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { nextTick, onMounted, ref, useTemplateRef, watch } from 'vue';
+import { onMounted, ref, useTemplateRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Vue3Lottie } from 'vue3-lottie';
-import animationData from '../assets/lottie-dislike-animation.json';
+import animationData from '@defaultWidget/assets/lottie-dislike-animation.json';
 
 const { isSubmitted = false, isReady = true } = defineProps<{
   isSubmitted?: boolean;

@@ -6,6 +6,14 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   return {
     plugins: [vue()],
+    resolve: {
+      alias: {
+        '@sdk': resolve(__dirname, 'sdk'),
+        '@widget': resolve(__dirname, 'widget'),
+        '@defaultWidget': resolve(__dirname, 'widget/DefaultWidget'),
+        '@root': resolve(__dirname)
+      }
+    },
     build: {
       outDir: 'build',
       emptyOutDir: false,

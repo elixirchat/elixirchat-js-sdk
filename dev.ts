@@ -33,7 +33,6 @@ const elixirChatWidget = new ElixirChatWidget({
 elixirChatWidget.appendWidget({
   container: document.getElementById('elixirchat-widget'),
   title: 'Служба поддержки',
-  compareMode: true,
   logo: 'https://picsum.photos/200',
   supportEmail: 'support@elixir.chat',
   customEmployerName,

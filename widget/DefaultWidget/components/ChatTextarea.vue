@@ -2,9 +2,9 @@
 import { ref, useTemplateRef, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import { useStorage, useTextareaAutosize } from '@vueuse/core';
 import { useI18n } from 'vue-i18n';
-import { useElixirChatWidget } from '../composables/useElixirChatWidget';
-import { randomDigitStringId } from '../../../utilsCommon';
-import { MESSAGES_HISTORY_CHANGE, TYPING_STATUS_SUBSCRIBE_SUCCESS } from '../../../sdk/ElixirChatEventTypes';
+import { useElixirChatWidget } from '@defaultWidget/composables/useElixirChatWidget';
+import { randomDigitStringId } from '@root/utilsCommon';
+import { MESSAGES_HISTORY_CHANGE, TYPING_STATUS_SUBSCRIBE_SUCCESS } from '@sdk/ElixirChatEventTypes';
 import {
   WIDGET_REPLY_MESSAGE,
   WIDGET_TEXTAREA_RESIZE,
@@ -15,10 +15,9 @@ import {
   WIDGET_POPUP_OPEN,
   WIDGET_IFRAME_READY
 
-} from '../../ElixirChatWidgetEventTypes';
-import { generateReplyMessageQuote, getImageDimensions } from '../../../utilsWidget';
+} from '@widget/ElixirChatWidgetEventTypes';
+import { generateReplyMessageQuote, getImageDimensions } from '@root/utilsWidget';
 import ActionsDropdown from './ActionsDropdown.vue';
-import { getScreenshotCompatibilityFallback } from '../../../sdk/ScreenshotTaker';
 
 const TYPED_TEXT_STORAGE_KEY = 'elixirchat-typed-text';
 

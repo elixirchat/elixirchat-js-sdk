@@ -2,9 +2,9 @@
 import { computed, onBeforeUnmount, onMounted, ref, useTemplateRef } from 'vue';
 import debounce from 'lodash/debounce';
 import { useI18n } from 'vue-i18n';
-import { useElixirChatWidget } from '../composables/useElixirChatWidget';
-import { MESSAGES_SEARCH_IDS } from '../../../sdk/ElixirChatEventTypes';
-import { WIDGET_SEARCH_TOGGLE } from '../../ElixirChatWidgetEventTypes';
+import { useElixirChatWidget } from '@defaultWidget/composables/useElixirChatWidget';
+import { MESSAGES_SEARCH_IDS } from '@sdk/ElixirChatEventTypes';
+import { WIDGET_SEARCH_TOGGLE } from '@widget/ElixirChatWidgetEventTypes';
 
 const props = defineProps<{
   messagesIds: string[];

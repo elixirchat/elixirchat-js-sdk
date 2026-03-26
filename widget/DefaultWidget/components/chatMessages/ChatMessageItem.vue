@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import dayjs from 'dayjs';
 import { useI18n } from 'vue-i18n';
-import { getOperatorName, getUserFullName } from '../../../../utilsCommon';
-import { generateReplyMessageQuote } from '../../../../utilsWidgetVue';
-import Avatar from '../Avatar.vue';
+import { getOperatorName, getUserFullName } from '@root/utilsCommon';
+import { generateReplyMessageQuote } from '@root/utilsWidgetVue';
 import FormattedMarkdown from '../FormattedMarkdown.vue';
+import Avatar from '../Avatar.vue';
 import ChatMessageFiles from './ChatMessageFiles.vue';
 import ChatMessagePreviews from './ChatMessagePreviews.vue';
 import ChatMessageBottom from './ChatMessageBottom.vue';

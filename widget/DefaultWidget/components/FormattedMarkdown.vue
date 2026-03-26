@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { formatMarkdown } from '../utils/formatMarkdown';
+import { formatMarkdown } from '@defaultWidget/utils/formatMarkdown';
 
 const props = defineProps<{
   className?: string;

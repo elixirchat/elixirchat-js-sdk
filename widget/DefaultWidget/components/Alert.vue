@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { nextTick, onBeforeUnmount, onMounted, ref, useTemplateRef } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { ERROR_ALERT } from '../../../sdk/ElixirChatEventTypes';
-import { normalizeErrorStack } from '../../../utilsCommon';
-import { extractErrorMessage } from '../../../sdk/GraphQLClient';
-import { useElixirChatWidget } from '../composables/useElixirChatWidget';
+import { ERROR_ALERT } from '@sdk/ElixirChatEventTypes';
+import { normalizeErrorStack } from '@root/utilsCommon';
+import { extractErrorMessage } from '@sdk/GraphQLClient';
+import { useElixirChatWidget } from '@defaultWidget/composables/useElixirChatWidget';
 import FormattedMarkdown from './FormattedMarkdown.vue';
 
 type AlertPayload = {
