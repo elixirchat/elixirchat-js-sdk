@@ -110,7 +110,7 @@ onBeforeUnmount(() => {
 
         <i
           v-if="onlineStatus.isOnline "
-          className="elixirchat-chat-header__indicator"
+          class="elixirchat-chat-header__indicator"
         />
         <span class="elixirchat-chat-header__title">{{ widgetTitle }}</span>
       </div>

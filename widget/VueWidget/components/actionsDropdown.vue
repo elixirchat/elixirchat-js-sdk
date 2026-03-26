@@ -60,7 +60,7 @@ function handleAttachFileClick() {
           class="elixirchat-chat-textarea__actions-dropdown-item"
           @click="handleAttachFileClick"
         >
-          <i className="icon-download" />
+          <i class="icon-download" />
           <span>{{ t('attach_files') }}</span>
         </button>
         <button
