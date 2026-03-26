@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 
-const { src = undefined, className = 'elixirchat-chat-avatar' } = defineProps<{
+const { src = undefined } = defineProps<{
   src?: string;
-  className?: string;
 }>();
 
 const hasError = ref(false);
@@ -13,14 +12,15 @@ const showImage = computed(() => !!src && !hasError.value);
 <template>
   <img
     v-if="showImage"
-    :class="className"
+    v-bind="$attrs"
+    class="elixirchat-chat-avatar"
     :src="src"
     alt="Avatar"
     @error="hasError = true"
   >
   <div
     v-else
-    class="elixirchat-chat-avatar__system"
-    :class="[className]"
+    v-bind="$attrs"
+    class="elixirchat-chat-avatar__system elixirchat-chat-avatar"
   />
 </template>
