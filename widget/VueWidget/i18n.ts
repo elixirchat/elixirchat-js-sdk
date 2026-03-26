@@ -25,14 +25,8 @@ const baseRu = Object.fromEntries(Object.entries(trl).map(([key, value]) => [key
 const baseEn = Object.fromEntries(Object.entries(trl).map(([key, value]) => [key, value.en]));
 
 const messages = {
-  ru: {
-    ...baseRu,
-    typing: 'никто не пишет | {n} человек пишет | {n} человека пишут | {n} человек пишут'
-  },
-  en: {
-    ...baseEn,
-    typing: 'nobody is typing | {n} is typing | {n} are typing'
-  }
+  ru: baseRu,
+  en: baseEn
 };
 
 export const createWidgetI18n = (elixirChatWidget: ElixirChatWidget) => {
