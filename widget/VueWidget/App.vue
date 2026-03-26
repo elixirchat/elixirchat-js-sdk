@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ElixirChatWidget } from '../ElixirChatWidget';
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { nextTick, computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { FontExtractor, generateFontFaceCSS } from '../FontExtractor';
 import { WidgetAssets } from '../WidgetAssets';
 import { detectBrowser } from '../../utilsCommon';
@@ -129,9 +129,9 @@ const onViewChange = (nextView: string) => {
 const onPopupToggle = (isOpen: boolean) => {
   widgetIsPopupOpen.value = isOpen;
   widgetIsPopupOpeningAnimation.value = true;
-  window.setTimeout(() => {
+  requestAnimationFrame(() => {
     widgetIsPopupOpeningAnimation.value = false;
-  }, 250);
+  });
 };
 
 const unlockNotificationSoundAutoplay = (e: Event) => {
