@@ -20,4 +20,4 @@ vite build -c vite.sdk.config.ts
 printf "\nBuilding widget...\n\n";
 vite build -c vite.widget.config.ts
 
-printf "\nAttention:\n  If \"npm run dev\" was running within elixirchat-js-sdk in another terminal window, restart it.\n\n\n"
+print_error "\nAttention:\n  If \"npm run dev\" was running within elixirchat-js-sdk in another terminal window, restart it.\n\n\n"
