@@ -37,14 +37,21 @@
     "react-dom": "^19.2.4",
     "react-intl": "^8.1.3",
     "react-textarea-autosize": "^8.5.9",
-    "unique-names-generator": "^3.0.0"
+    "unique-names-generator": "^3.0.0",
+    "vue3-lottie": "^3.3.1"
   },
   "devDependencies": {
+    "@huntflow/eslint-config": "^2.0.0",
+    "@vitejs/plugin-vue": "^6.0.5",
+    "@vueuse/core": "^14.2.1",
     "concurrently": "^4.1.2",
+    "eslint": "^9.39.4",
     "http-server": "^0.12.3",
     "sass": "^1.97.3",
     "typescript": "^5.6.0",
     "vite": "^7.3.1",
+    "vue": "^3.5.30",
+    "vue-i18n": "^11.3.0",
     "watch": "^1.0.2"
   }
 }

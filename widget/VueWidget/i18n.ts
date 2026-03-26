@@ -1,12 +1,15 @@
-import { createI18n } from 'vue-i18n';
 import type { ElixirChatWidget } from '../ElixirChatWidget';
+import { createI18n } from 'vue-i18n';
 import trl from '../DefaultWidget/trl.json';
 
 type Locale = 'ru' | 'en';
 
+const baseRu = Object.fromEntries(Object.entries(trl).map(([key, value]) => [key, value.ru]));
+const baseEn = Object.fromEntries(Object.entries(trl).map(([key, value]) => [key, value.en]));
+
 const messages = {
-  ru: Object.fromEntries(Object.entries(trl).map(([key, value]) => [key, value.ru])),
-  en: Object.fromEntries(Object.entries(trl).map(([key, value]) => [key, value.en])),
+  ru: baseRu,
+  en: baseEn
 };
 
 export const createWidgetI18n = (elixirChatWidget: ElixirChatWidget) => {
@@ -16,6 +19,6 @@ export const createWidgetI18n = (elixirChatWidget: ElixirChatWidget) => {
     legacy: false,
     locale,
     fallbackLocale: 'ru',
-    messages,
+    messages
   });
 };

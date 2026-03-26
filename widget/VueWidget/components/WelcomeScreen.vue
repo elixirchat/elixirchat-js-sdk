@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import type { IOnlineStatusParams } from '../../../../sdk/OnlineStatusSubscription';
-import type { IJoinRoomChannel } from '../../../../sdk/ElixirChat';
+import type { IOnlineStatusParams } from '../../../sdk/OnlineStatusSubscription';
+import type { IJoinRoomChannel } from '../../../sdk/ElixirChat';
 import { ref, onMounted, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useElixirChatWidget } from '../../composables/useElixirChatWidget';
-import { WIDGET_DATA_SET, WIDGET_MUTE_TOGGLE } from '../../../ElixirChatWidgetEventTypes';
+import { useElixirChatWidget } from '../composables/useElixirChatWidget';
+import { WIDGET_DATA_SET, WIDGET_MUTE_TOGGLE } from '../../ElixirChatWidgetEventTypes';
 import {
   getAvatarColorByUserId
-} from '../../../../utilsWidget';
-import { _last } from '../../../../utilsCommon';
-import Tooltip from '../tooltip/tooltip.vue';
+} from '../../../utilsWidget';
+import { _last } from '../../../utilsCommon';
+import Tooltip from './Tooltip.vue';
 
 const { t } = useI18n();
 

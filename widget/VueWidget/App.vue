@@ -16,8 +16,10 @@ import {
 } from '../ElixirChatWidgetEventTypes';
 import IFrameWrapper from './IFrameWrapper.vue';
 import { provideElixirChatWidget } from './composables/useElixirChatWidget';
-import WelcomeScreen from './components/welcomeScreen/welcomeScreen.vue';
-import Chat from './components/chat.vue';
+import WelcomeScreen from './components/WelcomeScreen.vue';
+import Chat from './components/Chat.vue';
+import FullScreenPreview from './components/FullScreenPreview.vue';
+import Alert from './components/Alert.vue';
 
 const props = defineProps<{
   elixirChatWidget: ElixirChatWidget;
@@ -162,7 +164,7 @@ const playNotificationSound = () => {
   const notification = new Audio(widgetAssets.assets.mp3.notificationSound);
   try {
     notification.play();
-  } catch (e) {
+  } catch {
     console.error(
       'Unable to play notification sound before any action was taken by the user in the current browser tab'
     );
@@ -242,6 +244,8 @@ onBeforeUnmount(() => {
       </span>
     </button>
 
+    <full-screen-preview />
+
     <i-frame-wrapper :class="iframeClassName">
       <div :class="viewClassName">
         <div v-if="widgetView === 'chat'">
@@ -251,6 +255,7 @@ onBeforeUnmount(() => {
           <welcome-screen />
         </div>
       </div>
+      <alert />
     </i-frame-wrapper>
   </div>
 </template>
