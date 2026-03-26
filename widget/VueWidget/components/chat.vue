@@ -9,7 +9,7 @@ import {
 } from '../../ElixirChatWidgetEventTypes';
 import { useElixirChatWidget } from '../composables/useElixirChatWidget';
 import ChatMessages from './chatMessages/ChatMessages.vue';
-import Tooltip from './tooltip/tooltip.vue';
+import Tooltip from './Tooltip.vue';
 import ChatTextarea from './ChatTextarea.vue';
 
 const elixirChatWidget = useElixirChatWidget();

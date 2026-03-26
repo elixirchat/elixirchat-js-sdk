@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 import { useI18n } from 'vue-i18n';
 import { getOperatorName, getUserFullName } from '../../../../utilsCommon';
 import { generateReplyMessageQuote } from '../../../../utilsWidgetVue';
-import Avatar from '../avatar.vue';
+import Avatar from '../Avatar.vue';
 import FormattedMarkdown from '../FormattedMarkdown.vue';
 import ChatMessageFiles from './ChatMessageFiles.vue';
 import ChatMessagePreviews from './ChatMessagePreviews.vue';

@@ -16,8 +16,8 @@ import {
 } from '../ElixirChatWidgetEventTypes';
 import IFrameWrapper from './IFrameWrapper.vue';
 import { provideElixirChatWidget } from './composables/useElixirChatWidget';
-import WelcomeScreen from './components/welcomeScreen/welcomeScreen.vue';
-import Chat from './components/chat.vue';
+import WelcomeScreen from './components/WelcomeScreen.vue';
+import Chat from './components/Chat.vue';
 import FullScreenPreview from './components/FullScreenPreview.vue';
 import Alert from './components/Alert.vue';
 

@@ -17,7 +17,7 @@ import {
 
 } from '../../ElixirChatWidgetEventTypes';
 import { generateReplyMessageQuote, getImageDimensions } from '../../../utilsWidget';
-import ActionsDropdown from './actionsDropdown.vue';
+import ActionsDropdown from './ActionsDropdown.vue';
 import { getScreenshotCompatibilityFallback } from '../../../sdk/ScreenshotTaker';
 
 const TYPED_TEXT_STORAGE_KEY = 'elixirchat-typed-text';

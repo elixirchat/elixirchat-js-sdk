@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch, watchEffect } from 'vue';
 import { useI18n } from 'vue-i18n';
-import Tooltip from '../tooltip/tooltip.vue';
+import Tooltip from '../Tooltip.vue';
 
 const { type, messageId, rating = null, isLocked = false } = defineProps<{
   type: 'POSITIVE' | 'NEGATIVE';

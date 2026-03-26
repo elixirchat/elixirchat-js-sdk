@@ -5,7 +5,7 @@ import { useI18n } from 'vue-i18n';
 import { useElixirChatWidget } from '../../composables/useElixirChatWidget';
 import { getUserFullName, getOperatorName } from '../../../../utilsCommon';
 import { humanizeUpcomingDate } from '../../../../utilsWidgetVue';
-import Avatar from '../avatar.vue';
+import Avatar from '../Avatar.vue';
 
 const props = defineProps<{
   message: any;
