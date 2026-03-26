@@ -94,27 +94,20 @@ function onInputChange(event: Event) {
   debouncedTriggerSearch(value);
 }
 
-function onInputKeyDown(event: KeyboardEvent) {
-  const keyCode = event.keyCode;
-  const escCode = 27;
-  const enterCode = 13;
-
-  if (keyCode === enterCode && searchMessagesIds.value[0]) {
+function onEnterKeyDown() {
+  if (searchMessagesIds.value[0]) {
     emit('scroll-message', searchMessagesIds.value[0]);
   }
+}
 
-  if (keyCode === escCode) {
-    handleCloseSearch();
-  }
-
-  if (keyCode !== 38 && keyCode !== 40) {
-    return;
-  }
-
-  event.preventDefault();
-  if (keyCode === 38 && !disabledPrevButton.value) {
+function onArrowUpKeyDown() {
+  if (!disabledPrevButton.value) {
     showPrevMessage();
-  } else if (keyCode === 40 && !disabledNextButton.value) {
+  }
+}
+
+function onArrowDownKeyDown() {
+  if (!disabledNextButton.value) {
     showNextMessage();
   }
 }
@@ -171,7 +164,10 @@ onBeforeUnmount(() => {
           class="elixirchat-chat__search-input"
           :value="searchText"
           :placeholder="placeholderText"
-          @keydown="onInputKeyDown"
+          @keydown.enter="onEnterKeyDown"
+          @keydown.esc="handleCloseSearch"
+          @keydown.up.prevent="onArrowUpKeyDown"
+          @keydown.down.prevent="onArrowDownKeyDown"
           @input="onInputChange"
         >
       </div>
