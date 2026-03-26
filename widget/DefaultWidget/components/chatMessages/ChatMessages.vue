@@ -304,14 +304,14 @@ function hasUserScroll(): boolean {
   return scrollBlock.scrollTop <= scrollBlock.scrollHeight - scrollBlock.offsetHeight - 30;
 }
 
-function scrollToBottom(auto = true) {
+function scrollToBottom(smooth = true) {
   nextTick(() => {
     requestAnimationFrame(() => {
       const el = scrollContainerRef.value;
       if (el) {
         el.scrollTo({
           top: el.scrollHeight,
-          behavior: auto ? 'auto' : 'auto'
+          behavior: smooth ? 'smooth' : 'auto'
         });
       }
     });
@@ -332,7 +332,7 @@ function scrollToFirstUnreadMessage() {
       if (messageElementToScrollTo) {
         setTimeout(() => {
           messageElementToScrollTo.scrollIntoView({
-            behavior: 'auto',
+            behavior: 'smooth',
             block: 'end'
           });
         });
@@ -491,7 +491,7 @@ function scrollToMessage(messageId: string, direction?: 'up' | 'down') {
   if (!target) {
     scrollBlock.scrollTo({
       top: chatHeight,
-      behavior: 'auto'
+      behavior: 'smooth'
     });
     return;
   }
@@ -512,7 +512,7 @@ function scrollToMessage(messageId: string, direction?: 'up' | 'down') {
 
   scrollBlock.scrollTo({
     top: target.offsetTop - gap,
-    behavior: 'auto'
+    behavior: 'smooth'
   });
 }
 
@@ -520,7 +520,7 @@ function onReplyOriginalMessageClick(messageId: string | number) {
   const target = messageRefs.value[String(messageId)];
   if (target) {
     target.scrollIntoView({
-      behavior: 'auto',
+      behavior: 'smooth',
       block: 'center'
     });
   }
