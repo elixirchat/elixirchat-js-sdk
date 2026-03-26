@@ -424,7 +424,7 @@ function onMessageReceive(message: any) {
   }, markAsReadObserver.reattach);
 
   if (shouldScrollMessagesToBottom) {
-    scrollToBottom();
+    scrollToBottom(false);
   }
 }
 
