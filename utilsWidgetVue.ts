@@ -36,35 +36,35 @@ export function humanizeFileSize(sizeInBytes: number, i18n: WidgetI18n): string 
   return `${primarySize.toLocaleString(i18n.locale)} ${unitsDict[primaryUnit]}`;
 }
 
+const timezones = [
+  'Moscow',
+  'Samara',
+  'Yekaterinburg',
+  'Novosibirsk',
+  'Omsk',
+  'Krasnoyarsk',
+  'Irkutsk',
+  'Yakutsk',
+  'Vladivostok',
+  'Sakhalin',
+  'Magadan',
+  'Kamchat',
+  'Anadyr',
+  'Tajikistan',
+  'Turkmenistan',
+  'Uzbekistan',
+  'Kyrgyzstan',
+  'Azerbaijan',
+  'Armenia',
+  'East Kazakhstan',
+  'West Kazakhstan',
+  'Eastern Europe'
+];
+
 function humanizeTimezoneName(date: Date, i18n: WidgetI18n): string {
   dayjs.locale(i18n.locale);
 
   date = new Date(date);
-
-  const timezones = [
-    'Moscow',
-    'Samara',
-    'Yekaterinburg',
-    'Novosibirsk',
-    'Omsk',
-    'Krasnoyarsk',
-    'Irkutsk',
-    'Yakutsk',
-    'Vladivostok',
-    'Sakhalin',
-    'Magadan',
-    'Kamchat',
-    'Anadyr',
-    'Tajikistan',
-    'Turkmenistan',
-    'Uzbekistan',
-    'Kyrgyzstan',
-    'Azerbaijan',
-    'Armenia',
-    'East Kazakhstan',
-    'West Kazakhstan',
-    'Eastern Europe'
-  ];
 
   const timezoneName = date
     .toTimeString()
