@@ -22,7 +22,6 @@ import {
 } from './ElixirChatWidgetEventTypes';
 import ElixirChatFromDist from '../dist/sdk.min.js';
 
-
 /**
  * dist/sdk.min.js is generated on fly depending on the context:
  *
@@ -134,10 +133,10 @@ export class ElixirChatWidget extends ElixirChat {
       };
     }
 
-    const reactComponent = renderWidgetReactComponent(container, this);
+    const vueApp = renderWidgetVue(container, this);
 
-    this.logInfo('Appended ElixirChat default widget', container);
-    return reactComponent;
+    this.logInfo('Appended ElixirChat Vue widget', container);
+    return vueApp;
   };
 
   private initializeWidget(): void {

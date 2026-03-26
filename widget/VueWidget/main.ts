@@ -1,8 +1,8 @@
-import { createApp } from 'vue';
-import App from './App.vue';
 import type { ElixirChatWidget } from '../ElixirChatWidget';
-import { createWidgetI18n } from './i18n';
+import { createApp } from 'vue';
 import Vue3Lottie from 'vue3-lottie';
+import App from './App.vue';
+import { createWidgetI18n } from './i18n';
 
 export const renderWidgetVue = (container: HTMLElement, elixirChatWidget: ElixirChatWidget) => {
   const app = createApp(App, { elixirChatWidget });
@@ -13,4 +13,3 @@ export const renderWidgetVue = (container: HTMLElement, elixirChatWidget: Elixir
 
   return app.mount(container);
 };
-
