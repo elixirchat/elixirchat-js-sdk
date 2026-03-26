@@ -13,8 +13,10 @@
 
 .elixirchat-chat-scroll {
   flex-grow: 1;
+  min-height: 0;
   height: 100%;
-  top: $chat-header-height;
+  top: 0;
+  position: relative;
   overflow-x: hidden;
   overflow-y: auto;
 }
@@ -257,6 +259,10 @@
   line-height: 17px;
   padding-top: 3px;
   display: inline-block;
+
+  br {
+    display: contents;
+  }
 }
 
 .elixirchat-chat-messages__submission-error-link {

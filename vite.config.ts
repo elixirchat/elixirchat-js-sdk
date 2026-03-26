@@ -7,9 +7,9 @@ export default defineConfig(({ mode }) => {
     plugins: [vue()],
     define: {
       'process.env.NODE_ENV': JSON.stringify(
-        mode === 'production' ? 'production' : 'development',
+        mode === 'production' ? 'production' : 'development'
       ),
-      'process.env.ELIXIRCHAT_VERSION': JSON.stringify(env.ELIXIRCHAT_VERSION || ''),
+      'process.env.ELIXIRCHAT_VERSION': JSON.stringify(env.ELIXIRCHAT_VERSION || '')
     },
     server: {
       port: 8001,
@@ -17,9 +17,9 @@ export default defineConfig(({ mode }) => {
         ignored: [
           '**/node_modules/**',
           '**/dist/**',
-          '!**/dist/styles/**',
-        ],
-      },
-    },
+          '!**/dist/styles/**'
+        ]
+      }
+    }
   };
 });

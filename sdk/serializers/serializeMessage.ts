@@ -1,12 +1,14 @@
-import { ElixirChat } from '../ElixirChat';
+import type { ElixirChat } from '../ElixirChat';
+import type { IUser } from './serializeUser';
+import type { IFile } from './serializeFile';
 import { gql, insertGraphQlFragments } from '../GraphQLClient';
-import { IUser, serializeUser, fragmentUser } from './serializeUser';
-import { IFile, serializeFile, fragmentFile } from './serializeFile';
+import { serializeUser, fragmentUser } from './serializeUser';
+import { serializeFile, fragmentFile } from './serializeFile';
 import { extractSerializedData } from '../../utilsCommon';
-
 
 export const fragmentMessage = insertGraphQlFragments(gql`
   fragment fragmentMessage on Message {
+    __typename
     id
     text
     timestamp
@@ -37,19 +39,19 @@ export const fragmentMessage = insertGraphQlFragments(gql`
     }
     
     ... on ScreenshotRequestedMessage {
-      __typename
       sender { ...fragmentUser }
     }
 
     ... on NobodyWorkingMessage {
-      __typename
       workHoursStartAt
     }
   }
-`, { fragmentUser, fragmentFile });
+`, {
+  fragmentUser,
+  fragmentFile
+});
 
-
-export interface IMessage {
+export type IMessage = {
   id: string;
   tempId: string | null;
   text: string;
@@ -64,19 +66,21 @@ export interface IMessage {
   isSystem: boolean;
   isUnread: boolean;
   isDeleted: boolean;
-  mentions: Array<{value: string, client: IUser}>,
+  mentions: Array<{
+    value: string;
+    client: IUser;
+  }>;
   systemType: string | null;
   systemWorkHoursStartAt: string | null;
-  attachments?: Array<IFile>,
-  isSubmitting: boolean,
-  submissionErrorCode: number | null,
+  attachments?: Array<IFile>;
+  isSubmitting: boolean;
+  submissionErrorCode: number | null;
   rating?: {
     id: string;
     rating: 'POSITIVE' | 'NEGATIVE';
     comment?: string | null;
   } | null;
-}
-
+};
 
 export function serializeMessage(data: any, elixirChat: ElixirChat): IMessage {
   let { sender, responseToMessage, attachments, mentions, rating } = data || {};
@@ -92,32 +96,34 @@ export function serializeMessage(data: any, elixirChat: ElixirChat): IMessage {
       isSubmitting: false,
       isUnread: false,
       isSystem: false,
-      isDeleted: false,
+      isDeleted: false
     }),
     sender: serializeUser(sender, elixirChat),
-    attachments: (attachments || []).map(attachment => serializeFile(attachment, elixirChat)),
+    attachments: (attachments || []).map((attachment) => serializeFile(attachment, elixirChat)),
     responseToMessage: {
       ...extractSerializedData(responseToMessage, {
         id: null,
         text: '',
-        isDeleted: false,
+        isDeleted: false
       }),
-      sender: serializeUser(responseToMessage?.sender, elixirChat),
+      sender: serializeUser(responseToMessage?.sender, elixirChat)
     },
-    mentions: (mentions || []).map(mention => {
+    mentions: (mentions || []).map((mention) => {
       return {
         client: serializeUser(mention.client, elixirChat),
-        value: mention.value,
+        value: mention.value
       };
     }),
-    rating: rating ? {
-      id: rating.id,
-      rating: rating.rating,
-      comment: rating.comment || null,
-    } : null,
+    rating: rating
+      ? {
+          id: rating.id,
+          rating: rating.rating,
+          comment: rating.comment || null
+        }
+      : null,
     systemData: {
       type: data?.__typename || null,
-      workHoursStartAt: data?.workHoursStartAt || null,
-    },
+      workHoursStartAt: data?.workHoursStartAt || null
+    }
   };
 }

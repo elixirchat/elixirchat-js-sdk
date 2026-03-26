@@ -1,3 +1,6 @@
+import type { ElixirChatWidget } from '../ElixirChatWidget';
+import 'dayjs/locale/ru';
+import 'dayjs/locale/en';
 import React, { Component, Fragment } from 'react';
 import { flushSync } from 'react-dom';
 import { FormattedMessage, injectIntl } from 'react-intl';
@@ -5,8 +8,6 @@ import debounce from 'lodash/debounce';
 import uniqBy from 'lodash/uniqBy';
 import dayjs from 'dayjs';
 import dayjsCalendar from 'dayjs/plugin/calendar';
-import 'dayjs/locale/ru';
-import 'dayjs/locale/en';
 import {
   cn,
   _round,
@@ -16,19 +17,16 @@ import {
   detectBrowser,
   getUserFullName,
   getOperatorName,
-  randomDigitStringId,
+  randomDigitStringId
 } from '../../utilsCommon';
-
 import {
   humanizeFileSize,
   humanizeUpcomingDate,
   generateReplyMessageQuote,
   exposeComponentToGlobalScope,
   fitDimensionsIntoLimits,
-  isMobile,
+  isMobile
 } from '../../utilsWidget';
-
-import { ElixirChatWidget } from '../ElixirChatWidget';
 import { FormattedMarkdown } from './FormattedMarkdown';
 import { MessageSearch } from './MessageSearch';
 import { RatingButton } from './RatingButton';
@@ -36,7 +34,7 @@ import { RatingCommentModal } from './RatingCommentModal';
 import {
   closeRatingCommentModalState,
   isMessageLocked,
-  isMessageRated,
+  isMessageRated
 } from './chatMessagesRatingHelpers';
 import { rateMessageFlow, submitRatingCommentFlow } from './chatMessagesRatingFlow';
 import { Avatar } from './Avatar';
@@ -51,38 +49,37 @@ import {
   ERROR_ALERT,
   MESSAGES_SEARCH_IDS,
   MESSAGES_PAGINATION,
-  MESSAGES_LAST_MESSAGE_ID, MESSAGES_HISTORY_APPEND,
+  MESSAGES_LAST_MESSAGE_ID, MESSAGES_HISTORY_APPEND
 } from '../../sdk/ElixirChatEventTypes';
-
 import {
   WIDGET_FULLSCREEN_PREVIEW_OPEN,
   WIDGET_TEXTAREA_RESIZE,
   WIDGET_REPLY_MESSAGE,
-  WIDGET_POPUP_OPEN,
+  WIDGET_POPUP_OPEN
 } from '../ElixirChatWidgetEventTypes';
 
 type IntlArgId = {
-  id: string
-}
+  id: string;
+};
 
-export interface IDefaultWidgetMessagesProps {
+export type IDefaultWidgetMessagesProps = {
   elixirChatWidget: ElixirChatWidget;
   intl: {
-    formatMessage: (arg: IntlArgId) => string,
-    locale: string
+    formatMessage: (arg: IntlArgId) => string;
+    locale: string;
   };
   className?: string;
-}
+};
 
-export interface IDefaultWidgetMessagesState {
+export type IDefaultWidgetMessagesState = {
   isLoading: boolean;
   isLoadingPrecedingMessageHistory: boolean;
   hasPreviousPage: boolean;
   hasNextPage: boolean;
   hasInitiallyScrolledToAppropriatePosition: boolean;
-  processedMessages: Array<object>,
-  fullScreenPreviews: Array<object>,
-  screenshotFallback: object | null,
+  processedMessages: Array<object>;
+  fullScreenPreviews: Array<object>;
+  screenshotFallback: object | null;
   scrollBlockBottomOffset: number | null;
   currentlyTypingUsers: Array<object>;
   searchText: string;
@@ -99,10 +96,9 @@ export interface IDefaultWidgetMessagesState {
     messageId: string | null;
     isSubmitted: boolean;
   };
-}
+};
 
 class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefaultWidgetMessagesState> {
-
   state = {
     isLoading: false,
     isLoadingPrecedingMessageHistory: false,
@@ -131,8 +127,8 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
       isOpen: false,
       ratingId: null,
       messageId: null,
-      isSubmitted: false,
-    },
+      isSubmitted: false
+    }
   };
 
   MAX_THUMBNAIL_SIZE: number = isMobile() ? 208 : 256;
@@ -169,12 +165,12 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
     elixirChatWidget.on(MESSAGES_HISTORY_CHANGE, this.onMessageHistoryChange);
     elixirChatWidget.on(MESSAGES_HISTORY_PREPEND, this.onMessageHistoryPrepend);
     elixirChatWidget.on(MESSAGES_HISTORY_APPEND, this.onMessageHistoryAppend);
-    elixirChatWidget.on(MESSAGES_SEARCH_IDS, ids => {
+    elixirChatWidget.on(MESSAGES_SEARCH_IDS, (ids) => {
       this.setState({ searchMessagesIds: ids });
       this.markedSearchText(this.state.processedMessages, true);
     });
 
-    elixirChatWidget.on(WIDGET_TEXTAREA_RESIZE, scrollBlockBottomOffset => {
+    elixirChatWidget.on(WIDGET_TEXTAREA_RESIZE, (scrollBlockBottomOffset) => {
       const hasUserScroll = this.hasUserScroll();
       this.setState({ scrollBlockBottomOffset });
       if (!hasUserScroll) {
@@ -182,24 +178,24 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
       }
     });
 
-    elixirChatWidget.on(TYPING_STATUS_CHANGE, currentlyTypingUsers => {
+    elixirChatWidget.on(TYPING_STATUS_CHANGE, (currentlyTypingUsers) => {
       this.setState({ currentlyTypingUsers });
     });
-    elixirChatWidget.on(MESSAGES_LAST_MESSAGE_ID, id => {
-      this.setState({lastMessageId: id});
+    elixirChatWidget.on(MESSAGES_LAST_MESSAGE_ID, (id) => {
+      this.setState({ lastMessageId: id });
     });
 
-    elixirChatWidget.on(MESSAGES_PAGINATION, pageInfo => {
+    elixirChatWidget.on(MESSAGES_PAGINATION, (pageInfo) => {
       this.setState({
         hasPreviousPage: pageInfo.hasPreviousPage,
         hasNextPage: pageInfo.hasNextPage
-      })
+      });
     });
 
     requestAnimationFrame(this.initializeMessagesIntersectionObserver);
   }
 
-  componentWillUnmount(){
+  componentWillUnmount() {
     const { elixirChatWidget } = this.props;
     elixirChatWidget.off(MESSAGES_RECEIVE, this.onMessageReceive);
     elixirChatWidget.off(MESSAGES_HISTORY_CHANGE, this.onMessageHistoryChange);
@@ -221,7 +217,10 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
     if (shouldScrollMessagesToBottom) {
       this.scrollToBottom();
     }
-    this.updateMessageHistory({ chunk: [message], append: true }, this.reAttachIntersectionObserverToMessages);
+    this.updateMessageHistory({
+      chunk: [message],
+      append: true
+    }, this.reAttachIntersectionObserverToMessages);
   };
 
   onMessageHistoryChange = (chunk) => {
@@ -230,12 +229,18 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
 
   onMessageHistoryPrepend = (chunk) => {
     flushSync(() => {
-      this.updateMessageHistory({ chunk, prepend: true }, this.reAttachIntersectionObserverToMessages);
+      this.updateMessageHistory({
+        chunk,
+        prepend: true
+      }, this.reAttachIntersectionObserverToMessages);
     });
   };
 
   onMessageHistoryAppend = (chunk) => {
-    this.updateMessageHistory({ chunk, append: true }, this.reAttachIntersectionObserverToMessages);
+    this.updateMessageHistory({
+      chunk,
+      append: true
+    }, this.reAttachIntersectionObserverToMessages);
   };
 
   updateMessageHistory = (params, callback) => {
@@ -246,11 +251,10 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
 
     if (append) {
       processedMessages = uniqBy([...this.state.processedMessages, ...processedMessages], 'id');
-      fullScreenPreviews = uniqBy([ ...this.state.fullScreenPreviews, ...fullScreenPreviews ], 'id');
-    }
-    else if (prepend) {
-      processedMessages = uniqBy([ ...processedMessages, ...this.state.processedMessages ], 'id');
-      fullScreenPreviews = uniqBy([ ...fullScreenPreviews, ...this.state.processedMessages ], 'id');
+      fullScreenPreviews = uniqBy([...this.state.fullScreenPreviews, ...fullScreenPreviews], 'id');
+    } else if (prepend) {
+      processedMessages = uniqBy([...processedMessages, ...this.state.processedMessages], 'id');
+      fullScreenPreviews = uniqBy([...fullScreenPreviews, ...this.state.processedMessages], 'id');
     }
 
     if (this.state.searchMessagesIds.length) {
@@ -259,7 +263,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
 
     this.setState({
       processedMessages,
-      fullScreenPreviews,
+      fullScreenPreviews
     }, callback);
   };
 
@@ -274,17 +278,16 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
       this.onMessageHistoryChange(elixirChatWidget.messageHistory);
       this.setState({ isLoading: false });
       elixirChatWidget.waitForPopupToOpen(this.scrollInitiallyToAppropriatePosition);
-    }
-    else {
+    } else {
       elixirChatWidget.fetchMessageHistory(this.MESSAGE_CHUNK_SIZE)
         .then(() => {
           elixirChatWidget.waitForPopupToOpen(this.scrollInitiallyToAppropriatePosition);
         })
-        .catch(e => {
+        .catch((e) => {
           elixirChatWidget.triggerEvent(ERROR_ALERT, {
             customMessage: e.errorMessage,
             retryCallback: this.loadInitialMessages,
-            error: e.rawError,
+            error: e.rawError
           });
         })
         .finally(() => {
@@ -294,13 +297,12 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
   };
 
   loadPrecedingMessages = () => {
-
     const { elixirChatWidget } = this.props;
     const {
       isLoading,
       isLoadingPrecedingMessageHistory,
       hasPreviousPage,
-      hasInitiallyScrolledToAppropriatePosition,
+      hasInitiallyScrolledToAppropriatePosition
     } = this.state;
 
     const scrollBlock = this.scrollBlock.current;
@@ -314,19 +316,19 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
       this.setState({ isLoadingPrecedingMessageHistory: true });
 
       elixirChatWidget.fetchPrecedingMessageHistory(this.MESSAGE_CHUNK_SIZE)
-        .catch(e => {
+        .catch((e) => {
           elixirChatWidget.triggerEvent(ERROR_ALERT, {
             customMessage: e.errorMessage,
             retryCallback: this.loadPrecedingMessages,
-            error: e.rawError,
+            error: e.rawError
           });
           throw e;
         })
         .finally(() => {
           scrollBlock.scrollTop = scrollBlock.scrollHeight - initialScrollHeight;
-            setTimeout(() => {
-              this.setState({ isLoadingPrecedingMessageHistory: false });
-            }, 500); 
+          setTimeout(() => {
+            this.setState({ isLoadingPrecedingMessageHistory: false });
+          }, 500);
         });
     }
   };
@@ -354,7 +356,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
         files,
         previews,
         showDateLabel,
-        hasPreviewsOnly,
+        hasPreviewsOnly
       };
     });
 
@@ -362,7 +364,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
     if (hasPreviousPage && (firstEverMessageInHistory?.sender?.isClient || !firstEverMessageInHistory)) {
       processedMessages = [
         this.generateNewClientPlaceholderMessage(firstEverMessageInHistory),
-        ...processedMessages,
+        ...processedMessages
       ];
     }
     return processedMessages;
@@ -373,31 +375,36 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
     const files = [];
 
     if (message.isDeleted) {
-      return { previews, files };
+      return {
+        previews,
+        files
+      };
     }
-    message.attachments.forEach(attachment => {
+    message.attachments.forEach((attachment) => {
       const { width, height, contentType } = attachment;
       const previewType = getMediaType(contentType);
 
       if (previewType === 'image' || previewType === 'video') {
-        const [ thumbnailWidth, thumbnailHeight ] = fitDimensionsIntoLimits(width, height, this.MAX_THUMBNAIL_SIZE, this.MAX_THUMBNAIL_SIZE);
+        const [thumbnailWidth, thumbnailHeight] = fitDimensionsIntoLimits(width, height, this.MAX_THUMBNAIL_SIZE, this.MAX_THUMBNAIL_SIZE);
         previews.push({
           ...attachment,
           thumbnailWidth,
           thumbnailHeight,
-          previewType,
+          previewType
         });
-      }
-      else {
+      } else {
         files.push(attachment);
       }
     });
-    return { previews, files };
+    return {
+      previews,
+      files
+    };
   };
 
   extractFullScreenPreviews = (messages) => {
     return _flatten(
-      messages.map(message => this.processMessageAttachments(message).previews)
+      messages.map((message) => this.processMessageAttachments(message).previews)
     );
   };
 
@@ -408,12 +415,12 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
       id: randomDigitStringId(6),
       isSystem: true,
       timestamp: firstEverMessageInHistory?.timestamp || new Date().toISOString(),
-      __typename: 'NewClientPlaceholderMessage',
+      __typename: 'NewClientPlaceholderMessage'
     }, elixirChatWidget);
 
     return {
       ...placeholderMessage,
-      showGroupChatLabel: true,
+      showGroupChatLabel: true
     };
   };
 
@@ -425,8 +432,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
       requestAnimationFrame(() => {
         this.scrollBlock.current.scrollTop = elixirChatWidget.widgetChatScrollY;
       });
-    }
-    else {
+    } else {
       this.scrollToFirstUnreadMessage();
     }
 
@@ -450,10 +456,12 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
         const messageElementToScrollTo = this.messageRefs[firstUnreadMessage?.id];
         if (messageElementToScrollTo) {
           setTimeout(() => {
-            messageElementToScrollTo.scrollIntoView({ behavior: 'smooth', block: 'end' });
+            messageElementToScrollTo.scrollIntoView({
+              behavior: 'smooth',
+              block: 'end'
+            });
           });
-        }
-        else {
+        } else {
           this.scrollToBottom();
         }
       });
@@ -474,11 +482,11 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
   initializeMessagesIntersectionObserver = () => {
     const observerParams = {
       root: this.scrollBlock.current,
-      threshold: 0.9, // triggers when 90% of message is within the viewport
+      threshold: 0.9 // triggers when 90% of message is within the viewport
     };
 
-    this.messageVisibilityObserver = new IntersectionObserver(entries => {
-      entries.map(entry => {
+    this.messageVisibilityObserver = new IntersectionObserver((entries) => {
+      entries.map((entry) => {
         const messageElement = entry.target;
 
         if (entry.isIntersecting) {
@@ -487,8 +495,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
           if (messageData.isUnread) {
             this.onScrollOverUnreadMessage(messageData.id);
           }
-        }
-        else {
+        } else {
           this.setDatasetValues(messageElement, { isMessageWithinViewport: false });
         }
       });
@@ -498,7 +505,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
   reAttachIntersectionObserverToMessages = () => {
     requestAnimationFrame(() => {
       for (let messageId in this.messageRefs) {
-        this.messageVisibilityObserver.observe( this.messageRefs[messageId] );
+        this.messageVisibilityObserver.observe(this.messageRefs[messageId]);
       }
     });
   };
@@ -518,14 +525,13 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
     let value;
     try {
       value = JSON.parse(element.dataset[key]);
-    }
-    catch (e) {}
+    } catch (e) {}
     return value;
   };
 
   setDatasetValues = (element, values) => {
     for (let key in values) {
-      element.dataset[key] = JSON.stringify( values[key] );
+      element.dataset[key] = JSON.stringify(values[key]);
     }
   };
 
@@ -542,26 +548,29 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
   onReplyOriginalMessageClick = (messageId) => {
     const messageElement = this.messageRefs[messageId];
     if (messageElement) {
-      messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      messageElement.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+      });
     }
   };
 
   onRateMessage = async (messageId: string, rating: 'POSITIVE' | 'NEGATIVE') => {
     const { processedMessages, ratingLocksByMessageId } = this.state;
-    const message = processedMessages.find(m => m.id === messageId);
+    const message = processedMessages.find((m) => m.id === messageId);
 
     await rateMessageFlow(
       {
         elixirChatWidget: this.props.elixirChatWidget,
         getState: () => this.state,
         setState: this.setState.bind(this),
-        closeRatingCommentModal: this.closeRatingCommentModal,
+        closeRatingCommentModal: this.closeRatingCommentModal
       },
       messageId,
       rating,
       {
         isLocked: isMessageLocked(ratingLocksByMessageId, messageId),
-        isRated: isMessageRated(message),
+        isRated: isMessageRated(message)
       }
     );
   };
@@ -572,7 +581,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
         elixirChatWidget: this.props.elixirChatWidget,
         getState: () => this.state,
         setState: this.setState.bind(this),
-        closeRatingCommentModal: this.closeRatingCommentModal,
+        closeRatingCommentModal: this.closeRatingCommentModal
       },
       comment
     );
@@ -580,7 +589,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
 
   closeRatingCommentModal = () => {
     this.setState({
-      ratingCommentModal: closeRatingCommentModalState(),
+      ratingCommentModal: closeRatingCommentModalState()
     });
   };
 
@@ -595,7 +604,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
     elixirChatWidget.triggerEvent(WIDGET_FULLSCREEN_PREVIEW_OPEN, {
       preview,
       sender,
-      gallery: fullScreenPreviews,
+      gallery: fullScreenPreviews
     });
     e.preventDefault();
   };
@@ -613,12 +622,12 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
     const leftoverSeconds = Math.round(durationInSeconds - (totalMinutes * 60));
     const durationArr = [
       leftoverMinutes.toString().padStart(2, '0'),
-      leftoverSeconds.toString().padStart(2, '0'),
+      leftoverSeconds.toString().padStart(2, '0')
     ];
     if (totalHours) {
       durationArr.unshift(
         totalHours.toString().padStart(2, '0')
-      )
+      );
     }
     return durationArr.join(':');
   };
@@ -628,7 +637,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
       return undefined;
     }
     return keySequence.split(/\+/).map((key, index) => {
-      return Boolean(index) ? `+<kbd>${key}</kbd>` : `<kbd>${key}</kbd>`;
+      return index ? `+<kbd>${key}</kbd>` : `<kbd>${key}</kbd>`;
     }).join('');
   };
 
@@ -651,8 +660,10 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
     const defaultMessage = (
       <Fragment>
         <FormattedMessage id="sending_has_failed" />
-        <span className="elixirchat-chat-messages__submission-error-link"
-          onClick={() => elixirChatWidget.retrySendMessage(message)}>
+        <span
+          className="elixirchat-chat-messages__submission-error-link"
+          onClick={() => elixirChatWidget.retrySendMessage(message)}
+        >
           <FormattedMessage id="again" />
         </span>
       </Fragment>
@@ -660,24 +671,29 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
     const badConnectionMessage = (
       <Fragment>
         <FormattedMessage id="sending_has_failed_bad_connection" />
-        <span className="elixirchat-chat-messages__submission-error-link"
-          onClick={() => elixirChatWidget.retrySendMessage(message)}>
+        <span
+          className="elixirchat-chat-messages__submission-error-link"
+          onClick={() => elixirChatWidget.retrySendMessage(message)}
+        >
           <FormattedMessage id="again" />
         </span>
       </Fragment>
     );
     const unsupportedFileTypeMessage = (
-      <FormattedMessage id="attachment_type_is_not_supported" values={{
-        br: () => <br />
-      }} />
+      <FormattedMessage
+        id="attachment_type_is_not_supported"
+        values={{
+          br: () => <br />
+        }}
+      />
     );
     const tooLargeFileMessage = (
       <FormattedMessage id="file_size_limit" />
     );
     const messageByErrorCode = {
-      '415': unsupportedFileTypeMessage,
-      '413': tooLargeFileMessage,
-      '503': badConnectionMessage,
+      415: unsupportedFileTypeMessage,
+      413: tooLargeFileMessage,
+      503: badConnectionMessage
     };
     return messageByErrorCode[message.submissionErrorCode] || defaultMessage;
   };
@@ -686,14 +702,17 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
     if (messageElement) {
       const { id, isUnread } = message;
       this.setDatasetValues(messageElement, {
-        messageData: { id, isUnread }
+        messageData: {
+          id,
+          isUnread
+        }
       });
       this.messageRefs[message.id] = messageElement;
     }
   };
 
   getMentionsStr = (message) => {
-    return message.mentions.map(mention => {
+    return message.mentions.map((mention) => {
       return mention.value === 'ALL'
         ? this.props.intl.formatMessage({ id: 'everyone' })
         : getUserFullName(mention.client, ' ');
@@ -710,12 +729,12 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
         this.loadNextMessages();
       }
     }
-  }
+  };
 
   onScrollHandler = (event) => {
     const { scrollTop } = event.target;
     this.debouncedTriggerScroll(scrollTop);
-  }
+  };
 
   debouncedTriggerScroll = debounce(this.scrollPosition.bind(this), 400);
 
@@ -726,9 +745,9 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
   markedSearchText(processedMessages, updateState = false) {
     const messages = JSON.parse(JSON.stringify(processedMessages));
     let { originalMessages, searchText } = this.state;
-    const regExp = new RegExp(searchText, "igm");
+    const regExp = new RegExp(searchText, 'gim');
 
-    messages.forEach(el => {
+    messages.forEach((el) => {
       // сохраняем старое значение сообщение, чтобы вернуть его при новом поиске.
       if (Object.hasOwnProperty.call(originalMessages, el.id) && el.isMarked) {
         el.text = originalMessages[el.id];
@@ -745,12 +764,12 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
         el.isMarked = true;
         el.text = el.text.replace(regExp, (match) => `★${match}★`);
       }
-    })
+    });
 
     this.setState({ originalMessages });
 
     if (updateState) {
-      this.setState({processedMessages: messages})
+      this.setState({ processedMessages: messages });
     }
 
     return messages;
@@ -768,28 +787,40 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
     const scrollBlock = this.scrollBlock.current;
     const target = innerDoc.getElementById(messageId);
 
-    this.setState({selectMessageId: messageId});
+    this.setState({ selectMessageId: messageId });
     if (!target) {
-      scrollBlock.scrollTo({top: chatHeight, behavior: 'smooth'});
+      scrollBlock.scrollTo({
+        top: chatHeight,
+        behavior: 'smooth'
+      });
       return;
     }
     const gap = scrollBlock.clientHeight / 2 - target.clientHeight / 2;
 
     if (direction === 'up') {
-      scrollBlock.scrollTo({top: target.offsetTop - target.clientHeight / 2, behavior: 'auto'});
+      scrollBlock.scrollTo({
+        top: target.offsetTop - target.clientHeight / 2,
+        behavior: 'auto'
+      });
     } else if (direction === 'down') {
-      scrollBlock.scrollTo({top: gap, behavior: 'auto'});
+      scrollBlock.scrollTo({
+        top: gap,
+        behavior: 'auto'
+      });
     }
 
-    scrollBlock.scrollTo({top: target.offsetTop - gap, behavior: 'smooth'});
-  }
+    scrollBlock.scrollTo({
+      top: target.offsetTop - gap,
+      behavior: 'smooth'
+    });
+  };
 
   changeSearchText = (text) => {
-    this.setState({searchText: text});
+    this.setState({ searchText: text });
     const { originalMessages, processedMessages } = this.state;
 
     if (!text) {
-      processedMessages.forEach(el => {
+      processedMessages.forEach((el) => {
         if (!this.state.searchMessagesIds.includes(el.id)) {
           return;
         }
@@ -799,15 +830,15 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
           delete el.isMarked;
           delete originalMessages[el.id];
         }
-      })
+      });
 
       this.setState({
         originalMessages,
         searchMessagesCursors: {},
-        selectMessageId: '',
+        selectMessageId: ''
       });
     }
-  }
+  };
 
   /**
    * Загрузка новых сообщений
@@ -823,7 +854,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
 
   processedAvatar = (message) => {
     return message.sender.avatar.url;
-  }
+  };
 
   render() {
     const { elixirChatWidget, className, intl } = this.props;
@@ -841,7 +872,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
     let messagesIds = [];
 
     if (searchText) {
-      messagesIds = processedMessages.map(el => el.id);
+      messagesIds = processedMessages.map((el) => el.id);
     }
 
     return (
@@ -855,27 +886,33 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
           messagesIds={messagesIds}
         />
 
-        <div className={cn('elixirchat-chat-scroll', className)}
+        <div
+          className={cn('elixirchat-chat-scroll', className)}
           onScroll={this.onScrollHandler}
           style={{ bottom: scrollBlockBottomOffset }}
-          ref={this.scrollBlock}>
+          ref={this.scrollBlock}
+        >
 
           <i className={cn({
             'elixirchat-chat-scroll-progress-bar': true,
-            'elixirchat-chat-scroll-progress-bar--animating': isLoadingPrecedingMessageHistory,
-          })}/>
+            'elixirchat-chat-scroll-progress-bar--animating': isLoadingPrecedingMessageHistory
+          })}
+          />
 
-          <div className={cn({
-            'elixirchat-chat-messages': true,
-            'elixirchat-chat-messages--loading': isLoading,
-          })} ref={this.scrollBlockInner}>
+          <div
+            className={cn({
+              'elixirchat-chat-messages': true,
+              'elixirchat-chat-messages--loading': isLoading
+            })}
+            ref={this.scrollBlockInner}
+          >
 
-            {processedMessages.map(message => (
+            {processedMessages.map((message) => (
               <Fragment key={message.id}>
 
                 {message.showGroupChatLabel && !elixirChatWidget.room.isPrivate && (
                   <div className="elixirchat-chat-messages__group-chat-label">
-                    <FormattedMessage id="this_is_a_support_group" values={{title: elixirChatWidget.room.title}} />
+                    <FormattedMessage id="this_is_a_support_group" values={{ title: elixirChatWidget.room.title }} />
                   </div>
                 )}
 
@@ -885,28 +922,32 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
                       sameDay: `[${this.props.intl.formatMessage({ id: 'today' })}, ] D MMMM`,
                       lastDay: `[${this.props.intl.formatMessage({ id: 'yesterday' })}, ] D MMMM`,
                       lastWeek: 'D MMMM',
-                      sameElse: 'D MMMM',
+                      sameElse: 'D MMMM'
                     })}
                   </div>
                 )}
 
                 {!message.isSystem && !message.isDeleted && (
-                  <div className={cn({
-                    'elixirchat-chat-messages__item': true,
-                    'elixirchat-chat-messages__item--by-me': message.sender.isCurrentClient,
-                    'elixirchat-chat-messages__item--by-client': message.sender.isClient,
-                    'elixirchat-chat-messages__item--by-operator': message.sender.isOperator,
-                    'elixirchat-chat-messages__item--by-another-client': !message.sender.isOperator && !message.sender.isCurrentClient,
-                    'elixirchat-chat-messages__item--unread': message.isUnread,
-                    'elixirchat-chat-messages__item--selected': message.id === selectMessageId,
-                  })}
-                    ref={element => this.createMessageRef(element, message)}
-                    id={message.id}>
+                  <div
+                    className={cn({
+                      'elixirchat-chat-messages__item': true,
+                      'elixirchat-chat-messages__item--by-me': message.sender.isCurrentClient,
+                      'elixirchat-chat-messages__item--by-client': message.sender.isClient,
+                      'elixirchat-chat-messages__item--by-operator': message.sender.isOperator,
+                      'elixirchat-chat-messages__item--by-another-client': !message.sender.isOperator && !message.sender.isCurrentClient,
+                      'elixirchat-chat-messages__item--unread': message.isUnread,
+                      'elixirchat-chat-messages__item--selected': message.id === selectMessageId
+                    })}
+                    ref={(element) => this.createMessageRef(element, message)}
+                    id={message.id}
+                  >
 
                     <div className="elixirchat-chat-messages__inner">
                       {!message.hasPreviewsOnly && (
-                        <div className="elixirchat-chat-messages__balloon"
-                          onDoubleClick={() => this.onReplyButtonClick(message.id)}>
+                        <div
+                          className="elixirchat-chat-messages__balloon"
+                          onDoubleClick={() => this.onReplyButtonClick(message.id)}
+                        >
 
                           {!message.sender.isCurrentClient && (
                             <div className="elixirchat-chat-messages__sender">
@@ -925,39 +966,43 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
                           )}
 
                           {Boolean(message.responseToMessage.id) && !message.responseToMessage.isDeleted && (
-                            <div className="elixirchat-chat-messages__reply-message"
-                              onClick={() => this.onReplyOriginalMessageClick(message.responseToMessage.id)}>
+                            <div
+                              className="elixirchat-chat-messages__reply-message"
+                              onClick={() => this.onReplyOriginalMessageClick(message.responseToMessage.id)}
+                            >
                               {generateReplyMessageQuote(message.responseToMessage, elixirChatWidget)}
                             </div>
                           )}
 
                           {message.text && (
-                            <FormattedMarkdown className="elixirchat-chat-messages__text" markdown={message.text}/>
+                            <FormattedMarkdown className="elixirchat-chat-messages__text" markdown={message.text} />
                           )}
 
                           {Boolean(message.files.length) && (
                             <ul className="elixirchat-chat-files">
-                              {message.files.map(file => (
+                              {message.files.map((file) => (
                                 <li key={file.id} className="elixirchat-chat-files__item">
-                                  <a className={cn({
-                                    'elixirchat-chat-files__preview': true,
-                                    'elixirchat-chat-files__preview-image': file.thumbnails[0].url,
-                                    'elixirchat-chat-files__preview-submitting': message.isSubmitting,
-                                  })}
-                                    style={{backgroundImage: `url(${file.thumbnails[0].url})`}}
+                                  <a
+                                    className={cn({
+                                      'elixirchat-chat-files__preview': true,
+                                      'elixirchat-chat-files__preview-image': file.thumbnails[0].url,
+                                      'elixirchat-chat-files__preview-submitting': message.isSubmitting
+                                    })}
+                                    style={{ backgroundImage: `url(${file.thumbnails[0].url})` }}
                                     href={file.url}
-                                    target="_blank">
+                                    target="_blank"
+                                  >
 
                                     {(!file.thumbnails[0].url && !message.isSubmitting) && (
-                                      <i className="icon-file"/>
+                                      <i className="icon-file" />
                                     )}
                                     {message.isSubmitting && (
-                                      <i className="elixirchat-chat-files__preview-spinner icon-spinner-xs"/>
+                                      <i className="elixirchat-chat-files__preview-spinner icon-spinner-xs" />
                                     )}
                                   </a>
                                   <div className="elixirchat-chat-files__text">
                                     <a className="elixirchat-chat-files__text-link" href={file.url} target="_blank">{file.name}</a>
-                                    <br/>
+                                    <br />
                                     <span className="elixirchat-chat-files__text-secondary">
                                       {message.isSubmitting
                                         ? <FormattedMessage id="upload" />
@@ -973,15 +1018,17 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
 
                       {Boolean(message.previews.length) && (
                         <ul className="elixirchat-chat-previews">
-                          {message.previews.map(preview => (
+                          {message.previews.map((preview) => (
                             <li key={preview.id} className="elixirchat-chat-previews__item">
-                              <a className="elixirchat-chat-previews__link"
+                              <a
+                                className="elixirchat-chat-previews__link"
                                 href={preview.url}
                                 target="_blank"
-                                onClick={e => this.onPreviewClick(e, preview, message.sender)}>
+                                onClick={(e) => this.onPreviewClick(e, preview, message.sender)}
+                              >
 
                                 {message.isSubmitting && (
-                                  <i className="elixirchat-chat-previews__spinner icon-spinner-xs"/>
+                                  <i className="elixirchat-chat-previews__spinner icon-spinner-xs" />
                                 )}
                                 {preview.previewType === 'video' && (
                                   <Fragment>
@@ -991,20 +1038,23 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
                                     </span>
                                   </Fragment>
                                 )}
-                                <img className={cn({
-                                  'elixirchat-chat-previews__img': true,
-                                  'elixirchat-chat-previews__img--submitting': message.isSubmitting,
-                                })}
+                                <img
+                                  className={cn({
+                                    'elixirchat-chat-previews__img': true,
+                                    'elixirchat-chat-previews__img--submitting': message.isSubmitting
+                                  })}
                                   width={_round(preview.thumbnailWidth)}
                                   height={_round(preview.thumbnailHeight)}
                                   src={preview.thumbnails[0].url}
                                   alt={preview.name}
-                                  onError={e => {
-                                    e.target.parentNode.classList.add('elixirchat-chat-previews__item-not-found')
-                                  }}/>
+                                  onError={(e) => {
+                                    e.target.parentNode.classList.add('elixirchat-chat-previews__item-not-found');
+                                  }}
+                                />
                                 <span className="elixirchat-chat-previews__item-not-found-placeholder">
                                   <FormattedMessage id="file_not_found" />
-                                  <br/>{preview.name}
+                                  <br />
+                                  {preview.name}
                                 </span>
                               </a>
                             </li>
@@ -1021,10 +1071,12 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
                         {!message.submissionErrorCode && (
                           <Fragment>
                             {!message.isSystem && (
-                              <span className="elixirchat-chat-messages__reply-button"
-                                onClick={() => this.onReplyButtonClick(message.id)}>
-                              <FormattedMessage id="reply" />
-                            </span>
+                              <span
+                                className="elixirchat-chat-messages__reply-button"
+                                onClick={() => this.onReplyButtonClick(message.id)}
+                              >
+                                <FormattedMessage id="reply" />
+                              </span>
                             )}
                             {message.sender.isOperator && !message.isSystem && (
                               <div className="elixirchat-chat-messages__rating">
@@ -1057,13 +1109,15 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
                 )}
 
                 {message.isSystem && (
-                  <div className={cn({
-                    'elixirchat-chat-messages__item': true,
-                    'elixirchat-chat-messages__item--by-operator': true,
-                    'elixirchat-chat-messages__item--system': true,
-                    'elixirchat-chat-messages__item--unread': message.isUnread,
-                  })}
-                    ref={element => this.createMessageRef(element, message)}>
+                  <div
+                    className={cn({
+                      'elixirchat-chat-messages__item': true,
+                      'elixirchat-chat-messages__item--by-operator': true,
+                      'elixirchat-chat-messages__item--system': true,
+                      'elixirchat-chat-messages__item--unread': message.isUnread
+                    })}
+                    ref={(element) => this.createMessageRef(element, message)}
+                  >
 
                     <div className="elixirchat-chat-messages__inner">
                       <div className="elixirchat-chat-messages__balloon">
@@ -1076,11 +1130,15 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
 
                         {message.systemData.type === 'ScreenshotRequestedMessage' && (
                           <Fragment>
-                            <div className="elixirchat-chat-messages__text"
-                              dangerouslySetInnerHTML={{ __html: this.getScreenshotShortcutMessage() }} />
-                            {!Boolean(screenshotFallback) && (
-                              <button className="elixirchat-chat-messages__take-screenshot"
-                                onClick={this.onTakeScreenshotClick}>
+                            <div
+                              className="elixirchat-chat-messages__text"
+                              dangerouslySetInnerHTML={{ __html: this.getScreenshotShortcutMessage() }}
+                            />
+                            {!screenshotFallback && (
+                              <button
+                                className="elixirchat-chat-messages__take-screenshot"
+                                onClick={this.onTakeScreenshotClick}
+                              >
                                 <FormattedMessage id="take_a_screenshot" />
                               </button>
                             )}
@@ -1089,10 +1147,13 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
 
                         {message.systemData.type === 'NobodyWorkingMessage' && (
                           <div className="elixirchat-chat-messages__text">
-                            <FormattedMessage id="specialists_are_offline" values={{
-                              hasDatetime: Boolean(message.systemData?.workHoursStartAt),
-                              datetime: humanizeUpcomingDate(message.systemData?.workHoursStartAt, this.props.intl)
-                            }} />
+                            <FormattedMessage
+                              id="specialists_are_offline"
+                              values={{
+                                hasDatetime: Boolean(message.systemData?.workHoursStartAt),
+                                datetime: humanizeUpcomingDate(message.systemData?.workHoursStartAt, this.props.intl)
+                              }}
+                            />
                           </div>
                         )}
 
@@ -1104,10 +1165,13 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
 
                         {message.systemData.type === 'NewClientPlaceholderMessage' && (
                           <div className="elixirchat-chat-messages__text">
-                            <FormattedMessage id="hello" values={{
-                              isConfidentAboutFirstName: elixirChatWidget.client.isConfidentAboutFirstName,
-                              name: elixirChatWidget.client.firstName
-                            }} />
+                            <FormattedMessage
+                              id="hello"
+                              values={{
+                                isConfidentAboutFirstName: elixirChatWidget.client.isConfidentAboutFirstName,
+                                name: elixirChatWidget.client.firstName
+                              }}
+                            />
                           </div>
                         )}
                       </div>
@@ -1123,14 +1187,14 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
             ))}
           </div>
 
-
           <div className={cn({
             'elixirchat-chat-typing': true,
-            'elixirchat-chat-typing--visible': Boolean(currentlyTypingUsers.length),
-          })}>
+            'elixirchat-chat-typing--visible': Boolean(currentlyTypingUsers.length)
+          })}
+          >
             <Fragment>
-              <i className="elixirchat-chat-typing__icon icon-typing"/>
-              <FormattedMessage id="typing" values={{count: currentlyTypingUsers.length}} />
+              <i className="elixirchat-chat-typing__icon icon-typing" />
+              <FormattedMessage id="typing" values={{ count: currentlyTypingUsers.length }} />
             </Fragment>
           </div>
         </div>

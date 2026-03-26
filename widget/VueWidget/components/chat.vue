@@ -8,7 +8,7 @@ import {
   WIDGET_SEARCH_TOGGLE
 } from '../../ElixirChatWidgetEventTypes';
 import { useElixirChatWidget } from '../composables/useElixirChatWidget';
-import ChatMessages from './ChatMessages.vue';
+import ChatMessages from './chatMessages/ChatMessages.vue';
 import Tooltip from './tooltip/tooltip.vue';
 import ChatTextarea from './ChatTextarea.vue';
 
@@ -54,6 +54,14 @@ function onOnlineStatusChange(status: any) {
 
 function onSearchToggle(isOpen: boolean) {
   widgetIsSearchOpen.value = isOpen;
+}
+
+function onSearchClick() {
+  if (widgetIsSearchOpen.value) {
+    elixirChatWidget.closeSearch();
+    return;
+  }
+  elixirChatWidget.openSearch();
 }
 
 function onBackButtonClick() {
@@ -108,7 +116,13 @@ onBeforeUnmount(() => {
       </div>
 
       <div class="elixirchat-chat-header__column">
-        <!-- TODO: добавить поиск -->
+        <button
+          class="elixirchat-chat-header__button elixirchat-chat-header__button-search"
+          :class="{ 'elixirchat-chat-header__button-search_active': widgetIsSearchOpen }"
+          @click="onSearchClick"
+        >
+          <i class="icon-search" />
+        </button>
 
         <tooltip
           class-name="elixirchat-chat-header__mute-tooltip"

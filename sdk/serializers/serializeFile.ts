@@ -1,4 +1,4 @@
-import { ElixirChat } from '../ElixirChat';
+import type { ElixirChat } from '../ElixirChat';
 import { gql } from '../GraphQLClient';
 import { extractSerializedData } from '../../utilsCommon';
 
@@ -25,25 +25,24 @@ export const fragmentFile: string = gql`
   }
 `;
 
-export interface IFile {
+export type IFile = {
   id: string | null;
   name: string;
   bytesSize: number;
   height: number;
   width: number;
-  duration?: number,
+  duration?: number;
   contentType: string | null;
   isScreenshot: boolean;
   thumbnails?: Array<IFile>;
   url: string;
-}
+};
 
 export function serializeFileUrl(url: string, elixirChat: ElixirChat): string {
-  const uploadsUrlPrefix = elixirChat.config.apiUrl.replace(/\/$/, '') + '/';
+  const uploadsUrlPrefix = `${elixirChat.config.apiUrl.replace(/\/$/, '')}/`;
   if (url) {
     return /^uploads/i.test(url) ? uploadsUrlPrefix + url : url;
-  }
-  else {
+  } else {
     return '';
   }
 }
@@ -62,9 +61,9 @@ export function serializeFile(data: any, elixirChat: ElixirChat): IFile {
       width: 0,
       duration: 0,
       contentType: '',
-      isScreenshot: false,
+      isScreenshot: false
     }),
     thumbnails: [{ url: thumbnailUrl }],
-    url: serializeFileUrl(fileUrl || thumbnailUrl, elixirChat),
+    url: serializeFileUrl(fileUrl || thumbnailUrl, elixirChat)
   };
 }

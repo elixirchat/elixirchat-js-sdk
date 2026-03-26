@@ -39,13 +39,33 @@
     "ru": "Все",
     "en": "Everyone"
   },
+  "typing": {
+    "ru": "никто не пишет | {n} человек пишет | {n} человека пишут | {n} человек пишут",
+    "en": "nobody is typing | {n} is typing | {n} are typing"
+  },
   "hello": {
     "ru": "{isConfidentAboutFirstName, select, true {Здравствуйте, {name}! Как мы можем вам помочь?} other {Здравствуйте! Как мы можем вам помочь?}}",
     "en": "{isConfidentAboutFirstName, select, true {Hello, {name}! How can we help you?} other {Hello! How can we help you?}}"
   },
+  "hello_with_name": {
+    "ru": "Здравствуйте, {name}! Как мы можем вам помочь?",
+    "en": "Hello, {name}! How can we help you?"
+  },
+  "hello_short": {
+    "ru": "Здравствуйте! Как мы можем вам помочь?",
+    "en": "Hello! How can we help you?"
+  },
   "specialists_are_offline": {
     "ru": "К сожалению, все операторы поддержки сейчас оффлайн{hasDatetime, select, true {, но будут снова в сети и ответят на ваш вопрос {datetime}} other {}}",
     "en": "Unfortunately, all of our Support Specialists are currently offline.{hasDatetime, select, true { They will get back online and answer your questions {datetime}} other {}}"
+  },
+  "specialists_are_offline_short": {
+    "ru": "К сожалению, все операторы поддержки сейчас оффлайн.",
+    "en": "Unfortunately, all of our Support Specialists are currently offline."
+  },
+  "specialists_are_offline_with_datetime": {
+    "ru": "К сожалению, все операторы поддержки сейчас оффлайн, но будут снова в сети и ответят на ваш вопрос {datetime}",
+    "en": "Unfortunately, all of our Support Specialists are currently offline. They will get back online and answer your questions {datetime}"
   },
   "waiting_takes_longer": {
     "ru": "Время ответа может увеличиться из-за большого количества вопросов, мы обязательно вернёмся к вам, спасибо за ожидание.",
@@ -59,6 +79,14 @@
     "ru": "Пожалуйста, пришлите скриншот\u00a0вашего экрана. Для этого нажмите {hasSecondaryKey, select, true {{primaryKey}\u00a0({secondaryKey})} other {{primaryKey}}}, а затем вставьте результат в текстовое поле.",
     "en": "Please, take a screenshot of the issue and send it to us. To do so, press {hasSecondaryKey, select, true {{primaryKey}\u00a0({secondaryKey})} other {{primaryKey}}} and insert the image to the message field."
   },
+  "please_send_screenshot_with_shortcut_primary_only": {
+    "ru": "Пожалуйста, пришлите скриншот\u00a0вашего экрана. Для этого нажмите {primaryKey}, а затем вставьте результат в текстовое поле.",
+    "en": "Please, take a screenshot of the issue and send it to us. To do so, press {primaryKey} and insert the image to the message field."
+  },
+  "please_send_screenshot_with_shortcut_both_keys": {
+    "ru": "Пожалуйста, пришлите скриншот\u00a0вашего экрана. Для этого нажмите {primaryKey}\u00a0({secondaryKey}), а затем вставьте результат в текстовое поле.",
+    "en": "Please, take a screenshot of the issue and send it to us. To do so, press {primaryKey} ({secondaryKey}) and insert the image to the message field."
+  },
   "take_a_screenshot": {
     "ru": "Сделать скриншот",
     "en": "Take a screenshot"
@@ -68,8 +96,8 @@
     "en": "Reply"
   },
   "attachment_type_is_not_supported": {
-    "ru": "Вложения такого типа<br></br> не поддерживаются",
-    "en": "Attachments of this type<br></br> are not supported"
+    "ru": "Вложения такого типа<br/> не поддерживаются",
+    "en": "Attachments of this type<br /> are not supported"
   },
   "file_size_limit": {
     "ru": "Поддерживаются файлы до 5Мб",
@@ -95,9 +123,17 @@
     "ru": "Файл не найден",
     "en": "File is not found"
   },
-  "typing": {
-    "ru": "{count, plural, =0 {} one {# человек пишет} few {# человека пишут} many {# человек пишут} other {# человек пишут}}",
-    "en": "{count, plural, =0 {} one {# is typing} other {# are typing}}"
+  "search": {
+    "ru": "Поиск",
+    "en": "Search"
+  },
+  "searh_next": {
+    "ru": "Следующий",
+    "en": "Next"
+  },
+  "searh_close": {
+    "ru": "Закрыть",
+    "en": "Close"
   },
   "here_is_the_screenshot": {
     "ru": "Вот скриншот моего экрана",
