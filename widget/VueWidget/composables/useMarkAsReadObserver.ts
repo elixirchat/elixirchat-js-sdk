@@ -1,15 +1,20 @@
+import { onScopeDispose, watch } from 'vue';
+import type { Ref } from 'vue';
+
 type MarkAsReadMessage = {
   id: string | number;
   isUnread?: boolean;
 };
 
 type UseMarkAsReadObserverParams = {
+  rootRef: Ref<HTMLElement | null | undefined>;
   markAsReadTimeoutMs?: number;
   onMarkAsRead: (messageId: string) => void;
 };
 
 export function useMarkAsReadObserver(params: UseMarkAsReadObserverParams) {
   const {
+    rootRef,
     markAsReadTimeoutMs = 2000,
     onMarkAsRead
   } = params;
@@ -65,22 +70,25 @@ export function useMarkAsReadObserver(params: UseMarkAsReadObserverParams) {
     });
   }
 
-  function reattach() {
+  function observeAllKnownElements() {
     if (!observer) {
       return;
     }
     messageElements.forEach((element) => {
-      observer!.observe(element);
+      observer.observe(element);
     });
   }
 
-  function initialize(root: HTMLElement) {
-    cleanup();
+  function recreateObserver(root: HTMLElement) {
+    if (observer) {
+      observer.disconnect();
+      observer = null;
+    }
     observer = new IntersectionObserver(onIntersection, {
       root,
       threshold: 0.9
     });
-    reattach();
+    observeAllKnownElements();
   }
 
   function syncMessages(messages: MarkAsReadMessage[]) {
@@ -141,20 +149,33 @@ export function useMarkAsReadObserver(params: UseMarkAsReadObserverParams) {
     }
   }
 
-  function cleanup() {
+  function cleanupObserver() {
     if (observer) {
       observer.disconnect();
       observer = null;
     }
+  }
+
+  function cleanupAll() {
+    cleanupObserver();
     markAsReadTimeoutsByMessageId.forEach((timeout) => clearTimeout(timeout));
     markAsReadTimeoutsByMessageId.clear();
     isWithinViewportByMessageId.clear();
   }
 
+  watch(rootRef, (rootElement) => {
+    if (!rootElement) {
+      cleanupObserver();
+      return;
+    }
+    recreateObserver(rootElement);
+  }, { immediate: true });
+
+  onScopeDispose(() => {
+    cleanupAll();
+  });
+
   return {
-    initialize,
-    cleanup,
-    reattach,
     syncMessages,
     setMessageRef
   };

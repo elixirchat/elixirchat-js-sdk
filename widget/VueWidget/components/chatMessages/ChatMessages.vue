@@ -91,6 +91,7 @@ const ratingCommentModal = ref({
 });
 
 const markAsReadObserver = useMarkAsReadObserver({
+  rootRef: scrollContainerRef,
   onMarkAsRead(messageId: string) {
     elixirChatWidget.setLastReadMessage(messageId);
   }
@@ -421,7 +422,7 @@ function onMessageReceive(message: any) {
   updateMessageHistory({
     chunk: [message],
     append: true
-  }, markAsReadObserver.reattach);
+  });
 
   if (shouldScrollMessagesToBottom) {
     scrollToBottom(false);
@@ -429,21 +430,21 @@ function onMessageReceive(message: any) {
 }
 
 function onMessageHistoryChange(chunk: any[]) {
-  updateMessageHistory({ chunk }, markAsReadObserver.reattach);
+  updateMessageHistory({ chunk });
 }
 
 function onMessageHistoryPrepend(chunk: any[]) {
   updateMessageHistory({
     chunk,
     prepend: true
-  }, markAsReadObserver.reattach);
+  });
 }
 
 function onMessageHistoryAppend(chunk: any[]) {
   updateMessageHistory({
     chunk,
     append: true
-  }, markAsReadObserver.reattach);
+  });
 }
 
 function changeSearchText(text = '') {
@@ -758,11 +759,6 @@ onMounted(() => {
   elixirChatWidget.on(WIDGET_POPUP_OPEN, onWidgetPopupOpen);
 
   screenshotFallback.value = getScreenshotCompatibilityFallback();
-  requestAnimationFrame(() => {
-    if (scrollContainerRef.value) {
-      markAsReadObserver.initialize(scrollContainerRef.value);
-    }
-  });
 });
 
 onBeforeUnmount(() => {
@@ -784,7 +780,6 @@ onBeforeUnmount(() => {
   elixirChatWidget.off(WIDGET_TEXTAREA_RESIZE, onWidgetTextareaResize);
   elixirChatWidget.off(TYPING_STATUS_CHANGE, onTypingStatusChange);
   elixirChatWidget.off(WIDGET_POPUP_OPEN, onWidgetPopupOpen);
-  markAsReadObserver.cleanup();
 });
 </script>
 
