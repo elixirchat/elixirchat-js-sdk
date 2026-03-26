@@ -4,23 +4,6 @@ import trl from '../DefaultWidget/trl.json';
 
 type Locale = 'ru' | 'en';
 
-function pluralRule(choice: number, choicesLength: number): number {
-  if (choice === 0) {
-    return 0;
-  }
-
-  const teen = choice > 10 && choice < 20;
-  const endsWithOne = choice % 10 === 1;
-  if (!teen && endsWithOne) {
-    return 1;
-  }
-  if (!teen && choice % 10 >= 2 && choice % 10 <= 4) {
-    return 2;
-  }
-
-  return choicesLength < 4 ? 2 : 3;
-}
-
 const baseRu = Object.fromEntries(Object.entries(trl).map(([key, value]) => [key, value.ru]));
 const baseEn = Object.fromEntries(Object.entries(trl).map(([key, value]) => [key, value.en]));
 
@@ -36,9 +19,6 @@ export const createWidgetI18n = (elixirChatWidget: ElixirChatWidget) => {
     legacy: false,
     locale,
     fallbackLocale: 'ru',
-    messages,
-    pluralRules: {
-      ru: pluralRule
-    }
+    messages
   });
 };
