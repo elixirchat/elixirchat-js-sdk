@@ -86,7 +86,7 @@ export function useMarkAsReadObserver(params: UseMarkAsReadObserverParams) {
     }
     observer = new IntersectionObserver(onIntersection, {
       root,
-      threshold: 0.9
+      threshold: 0.5
     });
     observeAllKnownElements();
   }

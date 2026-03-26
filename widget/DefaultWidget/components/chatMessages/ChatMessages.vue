@@ -29,7 +29,6 @@ import {
 import { fitDimensionsIntoLimits, isMobile } from '@root/utilsWidgetVue';
 import { serializeMessage } from '@sdk/serializers/serializeMessage';
 import { getScreenshotCompatibilityFallback } from '@sdk/ScreenshotTaker';
-import ChatSystemMessage from './ChatSystemMessage.vue';
 import {
   WIDGET_FULLSCREEN_PREVIEW_OPEN,
   WIDGET_TEXTAREA_RESIZE,
@@ -37,8 +36,9 @@ import {
   WIDGET_POPUP_OPEN
 } from '@widget/ElixirChatWidgetEventTypes';
 import RatingModal from '@defaultWidget/components/RatingModal.vue';
-import ChatTyping from './ChatTyping.vue';
 import MessageSearch from '@defaultWidget/components/MessageSearch.vue';
+import ChatSystemMessage from './ChatSystemMessage.vue';
+import ChatTyping from './ChatTyping.vue';
 import ChatMessageItem from './ChatMessageItem.vue';
 import ChatMessagesViewport from './ChatMessagesViewport.vue';
 
@@ -96,6 +96,14 @@ const markAsReadObserver = useMarkAsReadObserver({
     elixirChatWidget.setLastReadMessage(messageId);
   }
 });
+
+function isHiddenSystemMessage(message: any): boolean {
+  return Boolean(message?.isSystem && message?.systemData?.type === 'HighLoadMessage');
+}
+
+const visibleMessages = computed(() =>
+  processedMessages.value.filter((message) => !isHiddenSystemMessage(message))
+);
 
 function processMessageAttachments(message: any) {
   const previews: any[] = [];
@@ -287,7 +295,7 @@ function updateMessageHistory(params: HistoryUpdateParams, callback?: () => void
   processedMessages.value = nextProcessedMessages;
   fullScreenPreviews.value = nextFullScreenPreviews;
   markAsReadObserver.syncMessages(
-    processedMessages.value.map((message) => ({
+    visibleMessages.value.map((message) => ({
       id: String(message.id),
       isUnread: Boolean(message.isUnread)
     }))
@@ -801,7 +809,7 @@ onBeforeUnmount(() => {
         :is-loading-preceding-message-history="isLoadingPrecedingMessageHistory"
       >
         <template
-          v-for="message in processedMessages"
+          v-for="message in visibleMessages"
           :key="message.id"
         >
           <template v-if="message.showGroupChatLabel && !elixirChatWidget.room?.isPrivate">

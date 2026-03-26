@@ -137,12 +137,6 @@ function onRootRef(el: HTMLElement | null) {
           {{ getSpecialistsOfflineMessage() }}
         </div>
 
-        <div v-if="message.systemData?.type === 'HighLoadMessage'">
-          <div class="elixirchat-chat-messages__text">
-            {{ t('waiting_takes_longer') }}
-          </div>
-        </div>
-
         <div
           v-if="message.systemData?.type === 'NewClientPlaceholderMessage'"
           class="elixirchat-chat-messages__text"
