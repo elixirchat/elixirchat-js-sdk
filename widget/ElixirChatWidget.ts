@@ -1,15 +1,14 @@
-import type { IFontRule } from './FontExtractor';
-import type { IJoinRoomChannel, IJoinRoomData } from '../sdk/ElixirChat';
+import type { IFontRule } from '@widget/FontExtractor';
+import type { IJoinRoomChannel, IJoinRoomData } from '@sdk/ElixirChat';
 import 'babel-polyfill';
-import { _find, getFromLocalStorage, logEvent, setToLocalStorage } from '../utilsCommon';
-import { renderWidgetReactComponent } from './DefaultWidget/Widget';
-import { renderWidgetVue } from './VueWidget/main';
+import { _find, getFromLocalStorage, logEvent, setToLocalStorage } from '@root/utilsCommon';
+import { renderWidgetVue } from '@defaultWidget/main';
 import {
   JOIN_ROOM_ERROR,
   JOIN_ROOM_SUCCESS,
   MESSAGES_RETRIEVE_LAST_MESSAGE_CURSOR,
   MESSAGES_RECEIVE
-} from '../sdk/ElixirChatEventTypes';
+} from '@sdk/ElixirChatEventTypes';
 import {
   WIDGET_IFRAME_READY,
   WIDGET_NAVIGATE_TO,
@@ -19,8 +18,8 @@ import {
   WIDGET_POPUP_OPEN,
   WIDGET_POPUP_CLOSE,
   WIDGET_SEARCH_TOGGLE
-} from './ElixirChatWidgetEventTypes';
-import ElixirChatFromDist from '../dist/sdk.min.js';
+} from '@widget/ElixirChatWidgetEventTypes';
+import ElixirChatFromDist from '@root/dist/sdk.min.js';
 
 /**
  * dist/sdk.min.js is generated on fly depending on the context:
@@ -59,7 +58,6 @@ export type IElixirChatWidgetConfig = {
   hideDefaultButton?: boolean;
   iframeCSS?: string;
   customEmployerName?: any;
-  compareMode?: boolean;
 };
 
 export class ElixirChatWidget extends ElixirChat {
@@ -109,33 +107,9 @@ export class ElixirChatWidget extends ElixirChat {
 
     this.initializeWidget();
 
-    if (this.widgetConfig.compareMode) {
-      const dualWrapper = document.createElement('div');
-      dualWrapper.className = 'elixirchat-dual-widget';
-
-      const reactPanel = document.createElement('div');
-      reactPanel.className = 'elixirchat-panel elixirchat-panel--react';
-
-      const vuePanel = document.createElement('div');
-      vuePanel.className = 'elixirchat-panel elixirchat-panel--vue';
-
-      dualWrapper.appendChild(reactPanel);
-      dualWrapper.appendChild(vuePanel);
-      container.appendChild(dualWrapper);
-
-      const reactComponent = renderWidgetReactComponent(reactPanel, this);
-      const vueApp = renderWidgetVue(vuePanel, this);
-
-      this.logInfo('Appended ElixirChat dual widget (React + Vue)', container);
-      return {
-        reactComponent,
-        vueApp
-      };
-    }
-
     const vueApp = renderWidgetVue(container, this);
 
-    this.logInfo('Appended ElixirChat Vue widget', container);
+    this.logInfo('Appended ElixirChat widget (Vue)', container);
     return vueApp;
   };
 

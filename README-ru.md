@@ -660,7 +660,7 @@ __Параметры аргумента {...}:__
 
 __Возвращает:__
 
-- `JSX.Element` - React-компонент виджета (отрендеренный внутри `<iframe>`)
+- `App<Element>` - экземпляр Vue-приложения, смонтированный в контейнер виджета
 
 
 ```js
@@ -682,14 +682,11 @@ elixirChatWidget.appendWidget({
 - <a id="widget-iframeStyles"></a>`iframeStyles: string` - То же, что передано в [`appendWidget()`](#widget-appendWidget)
 - <a id="widget-widgetIsVisible"></a>`widgetIsVisible: boolean` - Флаг, указывающий, открыто ли в данный момент окно чата
 - <a id="widget-widgetIFrameDocument"></a>`widgetIFrameDocument: Document` - Document IFrame-элемента окна чата
-- <a id="widget-widgetChatReactComponent"></a>`widgetChatReactComponent: JSX.Element` - React-компонент виджета (отрендеренный внутри `<iframe>`)
 
 
 
 ```js
 // Примеры:
-console.log('state React-компонента виджета:', elixirChatWidget.widgetReactComponent.state);
-
 elixirChatWidget.widgetIFrameDocument.body.style = 'background: yellow';
 
 if (elixirChatWidget.isWidgetPopupOpen) {

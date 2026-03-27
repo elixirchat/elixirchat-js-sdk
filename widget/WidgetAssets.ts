@@ -1,38 +1,38 @@
-import { ElixirChatWidget } from '../ElixirChatWidget';
-import { generateFontFaceCSS } from './FontExtractor';
+import { ElixirChatWidget } from '@widget/ElixirChatWidget';
+import { generateFontFaceCSS } from '@widget/FontExtractor';
 
 function stripBOM(css: string): string {
   return css.replace(/^\uFEFF/, '');
 }
 
 // CSS
-import IconsCSS from '../dist/styles/Icons.css?raw';
-import AlertCSS from '../dist/styles/Alert.css?raw';
-import TooltipCSS from '../dist/styles/Tooltip.css?raw';
-import ChatCSS from '../dist/styles/Chat.css?raw';
-import ChatMessagesCSS from '../dist/styles/ChatMessages.css?raw';
-import RatingCSS from '../dist/styles/Rating.css?raw';
-import ChatTextareaCSS from '../dist/styles/ChatTextarea.css?raw';
-import MessageSearchCSS from '../dist/styles/MessageSearch.css?raw';
-import WelcomeScreenCSS from '../dist/styles/WelcomeScreen.css?raw';
-import FormattedMarkdownCSS from '../dist/styles/FormattedMarkdown.css?raw';
-import FullScreenPreviewCSS from '../dist/styles/FullScreenPreview.css?raw';
-import RatingCommentModalCSS from '../dist/styles/RatingCommentModal.css?raw';
-import WidgetOutsideIFrameCSS from '../dist/styles/WidgetOutsideIFrame.css?raw';
-import WidgetInsideIFrameCSS from '../dist/styles/WidgetInsideIFrame.css?raw';
+import IconsCSS from '@root/dist/styles/Icons.css?raw';
+import AlertCSS from '@root/dist/styles/Alert.css?raw';
+import TooltipCSS from '@root/dist/styles/Tooltip.css?raw';
+import ChatCSS from '@root/dist/styles/Chat.css?raw';
+import ChatMessagesCSS from '@root/dist/styles/ChatMessages.css?raw';
+import RatingCSS from '@root/dist/styles/Rating.css?raw';
+import ChatTextareaCSS from '@root/dist/styles/ChatTextarea.css?raw';
+import MessageSearchCSS from '@root/dist/styles/MessageSearch.css?raw';
+import WelcomeScreenCSS from '@root/dist/styles/WelcomeScreen.css?raw';
+import FormattedMarkdownCSS from '@root/dist/styles/FormattedMarkdown.css?raw';
+import FullScreenPreviewCSS from '@root/dist/styles/FullScreenPreview.css?raw';
+import RatingCommentModalCSS from '@root/dist/styles/RatingCommentModal.css?raw';
+import WidgetOutsideIFrameCSS from '@root/dist/styles/WidgetOutsideIFrame.css?raw';
+import WidgetInsideIFrameCSS from '@root/dist/styles/WidgetInsideIFrame.css?raw';
 
 // Assets
-import graphikBoldUrl from './DefaultWidget/assets/fonts/Graphik-Bold-Web.woff?inline';
-import graphikMediumUrl from './DefaultWidget/assets/fonts/Graphik-Medium-Web.woff?inline';
-import graphikRegularUrl from './DefaultWidget/assets/fonts/Graphik-Regular-Web.woff?inline';
-import graphikRegularItalicUrl from './DefaultWidget/assets/fonts/Graphik-RegularItalic-Web.woff?inline';
-import elixirchatIconsUrl from './DefaultWidget/assets/fonts/elixirchat-icons.woff?inline';
-import whatsappSvgUrl from './DefaultWidget/assets/images/channel-whatsapp.svg?inline';
-import telegramSvgUrl from './DefaultWidget/assets/images/channel-telegram.svg?inline';
-import facebookSvgUrl from './DefaultWidget/assets/images/channel-facebook.svg?inline';
-import viberSvgUrl from './DefaultWidget/assets/images/channel-viber.svg?inline';
-import vkontakteSvgUrl from './DefaultWidget/assets/images/channel-vk.svg?inline';
-import notificationSoundUrl from './DefaultWidget/assets/audio/notification.mp3?inline';
+import graphikBoldUrl from '@defaultWidget/assets/fonts/Graphik-Bold-Web.woff?inline';
+import graphikMediumUrl from '@defaultWidget/assets/fonts/Graphik-Medium-Web.woff?inline';
+import graphikRegularUrl from '@defaultWidget/assets/fonts/Graphik-Regular-Web.woff?inline';
+import graphikRegularItalicUrl from '@defaultWidget/assets/fonts/Graphik-RegularItalic-Web.woff?inline';
+import elixirchatIconsUrl from '@defaultWidget/assets/fonts/elixirchat-icons.woff?inline';
+import whatsappSvgUrl from '@defaultWidget/assets/images/channel-whatsapp.svg?inline';
+import telegramSvgUrl from '@defaultWidget/assets/images/channel-telegram.svg?inline';
+import facebookSvgUrl from '@defaultWidget/assets/images/channel-facebook.svg?inline';
+import viberSvgUrl from '@defaultWidget/assets/images/channel-viber.svg?inline';
+import vkontakteSvgUrl from '@defaultWidget/assets/images/channel-vk.svg?inline';
+import notificationSoundUrl from '@defaultWidget/assets/audio/notification.mp3?inline';
 
 function dataUrlToBase64(dataUrl: string): string {
   return dataUrl.split(',')[1] || '';
