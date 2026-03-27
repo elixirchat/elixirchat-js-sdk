@@ -132,6 +132,16 @@ export class ElixirChatWidget extends ElixirChat {
         this.navigateTo('chat');
       }
     });
+    this.listenForCrossTabMuteChanges();
+  }
+
+  private listenForCrossTabMuteChanges(): void {
+    window.addEventListener('storage', (event: StorageEvent) => {
+      if (event.key === 'elixirchat-notifications-muted') {
+        const isMuted = JSON.parse(event.newValue);
+        this.toggleMute(isMuted);
+      }
+    });
   }
 
   private setWidgetData(joinRoomData: IJoinRoomData) {
