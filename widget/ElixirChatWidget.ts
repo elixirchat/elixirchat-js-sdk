@@ -86,6 +86,12 @@ export class ElixirChatWidget extends ElixirChat {
 
   public widgetComponents: any = {};
   public widgetIFrameDocument: Document = {};
+  private storageListener = (event: StorageEvent): void => {
+    if (event.key === 'elixirchat-notifications-muted') {
+      const isMuted = event.newValue ? JSON.parse(event.newValue) : false;
+      this.toggleMute(isMuted);
+    }
+  };
 
   public appendWidget = (widgetConfig: IElixirChatWidgetConfig): void => {
     this.widgetConfig = widgetConfig || {};
@@ -132,16 +138,16 @@ export class ElixirChatWidget extends ElixirChat {
         this.navigateTo('chat');
       }
     });
+    this.removeCrossTabMuteListener();
     this.listenForCrossTabMuteChanges();
   }
 
   private listenForCrossTabMuteChanges(): void {
-    window.addEventListener('storage', (event: StorageEvent) => {
-      if (event.key === 'elixirchat-notifications-muted') {
-        const isMuted = event.newValue ? JSON.parse(event.newValue) : false;
-        this.toggleMute(isMuted);
-      }
-    });
+    window.addEventListener('storage', this.storageListener);
+  }
+
+  private removeCrossTabMuteListener(): void {
+    window.removeEventListener('storage', this.storageListener);
   }
 
   private setWidgetData(joinRoomData: IJoinRoomData) {
