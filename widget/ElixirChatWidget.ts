@@ -138,7 +138,7 @@ export class ElixirChatWidget extends ElixirChat {
   private listenForCrossTabMuteChanges(): void {
     window.addEventListener('storage', (event: StorageEvent) => {
       if (event.key === 'elixirchat-notifications-muted') {
-        const isMuted = JSON.parse(event.newValue);
+        const isMuted = event.newValue ? JSON.parse(event.newValue) : false;
         this.toggleMute(isMuted);
       }
     });
