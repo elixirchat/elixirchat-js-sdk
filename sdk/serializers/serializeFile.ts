@@ -27,6 +27,7 @@ export const fragmentFile: string = gql`
 
 export type IFile = {
   id: string | null;
+  file?: File | null;
   name: string;
   bytesSize: number;
   height: number;
@@ -55,6 +56,7 @@ export function serializeFile(data: any, elixirChat: ElixirChat): IFile {
   return {
     ...extractSerializedData(data, {
       id: null,
+      file: null,
       name: '',
       bytesSize: 0,
       height: 0,

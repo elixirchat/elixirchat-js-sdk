@@ -152,6 +152,10 @@ function onTypingStatusChange(users: any[]) {
   currentlyTypingUsers.value = Array.isArray(users) ? users : [];
 }
 
+function onRetrySendMessage(message: any): void {
+  elixirChatWidget.retrySendMessage(message).catch(() => {});
+}
+
 function generateNewClientPlaceholderMessage(firstEverMessageInHistory: any) {
   const placeholderMessage = serializeMessage({
     id: randomDigitStringId(6),
@@ -837,7 +841,7 @@ onBeforeUnmount(() => {
             @reply="onReplyButtonClick"
             @reply-original-click="onReplyOriginalMessageClick"
             @rate="onRate"
-            @retry="elixirChatWidget.retrySendMessage"
+            @retry="onRetrySendMessage"
           />
 
           <chat-system-message
