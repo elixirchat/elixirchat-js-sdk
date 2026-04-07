@@ -474,22 +474,35 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
   initializeMessagesIntersectionObserver = () => {
     const observerParams = {
       root: this.scrollBlock.current,
-      threshold: 0.9, // triggers when 90% of message is within the viewport
+      threshold: [0, 0.25, 0.5, 0.75, 0.9],
     };
 
     this.messageVisibilityObserver = new IntersectionObserver(entries => {
-      entries.map(entry => {
+      entries.forEach(entry => {
         const messageElement = entry.target;
+        const rootElement = this.scrollBlock.current;
 
-        if (entry.isIntersecting) {
-          this.setDatasetValues(messageElement, { isMessageWithinViewport: true });
-          const messageData = this.getDatasetValue(messageElement, 'messageData');
-          if (messageData.isUnread) {
-            this.onScrollOverUnreadMessage(messageData.id);
-          }
-        }
-        else {
-          this.setDatasetValues(messageElement, { isMessageWithinViewport: false });
+        if (!rootElement) {
+          return
+        };
+
+        const messageData = this.getDatasetValue(messageElement, 'messageData');
+        const rootHeight = rootElement.clientHeight;
+        const messageHeight = messageElement.clientHeight;
+        const visibleHeight = entry.intersectionRect.height;
+
+        const isLargeMessage = messageHeight > rootHeight;
+        
+        const isMessageVisibleEnough = isLargeMessage
+          ? visibleHeight >= rootHeight * 0.5
+          : entry.intersectionRatio >= 0.9;
+
+        this.setDatasetValues(messageElement, {
+          isMessageWithinViewport: isMessageVisibleEnough,
+        });
+
+        if (isMessageVisibleEnough && messageData.isUnread) {
+          this.onScrollOverUnreadMessage(messageData.id);
         }
       });
     }, observerParams);
