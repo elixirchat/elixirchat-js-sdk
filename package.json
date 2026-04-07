@@ -1,6 +1,6 @@
 {
   "name": "elixirchat-js-sdk",
-  "version": "4.7.9",
+  "version": "4.7.10",
   "description": "JavaScript SDK for https://elixir.chat",
   "engines": {
     "node": ">=22.18.0"
