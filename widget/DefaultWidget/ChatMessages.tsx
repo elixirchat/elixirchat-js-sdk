@@ -145,6 +145,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
   iframe = document.getElementById('elixirchat-widget-iframe');
   messageVisibilityObserver: IntersectionObserver = null;
   messageRefs: object = {};
+  messageBottomRefs: object = {};
   initialScrollTimeout = null;
 
   componentDidMount() {
@@ -474,34 +475,22 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
   initializeMessagesIntersectionObserver = () => {
     const observerParams = {
       root: this.scrollBlock.current,
-      threshold: [0, 0.25, 0.5, 0.75, 0.9],
+      threshold: 0,
+      rootMargin: '-80% 0px 0px 0px',
     };
 
     this.messageVisibilityObserver = new IntersectionObserver(entries => {
       entries.forEach(entry => {
-        const messageElement = entry.target;
-        const rootElement = this.scrollBlock.current;
+        const bottomElement = entry.target;
 
-        if (!rootElement) {
-          return
-        };
-
-        const messageData = this.getDatasetValue(messageElement, 'messageData');
-        const rootHeight = rootElement.clientHeight;
-        const messageHeight = messageElement.clientHeight;
-        const visibleHeight = entry.intersectionRect.height;
-
-        const isLargeMessage = messageHeight > rootHeight;
-        
-        const isMessageVisibleEnough = isLargeMessage
-          ? visibleHeight >= rootHeight * 0.5
-          : entry.intersectionRatio >= 0.9;
-
-        this.setDatasetValues(messageElement, {
-          isMessageWithinViewport: isMessageVisibleEnough,
+        this.setDatasetValues(bottomElement, {
+          isMessageWithinViewport: entry.isIntersecting,
         });
 
-        if (isMessageVisibleEnough && messageData.isUnread) {
+        if (!entry.isIntersecting) return;
+
+        const messageData = this.getDatasetValue(bottomElement, 'messageData');
+        if (messageData?.isUnread) {
           this.onScrollOverUnreadMessage(messageData.id);
         }
       });
@@ -510,8 +499,8 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
 
   reAttachIntersectionObserverToMessages = () => {
     requestAnimationFrame(() => {
-      for (let messageId in this.messageRefs) {
-        this.messageVisibilityObserver.observe( this.messageRefs[messageId] );
+      for (let messageId in this.messageBottomRefs) {
+        this.messageVisibilityObserver.observe(this.messageBottomRefs[messageId]);
       }
     });
   };
@@ -519,8 +508,11 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
   onScrollOverUnreadMessage = (messageId) => {
     const { elixirChatWidget } = this.props;
     setTimeout(() => {
-      const messageElement = this.messageRefs[messageId];
-      const isMessageStillWithinViewportAfterTimeout = this.getDatasetValue(messageElement, 'isMessageWithinViewport');
+      const bottomElement = this.messageBottomRefs[messageId];
+      if (!bottomElement) {
+        return;
+      }
+      const isMessageStillWithinViewportAfterTimeout = this.getDatasetValue(bottomElement, 'isMessageWithinViewport');
       if (isMessageStillWithinViewportAfterTimeout) {
         elixirChatWidget.setLastReadMessage(messageId);
       }
@@ -695,13 +687,25 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
     return messageByErrorCode[message.submissionErrorCode] || defaultMessage;
   };
 
-  createMessageRef = (messageElement, message) => {
+  assignMessageItemRef = (messageElement: HTMLElement | null, message) => {
     if (messageElement) {
-      const { id, isUnread } = message;
-      this.setDatasetValues(messageElement, {
+      this.messageRefs[message.id] = messageElement;
+    }
+    else {
+      delete this.messageRefs[message.id];
+    }
+  };
+
+  assignMessageBottomRef = (bottomElement: HTMLElement | null, message) => {
+    const { id, isUnread } = message;
+    if (bottomElement) {
+      this.setDatasetValues(bottomElement, {
         messageData: { id, isUnread }
       });
-      this.messageRefs[message.id] = messageElement;
+      this.messageBottomRefs[id] = bottomElement;
+    }
+    else {
+      delete this.messageBottomRefs[id];
     }
   };
 
@@ -913,7 +917,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
                     'elixirchat-chat-messages__item--unread': message.isUnread,
                     'elixirchat-chat-messages__item--selected': message.id === selectMessageId,
                   })}
-                    ref={element => this.createMessageRef(element, message)}
+                    ref={element => this.assignMessageItemRef(element, message)}
                     id={message.id}>
 
                     <div className="elixirchat-chat-messages__inner">
@@ -1025,7 +1029,8 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
                         </ul>
                       )}
 
-                      <div className="elixirchat-chat-messages__bottom">
+                      <div className="elixirchat-chat-messages__bottom"
+                        ref={element => this.assignMessageBottomRef(element, message)}>
                         {message.submissionErrorCode && (
                           <span className="elixirchat-chat-messages__submission-error">
                             {this.renderSubmissionErrorMessage(message)}
@@ -1076,7 +1081,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
                     'elixirchat-chat-messages__item--system': true,
                     'elixirchat-chat-messages__item--unread': message.isUnread,
                   })}
-                    ref={element => this.createMessageRef(element, message)}>
+                    ref={element => this.assignMessageItemRef(element, message)}>
 
                     <div className="elixirchat-chat-messages__inner">
                       <div className="elixirchat-chat-messages__balloon">
@@ -1125,7 +1130,8 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
                         )}
                       </div>
 
-                      <div className="elixirchat-chat-messages__bottom">
+                      <div className="elixirchat-chat-messages__bottom"
+                        ref={element => this.assignMessageBottomRef(element, message)}>
                         {dayjs(message.timestamp).format('H:mm')}
                       </div>
                     </div>
