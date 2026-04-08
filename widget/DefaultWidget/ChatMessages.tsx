@@ -475,7 +475,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
   initializeMessagesIntersectionObserver = () => {
     const observerParams = {
       root: this.scrollBlock.current,
-      threshold: 0.9,
+      threshold: 0.25,
     };
 
     this.messageVisibilityObserver = new IntersectionObserver(entries => {
