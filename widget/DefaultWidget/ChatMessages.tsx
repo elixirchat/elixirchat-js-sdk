@@ -145,6 +145,7 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
   iframe = document.getElementById('elixirchat-widget-iframe');
   messageVisibilityObserver: IntersectionObserver = null;
   messageRefs: object = {};
+  messageBottomRefs: Record<string, HTMLElement> = {};
   initialScrollTimeout = null;
 
   componentDidMount() {
@@ -474,22 +475,22 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
   initializeMessagesIntersectionObserver = () => {
     const observerParams = {
       root: this.scrollBlock.current,
-      threshold: 0.9, // triggers when 90% of message is within the viewport
+      threshold: 0.25,
     };
 
     this.messageVisibilityObserver = new IntersectionObserver(entries => {
       entries.map(entry => {
-        const messageElement = entry.target;
+        const bottomElement = entry.target;
 
         if (entry.isIntersecting) {
-          this.setDatasetValues(messageElement, { isMessageWithinViewport: true });
-          const messageData = this.getDatasetValue(messageElement, 'messageData');
-          if (messageData.isUnread) {
+          this.setDatasetValues(bottomElement, { isMessageWithinViewport: true });
+          const messageData = this.getDatasetValue(bottomElement, 'messageData');
+          if (messageData?.isUnread) {
             this.onScrollOverUnreadMessage(messageData.id);
           }
         }
         else {
-          this.setDatasetValues(messageElement, { isMessageWithinViewport: false });
+          this.setDatasetValues(bottomElement, { isMessageWithinViewport: false });
         }
       });
     }, observerParams);
@@ -497,8 +498,14 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
 
   reAttachIntersectionObserverToMessages = () => {
     requestAnimationFrame(() => {
-      for (let messageId in this.messageRefs) {
-        this.messageVisibilityObserver.observe( this.messageRefs[messageId] );
+      if (!this.messageVisibilityObserver) {
+        return;
+      }
+      for (const messageId in this.messageBottomRefs) {
+        const el = this.messageBottomRefs[messageId];
+        if (el) {
+          this.messageVisibilityObserver.observe(el);
+        }
       }
     });
   };
@@ -506,8 +513,8 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
   onScrollOverUnreadMessage = (messageId) => {
     const { elixirChatWidget } = this.props;
     setTimeout(() => {
-      const messageElement = this.messageRefs[messageId];
-      const isMessageStillWithinViewportAfterTimeout = this.getDatasetValue(messageElement, 'isMessageWithinViewport');
+      const bottomElement = this.messageBottomRefs[messageId];
+      const isMessageStillWithinViewportAfterTimeout = this.getDatasetValue(bottomElement, 'isMessageWithinViewport');
       if (isMessageStillWithinViewportAfterTimeout) {
         elixirChatWidget.setLastReadMessage(messageId);
       }
@@ -684,11 +691,17 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
 
   createMessageRef = (messageElement, message) => {
     if (messageElement) {
+      this.messageRefs[message.id] = messageElement;
+    }
+  };
+
+  attachMessageBottomRef = (element, message) => {
+    if (element) {
       const { id, isUnread } = message;
-      this.setDatasetValues(messageElement, {
+      this.setDatasetValues(element, {
         messageData: { id, isUnread }
       });
-      this.messageRefs[message.id] = messageElement;
+      this.messageBottomRefs[id] = element;
     }
   };
 
@@ -1012,7 +1025,10 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
                         </ul>
                       )}
 
-                      <div className="elixirchat-chat-messages__bottom">
+                      <div
+                        className="elixirchat-chat-messages__bottom"
+                        ref={el => this.attachMessageBottomRef(el, message)}
+                      >
                         {message.submissionErrorCode && (
                           <span className="elixirchat-chat-messages__submission-error">
                             {this.renderSubmissionErrorMessage(message)}
@@ -1112,7 +1128,10 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
                         )}
                       </div>
 
-                      <div className="elixirchat-chat-messages__bottom">
+                      <div
+                        className="elixirchat-chat-messages__bottom"
+                        ref={el => this.attachMessageBottomRef(el, message)}
+                      >
                         {dayjs(message.timestamp).format('H:mm')}
                       </div>
                     </div>
