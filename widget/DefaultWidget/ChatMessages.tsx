@@ -475,7 +475,6 @@ class ChatMessagesComponent extends Component<IDefaultWidgetMessagesProps, IDefa
   initializeMessagesIntersectionObserver = () => {
     const observerParams = {
       root: this.scrollBlock.current,
-      // Доля видимости блока elixirchat-chat-messages__bottom в области прокрутки
       threshold: 0.9,
     };
 
