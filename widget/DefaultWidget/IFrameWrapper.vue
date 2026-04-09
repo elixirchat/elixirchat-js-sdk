@@ -14,7 +14,7 @@ const setupIframeContainer = (iframe: HTMLIFrameElement) => {
   }
 
   const container = doc.createElement('main');
-  container.className = 'elixirchat-widget-main-vue';
+  container.className = 'elixirchat-widget-main';
   doc.body.appendChild(container);
   iframeContentContainer.value = container;
 
