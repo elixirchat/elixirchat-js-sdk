@@ -1,15 +1,14 @@
+import type { IFontRule } from '@widget/FontExtractor';
+import type { IJoinRoomChannel, IJoinRoomData } from '@sdk/ElixirChat';
 import 'babel-polyfill';
-import { _find, getFromLocalStorage, logEvent, setToLocalStorage } from '../utilsCommon';
-import { renderWidgetReactComponent } from './DefaultWidget/Widget';
-import { IFontRule } from './FontExtractor';
-import { IJoinRoomChannel, IJoinRoomData } from '../sdk/ElixirChat';
+import { _find, getFromLocalStorage, logEvent, setToLocalStorage } from '@root/utilsCommon';
+import { renderWidgetVue } from '@defaultWidget/main';
 import {
   JOIN_ROOM_ERROR,
   JOIN_ROOM_SUCCESS,
   MESSAGES_RETRIEVE_LAST_MESSAGE_CURSOR,
-  MESSAGES_RECEIVE,
-} from '../sdk/ElixirChatEventTypes';
-
+  MESSAGES_RECEIVE
+} from '@sdk/ElixirChatEventTypes';
 import {
   WIDGET_IFRAME_READY,
   WIDGET_NAVIGATE_TO,
@@ -18,10 +17,9 @@ import {
   WIDGET_POPUP_TOGGLE,
   WIDGET_POPUP_OPEN,
   WIDGET_POPUP_CLOSE,
-  WIDGET_SEARCH_TOGGLE,
-} from './ElixirChatWidgetEventTypes';
-
-import ElixirChatFromDist from '../dist/sdk.min.js';
+  WIDGET_SEARCH_TOGGLE
+} from '@widget/ElixirChatWidgetEventTypes';
+import ElixirChatFromDist from '@root/dist/sdk.min.js';
 
 /**
  * dist/sdk.min.js is generated on fly depending on the context:
@@ -43,14 +41,14 @@ let ElixirChat = window.ElixirChat ?? ElixirChatFromDist;
 if (!ElixirChat) {
   logEvent(
     true,
-    'Cannot find ElixirChat SDK. Are you sure you imported SDK (ether via "import" or via the <script/> tag)?\n' +
-    'See: https://github.com/elixirchat/elixirchat-js-sdk#add-default-widget', {
+    'Cannot find ElixirChat SDK. Are you sure you imported SDK (ether via "import" or via the <script/> tag)?\n'
+    + 'See: https://github.com/elixirchat/elixirchat-js-sdk#add-default-widget', {
       NODE_ENV: process.env.NODE_ENV
     }, 'error'
   );
 }
 
-export interface IElixirChatWidgetConfig {
+export type IElixirChatWidgetConfig = {
   container: HTMLElement;
   title?: string;
   logo?: string;
@@ -59,11 +57,10 @@ export interface IElixirChatWidgetConfig {
   enabledChannels?: Array<string>;
   hideDefaultButton?: boolean;
   iframeCSS?: string;
-  customEmployerName?: any
-}
+  customEmployerName?: any;
+};
 
 export class ElixirChatWidget extends ElixirChat {
-
   public widgetConfig: IElixirChatWidgetConfig = {};
   public widgetIsMuted: boolean;
   public widgetIsPopupOpen: boolean;
@@ -76,7 +73,7 @@ export class ElixirChatWidget extends ElixirChat {
   public widgetChannels: Array<IJoinRoomChannel>;
   public widgetChatScrollY: number | null;
   public messageHistory: Array<any>;
-  public widgetCustomEmployerName?: any
+  public widgetCustomEmployerName?: any;
 
   public widgetDefaultParams = {
     isMuted: false,
@@ -84,11 +81,17 @@ export class ElixirChatWidget extends ElixirChat {
     isButtonHidden: false,
     widgetIsSearchOpen: false,
     title: 'Служба поддержки',
-    supportEmail: 'support@elixir.chat',
+    supportEmail: 'support@elixir.chat'
   };
 
   public widgetComponents: any = {};
   public widgetIFrameDocument: Document = {};
+  private storageListener = (event: StorageEvent): void => {
+    if (event.key === 'elixirchat-notifications-muted') {
+      const isMuted = event.newValue ? JSON.parse(event.newValue) : false;
+      this.toggleMute(isMuted);
+    }
+  };
 
   public appendWidget = (widgetConfig: IElixirChatWidgetConfig): void => {
     this.widgetConfig = widgetConfig || {};
@@ -109,14 +112,15 @@ export class ElixirChatWidget extends ElixirChat {
     }
 
     this.initializeWidget();
-    const reactComponent = renderWidgetReactComponent(container, this);
 
-    this.logInfo('Appended ElixirChat default widget', container);
-    return reactComponent;
+    const vueApp = renderWidgetVue(container, this);
+
+    this.logInfo('Appended ElixirChat widget (Vue)', container);
+    return vueApp;
   };
 
   private initializeWidget(): void {
-    this.on([JOIN_ROOM_SUCCESS, JOIN_ROOM_ERROR], joinRoomData => {
+    this.on([JOIN_ROOM_SUCCESS, JOIN_ROOM_ERROR], (joinRoomData) => {
       this.setWidgetData(joinRoomData);
     });
     this.on(WIDGET_DATA_SET, () => {
@@ -128,21 +132,31 @@ export class ElixirChatWidget extends ElixirChat {
       const defaultView = this.messageSubscription.hasEmptyMessageHistory ? 'welcome-screen' : 'chat';
       this.navigateTo(storedView || defaultView);
     });
-    this.on(MESSAGES_RECEIVE, message => {
+    this.on(MESSAGES_RECEIVE, (message) => {
       if (message.mustOpenWidget) {
         this.openPopup();
         this.navigateTo('chat');
       }
     });
+    this.removeCrossTabMuteListener();
+    this.listenForCrossTabMuteChanges();
   }
 
-  private setWidgetData(joinRoomData: IJoinRoomData){
+  private listenForCrossTabMuteChanges(): void {
+    window.addEventListener('storage', this.storageListener);
+  }
+
+  private removeCrossTabMuteListener(): void {
+    window.removeEventListener('storage', this.storageListener);
+  }
+
+  private setWidgetData(joinRoomData: IJoinRoomData) {
     const {
       title,
       isMuted,
       isPopupOpen,
       isButtonHidden,
-      supportEmail,
+      supportEmail
     } = this.widgetDefaultParams;
 
     this.widgetIsPopupOpen = joinRoomData.isPopupOpen || getFromLocalStorage('elixirchat-widget-is-visible', isPopupOpen);
@@ -156,11 +170,11 @@ export class ElixirChatWidget extends ElixirChat {
     this.widgetCustomEmployerName = this.widgetConfig.customEmployerName || null;
 
     this.widgetChannels = (this.widgetConfig.enabledChannels || [])
-      .map(channelType => {
+      .map((channelType) => {
         const normalizedChannelType = channelType?.toLowerCase?.();
         return _find(joinRoomData.channels, { type: normalizedChannelType });
       })
-      .filter(channel => channel?.username);
+      .filter((channel) => channel?.username);
 
     this.triggerEvent(WIDGET_DATA_SET, this, { firedOnce: true });
   }
@@ -171,7 +185,7 @@ export class ElixirChatWidget extends ElixirChat {
     if (this.widgetIsPopupOpen !== isOpen) {
       this.widgetIsPopupOpen = isOpen;
       setToLocalStorage('elixirchat-widget-is-visible', isOpen);
-      this.logInfo((isOpen ? 'Opened' : 'Closed') + ' widget popup');
+      this.logInfo(`${isOpen ? 'Opened' : 'Closed'} widget popup`);
       this.triggerEvent(WIDGET_POPUP_TOGGLE, isOpen);
       this.triggerEvent(isOpen ? WIDGET_POPUP_OPEN : WIDGET_POPUP_CLOSE);
     }
@@ -199,7 +213,7 @@ export class ElixirChatWidget extends ElixirChat {
     if (this.widgetIsMuted !== isMuted) {
       this.widgetIsMuted = isMuted;
       setToLocalStorage('elixirchat-notifications-muted', isMuted);
-      this.logInfo((isMuted ? 'Muted' : 'Unmuted') + ' widget popup');
+      this.logInfo(`${isMuted ? 'Muted' : 'Unmuted'} widget popup`);
       this.triggerEvent(WIDGET_MUTE_TOGGLE, isMuted);
     }
   };
@@ -228,8 +242,7 @@ export class ElixirChatWidget extends ElixirChat {
   public waitForPopupToOpen = (callback) => {
     if (this.widgetIsPopupOpen) {
       callback();
-    }
-    else {
+    } else {
       this.on(WIDGET_POPUP_OPEN, callback);
     }
   };

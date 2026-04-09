@@ -4,6 +4,7 @@
 $color-textarea-bg: #FFF;
 
 .elixirchat-chat-textarea {
+  z-index: 10;
   background: $color-textarea-bg;
   box-shadow: 0 -1px 0 rgba($color-black, .13);
   border-radius: 0 0 $iframe-border-radius $iframe-border-radius;
@@ -231,6 +232,7 @@ $color-textarea-bg: #FFF;
   resize: none;
   width: calc(100% - 96px);
   background: transparent;
+  max-height: calc(20px * 5 + 16px);
 }
 
 .elixirchat-chat-attachment-list {

@@ -6,3 +6,5 @@ node_modules
 *.graphql
 .env-bin
 build/*.map
+.vscode/settings.json
+/.vscode

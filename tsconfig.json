@@ -5,12 +5,28 @@
     "noImplicitAny": false,
     "module": "commonjs",
     "target": "es2019",
-    "jsx": "react",
     "esModuleInterop": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "baseUrl": ".",
+    "paths": {
+      "@sdk/*": [
+        "sdk/*"
+      ],
+      "@widget/*": [
+        "widget/*"
+      ],
+      "@defaultWidget/*": [
+        "widget/DefaultWidget/*"
+      ],
+      "@root/*": [
+        "*"
+      ]
+    }
   },
   "include": [
-    "src/**/*"
+    "sdk/**/*",
+    "widget/**/*",
+    "vite-env.d.ts"
   ],
   "exclude": [
     "node_modules",

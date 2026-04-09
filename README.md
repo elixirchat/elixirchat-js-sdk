@@ -656,7 +656,7 @@ __Argument parameters {...}:__
 
 __Returns:__
 
-- `JSX.Element` - Widget React component (rendered inside the `<iframe>` element)
+- `App<Element>` - Vue application instance mounted into the widget container
 
 
 ```js
@@ -678,12 +678,9 @@ elixirChatWidget.appendWidget({
 - <a id="widget-iframeStyles"></a>`iframeStyles: string` - Same as passed to [`appendWidget()`](#widget-appendWidget)
 - <a id="widget-widgetIsVisible"></a>`widgetIsVisible: boolean` - Flag indicating whether the chat window is currently open
 - <a id="widget-widgetIFrameDocument"></a>`widgetIFrameDocument: Document` - Document of the IFrame element of the Chat window
-- <a id="widget-widgetChatReactComponent"></a>`widgetChatReactComponent: JSX.Element` - Widget React component (rendered inside the IFrame element)
 
 ```js
 // Examples:
-console.log('Widget React component state is', elixirChatWidget.widgetReactComponent.state);
-
 elixirChatWidget.widgetIFrameDocument.body.style = 'background: yellow';
 
 if (elixirChatWidget.isWidgetPopupOpen) {

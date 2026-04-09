@@ -56,7 +56,7 @@ icon-font-generator "$SVG_ICONS_DIRECTORY/*.svg" \
   --json false
 
 # @font-face rule is removed from the CSS file because font assets are imported
-# directly into a single JS bundle (see widget/DefaultWidget/assets/index.ts)
+# directly into a single JS bundle (see widget/WidgetAssets.ts)
 remove_font_face_rule "$CSS_FILE_PATH"
 
 prepend_text_to_file "$CSS_FILE_PATH" "$CSS_FILE_README_TEXT"

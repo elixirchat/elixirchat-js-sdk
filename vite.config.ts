@@ -1,14 +1,34 @@
 import { defineConfig, loadEnv } from 'vite';
+import vue from '@vitejs/plugin-vue';
+import { resolve } from 'path';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   return {
+    plugins: [vue()],
+    resolve: {
+      alias: {
+        '@sdk': resolve(__dirname, 'sdk'),
+        '@widget': resolve(__dirname, 'widget'),
+        '@defaultWidget': resolve(__dirname, 'widget/DefaultWidget'),
+        '@root': resolve(__dirname)
+      }
+    },
     define: {
-      'process.env.NODE_ENV': JSON.stringify(mode === 'production' ? 'production' : 'development'),
-      'process.env.ELIXIRCHAT_VERSION': JSON.stringify(env.ELIXIRCHAT_VERSION || ''),
+      'process.env.NODE_ENV': JSON.stringify(
+        mode === 'production' ? 'production' : 'development'
+      ),
+      'process.env.ELIXIRCHAT_VERSION': JSON.stringify(env.ELIXIRCHAT_VERSION || '')
     },
     server: {
       port: 8001,
-    },
+      watch: {
+        ignored: [
+          '**/node_modules/**',
+          '**/dist/**',
+          '!**/dist/styles/**'
+        ]
+      }
+    }
   };
 });
