@@ -100,8 +100,8 @@
     "en": "Attachments of this type<br /> are not supported"
   },
   "file_size_limit": {
-    "ru": "Поддерживаются файлы до 5Мб",
-    "en": "You can upload files up to 5 MB"
+    "ru": "Поддерживаются файлы до 30Мб",
+    "en": "You can upload files up to 30 MB"
   },
   "sending_has_failed": {
     "ru": "Ошибка отправки",
